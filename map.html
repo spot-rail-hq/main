@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Network Map · SpotRail HQ</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Manrope:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous" />
+<style>
+  html, body { margin: 0; padding: 0; background: #07090C; color: #E8ECF2; font-family: Manrope, system-ui, sans-serif; }
+  * { box-sizing: border-box; }
+  ::selection { background: #40E0D0; color: #07090C; }
+  a { color: inherit; }
+  /* Leaflet overrides for dark theme */
+  .leaflet-container { background: #07090C !important; font-family: Manrope, sans-serif !important; }
+  .leaflet-control-attribution { background: rgba(14,18,24,0.85) !important; color: #6B7687 !important; font-size: 10px !important; padding: 2px 8px !important; }
+  .leaflet-control-attribution a { color: #9AA4B2 !important; }
+  .leaflet-control-zoom a { background: rgba(14,18,24,0.9) !important; color: #E8ECF2 !important; border: 1px solid rgba(255,255,255,0.1) !important; }
+  .leaflet-control-zoom a:hover { background: rgba(40,224,208,0.15) !important; color: #40E0D0 !important; }
+  /* Force tile layer to greyscale+invert so it reads dark */
+  .dark-tiles { filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.92) saturate(0.55); }
+  .station-label {
+    background: rgba(14,18,24,0.92); color: #E8ECF2;
+    padding: 3px 8px; border-radius: 6px; font-size: 11px;
+    border: 1px solid rgba(255,255,255,0.12); white-space: nowrap;
+    font-weight: 500; letter-spacing: 0.2px;
+  }
+  .station-label.endpoint { font-size: 12.5px; font-weight: 600; }
+</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
+<script type="text/babel" src="shared.jsx"></script>
+<script type="text/babel" src="map-data.jsx"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+function Header() {
+  return (
+    <section style={{ maxWidth: 1280, margin: '0 auto', padding: '56px 32px 20px' }}>
+      <div style={{ fontFamily: SRHQ.mono, fontSize: 11, letterSpacing: 3,
+                    textTransform: 'uppercase', color: SRHQ.turq }}>Network map</div>
+      <h1 style={{ fontFamily: SRHQ.display, fontSize: 'clamp(40px, 5vw, 72px)',
+                   fontWeight: 700, letterSpacing: -2.4, lineHeight: 1,
+                   margin: '14px 0 0' }}>
+        The British <span style={{ color: SRHQ.turq, fontWeight: 500 }}>mainline</span> network.
+      </h1>
+      <p style={{ fontSize: 17, color: SRHQ.inkDim, maxWidth: 640,
+                  marginTop: 20, lineHeight: 1.55 }}>
+        Britain's principal passenger routes on a real map. Click any line to see the
+        operator, typical journey time, and the rolling-stock classes that work it.
+      </p>
+    </section>
+  );
+}
+
+function Popup({ route, onClose }) {
+  if (!route) return null;
+  return (
+    <div style={{
+      position: 'absolute', left: 20, top: 20, width: 340,
+      background: 'rgba(14,18,24,0.92)', backdropFilter: 'blur(14px)',
+      WebkitBackdropFilter: 'blur(14px)',
+      border: `1px solid ${route.color}55`, borderRadius: 16, padding: 20,
+      boxShadow: `0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px ${route.color}22 inset`,
+      fontFamily: SRHQ.body, zIndex: 600,
+    }}>
+      <button onClick={onClose} style={{
+        position: 'absolute', top: 12, right: 12, background: 'transparent',
+        border: 'none', color: SRHQ.inkDim, fontSize: 20, cursor: 'pointer',
+      }}>×</button>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <span style={{ width: 12, height: 12, borderRadius: 3, background: route.color,
+                        boxShadow: `0 0 0 4px ${route.color}22` }} />
+        <span style={{ fontFamily: SRHQ.mono, fontSize: 10.5, letterSpacing: 2,
+                       textTransform: 'uppercase', color: route.color }}>Route</span>
+      </div>
+      <div style={{ fontFamily: SRHQ.display, fontSize: 22, fontWeight: 600,
+                    letterSpacing: -0.7, marginTop: 10, lineHeight: 1.15 }}>{route.name}</div>
+      <div style={{ fontSize: 13, color: SRHQ.inkDim, marginTop: 8, lineHeight: 1.55 }}>
+        {route.journey}
+      </div>
+      <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <div>
+          <div style={{ fontFamily: SRHQ.mono, fontSize: 10, letterSpacing: 2,
+                        textTransform: 'uppercase', color: SRHQ.inkMute }}>Frequency</div>
+          <div style={{ fontSize: 13, color: SRHQ.ink, marginTop: 4 }}>{route.freq}</div>
+        </div>
+        <div>
+          <div style={{ fontFamily: SRHQ.mono, fontSize: 10, letterSpacing: 2,
+                        textTransform: 'uppercase', color: SRHQ.inkMute }}>Stations</div>
+          <div style={{ fontSize: 13, color: SRHQ.ink, marginTop: 4 }}>
+            {route.path[0]} ↔ {route.path[route.path.length - 1]}
+          </div>
+        </div>
+      </div>
+      <div style={{ marginTop: 14 }}>
+        <div style={{ fontFamily: SRHQ.mono, fontSize: 10, letterSpacing: 2,
+                      textTransform: 'uppercase', color: SRHQ.inkMute }}>Operator(s)</div>
+        <div style={{ fontSize: 13, color: SRHQ.ink, marginTop: 4, lineHeight: 1.5 }}>{route.operator}</div>
+      </div>
+      <div style={{ marginTop: 14 }}>
+        <div style={{ fontFamily: SRHQ.mono, fontSize: 10, letterSpacing: 2,
+                      textTransform: 'uppercase', color: SRHQ.inkMute, marginBottom: 8 }}>
+          Classes on this route
+        </div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+          {route.classes.map(c => (
+            <a key={c} href={`database.html#class-${c}`} style={{
+              padding: '5px 10px', borderRadius: 8, fontFamily: SRHQ.mono,
+              fontSize: 12, color: route.color, textDecoration: 'none',
+              background: `${route.color}14`, border: `1px solid ${route.color}44`,
+            }}>{c}</a>
+          ))}
+        </div>
+      </div>
+      <div style={{ marginTop: 14, paddingTop: 14,
+                    borderTop: `1px solid ${SRHQ.line}`,
+                    fontSize: 13, color: SRHQ.inkDim, lineHeight: 1.55 }}>
+        {route.about}
+      </div>
+    </div>
+  );
+}
+
+function Legend({ active, setActive }) {
+  return (
+    <div style={{
+      position: 'absolute', right: 16, top: 16, width: 240, zIndex: 500,
+      background: 'rgba(14,18,24,0.85)', backdropFilter: 'blur(10px)',
+      WebkitBackdropFilter: 'blur(10px)',
+      border: `1px solid ${SRHQ.line}`, borderRadius: 14, padding: '14px 14px',
+      fontFamily: SRHQ.body, maxHeight: 'calc(100% - 32px)', overflowY: 'auto',
+    }}>
+      <div style={{ fontFamily: SRHQ.mono, fontSize: 10, letterSpacing: 2,
+                    textTransform: 'uppercase', color: SRHQ.inkMute,
+                    marginBottom: 10 }}>Routes · {ROUTES.length}</div>
+      {ROUTES.map(r => {
+        const on = active === r.id;
+        return (
+          <button key={r.id} onClick={() => setActive(on ? null : r.id)}
+                  style={{
+            width: '100%', textAlign: 'left', display: 'flex',
+            alignItems: 'center', gap: 10, padding: '6px 8px',
+            background: on ? `${r.color}14` : 'transparent',
+            border: `1px solid ${on ? r.color + '55' : 'transparent'}`,
+            borderRadius: 8, cursor: 'pointer', color: SRHQ.ink,
+            marginBottom: 2, fontSize: 12.5, fontFamily: SRHQ.body,
+          }}>
+            <span style={{ width: 16, height: 3, borderRadius: 2, background: r.color,
+                            flexShrink: 0 }} />
+            <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden',
+                            textOverflow: 'ellipsis' }}>{r.name}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function RegionJump({ map }) {
+  const regions = [
+    { id: 'all',        name: 'All UK',      c: [54.5, -3.2],    z: 6 },
+    { id: 'london',     name: 'London',      c: [51.5074, -0.1278], z: 11 },
+    { id: 'birmingham', name: 'Birmingham',  c: [52.4778, -1.9],  z: 11 },
+    { id: 'manchester', name: 'Manchester',  c: [53.4775, -2.2307], z: 11 },
+    { id: 'glasgow',    name: 'Glasgow',     c: [55.8586, -4.2579], z: 11 },
+    { id: 'edinburgh',  name: 'Edinburgh',   c: [55.9521, -3.1883], z: 11 },
+  ];
+  return (
+    <div style={{
+      position: 'absolute', left: '50%', transform: 'translateX(-50%)',
+      bottom: 16, zIndex: 500, display: 'flex', gap: 6,
+      background: 'rgba(14,18,24,0.85)', backdropFilter: 'blur(10px)',
+      WebkitBackdropFilter: 'blur(10px)',
+      border: `1px solid ${SRHQ.line}`, borderRadius: 12, padding: 6,
+    }}>
+      <span style={{ alignSelf: 'center', padding: '0 8px 0 4px',
+                     fontFamily: SRHQ.mono, fontSize: 10, letterSpacing: 2,
+                     textTransform: 'uppercase', color: SRHQ.inkMute }}>Jump to</span>
+      {regions.map(r => (
+        <button key={r.id} onClick={() => map?.flyTo(r.c, r.z, { duration: 0.8 })}
+                style={{
+          background: 'transparent', border: `1px solid ${SRHQ.line}`,
+          borderRadius: 8, padding: '6px 12px', cursor: 'pointer',
+          color: SRHQ.ink, fontFamily: SRHQ.body, fontSize: 12.5,
+        }}
+        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(40,224,208,0.1)';
+                             e.currentTarget.style.borderColor = SRHQ.turq + '66'; }}
+        onMouseLeave={e => { e.currentTarget.style.background = 'transparent';
+                             e.currentTarget.style.borderColor = SRHQ.line; }}>
+          {r.name}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function MapView({ active, setActive, setMap }) {
+  const mapRef = React.useRef(null);
+  const mapObj = React.useRef(null);
+  const layersRef = React.useRef({ routes: {}, markers: {} });
+
+  React.useEffect(() => {
+    if (mapObj.current) return;
+    const map = L.map(mapRef.current, {
+      center: [54.5, -3.2], zoom: 6, minZoom: 5, maxZoom: 14,
+      zoomControl: true, attributionControl: true,
+      worldCopyJump: false,
+    });
+    mapObj.current = map;
+    setMap(map);
+
+    // CARTO Dark Matter — clean, neutral dark OSM basemap (no road coloring).
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      subdomains: 'abcd', maxZoom: 20,
+    }).addTo(map);
+    // City / town labels on top
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png', {
+      subdomains: 'abcd', maxZoom: 20,
+    }).addTo(map);
+
+    // Routes
+    ROUTES.forEach(r => {
+      // Use detailed geometry if provided; otherwise fall back to city-pair straight line.
+      const latlngs = r.geometry && r.geometry.length
+        ? r.geometry
+        : r.path.map(s => STATIONS[s]).filter(Boolean);
+      // soft glow underlay
+      const glow = L.polyline(latlngs, { color: r.color, weight: 10, opacity: 0.18,
+        lineCap: 'round', lineJoin: 'round', interactive: false }).addTo(map);
+      const line = L.polyline(latlngs, { color: r.color, weight: 3.5, opacity: 0.95,
+        lineCap: 'round', lineJoin: 'round' }).addTo(map);
+      line.on('click', () => setActive(r.id));
+      line.on('mouseover', () => { line.setStyle({ weight: 6 }); });
+      line.on('mouseout', () => { line.setStyle({ weight: 3.5 }); });
+      layersRef.current.routes[r.id] = { glow, line };
+    });
+
+    // Stations
+    Object.entries(STATIONS).forEach(([name, ll]) => {
+      const m = L.circleMarker(ll, {
+        radius: 4, color: 'rgba(255,255,255,0.5)', weight: 1.8,
+        fillColor: '#07090C', fillOpacity: 1,
+      }).addTo(map);
+      const label = L.marker(ll, {
+        icon: L.divIcon({ className: '', html: `<div class="station-label">${name}</div>`,
+          iconAnchor: [-6, 10] }),
+        interactive: false,
+      }).addTo(map);
+      layersRef.current.markers[name] = { m, label };
+    });
+
+    return () => { map.remove(); mapObj.current = null; };
+  }, []);
+
+  // Respond to active route changes: dim others, highlight endpoints
+  React.useEffect(() => {
+    const { routes, markers } = layersRef.current;
+    Object.entries(routes).forEach(([id, { glow, line }]) => {
+      const dim = active && active !== id;
+      line.setStyle({ opacity: dim ? 0.18 : 0.95 });
+      glow.setStyle({ opacity: dim ? 0.05 : 0.18 });
+    });
+    const activeRoute = ROUTES.find(r => r.id === active);
+    const endSet = new Set();
+    const midSet = new Set();
+    if (activeRoute) {
+      endSet.add(activeRoute.path[0]);
+      endSet.add(activeRoute.path[activeRoute.path.length - 1]);
+      activeRoute.path.forEach(s => midSet.add(s));
+    }
+    Object.entries(markers).forEach(([name, { m, label }]) => {
+      const isEnd = endSet.has(name);
+      const isMid = midSet.has(name);
+      const color = activeRoute?.color || 'rgba(255,255,255,0.5)';
+      m.setStyle({
+        radius: isEnd ? 7 : isMid ? 5 : 4,
+        color: isEnd || isMid ? color : 'rgba(255,255,255,0.5)',
+        weight: isEnd ? 3 : 1.8,
+      });
+      const el = label.getElement();
+      if (el) {
+        const inner = el.querySelector('.station-label');
+        if (inner) {
+          inner.classList.toggle('endpoint', isEnd);
+          inner.style.display = (activeRoute && !isMid) ? 'none' : '';
+        }
+      }
+    });
+    // Fit bounds when a route is selected
+    if (activeRoute && mapObj.current) {
+      const bounds = L.latLngBounds(
+        (activeRoute.geometry && activeRoute.geometry.length
+          ? activeRoute.geometry
+          : activeRoute.path.map(s => STATIONS[s]))
+      );
+      mapObj.current.flyToBounds(bounds, { padding: [60, 380], duration: 0.6 });
+    }
+  }, [active]);
+
+  return <div ref={mapRef} style={{ position: 'absolute', inset: 0 }} />;
+}
+
+function App() {
+  const [active, setActive] = React.useState(null);
+  const [map, setMap] = React.useState(null);
+  const route = ROUTES.find(r => r.id === active);
+
+  return (
+    <>
+      <TopNav current="map.html" />
+      <Header />
+
+      <section style={{ maxWidth: 1280, margin: '0 auto', padding: '0 32px 40px' }}>
+        <div style={{
+          position: 'relative',
+          background: SRHQ.surface, border: `1px solid ${SRHQ.line}`,
+          borderRadius: 20, overflow: 'hidden', height: '78vh', minHeight: 600,
+        }}>
+          <MapView active={active} setActive={setActive} setMap={setMap} />
+          <Legend active={active} setActive={setActive} />
+          <RegionJump map={map} />
+          {route && <Popup route={route} onClose={() => setActive(null)} />}
+        </div>
+
+        <div style={{ display: 'flex', gap: 16, marginTop: 16, flexWrap: 'wrap',
+                      fontFamily: SRHQ.mono, fontSize: 11.5, color: SRHQ.inkMute,
+                      letterSpacing: 0.5 }}>
+          <span>Base map · OpenStreetMap via CARTO</span>
+          <span>·</span>
+          <span>Routes follow the actual railway corridors (hand-traced from OSM)</span>
+          <span>·</span>
+          <span>Click a line or use the legend to isolate a route</span>
+        </div>
+      </section>
+      <Footer />
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
