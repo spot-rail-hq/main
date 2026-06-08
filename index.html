@@ -1,0 +1,961 @@
+<!doctype html>
+<!-- SpotRail index.html · build 2026-06-08-navalign · logo aligned + no desktop/tablet jump -->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>SpotRail HQ — UK Trains</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Manrope:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: #07090C; color: #E8ECF2; font-family: 'Manrope', system-ui, sans-serif; }
+::selection { background: #40E0D0; color: #07090C; }
+a { color: inherit; text-decoration: none; }
+
+/* Nav */
+.nav {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(7,9,12,0.85);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.nav-inner {
+  max-width: 1280px; margin: 0 auto;
+  padding: 0 32px;
+  min-height: 72px;            /* locked row height → logo never shifts between modes */
+  display: flex; align-items: center; justify-content: space-between;
+}
+.brandmark {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: 'Archivo', sans-serif; font-weight: 700; font-size: 17px;
+  letter-spacing: -0.6px; color: #E8ECF2;
+}
+.brandmark span { color: #9AA4B2; margin-left: 0.2em; }
+.nav-links { display: flex; gap: 6px; }
+.nav-link {
+  padding: 8px 14px; border-radius: 999px;
+  font-size: 13.5px; font-weight: 500; color: #E8ECF2;
+  border: 1px solid transparent; transition: background .15s;
+}
+.nav-link:hover { background: rgba(255,255,255,0.06); }
+.nav-burger {
+  display: none; padding: 0;
+  background: transparent; border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px; width: 40px; height: 40px; cursor: pointer;
+  align-items: center; justify-content: center; color: #E8ECF2;
+}
+.nav-burger svg { display: block; }
+.nav-scrim {
+  position: fixed; inset: 0; background: rgba(7,9,12,0.6);
+  z-index: 100; opacity: 0; pointer-events: none; transition: opacity .2s ease;
+}
+.nav-drawer {
+  position: fixed; top: 0; right: 0; bottom: 0; width: min(80vw, 320px);
+  background: #0E1218; border-left: 1px solid rgba(255,255,255,0.08);
+  z-index: 101; padding: 20px 22px; display: flex; flex-direction: column;
+  box-shadow: -20px 0 60px rgba(0,0,0,0.5);
+  transform: translateX(100%); transition: transform .25s ease;
+}
+body.nav-open { overflow: hidden; }
+body.nav-open .nav-scrim { opacity: 1; pointer-events: auto; }
+body.nav-open .nav-drawer { transform: translateX(0); }
+.nav-drawer-head {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px;
+}
+.nav-drawer-head .label {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 2px;
+  text-transform: uppercase; color: #6B7687;
+}
+.nav-drawer-close {
+  background: transparent; border: none; cursor: pointer; color: #9AA4B2;
+  font-size: 22px; line-height: 1; padding: 4px;
+}
+.nav-drawer-links { display: flex; flex-direction: column; gap: 4px; }
+.nav-drawer-link {
+  padding: 14px 16px; border-radius: 12px; font-size: 16px; font-weight: 500;
+  color: #E8ECF2; text-decoration: none; border: 1px solid transparent;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.nav-drawer-link:hover { background: rgba(255,255,255,0.04); }
+.nav-drawer-link .arr { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #6B7687; }
+.nav-drawer-foot {
+  margin-top: auto; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.08);
+  font-size: 12px; color: #6B7687; line-height: 1.6;
+}
+.nav-drawer-foot .mono { font-family: 'JetBrains Mono', monospace; }
+
+/* Hero */
+.hero {
+  position: relative; width: 100%;
+  min-height: 600px; height: min(82vh, 800px);
+  display: flex; align-items: center; overflow: hidden;
+}
+.hero-bg {
+  position: absolute; inset: 0;
+  background-image: url('img/hero-desktop.jpg');
+  background-size: cover; background-position: right center;
+}
+.hero-scrim {
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(90deg, rgba(7,9,12,0.96) 0%, rgba(7,9,12,0.88) 30%, rgba(7,9,12,0.48) 50%, rgba(7,9,12,0.06) 66%, transparent 76%),
+    linear-gradient(to bottom, rgba(7,9,12,0.55) 0%, transparent 26%),
+    linear-gradient(to bottom, transparent 70%, rgba(7,9,12,0.94) 100%);
+}
+.hero-content {
+  position: relative; z-index: 2;
+  max-width: 1280px; margin: 0 auto; padding: 0 32px; width: 100%;
+}
+.hero-col { max-width: 620px; }
+.phase-badge {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: 'JetBrains Mono', monospace; font-size: 12px;
+  color: #40E0D0; letter-spacing: 3px; text-transform: uppercase;
+  padding: 6px 12px; border: 1px solid rgba(64,224,208,0.27);
+  border-radius: 999px; background: rgba(64,224,208,0.08);
+}
+.phase-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: #40E0D0;
+  box-shadow: 0 0 0 4px rgba(64,224,208,0.13);
+}
+.hero-h1 {
+  font-family: 'Archivo', sans-serif;
+  font-size: clamp(40px, 4.7vw, 80px);
+  font-weight: 700; letter-spacing: -2.5px; line-height: 0.98;
+  margin-top: 24px;
+}
+.hero-h1 .turq { color: #40E0D0; font-weight: 500; }
+.hero-h1 .dim  { color: #9AA4B2; }
+.hero-p { font-size: 18px; line-height: 1.55; color: #E8ECF2; max-width: 540px; margin-top: 24px; }
+.hero-btns { display: flex; gap: 12px; margin-top: 36px; flex-wrap: wrap; }
+.btn-primary {
+  padding: 14px 22px; background: #40E0D0; color: #07090C;
+  border-radius: 10px; font-weight: 600; font-size: 15px;
+  box-shadow: 0 8px 30px rgba(64,224,208,0.2);
+}
+.btn-ghost {
+  padding: 14px 22px; color: #E8ECF2;
+  border: 1px solid rgba(255,255,255,0.16); border-radius: 10px;
+  font-weight: 500; font-size: 15px;
+}
+
+/* Stats strip */
+.stats-wrap { max-width: 1280px; margin: 0 auto; padding: 0 32px; }
+.stats-grid {
+  margin-top: 40px; padding: 18px 0;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  display: grid; grid-template-columns: repeat(4,1fr); gap: 24px;
+}
+.stat-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #6B7687;
+}
+.stat-val {
+  font-family: 'Archivo', sans-serif;
+  font-size: 36px; font-weight: 600; letter-spacing: -1.5px; margin-top: 6px;
+}
+
+/* Feature cards */
+.features-wrap { max-width: 1280px; margin: 0 auto; padding: 48px 32px; }
+.features-top { display: grid; grid-template-columns: 1.3fr 1fr; gap: 20px; }
+.features-bot { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-top: 20px; }
+.features-top > a { display: flex; }
+.fcard {
+  background: #0E1218; border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 18px; padding: 28px;
+  height: 100%; width: 100%;
+  display: flex; flex-direction: column; gap: 20px; justify-content: space-between;
+  transition: transform .2s, border-color .2s;
+}
+.fcard:hover { transform: translateY(-2px); }
+.ftag {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  letter-spacing: 2px; text-transform: uppercase;
+  padding: 5px 10px; border-radius: 999px;
+}
+.fcard-title {
+  font-family: 'Archivo', sans-serif; font-size: 30px;
+  font-weight: 600; letter-spacing: -1px; line-height: 1.1; margin-bottom: 10px;
+}
+.fcard-body { font-size: 15px; color: #9AA4B2; line-height: 1.55; max-width: 460px; }
+.fcard-cta { margin-top: 18px; font-size: 13px; font-weight: 600; letter-spacing: 0.2px; }
+
+/* Mini feature cards (bottom row) */
+.fcard-sm {
+  background: #0E1218; border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 18px; padding: 24px;
+}
+.fcard-sm-title {
+  font-family: 'Archivo', sans-serif; font-size: 22px;
+  font-weight: 600; letter-spacing: -0.6px; margin-top: 16px; line-height: 1.15;
+}
+.fcard-sm-body { font-size: 14px; color: #9AA4B2; margin-top: 10px; line-height: 1.55; }
+.fcard-sm-cta {
+  margin-top: 16px; font-size: 12px; color: #6B7687;
+  font-family: 'JetBrains Mono', monospace; letter-spacing: 1.5px; text-transform: uppercase;
+}
+
+/* DB teaser rows */
+.db-teaser { display: flex; flex-direction: column; gap: 6px; font-family: 'JetBrains Mono', monospace; }
+.db-row {
+  display: grid; grid-template-columns: 52px 1fr auto; gap: 12px;
+  align-items: center; padding: 10px 12px;
+  background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px; font-size: 13px;
+}
+
+/* Spotlight section */
+.spotlight-wrap { max-width: 1280px; margin: 0 auto; padding: 48px 32px; }
+.spotlight-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-areas: "text card" "actions card";
+  grid-template-rows: auto 1fr;
+  column-gap: 40px; row-gap: 0;
+  padding: 40px 36px; border-radius: 20px;
+  min-height: 496px;
+  background: radial-gradient(ellipse at 100% 0%, rgba(242,92,193,0.10) 0%, transparent 60%), #0E1218;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+#spot-left { grid-area: text; }
+#spot-actions { grid-area: actions; }
+.spot-card-wrap { grid-area: card; }
+.spot-label {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  letter-spacing: 2px; text-transform: uppercase; color: #F25CC1;
+}
+.spot-headline {
+  font-family: 'Archivo', sans-serif;
+  font-size: clamp(26px, 2.8vw, 44px); font-weight: 600;
+  letter-spacing: -1.5px; line-height: 1.05; margin-top: 14px;
+}
+.spot-body { font-size: 16px; color: #9AA4B2; line-height: 1.6; margin-top: 18px; max-width: 520px; }
+.spot-detail {
+  font-size: 14px; color: #6B7687; line-height: 1.55; margin-top: 10px; max-width: 520px;
+  font-style: italic; border-left: 2px solid rgba(242,92,193,0.25); padding-left: 12px;
+}
+.spot-btns { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 22px; }
+.spot-db-btn {
+  display: inline-block; padding: 11px 18px; color: #E8ECF2;
+  border: 1px solid rgba(255,255,255,0.16); border-radius: 10px;
+  font-weight: 500; font-size: 14px; font-family: 'Manrope', sans-serif;
+}
+.spot-new-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 11px 16px; background: transparent;
+  color: #F25CC1; border: 1px solid rgba(242,92,193,0.3);
+  border-radius: 10px; font-size: 13px; font-family: 'Manrope', sans-serif;
+  font-weight: 500; cursor: pointer; transition: background .15s, border-color .15s;
+}
+.spot-new-btn:hover { background: rgba(242,92,193,0.08); border-color: rgba(242,92,193,0.6); }
+
+/* Data card (right side of spotlight) */
+.data-card {
+  background: #07090C; border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px; padding: 22px; width: 100%; min-height: 320px;
+  font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: #9AA4B2;
+}
+.data-card-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px; padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.data-badge {
+  font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+  color: #F25CC1; padding: 4px 9px;
+  border: 1px solid rgba(242,92,193,0.3); border-radius: 999px;
+}
+.data-grid {
+  display: grid; grid-template-columns: 120px 1fr; row-gap: 10px; column-gap: 14px;
+}
+.data-val { color: #E8ECF2; }
+.data-amber { color: #F5B84B; }
+.data-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); }
+.data-tag {
+  font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: #6B7687;
+  padding: 3px 8px; border: 1px solid rgba(255,255,255,0.08); border-radius: 999px;
+}
+.status-dot {
+  display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+  margin-right: 6px; vertical-align: middle; position: relative; top: -1px;
+}
+
+/* Fade animation */
+@keyframes spotFadeIn { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:translateY(0); } }
+@keyframes spotPulse  { 0%,100%{opacity:1} 50%{opacity:0.35} }
+@keyframes spotSpin   { to { transform:rotate(360deg); } }
+.spot-fade { animation: spotFadeIn .3s ease-out both; }
+
+/* Footer */
+.footer {
+  border-top: 1px solid rgba(255,255,255,0.08); margin-top: 80px;
+  padding: 44px 32px 56px; color: #6B7687;
+}
+.footer-inner {
+  max-width: 1280px; margin: 0 auto;
+  display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 32px;
+}
+.footer-head {
+  font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+  color: #9AA4B2; margin-bottom: 10px;
+}
+.footer-item { font-size: 13.5px; margin-bottom: 6px; }
+a.footer-item { transition: color .15s ease; }
+a.footer-item:hover { color: #40E0D0; }
+.footer-enquiry {
+  max-width: 1280px; margin: 0 auto 36px;
+  padding-bottom: 28px; border-bottom: 1px solid rgba(255,255,255,0.08);
+  font-size: 14px; line-height: 1.6; color: #9AA4B2;
+}
+.footer-enquiry a {
+  color: #40E0D0; text-decoration: none;
+  transition: opacity .15s ease;
+}
+.footer-enquiry a:hover { opacity: 0.75; }
+.footer-copy {
+  max-width: 1280px; margin: 32px auto 0; font-size: 12px;
+  display: flex; justify-content: space-between;
+  border-top: 1px solid rgba(255,255,255,0.08); padding-top: 20px;
+}
+
+/* Cookie banner */
+.cookie-banner {
+  position: fixed; left: 20px; bottom: 20px; z-index: 2000;
+  width: min(400px, calc(100vw - 40px));
+  background: #0E1218; border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px; padding: 20px;
+  box-shadow: 0 24px 70px rgba(0,0,0,0.6);
+  animation: spotFadeIn .35s ease-out both;
+}
+.cookie-btns { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+.cookie-accept {
+  padding: 9px 14px; background: #40E0D0; color: #07090C;
+  border: none; border-radius: 10px; font-size: 13px; font-weight: 600;
+  cursor: pointer; font-family: 'Manrope', sans-serif;
+}
+.cookie-reject {
+  padding: 9px 14px; background: transparent; color: #E8ECF2;
+  border: 1px solid rgba(255,255,255,0.16); border-radius: 10px;
+  font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'Manrope', sans-serif;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .features-top, .features-bot { grid-template-columns: 1fr !important; }
+  .spotlight-grid {
+    grid-template-columns: 1fr !important;
+    grid-template-areas: "text" "card" "actions" !important;
+    grid-template-rows: auto auto auto !important;
+    row-gap: 24px; column-gap: 0;
+    min-height: 0;
+  }
+  .spot-btns { margin-top: 0; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .footer-inner { grid-template-columns: 1fr 1fr; }
+  .nav-links { display: none; }
+  .nav-burger { display: inline-flex; }
+
+  /* Hero stacks: portrait image on top, text below — no overlap */
+  .hero { display: block; height: auto; min-height: 0; overflow: visible; }
+  .hero-bg {
+    position: relative; inset: auto;
+    width: 100%; height: 38vh; min-height: 240px; max-height: 360px;
+    background-image:
+      linear-gradient(to bottom, rgba(7,9,12,0.28) 0%, transparent 18%, transparent 86%, rgba(7,9,12,0.85) 100%),
+      url('img/hero-tablet.jpg');
+    background-size: cover; background-position: center 62%;
+  }
+  .hero-scrim { display: none; }
+  .hero-content { position: relative; padding-top: 8px; padding-bottom: 8px; }
+  .hero-col { max-width: 100%; }
+  .hero-h1 { margin-top: 14px; }
+}
+@media (max-width: 560px) {
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .nav-inner { padding: 0 20px; }   /* keep locked min-height; only side padding tightens */
+  .hero-content { padding: 16px 20px 8px; }
+  .hero-bg {
+    height: 31vh; min-height: 210px; max-height: 320px;
+    background-image:
+      linear-gradient(to bottom, rgba(7,9,12,0.28) 0%, transparent 14%, transparent 88%, rgba(7,9,12,0.85) 100%),
+      url('img/hero-tablet.jpg');
+    background-position: center 58%;
+  }
+  .features-wrap, .spotlight-wrap, .stats-wrap { padding-left: 20px; padding-right: 20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="brandmark">
+      <svg width="22" height="22" viewBox="0 0 28 28">
+        <rect width="28" height="28" rx="7" fill="#40E0D0"/>
+        <path d="M7 8 h10 a3 3 0 0 1 0 6 h-6 a3 3 0 0 0 0 6 h10" stroke="#07090C" stroke-width="3" fill="none" stroke-linecap="round"/>
+      </svg>
+      SpotRail<span>HQ</span>
+    </a>
+    <div class="nav-links">
+      <a href="database.html" class="nav-link">Database</a>
+      <a href="map.html" class="nav-link">Network map</a>
+    </div>
+    <button class="nav-burger" id="navBurger" aria-label="Open menu">
+      <svg width="18" height="14" viewBox="0 0 18 14" fill="none">
+        <path d="M1 1 H17 M1 7 H17 M1 13 H17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+      </svg>
+    </button>
+  </div>
+</nav>
+<div class="nav-scrim" id="navScrim"></div>
+<aside class="nav-drawer" id="navDrawer" aria-label="Menu">
+  <div class="nav-drawer-head">
+    <span class="label">Menu</span>
+    <button class="nav-drawer-close" id="navClose" aria-label="Close menu">×</button>
+  </div>
+  <div class="nav-drawer-links">
+    <a href="database.html" class="nav-drawer-link"><span>Database</span><span class="arr">→</span></a>
+    <a href="map.html" class="nav-drawer-link"><span>Network map</span><span class="arr">→</span></a>
+  </div>
+  <div class="nav-drawer-foot">
+    An independent UK railway resource.<br/>
+    <span class="mono">v0.1 · phase 1</span>
+  </div>
+</aside>
+<script>
+(function () {
+  var burger = document.getElementById('navBurger');
+  var closeBtn = document.getElementById('navClose');
+  var scrim = document.getElementById('navScrim');
+  var open = function () { document.body.classList.add('nav-open'); };
+  var shut = function () { document.body.classList.remove('nav-open'); };
+  if (burger) burger.addEventListener('click', open);
+  if (closeBtn) closeBtn.addEventListener('click', shut);
+  if (scrim) scrim.addEventListener('click', shut);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') shut(); });
+})();
+</script>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-scrim"></div>
+  <div class="hero-content">
+    <div class="hero-col">
+      <div class="phase-badge">
+        <span class="phase-dot"></span>
+        Phase 1 · April 2026
+      </div>
+      <h1 class="hero-h1">
+        A home for<br>
+        <span class="turq">UK trains,</span><br>
+        <span class="dim">clearly organised.</span>
+      </h1>
+      <p class="hero-p">
+        SpotRail HQ is an independent reference for Britain's railway. Browse every
+        class of rolling stock, see who runs what, and explore the network as a single connected map.
+      </p>
+      <div class="hero-btns">
+        <a href="database.html" class="btn-primary">Browse the database →</a>
+        <a href="map.html" class="btn-ghost">Open the network map</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-wrap">
+  <div class="stats-grid">
+    <div><div class="stat-label">Rolling-stock classes</div><div class="stat-val" style="color:#40E0D0">165+</div></div>
+    <div><div class="stat-label">Operators</div><div class="stat-val" style="color:#F25CC1">28</div></div>
+    <div><div class="stat-label">Service categories</div><div class="stat-val" style="color:#F5B84B">7</div></div>
+    <div><div class="stat-label">Network coverage</div><div class="stat-val" style="color:#B8F266">GB</div></div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<div class="features-wrap">
+  <div class="features-top">
+    <!-- Database card -->
+    <a href="database.html" style="text-decoration:none;color:inherit">
+      <div class="fcard" id="fcard-db">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <span class="ftag" style="color:#40E0D0;border:1px solid rgba(64,224,208,0.33)">Database</span>
+          <span id="fcard-db-arrow" style="font-size:20px;color:#9AA4B2;transition:all .2s">→</span>
+        </div>
+        <div class="db-teaser">
+          <div class="db-row"><span style="color:#40E0D0;font-weight:600">390</span><span style="color:#E8ECF2;font-family:'Manrope',sans-serif">Pendolino</span><span style="color:#6B7687;font-size:11px">140 mph</span></div>
+          <div class="db-row"><span style="color:#40E0D0;font-weight:600">800</span><span style="color:#E8ECF2;font-family:'Manrope',sans-serif">Azuma / IET</span><span style="color:#6B7687;font-size:11px">140 mph</span></div>
+          <div class="db-row"><span style="color:#B8F266;font-weight:600">170</span><span style="color:#E8ECF2;font-family:'Manrope',sans-serif">Turbostar</span><span style="color:#6B7687;font-size:11px">100 mph</span></div>
+          <div class="db-row"><span style="color:#F5B84B;font-weight:600">66</span><span style="color:#E8ECF2;font-family:'Manrope',sans-serif">Shed</span><span style="color:#6B7687;font-size:11px">75 mph</span></div>
+        </div>
+        <div>
+          <div class="fcard-title">Every class of UK rolling stock</div>
+          <div class="fcard-body">165+ classes across intercity, regional, commuter, freight, charter, metro and heritage — with operators, builders, traction and notes.</div>
+          <div class="fcard-cta" style="color:#40E0D0">Open the database</div>
+        </div>
+      </div>
+    </a>
+    <!-- Map card -->
+    <a href="map.html" style="text-decoration:none;color:inherit">
+      <div class="fcard" id="fcard-map">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <span class="ftag" style="color:#F25CC1;border:1px solid rgba(242,92,193,0.33)">Map</span>
+          <span id="fcard-map-arrow" style="font-size:20px;color:#9AA4B2;transition:all .2s">→</span>
+        </div>
+        <svg viewBox="0 0 320 180" style="width:100%;height:180px">
+          <defs><radialGradient id="mg" cx="50%" cy="50%" r="60%"><stop offset="0%" stop-color="#40E0D0" stop-opacity="0.18"/><stop offset="100%" stop-color="#40E0D0" stop-opacity="0"/></radialGradient></defs>
+          <rect width="320" height="180" fill="url(#mg)"/>
+          <path d="M40 140 L80 100 L140 100 L180 70 L240 70 L290 40" stroke="#40E0D0" stroke-width="2.2" fill="none"/>
+          <path d="M40 140 L100 140 L160 120 L220 120 L270 110" stroke="#F25CC1" stroke-width="2.2" fill="none"/>
+          <path d="M80 100 L100 140" stroke="#B8F266" stroke-width="2.2" fill="none"/>
+          <path d="M180 70 L160 120" stroke="#F5B84B" stroke-width="2.2" fill="none"/>
+          <circle cx="40"  cy="140" r="4" fill="#07090C" stroke="#40E0D0" stroke-width="1.8"/>
+          <circle cx="80"  cy="100" r="4" fill="#07090C" stroke="#40E0D0" stroke-width="1.8"/>
+          <circle cx="140" cy="100" r="4" fill="#07090C" stroke="#40E0D0" stroke-width="1.8"/>
+          <circle cx="180" cy="70"  r="4" fill="#07090C" stroke="#F5B84B" stroke-width="1.8"/>
+          <circle cx="240" cy="70"  r="4" fill="#07090C" stroke="#40E0D0" stroke-width="1.8"/>
+          <circle cx="290" cy="40"  r="4" fill="#07090C" stroke="#40E0D0" stroke-width="1.8"/>
+          <circle cx="100" cy="140" r="4" fill="#07090C" stroke="#F25CC1" stroke-width="1.8"/>
+          <circle cx="160" cy="120" r="4" fill="#07090C" stroke="#F5B84B" stroke-width="1.8"/>
+          <circle cx="220" cy="120" r="4" fill="#07090C" stroke="#F25CC1" stroke-width="1.8"/>
+          <circle cx="270" cy="110" r="4" fill="#07090C" stroke="#F25CC1" stroke-width="1.8"/>
+        </svg>
+        <div>
+          <div class="fcard-title">The network, at a glance</div>
+          <div class="fcard-body">A schematic map of Britain's mainline routes. Tap a line to see its operator, typical journey times, and the classes that run it.</div>
+          <div class="fcard-cta" style="color:#F25CC1">Explore the map</div>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <!-- Bottom row -->
+  <div class="features-bot">
+    <div class="fcard-sm">
+      <span class="ftag" style="color:#B8F266;border:1px solid rgba(184,242,102,0.3)">Operators</span>
+      <div class="fcard-sm-title">Who runs what, where</div>
+      <div class="fcard-sm-body">From the big six TOCs to heritage lines — see operator fleets and route coverage.</div>
+      <div class="fcard-sm-cta">Coming phase 2</div>
+    </div>
+    <div class="fcard-sm">
+      <span class="ftag" style="color:#F5B84B;border:1px solid rgba(245,184,75,0.3)">Live departures</span>
+      <div class="fcard-sm-title">Real-time arrivals</div>
+      <div class="fcard-sm-body">Once we have coverage, see live boards for any National Rail station — clean, calm, current.</div>
+      <div class="fcard-sm-cta">Coming phase 3</div>
+    </div>
+    <div class="fcard-sm">
+      <span class="ftag" style="color:#9D7CFF;border:1px solid rgba(157,124,255,0.3)">Community</span>
+      <div class="fcard-sm-title">For people who love trains</div>
+      <div class="fcard-sm-body">A quieter, better place to share sightings, photos and trip reports. Opt-in, no algorithm.</div>
+      <div class="fcard-sm-cta">Coming phase 4</div>
+    </div>
+  </div>
+</div>
+
+<!-- SPOTLIGHT -->
+<div class="spotlight-wrap">
+  <div class="spotlight-grid">
+    <div id="spot-left"></div>
+    <div class="spot-card-wrap" style="display:flex;align-items:center">
+      <div class="data-card" id="spot-right"></div>
+    </div>
+    <div id="spot-actions"></div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-enquiry">
+    For general enquiries, please get in touch at
+    <a href="mailto:spotrailhq@gmail.com">spotrailhq@gmail.com</a>
+    — we'd love to hear from you.
+  </div>
+  <div class="footer-inner">
+    <div>
+      <a href="/" class="brandmark" style="font-size:15px">
+        <svg width="19" height="19" viewBox="0 0 28 28"><rect width="28" height="28" rx="7" fill="#40E0D0"/><path d="M7 8 h10 a3 3 0 0 1 0 6 h-6 a3 3 0 0 0 0 6 h10" stroke="#07090C" stroke-width="3" fill="none" stroke-linecap="round"/></svg>
+        SpotRail<span>HQ</span>
+      </a>
+      <div style="font-size:13px;margin-top:12px;max-width:280px;line-height:1.55;color:#6B7687">
+        An independent resource about the UK railway — rolling stock, operators, and the network. Not affiliated with any train operating company.
+      </div>
+    </div>
+    <div>
+      <div class="footer-head">Explore</div>
+      <a href="database.html" class="footer-item" style="display:block">Rolling stock database</a>
+      <a href="map.html" class="footer-item" style="display:block">Network map</a>
+    </div>
+    <div>
+      <div class="footer-head">Coming soon</div>
+      <div class="footer-item">Live departures</div>
+      <div class="footer-item">Community</div>
+      <div class="footer-item">Journey planner</div>
+    </div>
+    <div>
+      <div class="footer-head">Data</div>
+      <div class="footer-item">Verified April 2026</div>
+      <div class="footer-item">Wikipedia · operator websites</div>
+    </div>
+  </div>
+  <div class="footer-copy">
+    <span>© 2026 SpotRail HQ</span>
+    <span style="font-family:'JetBrains Mono',monospace">v0.1 · phase 1</span>
+  </div>
+</footer>
+
+<!-- COOKIE BANNER -->
+<div class="cookie-banner" id="cookie-banner" style="display:none">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+    <span style="width:8px;height:8px;border-radius:50%;background:#40E0D0;box-shadow:0 0 0 4px rgba(64,224,208,0.13);flex-shrink:0"></span>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2px;text-transform:uppercase;color:#6B7687">Cookies</span>
+  </div>
+  <p style="font-size:13.5px;line-height:1.6;color:#9AA4B2">
+    We use cookies to deliver and improve SpotRail HQ. You can accept all or reject non-essential cookies.
+  </p>
+  <div class="cookie-btns">
+    <button class="cookie-accept" onclick="setCookie(true)">Accept all</button>
+    <button class="cookie-reject" onclick="setCookie(false)">Reject all</button>
+  </div>
+</div>
+
+<script>
+// ── Spotlight data pool ──────────────────────────────────────────
+var POOL = [
+  {
+    classCode:'Class 390', shortName:'Pendolino',
+    headline:"Britain's tilting express — still the WCML's backbone.",
+    intro:'The Class 390 Pendolino transformed travel on the West Coast Main Line when it entered service in 2002, cutting journey times by leaning into curves at speeds other trains cannot match. Built by Alstom in Birmingham, the fleet is now 56 sets strong and carries millions of passengers a year between London and Glasgow.',
+    detail:'The active tilt system allows the Pendolino to take curves up to 23% faster than a conventional train — Italian engineering applied to a very British railway.',
+    traction:'Electric · 25kV AC overhead', topSpeed:'125 mph (140 mph capable)',
+    inService:'2002 →', operators:'Avanti West Coast', status:'In service', statusColor:'#B8F266',
+    tags:['wcml','tilting','alstom','intercity']
+  },
+  {
+    classCode:'Class 43', shortName:'HST · InterCity 125',
+    headline:"The world's fastest diesel, still earning its keep.",
+    intro:"Entering service in 1976, the Class 43 power car redefined what a British express could feel like — and the 143 mph speed record it set in 1987 still stands for a diesel-hauled train. Nearly fifty years on, a handful of sets still work ScotRail's Inter7City services and charter duties.",
+    detail:"The distinctive swooping nose was styled by Kenneth Grange, whose brief was simply to make it look fast — a brief so well met the design has never really dated.",
+    traction:'Diesel · MTU 16V 4000 R41R', topSpeed:'125 mph (143 mph world record)',
+    inService:'1976 →', operators:'ScotRail · Colas Rail · RailAdventure', status:'Partially active', statusColor:'#F5B84B',
+    tags:['hst','diesel','record','iconic']
+  },
+  {
+    classCode:'Class 800', shortName:'Azuma · IET',
+    headline:"Hitachi's Japanese precision on Britain's East Coast.",
+    intro:'The Class 800 Azuma brought a new era to the East Coast Main Line when LNER introduced the fleet from 2019, replacing veteran HSTs with bi-mode trains capable of running on both overhead electric and diesel power. The name "Azuma" — Japanese for "east" — was chosen by a public vote.',
+    detail:'Unlike most bi-modes, the 800 can switch between electric and diesel mid-journey without stopping, allowing seamless operation into non-electrified stations like Aberdeen.',
+    traction:'Electric/Diesel bi-mode · 25kV AC + MTU', topSpeed:'125 mph',
+    inService:'2019 →', operators:'LNER · Hull Trains · TransPennine Express', status:'In service', statusColor:'#B8F266',
+    tags:['ecml','bi-mode','hitachi','intercity']
+  },
+  {
+    classCode:'Class 66', shortName:'EWS · The Shed',
+    headline:'The freight workhorse that runs on almost every line.',
+    intro:"Over 400 Class 66 locomotives work the UK network — more than any other diesel type — hauling aggregate, fuel, intermodal containers and engineering trains across almost every freight-capable route in the country. Nicknamed 'the Shed' by enthusiasts, they are not glamorous, but they are utterly ubiquitous.",
+    detail:'Built in London, Ontario by General Motors EMD, the Class 66 has been in continuous UK production variants since 1998 — a remarkable run for a single diesel design.',
+    traction:'Diesel · EMD 12N-710G3B-EC', topSpeed:'75 mph',
+    inService:'1998 →', operators:'DB Cargo · Freightliner · GB Railfreight · Colas · DRS', status:'In service', statusColor:'#B8F266',
+    tags:['freight','diesel','gm-emd','ubiquitous']
+  },
+  {
+    classCode:'Class 377', shortName:'Electrostar',
+    headline:"Southern England's most familiar commuter face.",
+    intro:'The Class 377 Electrostar is the defining commuter train of south-east England, with over 400 vehicles working Southern, Southeastern, Thameslink and Gatwick Express services. Built by Bombardier in Derby between 2002 and 2014, the family covers third-rail DC, overhead AC and dual-voltage variants.',
+    detail:'Spot them by the distinctive Southern dark-blue livery or the white Thameslink variants — and listen for the characteristic Bombardier door chime.',
+    traction:'Electric · 750V DC third rail / 25kV AC', topSpeed:'100 mph',
+    inService:'2002 →', operators:'Southern · Thameslink · Southeastern · Gatwick Express', status:'In service', statusColor:'#B8F266',
+    tags:['electrostar','commuter','bombardier','third-rail']
+  },
+  {
+    classCode:'Class 395', shortName:'Javelin',
+    headline:"Britain's only domestic high-speed train at 140 mph.",
+    intro:"The Class 395 Javelin is the UK's only purpose-built domestic high-speed train, running Southeastern services on HS1 at up to 140 mph before slipping onto the classic network to serve Kent stations no Eurostar would ever stop at. Built by Hitachi, they are a direct ancestor of the later AT300 family.",
+    detail:'During the 2012 London Olympics, Javelins carried over 185,000 passengers a day between St Pancras and Stratford — still a UK record for a single-day commuter service.',
+    traction:'Electric · 25kV AC overhead / 750V DC third rail', topSpeed:'140 mph',
+    inService:'2009 →', operators:'Southeastern', status:'In service', statusColor:'#B8F266',
+    tags:['high-speed','hs1','hitachi','javelin']
+  },
+  {
+    classCode:'Class 170', shortName:'Turbostar',
+    headline:'The versatile diesel unit that went almost everywhere.',
+    intro:"The Class 170 Turbostar was Bombardier's answer to the regional diesel market in the late 1990s, finding homes across Scotland, the Midlands, East Anglia and Wales. Lightweight, two or three cars, and capable of 100 mph, it gave a significant step up in comfort over the Sprinters it replaced.",
+    detail:"ScotRail operates the largest single 170 fleet — look for them on Edinburgh–Aberdeen and Glasgow–Inverness routes, often running as coupled pairs in the peaks.",
+    traction:'Diesel · MTU 6R 183TD13H', topSpeed:'100 mph',
+    inService:'1999 →', operators:'ScotRail · CrossCountry · Transport for Wales', status:'In service', statusColor:'#B8F266',
+    tags:['turbostar','regional','diesel','bombardier']
+  },
+  {
+    classCode:'Class 158', shortName:'Express Sprinter',
+    headline:'Regional stalwart clocking up thirty-five years of service.',
+    intro:'Introduced in 1990 to replace life-expired locomotive-hauled coaches on regional routes, the Class 158 Express Sprinter is one of the longest-serving DMU families still in frontline service. You will find them in Wales, Scotland, the North, East Midlands and East Anglia.',
+    detail:'The 158 was built by British Rail Engineering Limited at Derby — one of the last major orders completed before privatisation transformed the industry in 1994.',
+    traction:'Diesel · Cummins NTA855R1', topSpeed:'90 mph',
+    inService:'1990 →', operators:'ScotRail · Transport for Wales · Northern · Greater Anglia', status:'In service', statusColor:'#B8F266',
+    tags:['sprinter','regional','brel','diesel']
+  },
+  {
+    classCode:'Class 08', shortName:'Diesel Shunter',
+    headline:'The little locomotive that outlasted almost everything.',
+    intro:'Over 1,000 Class 08 shunters were built between 1952 and 1962, and remarkably several hundred are still at work today — marshalling wagons in freight yards and moving stock around depots. They are the longest-serving diesel class in British railway history.',
+    detail:"The Class 08's top speed of just 20 mph belies its pulling power — a single 08 can move a loaded freight wagon weighing several hundred tonnes on level track without drama.",
+    traction:'Diesel · English Electric 6KT', topSpeed:'20 mph',
+    inService:'1952 →', operators:'DB Cargo · Freightliner · Network Rail · Various depots', status:'In service', statusColor:'#B8F266',
+    tags:['shunter','diesel','workhorse','historic']
+  },
+  {
+    classCode:'Class 91', shortName:'InterCity 225',
+    headline:'The electric icon that defined 1990s East Coast travel.',
+    intro:"The Class 91 'Electra' was built for the newly electrified East Coast Main Line in the late 1980s, designed to haul InterCity 225 sets at 140 mph. The fleet has now been retired from frontline LNER service, replaced by the Class 800 Azuma, but several examples have been preserved.",
+    detail:"The 91s had a swept aerodynamic nose at one end and a blunt 'brickwall' cab at the other — the former for high-speed running, the latter for push-pull working with Mk4 coaches.",
+    traction:'Electric · 25kV AC overhead', topSpeed:'125 mph (140 mph design)',
+    inService:'1989 – 2023', operators:'Retired from LNER · Some preserved', status:'Withdrawn', statusColor:'#F25CC1',
+    tags:['ecml','electric','brel','retired']
+  },
+  {
+    classCode:'Class 700', shortName:'Desiro City',
+    headline:"Thameslink's new fleet threading London north to south.",
+    intro:"The Class 700 Desiro City was introduced from 2016 to operate the rebuilt Thameslink route — the only railway running directly through the heart of London, linking Bedford and Cambridge to Gatwick Airport and Brighton. Built by Siemens, 115 sets run in 8 or 12-car formations.",
+    detail:'The 700s feature automatic selective door opening — the train knows the platform length at every stop and only opens the doors that are actually on the platform.',
+    traction:'Electric · 25kV AC overhead / 750V DC third rail', topSpeed:'100 mph',
+    inService:'2016 →', operators:'Thameslink', status:'In service', statusColor:'#B8F266',
+    tags:['thameslink','siemens','desiro','commuter']
+  },
+  {
+    classCode:'Class 465', shortName:'Networker',
+    headline:"South-east London's rush-hour workhorse since 1992.",
+    intro:"The Class 465 Networker was built to replace the ageing EPB fleet on inner-suburban services out of London's south-eastern termini, and it has done that job reliably for over thirty years. With 147 four-car units it remains one of the largest EMU fleets in the UK.",
+    detail:'The 465 was a joint build between ABB and GEC Alsthom — two rival manufacturers working together on a single order, a rare arrangement driven by the sheer scale of the contract.',
+    traction:'Electric · 750V DC third rail', topSpeed:'75 mph',
+    inService:'1992 →', operators:'Southeastern', status:'In service', statusColor:'#B8F266',
+    tags:['networker','commuter','third-rail','southeastern']
+  }
+];
+
+// ── Class names sent to the API (larger list than the local pool) ──
+var API_CLASSES = [
+  'Class 390 Pendolino','Class 800 Azuma','Class 43 HST',
+  'Class 66 Diesel Locomotive','Class 377 Electrostar','Class 170 Turbostar',
+  'Class 395 Javelin','Class 158 Express Sprinter','Class 08 Shunter',
+  'Class 91 InterCity 225','Class 700 Desiro City','Class 465 Networker',
+  'Class 221 Super Voyager','Class 156 Super Sprinter','Class 195 Civity',
+  'Class 802 IET','Class 387 Electrostar','Class 350 Desiro',
+  'Class 67 Diesel','Class 37 Diesel','Class 47 Diesel',
+  'Class 317 EMU','Class 323 EMU','Class 455 EMU',
+  'Class 73 Electro-Diesel','Class 185 Pennine','Class 153 Single Unit',
+  'Class 220 Voyager','Class 755 Flirt','Class 745 Flirt'
+];
+
+var currentIdx   = Math.floor(Math.random() * POOL.length);
+var lastAPIClass = '';
+var isLoading    = false;
+
+// ── Render from a plain data object (works for both pool + API data) ──
+function renderSpotlight(d, animate) {
+  var cls      = animate ? 'spot-fade' : '';
+  var tagsHtml = (d.tags || []).map(function(t){ return '<span class="data-tag">'+t+'</span>'; }).join('');
+  var sc       = d.statusColor || statusColor(d.status);
+  var shortFirst = (d.shortName || '').split('·')[0].trim();
+
+  document.getElementById('spot-left').className = cls;
+  document.getElementById('spot-left').innerHTML =
+    '<div class="spot-label">Class spotlight</div>' +
+    '<div class="spot-headline">' + (d.headline || d.classCode) + '</div>' +
+    '<p class="spot-body">' + (d.intro || '') + '</p>' +
+    '<p class="spot-detail">' + (d.detail || '') + '</p>';
+
+  document.getElementById('spot-actions').className = cls;
+  document.getElementById('spot-actions').innerHTML =
+    '<div class="spot-btns">' +
+      '<a href="database.html" class="spot-db-btn">Open the database →</a>' +
+      '<button class="spot-new-btn" id="spot-btn" onclick="nextSpotlight()">' +
+        '<svg id="spot-btn-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">' +
+          '<path d="M23 4v6h-6"/><path d="M1 20v-6h6"/>' +
+          '<path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>' +
+        '</svg>' +
+        '<span id="spot-btn-label">New class</span>' +
+      '</button>' +
+    '</div>';
+
+  document.getElementById('spot-right').className = 'data-card ' + cls;
+  document.getElementById('spot-right').innerHTML =
+    '<div class="data-card-head">' +
+      '<span class="data-badge">' + (d.classCode || '') + '</span>' +
+      '<span style="font-size:11px;color:#6B7687">' + (d.shortName || '').toLowerCase() + '</span>' +
+    '</div>' +
+    '<div class="data-grid">' +
+      '<span>class</span><span class="data-val">'    + (d.classCode || '').replace('Class ','') + ' — ' + shortFirst + '</span>' +
+      '<span>traction</span><span class="data-val">' + (d.traction   || '—') + '</span>' +
+      '<span>top speed</span><span class="data-amber">'  + (d.topSpeed  || '—') + '</span>' +
+      '<span>in service</span><span class="data-val">'   + (d.inService || '—') + '</span>' +
+      '<span>operators</span><span class="data-val">'    + (d.operators || '—') + '</span>' +
+      '<span>status</span><span style="color:' + sc + '">' +
+        '<span class="status-dot" style="background:' + sc + '"></span>' + (d.status || '—') +
+      '</span>' +
+    '</div>' +
+    (tagsHtml ? '<div class="data-tags">' + tagsHtml + '</div>' : '');
+}
+
+// ── Skeleton while API loads ──
+function renderSkeleton() {
+  document.getElementById('spot-left').className = '';
+  document.getElementById('spot-left').innerHTML =
+    '<div class="spot-label">Class spotlight</div>' +
+    '<div class="spot-headline">' + skeletonLines([88,65]) + '</div>' +
+    '<p class="spot-body" style="margin-top:18px">'  + skeletonLines([95,88,72]) + '</p>';
+
+  document.getElementById('spot-actions').className = '';
+  document.getElementById('spot-actions').innerHTML =
+    '<div class="spot-btns">' +
+      '<a href="database.html" class="spot-db-btn">Open the database →</a>' +
+      '<button class="spot-new-btn" disabled>' +
+        '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" style="animation:spotSpin .8s linear infinite">' +
+          '<path d="M23 4v6h-6"/><path d="M1 20v-6h6"/>' +
+          '<path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>' +
+        '</svg>' +
+        'Loading…' +
+      '</button>' +
+    '</div>';
+
+  document.getElementById('spot-right').className = 'data-card';
+  document.getElementById('spot-right').innerHTML =
+    '<div class="data-card-head">' +
+      '<span class="data-badge" style="color:#6B7687;border-color:rgba(255,255,255,0.1)">· · ·</span>' +
+      '<span style="font-size:11px;color:#6B7687">loading</span>' +
+    '</div>' +
+    '<div class="data-grid">' +
+    ['class','traction','top speed','in service','operators','status'].map(function(k){
+      return '<span>' + k + '</span><span>' + skeletonLine(75) + '</span>';
+    }).join('') +
+    '</div>';
+}
+
+function skeletonLine(w) {
+  return '<span style="display:inline-block;width:'+w+'%;height:12px;border-radius:3px;background:rgba(255,255,255,0.07);animation:spotPulse 1.4s ease-in-out infinite"></span>';
+}
+function skeletonLines(widths) {
+  return widths.map(function(w){
+    return '<div style="height:'+(w>80?34:13)+'px;width:'+w+'%;border-radius:3px;background:rgba(255,255,255,0.07);animation:spotPulse 1.4s ease-in-out infinite;margin-bottom:8px"></div>';
+  }).join('');
+}
+
+function statusColor(s) {
+  var l = (s || '').toLowerCase();
+  if (l.includes('withdrawn') || l.includes('retired')) return '#F25CC1';
+  if (l.includes('partial'))  return '#F5B84B';
+  return '#B8F266';
+}
+
+// ── API fetch ──
+function fetchFromAPI(className) {
+  return fetch('/api/spotlight', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ className: className })
+  })
+  .then(function(res) {
+    if (!res.ok) throw new Error('proxy ' + res.status);
+    return res.json();
+  })
+  .then(function(json) {
+    var text = json.text || '';
+    var clean = text.replace(/```json|```/g, '').trim();
+    var d = JSON.parse(clean);
+    d.statusColor = statusColor(d.status);
+    return d;
+  });
+}
+
+// ── Next spotlight: try API, fall back to pool ──
+function nextSpotlight() {
+  if (isLoading) return;
+  isLoading = true;
+
+  // Fade out
+  document.getElementById('spot-left').style.transition = 'opacity .18s';
+  document.getElementById('spot-right').style.transition = 'opacity .18s';
+  document.getElementById('spot-left').style.opacity  = '0';
+  document.getElementById('spot-right').style.opacity = '0';
+
+  setTimeout(function() {
+    // Pick a random class name for the API
+    var chosen;
+    do { chosen = API_CLASSES[Math.floor(Math.random() * API_CLASSES.length)]; }
+    while (chosen === lastAPIClass && API_CLASSES.length > 1);
+    lastAPIClass = chosen;
+
+    // Show skeleton while waiting
+    renderSkeleton();
+    document.getElementById('spot-left').style.opacity  = '1';
+    document.getElementById('spot-right').style.opacity = '1';
+
+    fetchFromAPI(chosen)
+      .then(function(d) {
+        renderSpotlight(d, true);
+        isLoading = false;
+      })
+      .catch(function() {
+        // API unavailable — fall back to local pool
+        var prev = currentIdx;
+        do { currentIdx = Math.floor(Math.random() * POOL.length); }
+        while (currentIdx === prev && POOL.length > 1);
+        renderSpotlight(POOL[currentIdx], true);
+        isLoading = false;
+      });
+  }, 200);
+}
+
+// ── Initial load: try API first, show pool entry instantly as placeholder ──
+(function init() {
+  // Show a pool entry immediately so there's no blank state
+  renderSpotlight(POOL[currentIdx], false);
+
+  // Then try API in background; replace if it succeeds
+  var chosen;
+  do { chosen = API_CLASSES[Math.floor(Math.random() * API_CLASSES.length)]; }
+  while (chosen === lastAPIClass && API_CLASSES.length > 1);
+  lastAPIClass = chosen;
+
+  fetchFromAPI(chosen)
+    .then(function(d) {
+      // Smooth swap to live API content
+      document.getElementById('spot-left').style.transition  = 'opacity .25s';
+      document.getElementById('spot-right').style.transition = 'opacity .25s';
+      document.getElementById('spot-left').style.opacity  = '0';
+      document.getElementById('spot-right').style.opacity = '0';
+      setTimeout(function() {
+        renderSpotlight(d, true);
+      }, 260);
+    })
+    .catch(function() {
+      // API not available (local file, proxy not deployed) — pool entry stays, no error shown
+    });
+})();
+
+// ── Cookie banner ────────────────────────────────────────────────
+function setCookie(accept) {
+  try { localStorage.setItem('srhq-cookie-consent.v1', JSON.stringify({necessary:true,analytics:accept,ts:new Date().toISOString()})); } catch(e){}
+  document.getElementById('cookie-banner').style.display = 'none';
+}
+try {
+  if (!localStorage.getItem('srhq-cookie-consent.v1')) {
+    setTimeout(function(){ document.getElementById('cookie-banner').style.display = 'block'; }, 600);
+  }
+} catch(e){}
+
+// ── Feature card hover ───────────────────────────────────────────
+['db','map'].forEach(function(id) {
+  var card = document.getElementById('fcard-'+id);
+  var arrow = document.getElementById('fcard-'+id+'-arrow');
+  if (!card) return;
+  var color = id === 'db' ? '#40E0D0' : '#F25CC1';
+  card.addEventListener('mouseenter', function(){ card.style.borderColor = color+'55'; arrow.style.color = color; arrow.style.transform = 'translateX(4px)'; });
+  card.addEventListener('mouseleave', function(){ card.style.borderColor = 'rgba(255,255,255,0.08)'; arrow.style.color = '#9AA4B2'; arrow.style.transform = 'none'; });
+});
+</script>
+</body>
+</html>
