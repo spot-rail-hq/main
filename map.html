@@ -124,6 +124,11 @@
     font-weight: 500; letter-spacing: 0.2px;
   }
   .station-label.endpoint { font-size: 12.5px; font-weight: 600; }
+  :root[data-theme="light"] .station-label {
+    background: #FFFFFF; color: #07090C;
+    border: 1px solid #CBD5E0;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+  }
 
   /* Mobile/tablet — keep popup full-width and the legend compact */
   @media (max-width: 900px) {
@@ -272,13 +277,16 @@ function Popup({ route, onClose }) {
 }
 
 function Legend({ active, setActive }) {
+  const isLight = useTheme() === 'light';
   return (
     <div className="legend-card" style={{
       position: 'absolute', right: 16, top: 16, width: 240, zIndex: 500,
       transform: 'translateZ(0)', WebkitTransform: 'translateZ(0)',
-      background: 'rgba(var(--surface-rgb),0.85)', backdropFilter: 'blur(10px)',
+      background: isLight ? '#FFFFFF' : 'rgba(var(--surface-rgb),0.85)',
+      backdropFilter: 'blur(10px)',
       WebkitBackdropFilter: 'blur(10px)',
-      border: `1px solid ${SRHQ.line}`, borderRadius: 14, padding: '14px 14px',
+      border: `1px solid ${isLight ? '#E2E8F0' : SRHQ.line}`, borderRadius: 14, padding: '14px 14px',
+      color: isLight ? '#07090C' : undefined,
       fontFamily: SRHQ.body, maxHeight: 'calc(100% - 32px)', overflowY: 'auto',
     }}>
       <div style={{ fontFamily: SRHQ.mono, fontSize: 10, letterSpacing: 2,
@@ -308,6 +316,7 @@ function Legend({ active, setActive }) {
 }
 
 function RegionJump({ map }) {
+  const isLight = useTheme() === 'light';
   const regions = [
     { id: 'all',        name: 'All UK',      c: [54.5, -3.2],    z: 6 },
     { id: 'london',     name: 'London',      c: [51.5074, -0.1278], z: 11 },
@@ -320,24 +329,30 @@ function RegionJump({ map }) {
     <div className="region-jump" style={{
       position: 'absolute', left: '50%', transform: 'translateX(-50%)',
       bottom: 16, zIndex: 500, display: 'flex', gap: 6,
-      background: 'rgba(var(--surface-rgb),0.85)', backdropFilter: 'blur(10px)',
+      background: isLight ? '#FFFFFF' : 'rgba(var(--surface-rgb),0.85)',
+      backdropFilter: 'blur(10px)',
       WebkitBackdropFilter: 'blur(10px)',
-      border: `1px solid ${SRHQ.line}`, borderRadius: 12, padding: 6,
+      border: `1px solid ${isLight ? '#CBD5E0' : SRHQ.line}`, borderRadius: 12, padding: 6,
     }}>
       <span style={{ alignSelf: 'center', padding: '0 8px 0 4px',
                      fontFamily: SRHQ.mono, fontSize: 10, letterSpacing: 2,
-                     textTransform: 'uppercase', color: SRHQ.inkMute }}>Jump to</span>
+                     textTransform: 'uppercase', color: isLight ? '#07090C' : SRHQ.inkMute }}>Jump to</span>
       {regions.map(r => (
         <button key={r.id} onClick={() => map?.flyTo(r.c, r.z, { duration: 0.8 })}
                 style={{
-          background: 'transparent', border: `1px solid ${SRHQ.line}`,
+          background: isLight ? '#FFFFFF' : 'transparent',
+          border: `1px solid ${isLight ? '#CBD5E0' : SRHQ.line}`,
           borderRadius: 8, padding: '6px 12px', cursor: 'pointer',
-          color: SRHQ.ink, fontFamily: SRHQ.body, fontSize: 12.5,
+          color: isLight ? '#07090C' : SRHQ.ink, fontFamily: SRHQ.body, fontSize: 12.5,
         }}
-        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(var(--color-accent-turquoise-rgb),0.1)';
-                             e.currentTarget.style.borderColor = colorAlpha(SRHQ.turq, '66'); }}
-        onMouseLeave={e => { e.currentTarget.style.background = 'transparent';
-                             e.currentTarget.style.borderColor = SRHQ.line; }}>
+        onMouseEnter={e => {
+          e.currentTarget.style.background = isLight ? '#F5F5F0' : 'rgba(var(--color-accent-turquoise-rgb),0.1)';
+          e.currentTarget.style.borderColor = isLight ? '#1A9E8F' : colorAlpha(SRHQ.turq, '66');
+        }}
+        onMouseLeave={e => {
+          e.currentTarget.style.background = isLight ? '#FFFFFF' : 'transparent';
+          e.currentTarget.style.borderColor = isLight ? '#CBD5E0' : SRHQ.line;
+        }}>
           {r.name}
         </button>
       ))}
@@ -349,6 +364,43 @@ function MapView({ active, setActive, setMap }) {
   const mapRef = React.useRef(null);
   const mapObj = React.useRef(null);
   const layersRef = React.useRef({ routes: {}, markers: {} });
+  const tilesRef = React.useRef({ base: null, labels: null, theme: null });
+
+  // Theme-aware basemap: CARTO Dark Matter for dark mode, CARTO Voyager for
+  // light mode. Adds the new tiles on top of the old ones and removes the
+  // old layer once the new tiles have rendered, so the swap doesn't flicker.
+  const applyTileLayer = React.useCallback((theme) => {
+    const map = mapObj.current;
+    if (!map || tilesRef.current.theme === theme) return;
+    const old = tilesRef.current;
+    let base, labels = null;
+    if (theme === 'light') {
+      base = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: 'abcd', maxZoom: 20,
+      }).addTo(map);
+    } else {
+      // CARTO Dark Matter — clean, neutral dark OSM basemap (no road coloring).
+      base = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: 'abcd', maxZoom: 20,
+      }).addTo(map);
+      // City / town labels on top
+      labels = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png', {
+        subdomains: 'abcd', maxZoom: 20,
+      }).addTo(map);
+    }
+    let cleaned = false;
+    const cleanup = () => {
+      if (cleaned) return;
+      cleaned = true;
+      if (old.base) map.removeLayer(old.base);
+      if (old.labels) map.removeLayer(old.labels);
+    };
+    base.once('load', cleanup);
+    setTimeout(cleanup, 400);
+    tilesRef.current = { base, labels, theme };
+  }, []);
 
   React.useEffect(() => {
     if (mapObj.current) return;
@@ -360,15 +412,14 @@ function MapView({ active, setActive, setMap }) {
     mapObj.current = map;
     setMap(map);
 
-    // CARTO Dark Matter — clean, neutral dark OSM basemap (no road coloring).
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-      subdomains: 'abcd', maxZoom: 20,
-    }).addTo(map);
-    // City / town labels on top
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png', {
-      subdomains: 'abcd', maxZoom: 20,
-    }).addTo(map);
+    const initialTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+    applyTileLayer(initialTheme);
+
+    const themeObserver = new MutationObserver(() => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+      applyTileLayer(theme);
+    });
+    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
     // Routes
     ROUTES.forEach(r => {
@@ -401,7 +452,7 @@ function MapView({ active, setActive, setMap }) {
       layersRef.current.markers[name] = { m, label };
     });
 
-    return () => { map.remove(); mapObj.current = null; };
+    return () => { themeObserver.disconnect(); map.remove(); mapObj.current = null; };
   }, []);
 
   // Respond to active route changes: dim others, highlight endpoints
