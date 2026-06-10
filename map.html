@@ -3,8 +3,44 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<title>Network Map · SpotRail HQ</title>
+<title>UK Railway Network Map | SpotRail HQ</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="Explore SpotRail HQ's interactive map of Britain's rail network, showing mainline routes, operators, journey times and rolling stock classes running each line." />
+<meta name="robots" content="index, follow" />
+<meta name="author" content="SpotRail HQ" />
+<link rel="canonical" href="https://srhq.uk/map.html" />
+
+<!-- Open Graph -->
+<meta property="og:title" content="UK Railway Network Map | SpotRail HQ" />
+<meta property="og:description" content="Explore SpotRail HQ's interactive map of Britain's rail network, showing mainline routes, operators, journey times and rolling stock classes running each line." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://srhq.uk/map.html" />
+<meta property="og:site_name" content="SpotRail HQ" />
+<meta property="og:image" content="https://srhq.uk/img/og-image.jpg" />
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="UK Railway Network Map | SpotRail HQ" />
+<meta name="twitter:description" content="Explore SpotRail HQ's interactive map of Britain's rail network, showing mainline routes, operators, journey times and rolling stock classes running each line." />
+<meta name="twitter:image" content="https://srhq.uk/img/og-image.jpg" />
+
+<!-- Structured data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "SpotRail HQ Interactive Railway Map",
+  "url": "https://srhq.uk/map.html",
+  "description": "Interactive map of the UK rail network showing train routes, stations and spotting locations.",
+  "applicationCategory": "Travel",
+  "creator": {
+    "@type": "Organization",
+    "name": "SpotRail HQ",
+    "url": "https://srhq.uk"
+  }
+}
+</script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Manrope:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -57,7 +93,35 @@
 <script type="text/babel" src="map-data.jsx?v=2"></script>
 </head>
 <body>
+<main>
 <div id="root"></div>
+<noscript>
+  <div style="max-width:1280px;margin:0 auto;padding:32px;line-height:1.6">
+    <h1>The British mainline network</h1>
+    <p>
+      Britain's principal passenger routes on a real map. SpotRail HQ's interactive map shows
+      each line's operator, typical journey time, and the rolling-stock classes that work it.
+    </p>
+    <h2>Routes</h2>
+    <ul>
+      <li><strong>West Coast Main Line</strong> — Avanti West Coast · Caledonian Sleeper · LNR. London Euston ↔ Glasgow Central, 4h 10m.</li>
+      <li><strong>East Coast Main Line</strong> — LNER · Lumo · Grand Central · Hull Trains. London King's Cross ↔ Edinburgh Waverley, 4h 20m.</li>
+      <li><strong>Great Western Main Line</strong> — GWR · Heathrow Express. London Paddington ↔ Cardiff / Swansea.</li>
+      <li><strong>Midland Main Line</strong> — East Midlands Railway. London St Pancras ↔ Sheffield, 2h.</li>
+      <li><strong>CrossCountry</strong> — CrossCountry. Aberdeen ↔ Penzance, the longest scheduled journey in Britain.</li>
+      <li><strong>South Western Main Line</strong> — South Western Railway. London Waterloo ↔ Exeter (West of England line).</li>
+      <li><strong>Brighton Main Line</strong> — Southern · Thameslink · Gatwick Express. London Victoria / London Bridge ↔ Brighton, 55m.</li>
+      <li><strong>High Speed 1 · Kent</strong> — Southeastern. London St Pancras ↔ Ashford / Dover via HS1.</li>
+      <li><strong>Great Eastern Main Line</strong> — Greater Anglia. London Liverpool Street ↔ Norwich, 1h 50m.</li>
+      <li><strong>TransPennine (North)</strong> — TransPennine Express · Northern. Liverpool ↔ Manchester ↔ Leeds ↔ Newcastle.</li>
+      <li><strong>North Wales Coast Line</strong> — Avanti West Coast · Transport for Wales. Holyhead ↔ Crewe (→ London / Manchester).</li>
+      <li><strong>Welsh Marches</strong> — Transport for Wales. Cardiff ↔ Shrewsbury ↔ Manchester.</li>
+      <li><strong>Highland Main Line</strong> — ScotRail · Caledonian Sleeper. Edinburgh ↔ Perth ↔ Inverness.</li>
+    </ul>
+    <p>Click any route on the interactive map to see its operator, journey time, stations and the rolling-stock classes that run it.</p>
+  </div>
+</noscript>
+</main>
 <script type="text/babel">
 function Header() {
   return (

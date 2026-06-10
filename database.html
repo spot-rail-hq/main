@@ -2,8 +2,44 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<title>Database · SpotRail HQ</title>
+<title>UK Rolling Stock Database | SpotRail HQ</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="Browse SpotRail HQ's database of 165+ UK rolling stock classes, covering intercity, commuter, freight, charter, metro and heritage traction, with full specs." />
+<meta name="robots" content="index, follow" />
+<meta name="author" content="SpotRail HQ" />
+<link rel="canonical" href="https://srhq.uk/database.html" />
+
+<!-- Open Graph -->
+<meta property="og:title" content="UK Rolling Stock Database | SpotRail HQ" />
+<meta property="og:description" content="Browse SpotRail HQ's database of 165+ UK rolling stock classes, covering intercity, commuter, freight, charter, metro and heritage traction, with full specs." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://srhq.uk/database.html" />
+<meta property="og:site_name" content="SpotRail HQ" />
+<meta property="og:image" content="https://srhq.uk/img/og-image.jpg" />
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="UK Rolling Stock Database | SpotRail HQ" />
+<meta name="twitter:description" content="Browse SpotRail HQ's database of 165+ UK rolling stock classes, covering intercity, commuter, freight, charter, metro and heritage traction, with full specs." />
+<meta name="twitter:image" content="https://srhq.uk/img/og-image.jpg" />
+
+<!-- Structured data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Dataset",
+  "name": "SpotRail HQ Rolling Stock Database",
+  "description": "Comprehensive database of UK railway rolling stock including diesel and electric locomotives, multiple units, metro vehicles, heritage traction and freight wagons.",
+  "url": "https://srhq.uk/database.html",
+  "creator": {
+    "@type": "Organization",
+    "name": "SpotRail HQ",
+    "url": "https://srhq.uk"
+  },
+  "keywords": ["UK rolling stock", "train classes", "locomotive database", "railway vehicles"]
+}
+</script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Manrope:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -47,7 +83,53 @@
 <script type="text/babel" src="shared.jsx?v=4"></script>
 </head>
 <body>
+<main>
 <div id="root"></div>
+<noscript>
+  <div style="max-width:1280px;margin:0 auto;padding:32px;line-height:1.6">
+    <h1>Every class on the British railway</h1>
+    <p>
+      SpotRail HQ's rolling-stock database covers 165+ classes of UK trains, filterable by
+      category, operator and traction. Data verified April 2026 from Wikipedia, operator
+      websites and railway press.
+    </p>
+    <h2>Categories</h2>
+    <ul>
+      <li>
+        <strong>Intercity &amp; High Speed</strong> (17 classes) — 125 mph+ long-distance express
+        services, including Pendolino, Azuma, Eurostar, Voyager, Aurora, Evero and IC225.
+      </li>
+      <li>
+        <strong>Regional Passenger</strong> (18 classes) — inter-regional and cross-country
+        services, including Sprinters, Turbostars, Civity, Coradia, Adelante, Flirt and Voyager XC.
+      </li>
+      <li>
+        <strong>Commuter &amp; Suburban</strong> (47 classes) — stopping and metro-style mainline
+        services, including all suburban EMU/DMU classes such as the Elizabeth line, Overground
+        and Merseyrail.
+      </li>
+      <li>
+        <strong>Freight</strong> (12 classes) — freight haulage and yard shunting, including
+        Classes 08, 56, 60, 66, 69, 70, 73, 86, 88, 90 and 92.
+      </li>
+      <li>
+        <strong>Charter &amp; Railtours</strong> (24 classes) — enthusiast charter trains and
+        railtours, including Class 20/37/47/57 diesels and mainline-certified preserved steam
+        locomotives.
+      </li>
+      <li>
+        <strong>Light Rail &amp; Metro</strong> (21 classes) — urban rapid transit, including
+        London Underground, DLR, Overground, Elizabeth line, city trams and regional metros.
+      </li>
+      <li>
+        <strong>Heritage &amp; Preserved</strong> (29 classes) — heritage-only steam and preserved
+        classic diesel classes that run on preserved railways.
+      </li>
+    </ul>
+    <p>Each entry includes traction type, builder, year introduced, top speed, operators, primary route and notes.</p>
+  </div>
+</noscript>
+</main>
 <script type="text/babel">
 function useData() {
   const [d, setD] = React.useState(null);
