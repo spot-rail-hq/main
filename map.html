@@ -3,8 +3,20 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
+<script>
+(function () {
+  try {
+    var t = localStorage.getItem('srhq-theme');
+    if (!t) t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark';
+    if (t === 'light') document.documentElement.setAttribute('data-theme', 'light');
+  } catch (e) {}
+})();
+</script>
 <title>UK Railway Network Map | SpotRail HQ</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="icon" type="image/svg+xml" href="/img/srhq-favicon.svg">
+<link rel="shortcut icon" href="/img/srhq-favicon.svg">
+<link rel="apple-touch-icon" href="/img/srhq-favicon.svg">
 <meta name="description" content="Explore SpotRail HQ's interactive map of Britain's rail network, showing mainline routes, operators, journey times and rolling stock classes running each line." />
 <meta name="robots" content="index, follow" />
 <meta name="author" content="SpotRail HQ" />
@@ -46,22 +58,69 @@
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Manrope:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous" />
 <style>
-  html, body { margin: 0; padding: 0; background: #07090C; color: #E8ECF2; font-family: Manrope, system-ui, sans-serif; }
+  :root {
+    --bg: #07090C;        --bg-rgb: 7,9,12;
+    --surface: #0E1218;   --surface-rgb: 14,18,24;
+    --surface2: #141922;
+    --ink: #E8ECF2;
+    --ink-dim: #9AA4B2;
+    --ink-mute: #6B7687;
+    --line-rgb: 255,255,255;
+
+    --color-accent-turquoise: #40E0D0;  --color-accent-turquoise-rgb: 64,224,208;
+    --color-accent-magenta: #F25CC1;    --color-accent-magenta-rgb: 242,92,193;
+    --color-accent-amber: #F5B84B;      --color-accent-amber-rgb: 245,184,75;
+    --color-accent-lime: #B8F266;       --color-accent-lime-rgb: 184,242,102;
+    --color-text-dimmed: var(--ink-mute);
+    --color-text-secondary: var(--ink-dim);
+  }
+  :root[data-theme="light"] {
+    --bg: #F2F4F7;        --bg-rgb: 242,244,247;
+    --surface: #FFFFFF;   --surface-rgb: 255,255,255;
+    --surface2: #E8EBF0;
+    --ink: #0C0F14;
+    --ink-dim: #2D3748;
+    --ink-mute: #4A5568;
+    --line-rgb: 7,9,12;
+
+    --color-accent-turquoise: #1A9E8F;  --color-accent-turquoise-rgb: 26,158,143;
+    --color-accent-magenta: #C4237A;    --color-accent-magenta-rgb: 196,35,122;
+    --color-accent-amber: #B8860B;      --color-accent-amber-rgb: 184,134,11;
+    --color-accent-lime: #4A7C00;       --color-accent-lime-rgb: 74,124,0;
+    --color-text-dimmed: #4A5568;
+    --color-text-secondary: #2D3748;
+  }
+  *, *::before, *::after {
+    transition: background-color 400ms ease, color 400ms ease, border-color 400ms ease, opacity 400ms ease;
+  }
+  html { transition: background-color 400ms ease, color 400ms ease; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); font-family: Manrope, system-ui, sans-serif; }
   * { box-sizing: border-box; }
-  ::selection { background: #40E0D0; color: #07090C; }
+  ::selection { background: var(--color-accent-turquoise); color: #07090C; }
   a { color: inherit; }
+
+  .theme-toggle {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 0; background: transparent; border: 1px solid rgba(var(--line-rgb),0.08);
+    border-radius: 10px; width: 40px; height: 40px; cursor: pointer; color: var(--ink);
+  }
+  .theme-toggle svg { display: block; }
+  .theme-toggle .icon-moon { display: none; }
+  :root[data-theme="light"] .theme-toggle .icon-sun { display: none; }
+  :root[data-theme="light"] .theme-toggle .icon-moon { display: block; }
+
   /* Leaflet overrides for dark theme */
-  .leaflet-container { background: #07090C !important; font-family: Manrope, sans-serif !important; }
-  .leaflet-control-attribution { background: rgba(14,18,24,0.85) !important; color: #6B7687 !important; font-size: 10px !important; padding: 2px 8px !important; }
-  .leaflet-control-attribution a { color: #9AA4B2 !important; }
-  .leaflet-control-zoom a { background: rgba(14,18,24,0.9) !important; color: #E8ECF2 !important; border: 1px solid rgba(255,255,255,0.1) !important; }
-  .leaflet-control-zoom a:hover { background: rgba(40,224,208,0.15) !important; color: #40E0D0 !important; }
+  .leaflet-container { background: var(--bg) !important; font-family: Manrope, sans-serif !important; }
+  .leaflet-control-attribution { background: rgba(var(--surface-rgb),0.85) !important; color: var(--ink-mute) !important; font-size: 10px !important; padding: 2px 8px !important; }
+  .leaflet-control-attribution a { color: var(--ink-dim) !important; }
+  .leaflet-control-zoom a { background: rgba(var(--surface-rgb),0.9) !important; color: var(--ink) !important; border: 1px solid rgba(var(--line-rgb),0.1) !important; }
+  .leaflet-control-zoom a:hover { background: rgba(var(--color-accent-turquoise-rgb),0.15) !important; color: var(--color-accent-turquoise) !important; }
   /* Force tile layer to greyscale+invert so it reads dark */
   .dark-tiles { filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.92) saturate(0.55); }
   .station-label {
-    background: rgba(14,18,24,0.92); color: #E8ECF2;
+    background: rgba(var(--surface-rgb),0.92); color: var(--ink);
     padding: 3px 8px; border-radius: 6px; font-size: 11px;
-    border: 1px solid rgba(255,255,255,0.12); white-space: nowrap;
+    border: 1px solid rgba(var(--line-rgb),0.12); white-space: nowrap;
     font-weight: 500; letter-spacing: 0.2px;
   }
   .station-label.endpoint { font-size: 12.5px; font-weight: 600; }
@@ -89,7 +148,7 @@
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
-<script type="text/babel" src="shared.jsx?v=4"></script>
+<script type="text/babel" src="shared.jsx?v=5"></script>
 <script type="text/babel" src="map-data.jsx?v=2"></script>
 </head>
 <body>
@@ -148,10 +207,10 @@ function Popup({ route, onClose }) {
     <div className="popup-card" style={{
       position: 'absolute', left: 20, top: 20, width: 340,
       transform: 'translateZ(0)', WebkitTransform: 'translateZ(0)',
-      background: 'rgba(14,18,24,0.92)', backdropFilter: 'blur(14px)',
+      background: 'rgba(var(--surface-rgb),0.92)', backdropFilter: 'blur(14px)',
       WebkitBackdropFilter: 'blur(14px)',
-      border: `1px solid ${route.color}55`, borderRadius: 16, padding: 20,
-      boxShadow: `0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px ${route.color}22 inset`,
+      border: `1px solid ${colorAlpha(route.color, '55')}`, borderRadius: 16, padding: 20,
+      boxShadow: `0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px ${colorAlpha(route.color, '22')} inset`,
       fontFamily: SRHQ.body, zIndex: 600,
     }}>
       <button onClick={onClose} style={{
@@ -160,7 +219,7 @@ function Popup({ route, onClose }) {
       }}>×</button>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         <span style={{ width: 12, height: 12, borderRadius: 3, background: route.color,
-                        boxShadow: `0 0 0 4px ${route.color}22` }} />
+                        boxShadow: `0 0 0 4px ${colorAlpha(route.color, '22')}` }} />
         <span style={{ fontFamily: SRHQ.mono, fontSize: 10.5, letterSpacing: 2,
                        textTransform: 'uppercase', color: route.color }}>Route</span>
       </div>
@@ -198,7 +257,7 @@ function Popup({ route, onClose }) {
             <a key={c} href={`database.html#class-${c}`} style={{
               padding: '5px 10px', borderRadius: 8, fontFamily: SRHQ.mono,
               fontSize: 12, color: route.color, textDecoration: 'none',
-              background: `${route.color}14`, border: `1px solid ${route.color}44`,
+              background: colorAlpha(route.color, '14'), border: `1px solid ${colorAlpha(route.color, '44')}`,
             }}>{c}</a>
           ))}
         </div>
@@ -217,7 +276,7 @@ function Legend({ active, setActive }) {
     <div className="legend-card" style={{
       position: 'absolute', right: 16, top: 16, width: 240, zIndex: 500,
       transform: 'translateZ(0)', WebkitTransform: 'translateZ(0)',
-      background: 'rgba(14,18,24,0.85)', backdropFilter: 'blur(10px)',
+      background: 'rgba(var(--surface-rgb),0.85)', backdropFilter: 'blur(10px)',
       WebkitBackdropFilter: 'blur(10px)',
       border: `1px solid ${SRHQ.line}`, borderRadius: 14, padding: '14px 14px',
       fontFamily: SRHQ.body, maxHeight: 'calc(100% - 32px)', overflowY: 'auto',
@@ -232,8 +291,8 @@ function Legend({ active, setActive }) {
                   style={{
             width: '100%', textAlign: 'left', display: 'flex',
             alignItems: 'center', gap: 10, padding: '6px 8px',
-            background: on ? `${r.color}14` : 'transparent',
-            border: `1px solid ${on ? r.color + '55' : 'transparent'}`,
+            background: on ? colorAlpha(r.color, '14') : 'transparent',
+            border: `1px solid ${on ? colorAlpha(r.color, '55') : 'transparent'}`,
             borderRadius: 8, cursor: 'pointer', color: SRHQ.ink,
             marginBottom: 2, fontSize: 12.5, fontFamily: SRHQ.body,
           }}>
@@ -261,7 +320,7 @@ function RegionJump({ map }) {
     <div className="region-jump" style={{
       position: 'absolute', left: '50%', transform: 'translateX(-50%)',
       bottom: 16, zIndex: 500, display: 'flex', gap: 6,
-      background: 'rgba(14,18,24,0.85)', backdropFilter: 'blur(10px)',
+      background: 'rgba(var(--surface-rgb),0.85)', backdropFilter: 'blur(10px)',
       WebkitBackdropFilter: 'blur(10px)',
       border: `1px solid ${SRHQ.line}`, borderRadius: 12, padding: 6,
     }}>
@@ -275,8 +334,8 @@ function RegionJump({ map }) {
           borderRadius: 8, padding: '6px 12px', cursor: 'pointer',
           color: SRHQ.ink, fontFamily: SRHQ.body, fontSize: 12.5,
         }}
-        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(40,224,208,0.1)';
-                             e.currentTarget.style.borderColor = SRHQ.turq + '66'; }}
+        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(var(--color-accent-turquoise-rgb),0.1)';
+                             e.currentTarget.style.borderColor = colorAlpha(SRHQ.turq, '66'); }}
         onMouseLeave={e => { e.currentTarget.style.background = 'transparent';
                              e.currentTarget.style.borderColor = SRHQ.line; }}>
           {r.name}

@@ -44,7 +44,7 @@ const STATIONS = {
 
 const ROUTES = [
   {
-    id: 'wcml', name: 'West Coast Main Line', color: '#40E0D0',
+    id: 'wcml', name: 'West Coast Main Line', color: 'var(--color-accent-turquoise)',
     operator: 'Avanti West Coast · Caledonian Sleeper · LNR',
     classes: ['390', '805', '350', '730'],
     freq: '~3 trains per hour',
@@ -65,7 +65,7 @@ const ROUTES = [
     ],
   },
   {
-    id: 'ecml', name: 'East Coast Main Line', color: '#F5B84B',
+    id: 'ecml', name: 'East Coast Main Line', color: 'var(--color-accent-amber)',
     operator: 'LNER · Lumo · Grand Central · Hull Trains',
     classes: ['800', '801', '803', '802'],
     freq: '~2 trains per hour',
@@ -86,7 +86,7 @@ const ROUTES = [
     ],
   },
   {
-    id: 'gwml', name: 'Great Western Main Line', color: '#F25CC1',
+    id: 'gwml', name: 'Great Western Main Line', color: 'var(--color-accent-magenta)',
     operator: 'GWR · Heathrow Express',
     classes: ['800', '802', '387', '166'],
     freq: '~4 trains per hour',
@@ -105,7 +105,7 @@ const ROUTES = [
     ],
   },
   {
-    id: 'midland', name: 'Midland Main Line', color: '#B8F266',
+    id: 'midland', name: 'Midland Main Line', color: 'var(--color-accent-lime)',
     operator: 'East Midlands Railway',
     classes: ['810', '222', '158'],
     freq: '~2 trains per hour',
@@ -150,7 +150,7 @@ const ROUTES = [
     ],
   },
   {
-    id: 'swml', name: 'South Western Main Line', color: '#40E0D0',
+    id: 'swml', name: 'South Western Main Line', color: 'var(--color-accent-turquoise)',
     operator: 'South Western Railway',
     classes: ['444', '450', '458', '701'],
     freq: '~4 trains per hour',
@@ -188,7 +188,7 @@ const ROUTES = [
     ],
   },
   {
-    id: 'c2c', name: 'High Speed 1 · Kent', color: '#F5B84B',
+    id: 'c2c', name: 'High Speed 1 · Kent', color: 'var(--color-accent-amber)',
     operator: 'Southeastern',
     classes: ['395', '375', '377', '707'],
     freq: '~4 trains per hour',
@@ -206,7 +206,7 @@ const ROUTES = [
     ],
   },
   {
-    id: 'anglia', name: 'Great Eastern Main Line', color: '#B8F266',
+    id: 'anglia', name: 'Great Eastern Main Line', color: 'var(--color-accent-lime)',
     operator: 'Greater Anglia',
     classes: ['745', '755', '720'],
     freq: '~3 trains per hour',
@@ -226,7 +226,7 @@ const ROUTES = [
     ],
   },
   {
-    id: 'transpennine', name: 'TransPennine (North)', color: '#F25CC1',
+    id: 'transpennine', name: 'TransPennine (North)', color: 'var(--color-accent-magenta)',
     operator: 'TransPennine Express · Northern',
     classes: ['802', '185', '397', '195'],
     freq: '~2 trains per hour',
@@ -293,7 +293,7 @@ const ROUTES = [
     ],
   },
   {
-    id: 'scotland-h', name: 'Highland Main Line', color: '#40E0D0',
+    id: 'scotland-h', name: 'Highland Main Line', color: 'var(--color-accent-turquoise)',
     operator: 'ScotRail · Caledonian Sleeper',
     classes: ['158', '170', 'Mk5'],
     freq: '~5 trains per day',
