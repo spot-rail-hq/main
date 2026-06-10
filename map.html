@@ -118,16 +118,18 @@
   /* Force tile layer to greyscale+invert so it reads dark */
   .dark-tiles { filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.92) saturate(0.55); }
   .station-label {
-    background: rgba(var(--surface-rgb),0.92); color: var(--ink);
+    display: inline-block; width: auto; height: auto;
+    background: rgba(14,18,24,0.85); color: #F5F5F5;
     padding: 3px 8px; border-radius: 6px; font-size: 11px;
-    border: 1px solid rgba(var(--line-rgb),0.12); white-space: nowrap;
-    font-weight: 500; letter-spacing: 0.2px;
+    border: 1px solid rgba(255,255,255,0.15); white-space: nowrap;
+    font-family: Manrope, sans-serif; font-weight: 500; letter-spacing: 0.2px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.4);
   }
   .station-label.endpoint { font-size: 12.5px; font-weight: 600; }
   :root[data-theme="light"] .station-label {
-    background: #FFFFFF; color: #07090C;
+    background: rgba(255,255,255,0.92); color: #07090C;
     border: 1px solid #CBD5E0;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
   }
 
   /* Mobile/tablet — keep popup full-width and the legend compact */
