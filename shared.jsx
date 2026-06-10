@@ -103,6 +103,7 @@ function TopNav({ current }) {
   const items = [
     { href: 'database.html', label: 'Database' },
     { href: 'map.html',      label: 'Network map' },
+    { href: 'news.html',     label: 'News & Live' },
   ];
   const [isMobile, setIsMobile] = React.useState(
     typeof window !== 'undefined' ? window.innerWidth <= 900 : false
@@ -303,6 +304,7 @@ function Footer() {
             { label: 'Home', href: '/' },
             { label: 'Rolling stock database', href: 'database.html' },
             { label: 'Network map', href: 'map.html' },
+            { label: 'News & Live', href: 'news.html' },
           ].map(x =>
             <a key={x.label} href={x.href} style={{
               display: 'block', fontSize: 13.5, marginBottom: 6,
