@@ -18,6 +18,7 @@
 <link rel="apple-touch-icon" href="/img/srhq-favicon.svg">
 <meta name="description" content="The latest UK railway headlines aggregated from across the industry — updated every 15 minutes. Powered by SRHQ." />
 <meta name="robots" content="index, follow" />
+<meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
 <meta name="author" content="SpotRail HQ" />
 <meta name="geo.region" content="GB">
 <meta name="geo.placename" content="United Kingdom">
@@ -572,7 +573,17 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
   </div>
 
   <div class="news-status" id="news-status"></div>
-  <div class="news-grid" id="news-grid"></div>
+  <div class="news-grid" id="news-grid">
+    <div class="state-msg" id="news-static-placeholder">
+      <p>Loading the latest UK railway news from Railway Gazette,
+      Rail UK, RailAdvent, Rail Business Daily, Network Rail
+      and Rail Technology Magazine.</p>
+      <p style="margin-top:8px;font-size:13px">
+      Coverage includes Network Rail updates, train operator
+      news, rolling stock announcements, infrastructure
+      developments and UK rail industry headlines.</p>
+    </div>
+  </div>
   <div class="news-loadmore-wrap" id="news-loadmore-wrap" style="display:none">
     <button class="btn-loadmore" id="news-loadmore">Load more</button>
   </div>
@@ -852,6 +863,8 @@ function renderNews() {
 }
 
 function loadNews() {
+  var placeholder = document.getElementById('news-static-placeholder');
+  if (placeholder) placeholder.remove();
   renderNewsSkeleton();
   fetch('/api/news')
     .then(function (r) { if (!r.ok) throw new Error('bad status'); return r.json(); })
