@@ -101,10 +101,10 @@ function BrandMark({ size = 18, accent = SRHQ.turq }) {
 
 function TopNav({ current }) {
   const items = [
-    { href: 'news.html',       label: 'News' },
-    { href: 'departures.html', label: 'Live Departures' },
-    { href: 'database.html',   label: 'Database' },
-    { href: 'map.html',        label: 'Network Map' },
+    { href: '/news',       label: 'News' },
+    { href: '/departures', label: 'Live Departures' },
+    { href: '/database',   label: 'Database' },
+    { href: '/map',        label: 'Network Map' },
   ];
   const [isMobile, setIsMobile] = React.useState(
     typeof window !== 'undefined' ? window.innerWidth <= 900 : false
@@ -303,10 +303,10 @@ function Footer() {
                         color: SRHQ.inkDim, marginBottom: 10 }}>Explore</div>
           {[
             { label: 'Home', href: '/' },
-            { label: 'News', href: 'news.html' },
-            { label: 'Live Departures', href: 'departures.html' },
-            { label: 'Rolling stock database', href: 'database.html' },
-            { label: 'Network map', href: 'map.html' },
+            { label: 'News', href: '/news' },
+            { label: 'Live Departures', href: '/departures' },
+            { label: 'Rolling stock database', href: '/database' },
+            { label: 'Network map', href: '/map' },
           ].map(x =>
             <a key={x.label} href={x.href} style={{
               display: 'block', fontSize: 13.5, marginBottom: 6,

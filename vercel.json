@@ -1,0 +1,26 @@
+{
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "redirects": [
+    {
+      "source": "/news.html",
+      "destination": "/news",
+      "permanent": true
+    },
+    {
+      "source": "/departures.html",
+      "destination": "/departures",
+      "permanent": true
+    },
+    {
+      "source": "/database.html",
+      "destination": "/database",
+      "permanent": true
+    },
+    {
+      "source": "/map.html",
+      "destination": "/map",
+      "permanent": true
+    }
+  ]
+}

@@ -16,16 +16,19 @@
 <link rel="icon" type="image/svg+xml" href="/img/srhq-favicon.svg">
 <link rel="shortcut icon" href="/img/srhq-favicon.svg">
 <link rel="apple-touch-icon" href="/img/srhq-favicon.svg">
-<meta name="description" content="Real-time UK train departures powered by Realtime Trains. Search any station by CRS code. Updated every 30 seconds by SRHQ." />
+<meta name="description" content="Real-time UK train departures powered by Realtime Trains. Search any station by CRS code — auto-refreshing every 30 seconds." />
 <meta name="robots" content="index, follow" />
 <meta name="author" content="SpotRail HQ" />
-<link rel="canonical" href="https://srhq.uk/departures.html" />
+<meta name="geo.region" content="GB">
+<meta name="geo.placename" content="United Kingdom">
+<meta name="language" content="en-GB">
+<link rel="canonical" href="https://srhq.uk/departures" />
 
 <!-- Open Graph -->
 <meta property="og:title" content="Live Departures | SRHQ — SpotRail HQ" />
-<meta property="og:description" content="Real-time UK train departures powered by Realtime Trains — auto-refreshing every 30 seconds." />
+<meta property="og:description" content="Real-time UK train departures powered by Realtime Trains. Search any station by CRS code." />
 <meta property="og:type" content="website" />
-<meta property="og:url" content="https://srhq.uk/departures.html" />
+<meta property="og:url" content="https://srhq.uk/departures" />
 <meta property="og:site_name" content="SpotRail HQ" />
 <meta property="og:image" content="https://srhq.uk/img/og-image.jpg" />
 <meta property="og:image:width" content="1200" />
@@ -34,8 +37,25 @@
 <!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="Live Departures | SRHQ — SpotRail HQ" />
-<meta name="twitter:description" content="Real-time UK train departures powered by Realtime Trains — auto-refreshing every 30 seconds." />
+<meta name="twitter:description" content="Real-time UK train departures powered by Realtime Trains. Search any station by CRS code." />
 <meta name="twitter:image" content="https://srhq.uk/img/og-image.jpg" />
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Live Departures — SRHQ",
+  "description": "Real-time UK train departures powered by Realtime Trains. Search any UK station by CRS code.",
+  "url": "https://srhq.uk/departures",
+  "applicationCategory": "TransportationApplication",
+  "operatingSystem": "Web",
+  "publisher": {
+    "@type": "Organization",
+    "name": "SpotRail HQ",
+    "url": "https://srhq.uk"
+  }
+}
+</script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -315,10 +335,10 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
     </a>
     <div class="nav-controls">
       <div class="nav-links">
-        <a href="/news.html" class="nav-link">News</a>
-        <a href="/departures.html" class="nav-link active">Live Departures</a>
-        <a href="database.html" class="nav-link">Database</a>
-        <a href="map.html" class="nav-link">Network Map</a>
+        <a href="/news" class="nav-link">News</a>
+        <a href="/departures" class="nav-link active">Live Departures</a>
+        <a href="/database" class="nav-link">Database</a>
+        <a href="/map" class="nav-link">Network Map</a>
       </div>
       <button class="theme-toggle" id="themeToggle" aria-label="Toggle color theme">
         <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -351,10 +371,10 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
     <button class="nav-drawer-close" id="navClose" aria-label="Close menu">×</button>
   </div>
   <div class="nav-drawer-links">
-    <a href="/news.html" class="nav-drawer-link"><span>News</span><span class="arr">→</span></a>
-    <a href="/departures.html" class="nav-drawer-link active"><span>Live Departures</span><span class="arr">→</span></a>
-    <a href="database.html" class="nav-drawer-link"><span>Database</span><span class="arr">→</span></a>
-    <a href="map.html" class="nav-drawer-link"><span>Network Map</span><span class="arr">→</span></a>
+    <a href="/news" class="nav-drawer-link"><span>News</span><span class="arr">→</span></a>
+    <a href="/departures" class="nav-drawer-link active"><span>Live Departures</span><span class="arr">→</span></a>
+    <a href="/database" class="nav-drawer-link"><span>Database</span><span class="arr">→</span></a>
+    <a href="/map" class="nav-drawer-link"><span>Network Map</span><span class="arr">→</span></a>
   </div>
   <div class="nav-drawer-foot">
     An independent UK railway resource.<br/>
@@ -450,10 +470,10 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
     <div>
       <div class="footer-head">Explore</div>
       <a href="/" class="footer-item" style="display:block">Home</a>
-      <a href="news.html" class="footer-item" style="display:block">News</a>
-      <a href="departures.html" class="footer-item" style="display:block">Live Departures</a>
-      <a href="database.html" class="footer-item" style="display:block">Rolling stock database</a>
-      <a href="map.html" class="footer-item" style="display:block">Network map</a>
+      <a href="/news" class="footer-item" style="display:block">News</a>
+      <a href="/departures" class="footer-item" style="display:block">Live Departures</a>
+      <a href="/database" class="footer-item" style="display:block">Rolling stock database</a>
+      <a href="/map" class="footer-item" style="display:block">Network map</a>
     </div>
     <div>
       <div class="footer-head">Coming soon</div>

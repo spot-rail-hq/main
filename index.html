@@ -49,7 +49,7 @@
   "description": "Independent UK railway enthusiast platform covering rolling stock, live train tracking, spotting locations and community features.",
   "potentialAction": {
     "@type": "SearchAction",
-    "target": "https://srhq.uk/database.html?q={search_term_string}",
+    "target": "https://srhq.uk/database?q={search_term_string}",
     "query-input": "required name=search_term_string"
   }
 }
@@ -510,10 +510,10 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
     </a>
     <div class="nav-controls">
       <div class="nav-links">
-        <a href="/news.html" class="nav-link">News</a>
-        <a href="/departures.html" class="nav-link">Live Departures</a>
-        <a href="database.html" class="nav-link">Database</a>
-        <a href="map.html" class="nav-link">Network Map</a>
+        <a href="/news" class="nav-link">News</a>
+        <a href="/departures" class="nav-link">Live Departures</a>
+        <a href="/database" class="nav-link">Database</a>
+        <a href="/map" class="nav-link">Network Map</a>
       </div>
       <button class="theme-toggle" id="themeToggle" aria-label="Toggle color theme">
         <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -546,10 +546,10 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
     <button class="nav-drawer-close" id="navClose" aria-label="Close menu">×</button>
   </div>
   <div class="nav-drawer-links">
-    <a href="/news.html" class="nav-drawer-link"><span>News</span><span class="arr">→</span></a>
-    <a href="/departures.html" class="nav-drawer-link"><span>Live Departures</span><span class="arr">→</span></a>
-    <a href="database.html" class="nav-drawer-link"><span>Database</span><span class="arr">→</span></a>
-    <a href="map.html" class="nav-drawer-link"><span>Network Map</span><span class="arr">→</span></a>
+    <a href="/news" class="nav-drawer-link"><span>News</span><span class="arr">→</span></a>
+    <a href="/departures" class="nav-drawer-link"><span>Live Departures</span><span class="arr">→</span></a>
+    <a href="/database" class="nav-drawer-link"><span>Database</span><span class="arr">→</span></a>
+    <a href="/map" class="nav-drawer-link"><span>Network Map</span><span class="arr">→</span></a>
   </div>
   <div class="nav-drawer-foot">
     An independent UK railway resource.<br/>
@@ -610,13 +610,13 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
       165+ classes across intercity, regional, commuter, freight, charter, metro and heritage —
       with operators, builders, traction and notes. Examples include the Class 390 Pendolino,
       Class 800 Azuma/IET, Class 170 Turbostar and Class 66 freight locomotive.
-      <a href="database.html">Open the rolling stock database</a>.
+      <a href="/database">Open the rolling stock database</a>.
     </p>
     <h2>Network map</h2>
     <p>
       A schematic map of Britain's mainline routes. See each line's operator, typical journey
       times, and the rolling stock classes that run it.
-      <a href="map.html">Explore the network map</a>.
+      <a href="/map">Explore the network map</a>.
     </p>
     <h2>Class spotlight</h2>
     <p>
@@ -656,8 +656,8 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
         class of rolling stock, see who runs what, and explore the network as a single connected map.
       </p>
       <div class="hero-btns">
-        <a href="database.html" class="btn-primary">Browse the database →</a>
-        <a href="map.html" class="btn-ghost">Open the network map</a>
+        <a href="/database" class="btn-primary">Browse the database →</a>
+        <a href="/map" class="btn-ghost">Open the network map</a>
       </div>
     </div>
   </div>
@@ -688,7 +688,7 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
 <div class="features-wrap">
   <div class="features-top">
     <!-- Database card -->
-    <a href="database.html" style="text-decoration:none;color:inherit">
+    <a href="/database" style="text-decoration:none;color:inherit">
       <div class="fcard" id="fcard-db">
         <div style="display:flex;align-items:center;justify-content:space-between">
           <span class="ftag" style="color:var(--color-accent-turquoise);border:1px solid rgba(var(--color-accent-turquoise-rgb),0.33)">Database</span>
@@ -708,7 +708,7 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
       </div>
     </a>
     <!-- Map card -->
-    <a href="map.html" style="text-decoration:none;color:inherit">
+    <a href="/map" style="text-decoration:none;color:inherit">
       <div class="fcard" id="fcard-map">
         <div style="display:flex;align-items:center;justify-content:space-between">
           <span class="ftag" style="color:var(--color-accent-magenta);border:1px solid rgba(var(--color-accent-magenta-rgb),0.33)">Map</span>
@@ -784,10 +784,10 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
     <div>
       <div class="footer-head">Explore</div>
       <a href="/" class="footer-item" style="display:block">Home</a>
-      <a href="news.html" class="footer-item" style="display:block">News</a>
-      <a href="departures.html" class="footer-item" style="display:block">Live Departures</a>
-      <a href="database.html" class="footer-item" style="display:block">Rolling stock database</a>
-      <a href="map.html" class="footer-item" style="display:block">Network map</a>
+      <a href="/news" class="footer-item" style="display:block">News</a>
+      <a href="/departures" class="footer-item" style="display:block">Live Departures</a>
+      <a href="/database" class="footer-item" style="display:block">Rolling stock database</a>
+      <a href="/map" class="footer-item" style="display:block">Network map</a>
     </div>
     <div>
       <div class="footer-head">Coming soon</div>
@@ -969,7 +969,7 @@ function renderSpotlight(d, animate) {
   document.getElementById('spot-actions').className = cls;
   document.getElementById('spot-actions').innerHTML =
     '<div class="spot-btns">' +
-      '<a href="database.html" class="spot-db-btn">Open the database →</a>' +
+      '<a href="/database" class="spot-db-btn">Open the database →</a>' +
       '<button class="spot-new-btn" id="spot-btn" onclick="nextSpotlight()">' +
         '<svg id="spot-btn-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">' +
           '<path d="M23 4v6h-6"/><path d="M1 20v-6h6"/>' +
@@ -1009,7 +1009,7 @@ function renderSkeleton() {
   document.getElementById('spot-actions').className = '';
   document.getElementById('spot-actions').innerHTML =
     '<div class="spot-btns">' +
-      '<a href="database.html" class="spot-db-btn">Open the database →</a>' +
+      '<a href="/database" class="spot-db-btn">Open the database →</a>' +
       '<button class="spot-new-btn" disabled>' +
         '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" style="animation:spotSpin .8s linear infinite">' +
           '<path d="M23 4v6h-6"/><path d="M1 20v-6h6"/>' +

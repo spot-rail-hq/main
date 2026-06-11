@@ -19,13 +19,13 @@
 <meta name="description" content="Browse every class of UK rolling stock on SRHQ — locomotives, multiple units, coaches and more. The most complete independent UK railway vehicle database." />
 <meta name="robots" content="index, follow" />
 <meta name="author" content="SpotRail HQ" />
-<link rel="canonical" href="https://srhq.uk/database.html" />
+<link rel="canonical" href="https://srhq.uk/database" />
 
 <!-- Open Graph -->
 <meta property="og:title" content="Rolling Stock Database | SRHQ — SpotRail HQ" />
 <meta property="og:description" content="Browse SpotRail HQ's database of 165+ UK rolling stock classes, covering intercity, commuter, freight, charter, metro and heritage traction, with full specs." />
 <meta property="og:type" content="website" />
-<meta property="og:url" content="https://srhq.uk/database.html" />
+<meta property="og:url" content="https://srhq.uk/database" />
 <meta property="og:site_name" content="SpotRail HQ" />
 <meta property="og:image" content="https://srhq.uk/img/og-image.jpg" />
 <meta property="og:image:width" content="1200" />
@@ -44,7 +44,7 @@
   "@type": "Dataset",
   "name": "SpotRail HQ Rolling Stock Database",
   "description": "Comprehensive database of UK railway rolling stock including diesel and electric locomotives, multiple units, metro vehicles, heritage traction and freight wagons.",
-  "url": "https://srhq.uk/database.html",
+  "url": "https://srhq.uk/database",
   "creator": {
     "@type": "Organization",
     "name": "SpotRail HQ",
@@ -565,7 +565,7 @@ function App() {
   if (err) {
     return (
       <>
-        <TopNav current="database.html" />
+        <TopNav current="/database" />
         <div style={{ maxWidth: 620, margin: '0 auto', padding: '80px 32px',
                       textAlign: 'center' }}>
           <div style={{ fontFamily: SRHQ.mono, fontSize: 11, letterSpacing: 3,
@@ -584,7 +584,7 @@ function App() {
   if (!data) {
     return (
       <>
-        <TopNav current="database.html" />
+        <TopNav current="/database" />
         <div style={{ padding: 60, textAlign: 'center', color: SRHQ.inkDim }}>Loading…</div>
       </>
     );
@@ -608,7 +608,7 @@ function App() {
 
   return (
     <>
-      <TopNav current="database.html" />
+      <TopNav current="/database" />
       <Header />
       <Tabs categories={data.categories} active={active} onSelect={setActive} />
       <Toolbar query={query} setQuery={setQuery} traction={traction} setTraction={setTraction} count={total} />

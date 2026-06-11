@@ -20,13 +20,13 @@
 <meta name="description" content="Explore the UK rail network interactively on SRHQ. Station locations, live overlays and the full Great British railway network in one map." />
 <meta name="robots" content="index, follow" />
 <meta name="author" content="SpotRail HQ" />
-<link rel="canonical" href="https://srhq.uk/map.html" />
+<link rel="canonical" href="https://srhq.uk/map" />
 
 <!-- Open Graph -->
 <meta property="og:title" content="Network Map | SRHQ — SpotRail HQ" />
 <meta property="og:description" content="Explore SpotRail HQ's interactive map of Britain's rail network, showing mainline routes, operators, journey times and rolling stock classes running each line." />
 <meta property="og:type" content="website" />
-<meta property="og:url" content="https://srhq.uk/map.html" />
+<meta property="og:url" content="https://srhq.uk/map" />
 <meta property="og:site_name" content="SpotRail HQ" />
 <meta property="og:image" content="https://srhq.uk/img/og-image.jpg" />
 <meta property="og:image:width" content="1200" />
@@ -44,7 +44,7 @@
   "@context": "https://schema.org",
   "@type": "WebApplication",
   "name": "SpotRail HQ Interactive Railway Map",
-  "url": "https://srhq.uk/map.html",
+  "url": "https://srhq.uk/map",
   "description": "Interactive map of the UK rail network showing train routes, stations and spotting locations.",
   "applicationCategory": "Travel",
   "creator": {
@@ -263,7 +263,7 @@ function Popup({ route, onClose }) {
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
           {route.classes.map(c => (
-            <a key={c} href={`database.html#class-${c}`} style={{
+            <a key={c} href={`/database#class-${c}`} style={{
               padding: '5px 10px', borderRadius: 8, fontFamily: SRHQ.mono,
               fontSize: 12, color: route.color, textDecoration: 'none',
               background: colorAlpha(route.color, '14'), border: `1px solid ${colorAlpha(route.color, '44')}`,
@@ -524,7 +524,7 @@ function App() {
 
   return (
     <>
-      <TopNav current="map.html" />
+      <TopNav current="/map" />
       <Header />
 
       <section className="map-section" style={{ maxWidth: 1280, margin: '0 auto', padding: '0 32px 40px' }}>
