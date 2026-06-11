@@ -200,8 +200,10 @@ body.nav-open .nav-drawer { transform: translateX(0); }
   border-radius: 16px; padding: 22px;
   display: flex; flex-direction: column; gap: 12px;
   transition: transform .2s ease, border-color .2s ease;
+  text-decoration: none; color: inherit; cursor: pointer;
 }
-.news-card:hover { transform: translateY(-2px); border-color: rgba(var(--color-accent-turquoise-rgb),0.3); }
+.news-card:hover { transform: translateY(-2px); border-color: rgba(var(--color-accent-turquoise-rgb),0.4); }
+.news-card:hover .news-title { color: var(--color-accent-turquoise); }
 .news-card-img {
   display: block; width: calc(100% + 44px); height: 160px;
   margin: -22px -22px 0; object-fit: cover;
@@ -216,12 +218,22 @@ body.nav-open .nav-drawer { transform: translateX(0); }
 .news-title {
   font-family: 'Archivo', sans-serif; font-size: 18px; font-weight: 600;
   letter-spacing: -0.4px; line-height: 1.32;
+  transition: color .2s ease;
 }
-.news-title a:hover { color: var(--color-accent-turquoise); }
 .news-desc { font-size: 13.5px; color: var(--ink-dim); line-height: 1.55; flex: 1; }
 .news-meta { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .news-date { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--ink-mute); }
-.news-readmore { font-size: 12.5px; font-weight: 600; color: var(--color-accent-turquoise); white-space: nowrap; }
+
+.news-status { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--ink-mute); margin-bottom: 16px; }
+.news-loadmore-wrap { display: flex; justify-content: center; margin-top: 32px; }
+.btn-loadmore {
+  padding: 12px 30px; border-radius: 999px;
+  background: transparent; color: var(--color-accent-turquoise);
+  border: 1px solid var(--color-accent-turquoise);
+  font-family: 'Manrope', sans-serif; font-weight: 600; font-size: 14px;
+  cursor: pointer; transition: background .15s ease, color .15s ease;
+}
+.btn-loadmore:hover { background: rgba(var(--color-accent-turquoise-rgb),0.1); }
 
 /* Skeleton shimmer (matches spotlight section style) */
 @keyframes newsPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
@@ -395,7 +407,11 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
 
 <!-- RAIL NEWS -->
 <div class="news-wrap">
+  <div class="news-status" id="news-status"></div>
   <div class="news-grid" id="news-grid"></div>
+  <div class="news-loadmore-wrap" id="news-loadmore-wrap" style="display:none">
+    <button class="btn-loadmore" id="news-loadmore">Load more</button>
+  </div>
 </div>
 
 </main>
@@ -450,10 +466,17 @@ function escHtml(s) {
 }
 
 // ── RAIL NEWS ────────────────────────────────────────────────────
+var PAGE_SIZE = 12;
+var allNewsItems = [];
+var visibleNewsCount = PAGE_SIZE;
+
 var SOURCE_STYLES = {
   'Railway Gazette':           { color: 'var(--color-accent-turquoise)', rgb: 'var(--color-accent-turquoise-rgb)' },
-  'Rail Technology Magazine':  { color: 'var(--color-accent-magenta)',   rgb: 'var(--color-accent-magenta-rgb)' },
-  'Network Rail':              { color: 'var(--color-accent-amber)',     rgb: 'var(--color-accent-amber-rgb)' }
+  'Rail UK':                   { color: 'var(--color-accent-lime)',      rgb: 'var(--color-accent-lime-rgb)' },
+  'RailAdvent':                { color: 'var(--color-accent-amber)',     rgb: 'var(--color-accent-amber-rgb)' },
+  'Rail Business Daily':       { color: 'var(--color-accent-magenta)',   rgb: 'var(--color-accent-magenta-rgb)' },
+  'Network Rail':              { color: 'var(--color-accent-turquoise)', rgb: 'var(--color-accent-turquoise-rgb)' },
+  'Rail Technology Magazine':  { color: 'var(--ink-mute)',               rgb: 'var(--line-rgb)' }
 };
 function sourceStyle(source) {
   return SOURCE_STYLES[source] || { color: 'var(--ink-mute)', rgb: 'var(--line-rgb)' };
@@ -488,15 +511,30 @@ function renderNewsError() {
       '<button class="btn-retry" id="news-retry">Retry</button>' +
     '</div>';
   document.getElementById('news-retry').addEventListener('click', loadNews);
+  document.getElementById('news-status').textContent = '';
+  document.getElementById('news-loadmore-wrap').style.display = 'none';
 }
 
 function renderNewsEmpty() {
   document.getElementById('news-grid').innerHTML = '<div class="state-msg">No recent news found.</div>';
+  document.getElementById('news-status').textContent = '';
+  document.getElementById('news-loadmore-wrap').style.display = 'none';
 }
 
-function renderNews(items) {
-  if (!items.length) { renderNewsEmpty(); return; }
-  var html = items.map(function (item) {
+function renderNewsStatus() {
+  var total = allNewsItems.length;
+  var shown = Math.min(visibleNewsCount, total);
+  document.getElementById('news-status').textContent = 'Showing ' + shown + ' of ' + total + ' articles';
+}
+
+function renderNewsLoadMore() {
+  var wrap = document.getElementById('news-loadmore-wrap');
+  wrap.style.display = visibleNewsCount < allNewsItems.length ? 'flex' : 'none';
+}
+
+function renderNews() {
+  if (!allNewsItems.length) { renderNewsEmpty(); return; }
+  var html = allNewsItems.slice(0, visibleNewsCount).map(function (item) {
     var s = sourceStyle(item.source);
     var badge = '<span class="news-badge" style="color:' + s.color + ';border:1px solid rgba(' + s.rgb + ',0.3);background:rgba(' + s.rgb + ',0.08)">' + escHtml(item.source) + '</span>';
     var link = escHtml(item.link);
@@ -504,28 +542,38 @@ function renderNews(items) {
       ? '<img class="news-card-img" src="' + escHtml(item.image) + '" alt="' + escHtml(item.title) + '" loading="lazy" onerror="this.style.display=\'none\'" />'
       : '';
     return (
-      '<div class="news-card">' +
+      '<a class="news-card" href="' + link + '" target="_blank" rel="noopener noreferrer">' +
         img +
         badge +
-        '<div class="news-title"><a href="' + link + '" target="_blank" rel="noopener noreferrer">' + escHtml(item.title) + '</a></div>' +
+        '<div class="news-title">' + escHtml(item.title) + '</div>' +
         '<div class="news-desc">' + escHtml(item.description) + '</div>' +
         '<div class="news-meta">' +
           '<span class="news-date">' + formatNewsDate(item.pubDate) + '</span>' +
-          '<a class="news-readmore" href="' + link + '" target="_blank" rel="noopener noreferrer">Read more →</a>' +
         '</div>' +
-      '</div>'
+      '</a>'
     );
   }).join('');
   document.getElementById('news-grid').innerHTML = html;
+  renderNewsStatus();
+  renderNewsLoadMore();
 }
 
 function loadNews() {
   renderNewsSkeleton();
   fetch('/api/news')
     .then(function (r) { if (!r.ok) throw new Error('bad status'); return r.json(); })
-    .then(function (data) { renderNews(Array.isArray(data) ? data : []); })
+    .then(function (data) {
+      allNewsItems = Array.isArray(data) ? data : [];
+      visibleNewsCount = PAGE_SIZE;
+      renderNews();
+    })
     .catch(function () { renderNewsError(); });
 }
+
+document.getElementById('news-loadmore').addEventListener('click', function () {
+  visibleNewsCount += PAGE_SIZE;
+  renderNews();
+});
 
 // ── INIT ─────────────────────────────────────────────────────────
 loadNews();

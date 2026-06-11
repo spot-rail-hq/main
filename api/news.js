@@ -11,8 +11,11 @@
 
 const FEEDS = [
   { url: 'https://www.railwaygazette.com/feed', source: 'Railway Gazette' },
-  { url: 'https://www.railtechnologymagazine.com/feed', source: 'Rail Technology Magazine' },
+  { url: 'https://railuk.com/feed', source: 'Rail UK' },
+  { url: 'https://railadvent.co.uk/feed', source: 'RailAdvent' },
+  { url: 'https://news.railbusinessdaily.com/feed', source: 'Rail Business Daily' },
   { url: 'https://www.networkrailmediacentre.co.uk/news.rss', source: 'Network Rail' },
+  { url: 'https://www.railtechnologymagazine.com/feed', source: 'Rail Technology Magazine' },
 ];
 
 const MAX_ITEMS = 30;
@@ -71,9 +74,16 @@ function extractImage(block) {
   let m = block.match(/<media:content[^>]*\surl=["']([^"']+)["']/i);
   if (m) return decodeEntities(m[1].trim());
 
-  // <enclosure url="..." type="image/..." />
-  m = block.match(/<enclosure[^>]*\surl=["']([^"']+)["']/i);
-  if (m) return decodeEntities(m[1].trim());
+  // <enclosure url="..." type="image/..." /> — only use if type starts with "image"
+  m = block.match(/<enclosure\b[^>]*>/i);
+  if (m) {
+    const tag = m[0];
+    const urlMatch = tag.match(/\surl=["']([^"']+)["']/i);
+    const typeMatch = tag.match(/\stype=["']([^"']+)["']/i);
+    if (urlMatch && (!typeMatch || /^image/i.test(typeMatch[1]))) {
+      return decodeEntities(urlMatch[1].trim());
+    }
+  }
 
   // <image>...</image> — either <image><url>...</url></image> or plain text
   const imageBlock = extractTag(block, 'image');
