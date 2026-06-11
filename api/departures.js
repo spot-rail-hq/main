@@ -34,12 +34,14 @@ async function getAccessToken(refreshToken) {
   console.log('Token exchange response:', tokenResp.status, text.substring(0, 200));
 
   if (tokenResp.status !== 200) {
+    console.log('RTT error body:', text.substring(0, 500));
     return { error: tokenResp.status };
   }
 
   const tokenData = JSON.parse(text);
   cachedToken = tokenData.accessToken;
   tokenExpiry = Date.parse(tokenData.validUntil);
+  console.log('Token exchange success, validUntil:', tokenData.validUntil, 'entitlements:', JSON.stringify(tokenData.entitlements));
 
   return { accessToken: cachedToken };
 }
@@ -62,24 +64,35 @@ export default async function handler(req, res) {
       return res.status(tokenResult.error).json({ error: 'AUTH_FAILED', status: tokenResult.error });
     }
 
-    const url = `https://data.rtt.io/v1/gb/station/${station}/departures`;
+    const departureUrls = [
+      `https://data.rtt.io/rtt/location/${station}`,
+      `https://data.rtt.io/gb-nr/location/${station}`,
+    ];
 
-    const upstream = await fetch(url, {
-      headers: {
-        'Authorization': `Bearer ${tokenResult.accessToken}`,
-        'Accept': 'application/json',
-      },
-    });
-
-    const text = await upstream.text();
-    console.log(`RTT departures: ${url} -> ${upstream.status}`);
-
-    if (upstream.status !== 200) {
-      return res.status(upstream.status).json({
-        error: 'RTT_ERROR',
-        status: upstream.status,
-        body: text.slice(0, 300),
+    let upstream, text, url;
+    for (let i = 0; i < departureUrls.length; i++) {
+      url = departureUrls[i];
+      upstream = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${tokenResult.accessToken}`,
+          'Accept': 'application/json',
+        },
       });
+
+      text = await upstream.text();
+      console.log(`RTT departures: ${url} -> ${upstream.status}`);
+
+      if (upstream.status === 200) break;
+
+      console.log('RTT error body:', text.substring(0, 500));
+
+      if (i === departureUrls.length - 1) {
+        return res.status(upstream.status).json({
+          error: 'RTT_ERROR',
+          status: upstream.status,
+          body: text.slice(0, 300),
+        });
+      }
     }
 
     const data = JSON.parse(text);
