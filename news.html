@@ -235,6 +235,84 @@ body.nav-open .nav-drawer { transform: translateX(0); }
 }
 .btn-loadmore:hover { background: rgba(var(--color-accent-turquoise-rgb),0.1); }
 
+/* Filter bar */
+.filter-bar { margin-bottom: 20px; }
+.filter-toggle {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 11px 20px; border-radius: 999px;
+  background: var(--surface); border: 1px solid rgba(var(--line-rgb),0.08);
+  color: var(--ink); font-size: 13.5px; font-weight: 600;
+  font-family: 'Manrope', sans-serif; cursor: pointer;
+  transition: border-color .15s ease;
+}
+.filter-toggle:hover { border-color: rgba(var(--color-accent-turquoise-rgb),0.4); }
+.filter-count-badge {
+  display: none; align-items: center;
+  background: var(--color-accent-turquoise); color: #07090C;
+  font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 999px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.filter-panel {
+  margin-top: 16px; padding: 22px; border-radius: 16px;
+  background: var(--surface); border: 1px solid rgba(var(--line-rgb),0.08);
+  display: flex; flex-direction: column; gap: 20px;
+}
+.filter-panel[hidden] { display: none; }
+
+.filter-group-label {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--ink-mute); margin-bottom: 10px;
+}
+.filter-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+
+.filter-pill {
+  padding: 7px 14px; border-radius: 999px;
+  background: var(--surface2); border: 1px solid rgba(var(--line-rgb),0.08);
+  color: var(--ink-dim); font-size: 12.5px; font-weight: 500;
+  font-family: 'Manrope', sans-serif; cursor: pointer; white-space: nowrap;
+  transition: all .15s ease;
+}
+.filter-pill:hover { border-color: rgba(var(--color-accent-turquoise-rgb),0.4); color: var(--ink); }
+.filter-pill.active {
+  background: var(--color-accent-turquoise); color: #07090C; border-color: var(--color-accent-turquoise);
+}
+
+.filter-row-label {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--ink-mute); white-space: nowrap; padding: 0 2px;
+}
+
+.filter-date-range { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 10px; }
+.filter-date-range label { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--ink-mute); }
+.filter-date-range input[type="date"] {
+  padding: 8px 12px; border-radius: 8px;
+  background: var(--surface2); border: 1px solid rgba(var(--line-rgb),0.08);
+  color: var(--ink); font-family: 'Manrope', sans-serif; font-size: 13px;
+}
+.filter-date-range input[type="date"]:focus { outline: none; border-color: var(--color-accent-turquoise); }
+
+.filter-select {
+  padding: 9px 14px; border-radius: 10px;
+  background: var(--surface2); border: 1px solid rgba(var(--line-rgb),0.08);
+  color: var(--ink); font-family: 'Manrope', sans-serif; font-size: 13.5px;
+  cursor: pointer; min-width: 240px; max-width: 100%;
+}
+.filter-select:focus { outline: none; border-color: var(--color-accent-turquoise); }
+
+.filter-foot { display: flex; align-items: center; justify-content: flex-end; }
+.filter-clear {
+  font-size: 12.5px; color: var(--ink-mute); cursor: pointer; text-decoration: underline;
+  background: none; border: none; font-family: 'Manrope', sans-serif;
+}
+.filter-clear:hover { color: var(--ink-dim); }
+
+@media (max-width: 900px) {
+  .filter-row.row-scroll { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 6px; }
+  .filter-row.row-scroll .filter-pill, .filter-row.row-scroll .filter-row-label { flex: 0 0 auto; }
+  .filter-select { min-width: 0; width: 100%; }
+}
+
 /* Skeleton shimmer (matches spotlight section style) */
 @keyframes newsPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
 .skel {
@@ -407,6 +485,120 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
 
 <!-- RAIL NEWS -->
 <div class="news-wrap">
+  <div class="filter-bar">
+    <button class="filter-toggle" id="filter-toggle" aria-expanded="false" aria-controls="filter-panel">
+      <span>🔍 Filter &amp; Search</span>
+      <span class="filter-count-badge" id="filter-count-badge"></span>
+    </button>
+
+    <div class="filter-panel" id="filter-panel" hidden>
+      <div class="filter-group">
+        <div class="filter-group-label">Date</div>
+        <div class="filter-row" id="filter-date-pills">
+          <button class="filter-pill active" data-date="all">All time</button>
+          <button class="filter-pill" data-date="today">Today</button>
+          <button class="filter-pill" data-date="week">This week</button>
+          <button class="filter-pill" data-date="month">This month</button>
+          <button class="filter-pill" data-date="year">This year</button>
+          <button class="filter-pill" data-date="custom">Custom range</button>
+        </div>
+        <div class="filter-date-range" id="filter-date-range" style="display:none">
+          <label>From <input type="date" id="filter-date-from"></label>
+          <label>To <input type="date" id="filter-date-to"></label>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <div class="filter-group-label">Time Range</div>
+        <div class="filter-row" id="filter-era-pills">
+          <button class="filter-pill active" data-era="all">All</button>
+          <button class="filter-pill" data-era="pre2020">Pre-2020</button>
+          <button class="filter-pill" data-era="2020-2022">2020–2022</button>
+          <button class="filter-pill" data-era="2023">2023</button>
+          <button class="filter-pill" data-era="2024">2024</button>
+          <button class="filter-pill" data-era="2025">2025</button>
+          <button class="filter-pill" data-era="2026">2026</button>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <div class="filter-group-label">Region</div>
+        <select class="filter-select" id="filter-region">
+          <option value="all">All regions</option>
+          <option value="scotland">Scotland</option>
+          <option value="north-east">North East England</option>
+          <option value="north-west">North West England</option>
+          <option value="yorkshire">Yorkshire &amp; Humber</option>
+          <option value="east-midlands">East Midlands</option>
+          <option value="west-midlands">West Midlands</option>
+          <option value="east-of-england">East of England</option>
+          <option value="london">London</option>
+          <option value="south-east">South East England</option>
+          <option value="south-west">South West England</option>
+          <option value="wales">Wales</option>
+          <option value="northern-ireland">Northern Ireland</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <div class="filter-group-label">Operator</div>
+        <div class="filter-row row-scroll" id="filter-operator-pills">
+          <button class="filter-pill" data-operator="Avanti West Coast">Avanti West Coast</button>
+          <button class="filter-pill" data-operator="Chiltern Railways">Chiltern Railways</button>
+          <button class="filter-pill" data-operator="CrossCountry">CrossCountry</button>
+          <button class="filter-pill" data-operator="East Midlands Railway">East Midlands Railway</button>
+          <button class="filter-pill" data-operator="Gatwick Express">Gatwick Express</button>
+          <button class="filter-pill" data-operator="Grand Central">Grand Central</button>
+          <button class="filter-pill" data-operator="Greater Anglia">Greater Anglia</button>
+          <button class="filter-pill" data-operator="Great Western Railway (GWR)">Great Western Railway (GWR)</button>
+          <button class="filter-pill" data-operator="Heathrow Express">Heathrow Express</button>
+          <button class="filter-pill" data-operator="Hull Trains">Hull Trains</button>
+          <button class="filter-pill" data-operator="LNER">LNER</button>
+          <button class="filter-pill" data-operator="London Northwestern Railway">London Northwestern Railway</button>
+          <button class="filter-pill" data-operator="Lumo">Lumo</button>
+          <button class="filter-pill" data-operator="Merseyrail">Merseyrail</button>
+          <button class="filter-pill" data-operator="Northern">Northern</button>
+          <button class="filter-pill" data-operator="ScotRail">ScotRail</button>
+          <button class="filter-pill" data-operator="Southeastern">Southeastern</button>
+          <button class="filter-pill" data-operator="Southern">Southern</button>
+          <button class="filter-pill" data-operator="South Western Railway">South Western Railway</button>
+          <button class="filter-pill" data-operator="Thameslink">Thameslink</button>
+          <button class="filter-pill" data-operator="TransPennine Express">TransPennine Express</button>
+          <button class="filter-pill" data-operator="Transport for Wales">Transport for Wales</button>
+          <button class="filter-pill" data-operator="West Midlands Trains">West Midlands Trains</button>
+          <button class="filter-pill" data-operator="c2c">c2c</button>
+          <button class="filter-pill" data-operator="Elizabeth line">Elizabeth line</button>
+          <button class="filter-pill" data-operator="London Overground">London Overground</button>
+          <button class="filter-pill" data-operator="TfL Rail">TfL Rail</button>
+          <button class="filter-pill" data-operator="Network Rail">Network Rail</button>
+          <button class="filter-pill" data-operator="HS2">HS2</button>
+          <span class="filter-row-label">Freight</span>
+          <button class="filter-pill" data-operator="DB Cargo">DB Cargo</button>
+          <button class="filter-pill" data-operator="Freightliner">Freightliner</button>
+          <button class="filter-pill" data-operator="GB Railfreight">GB Railfreight</button>
+          <button class="filter-pill" data-operator="Colas Rail">Colas Rail</button>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <div class="filter-group-label">Source</div>
+        <div class="filter-row row-scroll" id="filter-source-pills">
+          <button class="filter-pill active" data-source="all">All</button>
+          <button class="filter-pill" data-source="Railway Gazette">Railway Gazette</button>
+          <button class="filter-pill" data-source="Rail UK">Rail UK</button>
+          <button class="filter-pill" data-source="RailAdvent">RailAdvent</button>
+          <button class="filter-pill" data-source="Rail Business Daily">Rail Business Daily</button>
+          <button class="filter-pill" data-source="Network Rail">Network Rail</button>
+          <button class="filter-pill" data-source="Rail Technology Magazine">Rail Technology Magazine</button>
+        </div>
+      </div>
+
+      <div class="filter-foot">
+        <button class="filter-clear" id="filter-clear">Clear all filters</button>
+      </div>
+    </div>
+  </div>
+
   <div class="news-status" id="news-status"></div>
   <div class="news-grid" id="news-grid"></div>
   <div class="news-loadmore-wrap" id="news-loadmore-wrap" style="display:none">
@@ -482,6 +674,158 @@ function sourceStyle(source) {
   return SOURCE_STYLES[source] || { color: 'var(--ink-mute)', rgb: 'var(--line-rgb)' };
 }
 
+// ── NEWS FILTERS ─────────────────────────────────────────────────
+var FILTER_STATE = {
+  date: 'all',       // all | today | week | month | year | custom
+  dateFrom: null,
+  dateTo: null,
+  era: 'all',        // all | pre2020 | 2020-2022 | 2023 | 2024 | 2025 | 2026
+  region: 'all',
+  operators: [],
+  source: 'all'
+};
+
+var REGION_KEYWORDS = {
+  'scotland':         ['scotland','scottish','scotrail','caledonian'],
+  'north-east':       ['newcastle','sunderland','durham','tyne','northeast','north east','northern rail'],
+  'north-west':       ['manchester','liverpool','lancashire','cumbria','northwest','north west','avanti','transpennine'],
+  'yorkshire':        ['leeds','sheffield','york','hull','yorkshire','humber'],
+  'east-midlands':    ['nottingham','derby','leicester','east midlands'],
+  'west-midlands':    ['birmingham','wolverhampton','coventry','west midlands','chiltern'],
+  'east-of-england':  ['cambridge','norwich','ipswich','east anglia','greater anglia'],
+  'london':           ['london','tfl','transport for london','overground','elizabeth line','thameslink','southeastern','southern'],
+  'south-east':       ['brighton','kent','sussex','southeastern','gatwick','south eastern'],
+  'south-west':       ['bristol','exeter','plymouth','cornwall','devon','great western','gwr'],
+  'wales':            ['wales','welsh','transport for wales','cardiff','swansea'],
+  'northern-ireland': ['northern ireland','translink','belfast']
+};
+
+var OPERATOR_KEYWORDS = {
+  'Avanti West Coast':           ['avanti west coast','avanti'],
+  'Chiltern Railways':           ['chiltern railways','chiltern'],
+  'CrossCountry':                ['crosscountry','cross country'],
+  'East Midlands Railway':       ['east midlands railway','emr'],
+  'Gatwick Express':             ['gatwick express'],
+  'Grand Central':                ['grand central'],
+  'Greater Anglia':               ['greater anglia'],
+  'Great Western Railway (GWR)': ['great western railway','gwr','great western'],
+  'Heathrow Express':             ['heathrow express'],
+  'Hull Trains':                  ['hull trains'],
+  'LNER':                          ['lner','london north eastern railway'],
+  'London Northwestern Railway': ['london northwestern railway','london northwestern'],
+  'Lumo':                          ['lumo'],
+  'Merseyrail':                   ['merseyrail'],
+  'Northern':                      ['northern rail','northern trains'],
+  'ScotRail':                      ['scotrail'],
+  'Southeastern':                  ['southeastern','south eastern'],
+  'Southern':                      ['southern rail'],
+  'South Western Railway':        ['south western railway','swr'],
+  'Thameslink':                    ['thameslink'],
+  'TransPennine Express':          ['transpennine express','transpennine','tpe'],
+  'Transport for Wales':           ['transport for wales','tfw'],
+  'West Midlands Trains':          ['west midlands trains','wmt'],
+  'c2c':                           ['c2c'],
+  'Elizabeth line':                ['elizabeth line'],
+  'London Overground':             ['london overground'],
+  'TfL Rail':                      ['tfl rail'],
+  'Network Rail':                  ['network rail'],
+  'HS2':                           ['hs2'],
+  'DB Cargo':                      ['db cargo'],
+  'Freightliner':                  ['freightliner'],
+  'GB Railfreight':                ['gb railfreight','gbrf'],
+  'Colas Rail':                    ['colas rail','colas']
+};
+
+function textContainsAny(text, keywords) {
+  for (var i = 0; i < keywords.length; i++) {
+    if (text.indexOf(keywords[i]) !== -1) return true;
+  }
+  return false;
+}
+
+function sameCalendarDay(a, b) {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
+
+function matchesFilters(item) {
+  var text = ((item.title || '') + ' ' + (item.description || '')).toLowerCase();
+  var pubDate = item.pubDate ? new Date(item.pubDate) : null;
+  var validDate = !!(pubDate && !isNaN(pubDate.getTime()));
+
+  if (FILTER_STATE.source !== 'all' && item.source !== FILTER_STATE.source) return false;
+
+  if (FILTER_STATE.date !== 'all') {
+    if (!validDate) return false;
+    var now = new Date();
+    if (FILTER_STATE.date === 'today') {
+      if (!sameCalendarDay(pubDate, now)) return false;
+    } else if (FILTER_STATE.date === 'week') {
+      var weekAgo = new Date(now); weekAgo.setDate(now.getDate() - 7);
+      if (pubDate < weekAgo || pubDate > now) return false;
+    } else if (FILTER_STATE.date === 'month') {
+      if (pubDate.getFullYear() !== now.getFullYear() || pubDate.getMonth() !== now.getMonth()) return false;
+    } else if (FILTER_STATE.date === 'year') {
+      if (pubDate.getFullYear() !== now.getFullYear()) return false;
+    } else if (FILTER_STATE.date === 'custom') {
+      if (FILTER_STATE.dateFrom && pubDate < new Date(FILTER_STATE.dateFrom)) return false;
+      if (FILTER_STATE.dateTo) {
+        var to = new Date(FILTER_STATE.dateTo);
+        to.setHours(23, 59, 59, 999);
+        if (pubDate > to) return false;
+      }
+    }
+  } else if (FILTER_STATE.era !== 'all') {
+    if (!validDate) return false;
+    var y = pubDate.getFullYear();
+    if (FILTER_STATE.era === 'pre2020' && y >= 2020) return false;
+    if (FILTER_STATE.era === '2020-2022' && (y < 2020 || y > 2022)) return false;
+    if (FILTER_STATE.era === '2023' && y !== 2023) return false;
+    if (FILTER_STATE.era === '2024' && y !== 2024) return false;
+    if (FILTER_STATE.era === '2025' && y !== 2025) return false;
+    if (FILTER_STATE.era === '2026' && y !== 2026) return false;
+  }
+
+  if (FILTER_STATE.region !== 'all') {
+    if (!textContainsAny(text, REGION_KEYWORDS[FILTER_STATE.region] || [])) return false;
+  }
+
+  if (FILTER_STATE.operators.length) {
+    var anyMatch = FILTER_STATE.operators.some(function (op) {
+      return textContainsAny(text, OPERATOR_KEYWORDS[op] || [op.toLowerCase()]);
+    });
+    if (!anyMatch) return false;
+  }
+
+  return true;
+}
+
+function countActiveFilters() {
+  var n = 0;
+  if (FILTER_STATE.date !== 'all') n++;
+  else if (FILTER_STATE.era !== 'all') n++;
+  if (FILTER_STATE.region !== 'all') n++;
+  if (FILTER_STATE.operators.length) n++;
+  if (FILTER_STATE.source !== 'all') n++;
+  return n;
+}
+
+function updateFilterToggle() {
+  var n = countActiveFilters();
+  var badge = document.getElementById('filter-count-badge');
+  badge.textContent = n > 0 ? n + ' active' : '';
+  badge.style.display = n > 0 ? 'inline-flex' : 'none';
+}
+
+function onFilterChange() {
+  visibleNewsCount = PAGE_SIZE;
+  updateFilterToggle();
+  renderNews();
+}
+
+function getFilteredNewsItems() {
+  return allNewsItems.filter(matchesFilters);
+}
+
 function formatNewsDate(iso) {
   if (!iso) return '';
   var d = new Date(iso);
@@ -521,20 +865,27 @@ function renderNewsEmpty() {
   document.getElementById('news-loadmore-wrap').style.display = 'none';
 }
 
-function renderNewsStatus() {
-  var total = allNewsItems.length;
+function renderNewsStatus(total) {
   var shown = Math.min(visibleNewsCount, total);
   document.getElementById('news-status').textContent = 'Showing ' + shown + ' of ' + total + ' articles';
 }
 
-function renderNewsLoadMore() {
+function renderNewsLoadMore(total) {
   var wrap = document.getElementById('news-loadmore-wrap');
-  wrap.style.display = visibleNewsCount < allNewsItems.length ? 'flex' : 'none';
+  wrap.style.display = visibleNewsCount < total ? 'flex' : 'none';
+}
+
+function renderNewsNoMatches() {
+  document.getElementById('news-grid').innerHTML = '<div class="state-msg">No articles match the selected filters.</div>';
+  document.getElementById('news-status').textContent = 'Showing 0 of 0 articles';
+  document.getElementById('news-loadmore-wrap').style.display = 'none';
 }
 
 function renderNews() {
   if (!allNewsItems.length) { renderNewsEmpty(); return; }
-  var html = allNewsItems.slice(0, visibleNewsCount).map(function (item) {
+  var filtered = getFilteredNewsItems();
+  if (!filtered.length) { renderNewsNoMatches(); return; }
+  var html = filtered.slice(0, visibleNewsCount).map(function (item) {
     var s = sourceStyle(item.source);
     var badge = '<span class="news-badge" style="color:' + s.color + ';border:1px solid rgba(' + s.rgb + ',0.3);background:rgba(' + s.rgb + ',0.08)">' + escHtml(item.source) + '</span>';
     var link = escHtml(item.link);
@@ -554,8 +905,8 @@ function renderNews() {
     );
   }).join('');
   document.getElementById('news-grid').innerHTML = html;
-  renderNewsStatus();
-  renderNewsLoadMore();
+  renderNewsStatus(filtered.length);
+  renderNewsLoadMore(filtered.length);
 }
 
 function loadNews() {
@@ -574,6 +925,111 @@ document.getElementById('news-loadmore').addEventListener('click', function () {
   visibleNewsCount += PAGE_SIZE;
   renderNews();
 });
+
+// ── FILTER UI WIRING ─────────────────────────────────────────────
+(function () {
+  var toggle = document.getElementById('filter-toggle');
+  var panel = document.getElementById('filter-panel');
+
+  toggle.addEventListener('click', function () {
+    if (panel.hasAttribute('hidden')) {
+      panel.removeAttribute('hidden');
+      toggle.setAttribute('aria-expanded', 'true');
+    } else {
+      panel.setAttribute('hidden', '');
+      toggle.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  // Expanded by default on desktop, collapsed on mobile
+  if (window.matchMedia('(min-width: 901px)').matches) {
+    panel.removeAttribute('hidden');
+    toggle.setAttribute('aria-expanded', 'true');
+  }
+
+  document.getElementById('filter-date-pills').addEventListener('click', function (e) {
+    var btn = e.target.closest('.filter-pill');
+    if (!btn) return;
+    FILTER_STATE.date = btn.dataset.date;
+    Array.prototype.forEach.call(this.children, function (b) { b.classList.toggle('active', b === btn); });
+    document.getElementById('filter-date-range').style.display = FILTER_STATE.date === 'custom' ? 'flex' : 'none';
+    onFilterChange();
+  });
+
+  document.getElementById('filter-era-pills').addEventListener('click', function (e) {
+    var btn = e.target.closest('.filter-pill');
+    if (!btn) return;
+    FILTER_STATE.era = btn.dataset.era;
+    Array.prototype.forEach.call(this.children, function (b) { b.classList.toggle('active', b === btn); });
+    onFilterChange();
+  });
+
+  document.getElementById('filter-region').addEventListener('change', function () {
+    FILTER_STATE.region = this.value;
+    onFilterChange();
+  });
+
+  document.getElementById('filter-operator-pills').addEventListener('click', function (e) {
+    var btn = e.target.closest('.filter-pill');
+    if (!btn) return;
+    var op = btn.dataset.operator;
+    var idx = FILTER_STATE.operators.indexOf(op);
+    if (idx === -1) {
+      FILTER_STATE.operators.push(op);
+      btn.classList.add('active');
+    } else {
+      FILTER_STATE.operators.splice(idx, 1);
+      btn.classList.remove('active');
+    }
+    onFilterChange();
+  });
+
+  document.getElementById('filter-source-pills').addEventListener('click', function (e) {
+    var btn = e.target.closest('.filter-pill');
+    if (!btn) return;
+    FILTER_STATE.source = btn.dataset.source;
+    Array.prototype.forEach.call(this.children, function (b) { b.classList.toggle('active', b === btn); });
+    onFilterChange();
+  });
+
+  document.getElementById('filter-date-from').addEventListener('change', function () {
+    FILTER_STATE.dateFrom = this.value || null;
+    onFilterChange();
+  });
+  document.getElementById('filter-date-to').addEventListener('change', function () {
+    FILTER_STATE.dateTo = this.value || null;
+    onFilterChange();
+  });
+
+  document.getElementById('filter-clear').addEventListener('click', function () {
+    FILTER_STATE.date = 'all';
+    FILTER_STATE.dateFrom = null;
+    FILTER_STATE.dateTo = null;
+    FILTER_STATE.era = 'all';
+    FILTER_STATE.region = 'all';
+    FILTER_STATE.operators = [];
+    FILTER_STATE.source = 'all';
+
+    document.querySelectorAll('#filter-date-pills .filter-pill').forEach(function (b) {
+      b.classList.toggle('active', b.dataset.date === 'all');
+    });
+    document.querySelectorAll('#filter-era-pills .filter-pill').forEach(function (b) {
+      b.classList.toggle('active', b.dataset.era === 'all');
+    });
+    document.querySelectorAll('#filter-operator-pills .filter-pill').forEach(function (b) {
+      b.classList.remove('active');
+    });
+    document.querySelectorAll('#filter-source-pills .filter-pill').forEach(function (b) {
+      b.classList.toggle('active', b.dataset.source === 'all');
+    });
+    document.getElementById('filter-region').value = 'all';
+    document.getElementById('filter-date-range').style.display = 'none';
+    document.getElementById('filter-date-from').value = '';
+    document.getElementById('filter-date-to').value = '';
+
+    onFilterChange();
+  });
+})();
 
 // ── INIT ─────────────────────────────────────────────────────────
 loadNews();
