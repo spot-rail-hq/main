@@ -39,7 +39,7 @@ async function getAccessToken(refreshToken) {
   }
 
   const tokenData = JSON.parse(text);
-  cachedToken = tokenData.accessToken;
+  cachedToken = tokenData.token;
   tokenExpiry = Date.parse(tokenData.validUntil);
   console.log('Token exchange success, validUntil:', tokenData.validUntil, 'entitlements:', JSON.stringify(tokenData.entitlements));
 
@@ -65,8 +65,8 @@ export default async function handler(req, res) {
     }
 
     const departureUrls = [
-      `https://data.rtt.io/rtt/location/${station}`,
-      `https://data.rtt.io/gb-nr/location/${station}`,
+      `https://data.rtt.io/rtt/location?code=gb-nr:${station}`,
+      `https://data.rtt.io/gb-nr/location?code=${station}`,
     ];
 
     let upstream, text, url;
