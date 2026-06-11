@@ -26,17 +26,18 @@ async function getAccessToken(refreshToken) {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${refreshToken}`,
-      'Content-Type': 'application/json',
+      'Accept': 'application/json',
     },
   });
 
-  console.log(`RTT token exchange -> ${tokenResp.status}`);
+  const text = await tokenResp.text();
+  console.log('Token exchange response:', tokenResp.status, text.substring(0, 200));
 
   if (tokenResp.status !== 200) {
     return { error: tokenResp.status };
   }
 
-  const tokenData = await tokenResp.json();
+  const tokenData = JSON.parse(text);
   cachedToken = tokenData.accessToken;
   tokenExpiry = Date.parse(tokenData.validUntil);
 
