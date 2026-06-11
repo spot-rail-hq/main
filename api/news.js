@@ -97,6 +97,21 @@ function extractImage(block) {
   return null;
 }
 
+const fetchWithTimeout = (url, ms = 5000, options = {}) => {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+  return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(timer));
+};
+
+async function fetchFeed(feed) {
+  const upstream = await fetchWithTimeout(feed.url, 5000, {
+    headers: { 'User-Agent': 'Mozilla/5.0 (compatible; SpotRailHQ/1.0; +https://srhq.uk)' },
+  });
+  if (!upstream.ok) throw new Error(`HTTP ${upstream.status}`);
+  const xml = await upstream.text();
+  return parseFeed(xml, feed.source);
+}
+
 function parseFeed(xml, source) {
   const blocks = xml.match(/<(?:item|entry)[\s\S]*?<\/(?:item|entry)>/gi) || [];
   return blocks.map((block) => {
@@ -129,25 +144,16 @@ function parseFeed(xml, source) {
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Cache-Control', 's-maxage=900, stale-while-revalidate=300');
+  res.setHeader('Cache-Control', 's-maxage=1800, stale-while-revalidate=3600');
 
-  const results = await Promise.allSettled(FEEDS.map(async (feed) => {
-    const upstream = await fetch(feed.url, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; SpotRailHQ/1.0; +https://srhq.uk)' },
-    });
-    if (!upstream.ok) throw new Error(`${feed.source}: HTTP ${upstream.status}`);
-    const xml = await upstream.text();
-    return parseFeed(xml, feed.source);
-  }));
+  const results = await Promise.all(
+    FEEDS.map(feed => fetchFeed(feed).catch(err => {
+      console.error('Feed failed:', feed.source, err.message);
+      return [];
+    }))
+  );
 
-  let items = [];
-  results.forEach((result, i) => {
-    if (result.status === 'fulfilled') {
-      items = items.concat(result.value);
-    } else {
-      console.error(`Feed failed (${FEEDS[i].source}):`, result.reason && result.reason.message);
-    }
-  });
+  let items = results.flat();
 
   items.sort((a, b) => {
     const ta = a.pubDate ? new Date(a.pubDate).getTime() : 0;
