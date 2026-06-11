@@ -11,28 +11,28 @@
   } catch (e) {}
 })();
 </script>
-<title>Rail News | SpotRail HQ</title>
+<title>Live Departures | SpotRail HQ</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="icon" type="image/svg+xml" href="/img/srhq-favicon.svg">
 <link rel="shortcut icon" href="/img/srhq-favicon.svg">
 <link rel="apple-touch-icon" href="/img/srhq-favicon.svg">
-<meta name="description" content="The latest UK railway headlines, aggregated from across the industry — updated every 15 minutes." />
+<meta name="description" content="Real-time UK train departures powered by Realtime Trains — auto-refreshing every 30 seconds." />
 <meta name="robots" content="index, follow" />
 <meta name="author" content="SpotRail HQ" />
-<link rel="canonical" href="https://srhq.uk/news.html" />
+<link rel="canonical" href="https://srhq.uk/departures.html" />
 
 <!-- Open Graph -->
-<meta property="og:title" content="Rail News | SpotRail HQ" />
-<meta property="og:description" content="The latest UK railway headlines, aggregated from across the industry — updated every 15 minutes." />
+<meta property="og:title" content="Live Departures | SpotRail HQ" />
+<meta property="og:description" content="Real-time UK train departures powered by Realtime Trains — auto-refreshing every 30 seconds." />
 <meta property="og:type" content="website" />
-<meta property="og:url" content="https://srhq.uk/news.html" />
+<meta property="og:url" content="https://srhq.uk/departures.html" />
 <meta property="og:site_name" content="SpotRail HQ" />
 <meta property="og:image" content="https://srhq.uk/img/og-image.jpg" />
 
 <!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="Rail News | SpotRail HQ" />
-<meta name="twitter:description" content="The latest UK railway headlines, aggregated from across the industry — updated every 15 minutes." />
+<meta name="twitter:title" content="Live Departures | SpotRail HQ" />
+<meta name="twitter:description" content="Real-time UK train departures powered by Realtime Trains — auto-refreshing every 30 seconds." />
 <meta name="twitter:image" content="https://srhq.uk/img/og-image.jpg" />
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -189,48 +189,6 @@ body.nav-open .nav-drawer { transform: translateX(0); }
   margin-top: 16px; max-width: 620px;
 }
 
-/* News grid */
-.news-wrap { max-width: 1280px; margin: 0 auto; padding: 28px 32px 56px; }
-.news-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-@media (max-width: 1100px) { .news-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 700px)  { .news-grid { grid-template-columns: 1fr; } }
-
-.news-card {
-  background: var(--surface); border: 1px solid rgba(var(--line-rgb),0.08);
-  border-radius: 16px; padding: 22px;
-  display: flex; flex-direction: column; gap: 12px;
-  transition: transform .2s ease, border-color .2s ease;
-}
-.news-card:hover { transform: translateY(-2px); border-color: rgba(var(--color-accent-turquoise-rgb),0.3); }
-.news-card-img {
-  display: block; width: calc(100% + 44px); height: 160px;
-  margin: -22px -22px 0; object-fit: cover;
-  border-radius: 16px 16px 0 0;
-}
-.news-badge {
-  display: inline-flex; align-self: flex-start;
-  font-family: 'JetBrains Mono', monospace; font-size: 10.5px;
-  letter-spacing: 1.5px; text-transform: uppercase;
-  padding: 4px 10px; border-radius: 999px;
-}
-.news-title {
-  font-family: 'Archivo', sans-serif; font-size: 18px; font-weight: 600;
-  letter-spacing: -0.4px; line-height: 1.32;
-}
-.news-title a:hover { color: var(--color-accent-turquoise); }
-.news-desc { font-size: 13.5px; color: var(--ink-dim); line-height: 1.55; flex: 1; }
-.news-meta { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.news-date { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--ink-mute); }
-.news-readmore { font-size: 12.5px; font-weight: 600; color: var(--color-accent-turquoise); white-space: nowrap; }
-
-/* Skeleton shimmer (matches spotlight section style) */
-@keyframes newsPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
-.skel {
-  display: block; border-radius: 4px;
-  background: rgba(var(--line-rgb),0.07);
-  animation: newsPulse 1.4s ease-in-out infinite;
-}
-
 /* Empty / error states */
 .state-msg {
   grid-column: 1 / -1; text-align: center; padding: 56px 20px;
@@ -242,6 +200,62 @@ body.nav-open .nav-drawer { transform: translateX(0); }
   border: none; font-weight: 600; font-size: 14px;
   font-family: 'Manrope', sans-serif; cursor: pointer;
 }
+
+/* Departures */
+.dep-wrap { max-width: 1280px; margin: 0 auto; padding: 28px 32px 56px; }
+.station-row {
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 20px;
+}
+.station-btn {
+  padding: 9px 16px; border-radius: 999px;
+  font-family: 'Manrope', sans-serif; font-size: 13px; font-weight: 500;
+  color: var(--ink); background: var(--surface);
+  border: 1px solid rgba(var(--line-rgb),0.08);
+  cursor: pointer; transition: all .15s ease;
+}
+.station-btn.active { background: var(--color-accent-turquoise); color: #07090C; border-color: transparent; }
+.station-search { display: flex; gap: 8px; align-items: center; margin-left: auto; }
+.station-search input {
+  width: 90px; padding: 9px 12px; border-radius: 8px;
+  background: var(--surface); border: 1px solid rgba(var(--line-rgb),0.08);
+  color: var(--ink); font-family: 'JetBrains Mono', monospace;
+  font-size: 13px; text-transform: uppercase; outline: none;
+}
+.station-search input:focus { border-color: rgba(var(--color-accent-turquoise-rgb),0.5); }
+.station-search button {
+  padding: 9px 16px; border-radius: 8px;
+  background: var(--color-accent-turquoise); color: #07090C;
+  border: none; font-weight: 600; font-size: 13px; cursor: pointer;
+  font-family: 'Manrope', sans-serif;
+}
+
+.dep-bar {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 16px; margin-bottom: 0;
+  background: var(--surface2); border: 1px solid rgba(var(--line-rgb),0.08);
+  border-bottom: none; border-radius: 12px 12px 0 0;
+  font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--ink-mute);
+  position: sticky; top: 72px; z-index: 5;
+}
+.dep-refreshing { color: var(--color-accent-turquoise); display: none; }
+
+.dep-table-wrap { overflow-x: auto; }
+table.dep-table {
+  width: 100%; min-width: 620px; border-collapse: collapse;
+  background: var(--surface); border: 1px solid rgba(var(--line-rgb),0.08);
+  border-radius: 0 0 12px 12px; overflow: hidden;
+}
+.dep-table th {
+  text-align: left; padding: 14px 16px;
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--ink-mute);
+  border-bottom: 1px solid rgba(var(--line-rgb),0.08);
+}
+.dep-table td { padding: 12px 16px; font-size: 14px; border-bottom: 1px solid rgba(var(--line-rgb),0.05); }
+.dep-table tr:last-child td { border-bottom: none; }
+.dep-table tbody tr:nth-child(even) td { background: var(--surface2); }
+.dep-mono { font-family: 'JetBrains Mono', monospace; }
 
 /* Footer */
 .footer {
@@ -283,7 +297,9 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
 }
 @media (max-width: 560px) {
   .nav-inner { padding: 0 20px; }
-  .hero-sm, .news-wrap { padding-left: 20px; padding-right: 20px; }
+  .hero-sm, .dep-wrap { padding-left: 20px; padding-right: 20px; }
+  .station-search { margin-left: 0; width: 100%; }
+  .station-search input { flex: 1; width: auto; }
 }
 </style>
 </head>
@@ -297,8 +313,8 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
     </a>
     <div class="nav-controls">
       <div class="nav-links">
-        <a href="/news.html" class="nav-link active">News</a>
-        <a href="/departures.html" class="nav-link">Live Departures</a>
+        <a href="/news.html" class="nav-link">News</a>
+        <a href="/departures.html" class="nav-link active">Live Departures</a>
         <a href="database.html" class="nav-link">Database</a>
         <a href="map.html" class="nav-link">Network Map</a>
       </div>
@@ -333,8 +349,8 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
     <button class="nav-drawer-close" id="navClose" aria-label="Close menu">×</button>
   </div>
   <div class="nav-drawer-links">
-    <a href="/news.html" class="nav-drawer-link active"><span>News</span><span class="arr">→</span></a>
-    <a href="/departures.html" class="nav-drawer-link"><span>Live Departures</span><span class="arr">→</span></a>
+    <a href="/news.html" class="nav-drawer-link"><span>News</span><span class="arr">→</span></a>
+    <a href="/departures.html" class="nav-drawer-link active"><span>Live Departures</span><span class="arr">→</span></a>
     <a href="database.html" class="nav-drawer-link"><span>Database</span><span class="arr">→</span></a>
     <a href="map.html" class="nav-drawer-link"><span>Network Map</span><span class="arr">→</span></a>
   </div>
@@ -381,21 +397,34 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
 <main>
 <noscript>
   <div style="max-width:1280px;margin:0 auto;padding:32px;line-height:1.6">
-    <h1>Rail News — SpotRail HQ</h1>
-    <p>The latest UK railway headlines, aggregated from across the industry — updated every 15 minutes.</p>
+    <h1>Live Departures — SpotRail HQ</h1>
+    <p>Real-time UK train departures powered by Realtime Trains — auto-refreshing every 30 seconds.</p>
   </div>
 </noscript>
 
 <!-- HERO -->
 <section class="hero-sm">
-  <div class="label">News</div>
-  <h1>Rail News</h1>
-  <p>The latest UK railway headlines, aggregated from across the industry — updated every 15 minutes.</p>
+  <div class="label">Live Departures</div>
+  <h1>Live Departures</h1>
+  <p>Real-time UK train departures powered by Realtime Trains — auto-refreshing every 30 seconds.</p>
 </section>
 
-<!-- RAIL NEWS -->
-<div class="news-wrap">
-  <div class="news-grid" id="news-grid"></div>
+<!-- DEPARTURES -->
+<div class="dep-wrap">
+  <div class="station-row" id="station-row">
+    <div class="station-search">
+      <input type="text" id="station-input" maxlength="3" placeholder="CRS" />
+      <button type="button" id="station-search-btn">Go</button>
+    </div>
+  </div>
+  <div class="dep-bar" id="dep-bar">
+    <span id="dep-updated">Last updated: —</span>
+    <span id="dep-refreshing" class="dep-refreshing">↻ Refreshing…</span>
+  </div>
+  <div class="dep-table-wrap" id="dep-table-wrap"></div>
+  <p style="font-size:0.75rem; color:#9AA4B2; margin-top:1rem;">
+    Live data provided by <a href="https://realtimetrains.co.uk" target="_blank" rel="noopener noreferrer" style="color:#40E0D0;">Realtime Trains</a>
+  </p>
 </div>
 
 </main>
@@ -449,86 +478,167 @@ function escHtml(s) {
   });
 }
 
-// ── RAIL NEWS ────────────────────────────────────────────────────
-var SOURCE_STYLES = {
-  'Railway Gazette':           { color: 'var(--color-accent-turquoise)', rgb: 'var(--color-accent-turquoise-rgb)' },
-  'Rail Technology Magazine':  { color: 'var(--color-accent-magenta)',   rgb: 'var(--color-accent-magenta-rgb)' },
-  'Network Rail':              { color: 'var(--color-accent-amber)',     rgb: 'var(--color-accent-amber-rgb)' }
-};
-function sourceStyle(source) {
-  return SOURCE_STYLES[source] || { color: 'var(--ink-mute)', rgb: 'var(--line-rgb)' };
+// ── LIVE DEPARTURES ──────────────────────────────────────────────
+var STATIONS = [
+  { crs: 'EUS', name: 'London Euston' },
+  { crs: 'MAN', name: 'Manchester Piccadilly' },
+  { crs: 'BHM', name: 'Birmingham New Street' },
+  { crs: 'LDS', name: 'Leeds' },
+  { crs: 'EDB', name: 'Edinburgh Waverley' },
+  { crs: 'BRI', name: 'Bristol Temple Meads' },
+  { crs: 'GLC', name: 'Glasgow Central' }
+];
+var currentStation = 'EUS';
+var refreshTimer = null;
+
+(function buildStationRow() {
+  var row = document.getElementById('station-row');
+  var searchDiv = row.querySelector('.station-search');
+  STATIONS.forEach(function (st) {
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'station-btn' + (st.crs === currentStation ? ' active' : '');
+    btn.dataset.crs = st.crs;
+    btn.textContent = st.name + ' (' + st.crs + ')';
+    btn.addEventListener('click', function () { selectStation(st.crs); });
+    row.insertBefore(btn, searchDiv);
+  });
+})();
+
+document.getElementById('station-search-btn').addEventListener('click', function () {
+  var input = document.getElementById('station-input');
+  var crs = input.value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (crs.length === 3) selectStation(crs);
+});
+document.getElementById('station-input').addEventListener('keydown', function (e) {
+  if (e.key === 'Enter') document.getElementById('station-search-btn').click();
+});
+
+function selectStation(crs) {
+  currentStation = crs.toUpperCase();
+  document.querySelectorAll('.station-btn').forEach(function (btn) {
+    btn.classList.toggle('active', btn.dataset.crs === currentStation);
+  });
+  loadDepartures();
+  startAutoRefresh();
 }
 
-function formatNewsDate(iso) {
-  if (!iso) return '';
-  var d = new Date(iso);
-  if (isNaN(d.getTime())) return '';
-  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  return d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
+function formatTime(t) {
+  if (!t || t.length < 4) return '—';
+  return t.slice(0, 2) + ':' + t.slice(2, 4);
 }
 
-function renderNewsSkeleton() {
-  var card =
-    '<div class="news-card">' +
-      '<span class="skel" style="width:110px;height:20px;border-radius:999px"></span>' +
-      '<span class="skel" style="width:96%;height:18px"></span>' +
-      '<span class="skel" style="width:72%;height:18px"></span>' +
-      '<span class="skel" style="width:100%;height:13px"></span>' +
-      '<span class="skel" style="width:92%;height:13px"></span>' +
-      '<span class="skel" style="width:55%;height:13px"></span>' +
-      '<span class="skel" style="width:40%;height:12px;margin-top:6px"></span>' +
-    '</div>';
-  document.getElementById('news-grid').innerHTML = card.repeat(6);
+function isCancelled(loc) {
+  return loc.cancelled === true || loc.isCancelled === true || loc.displayAs === 'CANCELLED_CALL';
 }
 
-function renderNewsError() {
-  document.getElementById('news-grid').innerHTML =
-    '<div class="state-msg">' +
-      "Couldn't load news right now — try again shortly<br>" +
-      '<button class="btn-retry" id="news-retry">Retry</button>' +
-    '</div>';
-  document.getElementById('news-retry').addEventListener('click', loadNews);
+function getStatus(loc) {
+  if (isCancelled(loc)) {
+    return { label: 'Cancelled', color: 'var(--color-accent-magenta)' };
+  }
+  var scheduled = loc.scheduledDeparture || loc.gbttBookedDeparture;
+  var realtime = loc.realtimeDeparture;
+  if (realtime && scheduled) {
+    if (realtime !== scheduled) return { label: 'Delayed', color: 'var(--color-accent-amber)' };
+    return { label: 'On time', color: 'var(--color-accent-lime)' };
+  }
+  return { label: 'Scheduled', color: 'var(--ink-mute)' };
 }
 
-function renderNewsEmpty() {
-  document.getElementById('news-grid').innerHTML = '<div class="state-msg">No recent news found.</div>';
+function setLastUpdated() {
+  var now = new Date();
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+  document.getElementById('dep-updated').textContent =
+    'Last updated: ' + pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
 }
 
-function renderNews(items) {
-  if (!items.length) { renderNewsEmpty(); return; }
-  var html = items.map(function (item) {
-    var s = sourceStyle(item.source);
-    var badge = '<span class="news-badge" style="color:' + s.color + ';border:1px solid rgba(' + s.rgb + ',0.3);background:rgba(' + s.rgb + ',0.08)">' + escHtml(item.source) + '</span>';
-    var link = escHtml(item.link);
-    var img = item.image
-      ? '<img class="news-card-img" src="' + escHtml(item.image) + '" alt="' + escHtml(item.title) + '" loading="lazy" onerror="this.style.display=\'none\'" />'
-      : '';
+function setRefreshing(state) {
+  document.getElementById('dep-refreshing').style.display = state ? 'inline' : 'none';
+}
+
+function renderDepartures(data) {
+  var services = (data && Array.isArray(data.services)) ? data.services : [];
+  services = services.slice(0, 20);
+
+  if (!services.length) {
+    document.getElementById('dep-table-wrap').innerHTML =
+      '<div class="state-msg" style="background:var(--surface);border:1px solid rgba(var(--line-rgb),0.08);border-radius:0 0 12px 12px">No departures found for this station.</div>';
+    return;
+  }
+
+  var rows = services.map(function (s) {
+    var loc = s.locationDetail || s;
+    var destArr = loc.destination || [];
+    var dest = (destArr.length && destArr[destArr.length - 1].description) || '—';
+    var scheduled = loc.scheduledDeparture || loc.gbttBookedDeparture;
+    var platform = loc.platform || '—';
+    var status = getStatus(loc);
     return (
-      '<div class="news-card">' +
-        img +
-        badge +
-        '<div class="news-title"><a href="' + link + '" target="_blank" rel="noopener noreferrer">' + escHtml(item.title) + '</a></div>' +
-        '<div class="news-desc">' + escHtml(item.description) + '</div>' +
-        '<div class="news-meta">' +
-          '<span class="news-date">' + formatNewsDate(item.pubDate) + '</span>' +
-          '<a class="news-readmore" href="' + link + '" target="_blank" rel="noopener noreferrer">Read more →</a>' +
-        '</div>' +
-      '</div>'
+      '<tr>' +
+        '<td class="dep-mono">' + escHtml(formatTime(scheduled)) + '</td>' +
+        '<td>' + escHtml(dest) + '</td>' +
+        '<td class="dep-mono">' + escHtml(platform) + '</td>' +
+        '<td style="color:' + status.color + '">' + escHtml(status.label) + '</td>' +
+      '</tr>'
     );
   }).join('');
-  document.getElementById('news-grid').innerHTML = html;
+
+  document.getElementById('dep-table-wrap').innerHTML =
+    '<table class="dep-table"><thead><tr>' +
+      '<th>Scheduled</th><th>Destination</th><th>Platform</th><th>Status</th>' +
+    '</tr></thead><tbody>' + rows + '</tbody></table>';
 }
 
-function loadNews() {
-  renderNewsSkeleton();
-  fetch('/api/news')
-    .then(function (r) { if (!r.ok) throw new Error('bad status'); return r.json(); })
-    .then(function (data) { renderNews(Array.isArray(data) ? data : []); })
-    .catch(function () { renderNewsError(); });
+function renderDepError() {
+  document.getElementById('dep-table-wrap').innerHTML =
+    '<div class="state-msg" style="background:var(--surface);border:1px solid rgba(var(--line-rgb),0.08);border-radius:0 0 12px 12px">' +
+      "Couldn't load departures right now — try again shortly<br>" +
+      '<button class="btn-retry" id="dep-retry">Retry</button>' +
+    '</div>';
+  document.getElementById('dep-retry').addEventListener('click', loadDepartures);
+}
+
+function renderKeyMissing() {
+  if (refreshTimer) clearInterval(refreshTimer);
+  document.getElementById('dep-bar').style.display = 'none';
+  document.getElementById('dep-table-wrap').innerHTML =
+    '<div class="state-msg" style="background:var(--surface);border:1px solid rgba(var(--line-rgb),0.08);border-radius:12px">' +
+      'Live departures are coming soon — check back shortly' +
+    '</div>';
+}
+
+function loadDepartures() {
+  setRefreshing(true);
+  fetch('/api/departures?station=' + encodeURIComponent(currentStation))
+    .then(function (r) {
+      return r.json().then(function (data) { return { ok: r.ok, data: data }; });
+    })
+    .then(function (res) {
+      setRefreshing(false);
+      if (!res.ok) {
+        if (res.data && res.data.error === 'RTT_KEY_MISSING') renderKeyMissing();
+        else renderDepError();
+        return;
+      }
+      renderDepartures(res.data);
+      setLastUpdated();
+    })
+    .catch(function () {
+      setRefreshing(false);
+      renderDepError();
+    });
+}
+
+function startAutoRefresh() {
+  if (refreshTimer) clearInterval(refreshTimer);
+  refreshTimer = setInterval(function () {
+    loadDepartures();
+  }, 30000);
 }
 
 // ── INIT ─────────────────────────────────────────────────────────
-loadNews();
+loadDepartures();
+startAutoRefresh();
 </script>
 </body>
 </html>

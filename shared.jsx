@@ -101,9 +101,10 @@ function BrandMark({ size = 18, accent = SRHQ.turq }) {
 
 function TopNav({ current }) {
   const items = [
-    { href: 'database.html', label: 'Database' },
-    { href: 'map.html',      label: 'Network map' },
-    { href: 'news.html',     label: 'News & Live' },
+    { href: 'news.html',       label: 'News' },
+    { href: 'departures.html', label: 'Live Departures' },
+    { href: 'database.html',   label: 'Database' },
+    { href: 'map.html',        label: 'Network Map' },
   ];
   const [isMobile, setIsMobile] = React.useState(
     typeof window !== 'undefined' ? window.innerWidth <= 900 : false
@@ -289,7 +290,7 @@ function Footer() {
       <div style={{ maxWidth: 1280, margin: '0 auto',
                     display: 'grid', gridTemplateColumns: '1.4fr 1fr 1fr 1fr', gap: 32 }}>
         <div>
-          <a href="https://srhq.uk/" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
+          <a href="/" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
             <img src={logoSrc(theme)} alt="SpotRail HQ" style={{ display: 'block', height: 40, width: 'auto', maxWidth: 320 }} />
           </a>
           <div style={{ fontSize: 13, marginTop: 12, maxWidth: 280, lineHeight: 1.55 }}>
@@ -302,9 +303,10 @@ function Footer() {
                         color: SRHQ.inkDim, marginBottom: 10 }}>Explore</div>
           {[
             { label: 'Home', href: '/' },
+            { label: 'News', href: 'news.html' },
+            { label: 'Live Departures', href: 'departures.html' },
             { label: 'Rolling stock database', href: 'database.html' },
             { label: 'Network map', href: 'map.html' },
-            { label: 'News & Live', href: 'news.html' },
           ].map(x =>
             <a key={x.label} href={x.href} style={{
               display: 'block', fontSize: 13.5, marginBottom: 6,
@@ -316,7 +318,7 @@ function Footer() {
         <div>
           <div style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase',
                         color: SRHQ.inkDim, marginBottom: 10 }}>Coming soon</div>
-          {['Live departures', 'Community', 'Journey planner'].map(x =>
+          {['Community', 'Journey planner'].map(x =>
             <div key={x} style={{ fontSize: 13.5, marginBottom: 6 }}>{x}</div>)}
         </div>
         <div>

@@ -508,9 +508,10 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
     </a>
     <div class="nav-controls">
       <div class="nav-links">
+        <a href="/news.html" class="nav-link">News</a>
+        <a href="/departures.html" class="nav-link">Live Departures</a>
         <a href="database.html" class="nav-link">Database</a>
-        <a href="map.html" class="nav-link">Network map</a>
-        <a href="/news.html" class="nav-link">News &amp; Live</a>
+        <a href="map.html" class="nav-link">Network Map</a>
       </div>
       <button class="theme-toggle" id="themeToggle" aria-label="Toggle color theme">
         <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -543,9 +544,10 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
     <button class="nav-drawer-close" id="navClose" aria-label="Close menu">×</button>
   </div>
   <div class="nav-drawer-links">
+    <a href="/news.html" class="nav-drawer-link"><span>News</span><span class="arr">→</span></a>
+    <a href="/departures.html" class="nav-drawer-link"><span>Live Departures</span><span class="arr">→</span></a>
     <a href="database.html" class="nav-drawer-link"><span>Database</span><span class="arr">→</span></a>
-    <a href="map.html" class="nav-drawer-link"><span>Network map</span><span class="arr">→</span></a>
-    <a href="/news.html" class="nav-drawer-link"><span>News &amp; Live</span><span class="arr">→</span></a>
+    <a href="map.html" class="nav-drawer-link"><span>Network Map</span><span class="arr">→</span></a>
   </div>
   <div class="nav-drawer-foot">
     An independent UK railway resource.<br/>
@@ -669,6 +671,17 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
   </div>
 </div>
 
+<!-- SPOTLIGHT -->
+<div class="spotlight-wrap">
+  <div class="spotlight-grid">
+    <div id="spot-left"></div>
+    <div class="spot-card-wrap" style="display:flex;align-items:center">
+      <div class="data-card" id="spot-right"></div>
+    </div>
+    <div id="spot-actions"></div>
+  </div>
+</div>
+
 <!-- FEATURES -->
 <div class="features-wrap">
   <div class="features-top">
@@ -748,17 +761,6 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
     </div>
   </div>
 </div>
-
-<!-- SPOTLIGHT -->
-<div class="spotlight-wrap">
-  <div class="spotlight-grid">
-    <div id="spot-left"></div>
-    <div class="spot-card-wrap" style="display:flex;align-items:center">
-      <div class="data-card" id="spot-right"></div>
-    </div>
-    <div id="spot-actions"></div>
-  </div>
-</div>
 </main>
 
 <!-- FOOTER -->
@@ -770,7 +772,7 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
   </div>
   <div class="footer-inner">
     <div>
-      <a href="https://srhq.uk/" style="text-decoration:none; display:inline-flex; align-items:center">
+      <a href="/" style="text-decoration:none; display:inline-flex; align-items:center">
         <img src="img/srhq-logo.svg" alt="SpotRail HQ" class="logo-img" style="height:40px; width:auto; max-width:320px" />
       </a>
       <div style="font-size:13px;margin-top:12px;max-width:280px;line-height:1.55;color:var(--ink-mute)">
@@ -779,13 +781,14 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
     </div>
     <div>
       <div class="footer-head">Explore</div>
+      <a href="/" class="footer-item" style="display:block">Home</a>
+      <a href="news.html" class="footer-item" style="display:block">News</a>
+      <a href="departures.html" class="footer-item" style="display:block">Live Departures</a>
       <a href="database.html" class="footer-item" style="display:block">Rolling stock database</a>
       <a href="map.html" class="footer-item" style="display:block">Network map</a>
-      <a href="news.html" class="footer-item" style="display:block">News &amp; Live</a>
     </div>
     <div>
       <div class="footer-head">Coming soon</div>
-      <div class="footer-item">Live departures</div>
       <div class="footer-item">Community</div>
       <div class="footer-item">Journey planner</div>
     </div>

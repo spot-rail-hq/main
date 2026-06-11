@@ -6,7 +6,7 @@
  * a clean, sorted JSON array for news.html to render.
  *
  * GET /api/news
- * Returns: [{ title, link, source, pubDate, description }, ...]
+ * Returns: [{ title, link, source, pubDate, description, image }, ...]
  */
 
 const FEEDS = [
@@ -66,6 +66,27 @@ function truncate(str, max) {
   return str.slice(0, max).trim() + '…';
 }
 
+function extractImage(block) {
+  // <media:content url="..." /> (optionally with type/medium attributes)
+  let m = block.match(/<media:content[^>]*\surl=["']([^"']+)["']/i);
+  if (m) return decodeEntities(m[1].trim());
+
+  // <enclosure url="..." type="image/..." />
+  m = block.match(/<enclosure[^>]*\surl=["']([^"']+)["']/i);
+  if (m) return decodeEntities(m[1].trim());
+
+  // <image>...</image> — either <image><url>...</url></image> or plain text
+  const imageBlock = extractTag(block, 'image');
+  if (imageBlock) {
+    const urlMatch = imageBlock.match(/<url(?:\s[^>]*)?>([^<]*)<\/url>/i);
+    if (urlMatch && urlMatch[1].trim()) return decodeEntities(urlMatch[1].trim());
+    const text = cleanText(imageBlock);
+    if (text) return text;
+  }
+
+  return null;
+}
+
 function parseFeed(xml, source) {
   const blocks = xml.match(/<(?:item|entry)[\s\S]*?<\/(?:item|entry)>/gi) || [];
   return blocks.map((block) => {
@@ -91,6 +112,7 @@ function parseFeed(xml, source) {
       source,
       pubDate,
       description: truncate(cleanText(descRaw), DESCRIPTION_LIMIT),
+      image: extractImage(block),
     };
   }).filter((item) => item.title && item.link);
 }
