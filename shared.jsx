@@ -324,7 +324,7 @@ function Footer() {
         <div>
           <div style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase',
                         color: SRHQ.inkDim, marginBottom: 10 }}>Data</div>
-          <div style={{ fontSize: 13.5, marginBottom: 6 }}>Verified April 2026</div>
+          <div style={{ fontSize: 13.5, marginBottom: 6 }}>Verified June 2026</div>
           <div style={{ fontSize: 13.5, marginBottom: 6 }}>Wikipedia · operator websites</div>
         </div>
       </div>
