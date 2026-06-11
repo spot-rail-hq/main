@@ -216,8 +216,8 @@ body.nav-open .nav-drawer { transform: translateX(0); }
   padding: 4px 10px; border-radius: 999px;
 }
 .news-title {
-  font-family: 'Archivo', sans-serif; font-size: 18px; font-weight: 600;
-  letter-spacing: -0.4px; line-height: 1.32;
+  font-family: 'Archivo', sans-serif; font-size: 1.45rem; font-weight: 700;
+  letter-spacing: -0.4px; line-height: 1.32; margin-bottom: 0.5rem;
   transition: color .2s ease;
 }
 .news-desc { font-size: 13.5px; color: var(--ink-dim); line-height: 1.55; flex: 1; }
@@ -236,103 +236,59 @@ body.nav-open .nav-drawer { transform: translateX(0); }
 .btn-loadmore:hover { background: rgba(var(--color-accent-turquoise-rgb),0.1); }
 
 /* Filter bar */
-.filter-bar { margin-bottom: 20px; }
-.filter-toggle {
-  display: inline-flex; align-items: center; gap: 10px;
-  padding: 11px 20px; border-radius: 999px;
-  background: var(--surface); border: 1px solid rgba(var(--line-rgb),0.08);
-  color: var(--ink); font-size: 13.5px; font-weight: 600;
-  font-family: 'Manrope', sans-serif; cursor: pointer;
-  transition: border-color .15s ease;
+.filter-bar {
+  display: flex; flex-wrap: nowrap; align-items: center; gap: 10px;
+  margin-bottom: 16px;
 }
-.filter-toggle:hover { border-color: rgba(var(--color-accent-turquoise-rgb),0.4); }
-.filter-count-badge {
-  display: none; align-items: center;
-  background: var(--color-accent-turquoise); color: #07090C;
-  font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 999px;
-  font-family: 'JetBrains Mono', monospace;
-}
-
-.filter-panel {
-  margin-top: 16px; padding: 22px; border-radius: 16px;
-  background: var(--surface); border: 1px solid rgba(var(--line-rgb),0.08);
-  display: flex; flex-direction: column; gap: 20px;
-}
-.filter-panel[hidden] { display: none; }
-
-.filter-group-label {
-  font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 1.5px;
-  text-transform: uppercase; color: var(--ink-mute); margin-bottom: 10px;
-}
-.filter-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-
-.filter-pill {
-  padding: 7px 14px; border-radius: 999px;
-  background: var(--surface2); border: 1px solid rgba(var(--line-rgb),0.08);
-  color: var(--ink-dim); font-size: 12.5px; font-weight: 500;
-  font-family: 'Manrope', sans-serif; cursor: pointer; white-space: nowrap;
-  transition: all .15s ease;
-}
-.filter-pill:hover { border-color: rgba(var(--color-accent-turquoise-rgb),0.4); color: var(--ink); }
-.filter-pill.active {
-  background: var(--color-accent-turquoise); color: #07090C; border-color: var(--color-accent-turquoise);
-}
-
-.filter-row-label {
-  font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 1.5px;
-  text-transform: uppercase; color: var(--ink-mute); white-space: nowrap; padding: 0 2px;
-}
-
-.filter-date-range { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 10px; }
-.filter-date-range label { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--ink-mute); }
-.filter-date-range input[type="date"] {
-  padding: 8px 12px; border-radius: 8px;
-  background: var(--surface2); border: 1px solid rgba(var(--line-rgb),0.08);
-  color: var(--ink); font-family: 'Manrope', sans-serif; font-size: 13px;
-}
-.filter-date-range input[type="date"]:focus { outline: none; border-color: var(--color-accent-turquoise); }
-
-.filter-select {
-  padding: 9px 14px; border-radius: 10px;
-  background: var(--surface2); border: 1px solid rgba(var(--line-rgb),0.08);
-  color: var(--ink); font-family: 'Manrope', sans-serif; font-size: 13.5px;
-  cursor: pointer; min-width: 240px; max-width: 100%;
-}
-.filter-select:focus { outline: none; border-color: var(--color-accent-turquoise); }
-
-.uk-toggle { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; }
-.uk-toggle input { position: absolute; opacity: 0; width: 0; height: 0; }
-.uk-toggle-track {
-  position: relative; display: inline-block; width: 40px; height: 22px; flex: none;
-  background: var(--surface2); border: 1px solid rgba(var(--line-rgb),0.08);
-  border-radius: 999px; transition: background .15s ease, border-color .15s ease;
-}
-.uk-toggle-thumb {
-  position: absolute; top: 2px; left: 2px; width: 16px; height: 16px;
-  background: var(--ink-mute); border-radius: 50%;
-  transition: transform .15s ease, background .15s ease;
-}
-.uk-toggle input:checked + .uk-toggle-track {
-  background: rgba(var(--color-accent-turquoise-rgb),0.25); border-color: var(--color-accent-turquoise);
-}
-.uk-toggle input:checked + .uk-toggle-track .uk-toggle-thumb {
-  transform: translateX(18px); background: var(--color-accent-turquoise);
-}
-.uk-toggle-label { font-size: 13px; font-weight: 600; color: var(--ink-dim); }
-.uk-toggle input:checked ~ .uk-toggle-label { color: var(--color-accent-turquoise); }
-
-.filter-foot { display: flex; align-items: center; justify-content: flex-end; }
-.filter-clear {
-  font-size: 12.5px; color: var(--ink-mute); cursor: pointer; text-decoration: underline;
-  background: none; border: none; font-family: 'Manrope', sans-serif;
-}
-.filter-clear:hover { color: var(--ink-dim); }
-
 @media (max-width: 900px) {
-  .filter-row.row-scroll { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 6px; }
-  .filter-row.row-scroll .filter-pill, .filter-row.row-scroll .filter-row-label { flex: 0 0 auto; }
-  .filter-select { min-width: 0; width: 100%; }
+  .filter-bar { flex-wrap: wrap; }
 }
+@media (max-width: 600px) {
+  .filter-bar { flex-direction: column; align-items: stretch; }
+}
+
+.filter-control {
+  height: 40px; padding: 0 14px; border-radius: 8px;
+  background: var(--surface); border: 1px solid #2a3444;
+  color: var(--ink); font-family: 'Manrope', sans-serif; font-size: 13.5px; font-weight: 500;
+  cursor: pointer; transition: border-color .15s ease;
+  display: inline-flex; align-items: center; gap: 8px; white-space: nowrap;
+}
+.filter-control:hover, .filter-control.open { border-color: var(--color-accent-turquoise); }
+.filter-control:focus { outline: none; border-color: var(--color-accent-turquoise); }
+@media (max-width: 600px) { .filter-control { width: 100%; justify-content: space-between; } }
+
+.checkbox-dropdown { position: relative; }
+.dropdown-trigger { justify-content: space-between; min-width: 150px; }
+.dd-arrow { font-size: 10px; color: var(--ink-mute); }
+
+.dropdown-panel {
+  position: absolute; top: calc(100% + 6px); left: 0; min-width: 220px;
+  width: max-content; max-width: 280px;
+  background: #0E1218; border: 1px solid #40E0D0; border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4); z-index: 100;
+  max-height: 280px; overflow-y: auto; padding: 6px;
+}
+.dropdown-panel[hidden] { display: none; }
+@media (max-width: 600px) {
+  .dropdown-panel { left: 0; right: 0; width: auto; max-width: none; }
+}
+
+.dd-option {
+  display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+  border-radius: 6px; cursor: pointer; font-size: 13px; color: #E8ECF2; white-space: nowrap;
+}
+.dd-option:hover { background: #1a2030; }
+.dd-option input[type="checkbox"] { accent-color: #40E0D0; width: 15px; height: 15px; cursor: pointer; flex: none; }
+
+.filter-clear-btn {
+  height: 40px; padding: 0 16px; border-radius: 8px;
+  background: transparent; border: 1px solid #2a3444;
+  color: var(--ink-mute); font-family: 'Manrope', sans-serif; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: border-color .15s ease, color .15s ease; white-space: nowrap;
+}
+.filter-clear-btn:hover { border-color: var(--color-accent-turquoise); color: var(--ink); }
+@media (max-width: 600px) { .filter-clear-btn { width: 100%; } }
 
 /* Skeleton shimmer (matches spotlight section style) */
 @keyframes newsPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
@@ -493,7 +449,7 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
 <noscript>
   <div style="max-width:1280px;margin:0 auto;padding:32px;line-height:1.6">
     <h1>Rail News — SpotRail HQ</h1>
-    <p>The latest UK railway headlines, aggregated from across the industry — updated every 15 minutes.</p>
+    <p>Showing the most recent UK railway headlines from across the industry — updated every 15 minutes.</p>
   </div>
 </noscript>
 
@@ -507,125 +463,88 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
 <!-- RAIL NEWS -->
 <div class="news-wrap">
   <div class="filter-bar">
-    <button class="filter-toggle" id="filter-toggle" aria-expanded="false" aria-controls="filter-panel">
-      <span>Filter &amp; Search</span>
-      <span class="filter-count-badge" id="filter-count-badge"></span>
-    </button>
-
-    <div class="filter-panel" id="filter-panel" hidden>
-      <div class="filter-group">
-        <label class="uk-toggle">
-          <input type="checkbox" id="filter-uk-only" checked>
-          <span class="uk-toggle-track"><span class="uk-toggle-thumb"></span></span>
-          <span class="uk-toggle-label">UK only</span>
-        </label>
-      </div>
-
-      <div class="filter-group">
-        <div class="filter-group-label">Date</div>
-        <div class="filter-row" id="filter-date-pills">
-          <button class="filter-pill active" data-date="all">All time</button>
-          <button class="filter-pill" data-date="today">Today</button>
-          <button class="filter-pill" data-date="week">This week</button>
-          <button class="filter-pill" data-date="month">This month</button>
-          <button class="filter-pill" data-date="year">This year</button>
-          <button class="filter-pill" data-date="custom">Custom range</button>
-        </div>
-        <div class="filter-date-range" id="filter-date-range" style="display:none">
-          <label>From <input type="date" id="filter-date-from"></label>
-          <label>To <input type="date" id="filter-date-to"></label>
-        </div>
-      </div>
-
-      <div class="filter-group">
-        <div class="filter-group-label">Time Range</div>
-        <div class="filter-row" id="filter-era-pills">
-          <button class="filter-pill active" data-era="all">All</button>
-          <button class="filter-pill" data-era="pre2020">Pre-2020</button>
-          <button class="filter-pill" data-era="2020-2022">2020–2022</button>
-          <button class="filter-pill" data-era="2023">2023</button>
-          <button class="filter-pill" data-era="2024">2024</button>
-          <button class="filter-pill" data-era="2025">2025</button>
-          <button class="filter-pill" data-era="2026">2026</button>
-        </div>
-      </div>
-
-      <div class="filter-group">
-        <div class="filter-group-label">Region</div>
-        <select class="filter-select" id="filter-region">
-          <option value="all">All regions</option>
-          <option value="scotland">Scotland</option>
-          <option value="north-east">North East England</option>
-          <option value="north-west">North West England</option>
-          <option value="yorkshire">Yorkshire &amp; Humber</option>
-          <option value="east-midlands">East Midlands</option>
-          <option value="west-midlands">West Midlands</option>
-          <option value="east-of-england">East of England</option>
-          <option value="london">London</option>
-          <option value="south-east">South East England</option>
-          <option value="south-west">South West England</option>
-          <option value="wales">Wales</option>
-          <option value="northern-ireland">Northern Ireland</option>
-        </select>
-      </div>
-
-      <div class="filter-group">
-        <div class="filter-group-label">Operator</div>
-        <div class="filter-row row-scroll" id="filter-operator-pills">
-          <button class="filter-pill" data-operator="Avanti West Coast">Avanti West Coast</button>
-          <button class="filter-pill" data-operator="Chiltern Railways">Chiltern Railways</button>
-          <button class="filter-pill" data-operator="CrossCountry">CrossCountry</button>
-          <button class="filter-pill" data-operator="East Midlands Railway">East Midlands Railway</button>
-          <button class="filter-pill" data-operator="Gatwick Express">Gatwick Express</button>
-          <button class="filter-pill" data-operator="Grand Central">Grand Central</button>
-          <button class="filter-pill" data-operator="Greater Anglia">Greater Anglia</button>
-          <button class="filter-pill" data-operator="Great Western Railway (GWR)">Great Western Railway (GWR)</button>
-          <button class="filter-pill" data-operator="Heathrow Express">Heathrow Express</button>
-          <button class="filter-pill" data-operator="Hull Trains">Hull Trains</button>
-          <button class="filter-pill" data-operator="LNER">LNER</button>
-          <button class="filter-pill" data-operator="London Northwestern Railway">London Northwestern Railway</button>
-          <button class="filter-pill" data-operator="Lumo">Lumo</button>
-          <button class="filter-pill" data-operator="Merseyrail">Merseyrail</button>
-          <button class="filter-pill" data-operator="Northern">Northern</button>
-          <button class="filter-pill" data-operator="ScotRail">ScotRail</button>
-          <button class="filter-pill" data-operator="Southeastern">Southeastern</button>
-          <button class="filter-pill" data-operator="Southern">Southern</button>
-          <button class="filter-pill" data-operator="South Western Railway">South Western Railway</button>
-          <button class="filter-pill" data-operator="Thameslink">Thameslink</button>
-          <button class="filter-pill" data-operator="TransPennine Express">TransPennine Express</button>
-          <button class="filter-pill" data-operator="Transport for Wales">Transport for Wales</button>
-          <button class="filter-pill" data-operator="West Midlands Trains">West Midlands Trains</button>
-          <button class="filter-pill" data-operator="c2c">c2c</button>
-          <button class="filter-pill" data-operator="Elizabeth line">Elizabeth line</button>
-          <button class="filter-pill" data-operator="London Overground">London Overground</button>
-          <button class="filter-pill" data-operator="TfL Rail">TfL Rail</button>
-          <button class="filter-pill" data-operator="Network Rail">Network Rail</button>
-          <button class="filter-pill" data-operator="HS2">HS2</button>
-          <span class="filter-row-label">Freight</span>
-          <button class="filter-pill" data-operator="DB Cargo">DB Cargo</button>
-          <button class="filter-pill" data-operator="Freightliner">Freightliner</button>
-          <button class="filter-pill" data-operator="GB Railfreight">GB Railfreight</button>
-          <button class="filter-pill" data-operator="Colas Rail">Colas Rail</button>
-        </div>
-      </div>
-
-      <div class="filter-group">
-        <div class="filter-group-label">Source</div>
-        <div class="filter-row row-scroll" id="filter-source-pills">
-          <button class="filter-pill active" data-source="all">All</button>
-          <button class="filter-pill" data-source="Railway Gazette">Railway Gazette</button>
-          <button class="filter-pill" data-source="Rail UK">Rail UK</button>
-          <button class="filter-pill" data-source="RailAdvent">RailAdvent</button>
-          <button class="filter-pill" data-source="Rail Business Daily">Rail Business Daily</button>
-          <button class="filter-pill" data-source="Network Rail">Network Rail</button>
-          <button class="filter-pill" data-source="Rail Technology Magazine">Rail Technology Magazine</button>
-        </div>
-      </div>
-
-      <div class="filter-foot">
-        <button class="filter-clear" id="filter-clear">Clear all filters</button>
+    <div class="checkbox-dropdown">
+      <button type="button" class="filter-control dropdown-trigger" id="region-trigger" aria-expanded="false">
+        <span id="region-trigger-label">All regions</span>
+        <span class="dd-arrow">▾</span>
+      </button>
+      <div class="dropdown-panel" id="region-panel" hidden>
+        <label class="dd-option"><input type="checkbox" data-all checked> All regions</label>
+        <label class="dd-option"><input type="checkbox" value="Scotland"> Scotland</label>
+        <label class="dd-option"><input type="checkbox" value="North East England"> North East England</label>
+        <label class="dd-option"><input type="checkbox" value="North West England"> North West England</label>
+        <label class="dd-option"><input type="checkbox" value="Yorkshire &amp; Humber"> Yorkshire &amp; Humber</label>
+        <label class="dd-option"><input type="checkbox" value="East Midlands"> East Midlands</label>
+        <label class="dd-option"><input type="checkbox" value="West Midlands"> West Midlands</label>
+        <label class="dd-option"><input type="checkbox" value="East of England"> East of England</label>
+        <label class="dd-option"><input type="checkbox" value="London"> London</label>
+        <label class="dd-option"><input type="checkbox" value="South East England"> South East England</label>
+        <label class="dd-option"><input type="checkbox" value="South West England"> South West England</label>
+        <label class="dd-option"><input type="checkbox" value="Wales"> Wales</label>
+        <label class="dd-option"><input type="checkbox" value="Northern Ireland"> Northern Ireland</label>
       </div>
     </div>
+
+    <div class="checkbox-dropdown">
+      <button type="button" class="filter-control dropdown-trigger" id="operator-trigger" aria-expanded="false">
+        <span id="operator-trigger-label">All operators</span>
+        <span class="dd-arrow">▾</span>
+      </button>
+      <div class="dropdown-panel" id="operator-panel" hidden>
+        <label class="dd-option"><input type="checkbox" data-all checked> All operators</label>
+        <label class="dd-option"><input type="checkbox" value="Avanti West Coast"> Avanti West Coast</label>
+        <label class="dd-option"><input type="checkbox" value="c2c"> c2c</label>
+        <label class="dd-option"><input type="checkbox" value="Chiltern Railways"> Chiltern Railways</label>
+        <label class="dd-option"><input type="checkbox" value="Colas Rail"> Colas Rail</label>
+        <label class="dd-option"><input type="checkbox" value="CrossCountry"> CrossCountry</label>
+        <label class="dd-option"><input type="checkbox" value="DB Cargo"> DB Cargo</label>
+        <label class="dd-option"><input type="checkbox" value="East Midlands Railway"> East Midlands Railway</label>
+        <label class="dd-option"><input type="checkbox" value="Elizabeth line"> Elizabeth line</label>
+        <label class="dd-option"><input type="checkbox" value="Freightliner"> Freightliner</label>
+        <label class="dd-option"><input type="checkbox" value="Gatwick Express"> Gatwick Express</label>
+        <label class="dd-option"><input type="checkbox" value="GB Railfreight"> GB Railfreight</label>
+        <label class="dd-option"><input type="checkbox" value="Grand Central"> Grand Central</label>
+        <label class="dd-option"><input type="checkbox" value="Greater Anglia"> Greater Anglia</label>
+        <label class="dd-option"><input type="checkbox" value="Great Western Railway"> Great Western Railway</label>
+        <label class="dd-option"><input type="checkbox" value="Heathrow Express"> Heathrow Express</label>
+        <label class="dd-option"><input type="checkbox" value="HS2"> HS2</label>
+        <label class="dd-option"><input type="checkbox" value="Hull Trains"> Hull Trains</label>
+        <label class="dd-option"><input type="checkbox" value="LNER"> LNER</label>
+        <label class="dd-option"><input type="checkbox" value="London Northwestern Railway"> London Northwestern Railway</label>
+        <label class="dd-option"><input type="checkbox" value="London Overground"> London Overground</label>
+        <label class="dd-option"><input type="checkbox" value="Lumo"> Lumo</label>
+        <label class="dd-option"><input type="checkbox" value="Merseyrail"> Merseyrail</label>
+        <label class="dd-option"><input type="checkbox" value="Network Rail"> Network Rail</label>
+        <label class="dd-option"><input type="checkbox" value="Northern"> Northern</label>
+        <label class="dd-option"><input type="checkbox" value="ScotRail"> ScotRail</label>
+        <label class="dd-option"><input type="checkbox" value="Southeastern"> Southeastern</label>
+        <label class="dd-option"><input type="checkbox" value="Southern"> Southern</label>
+        <label class="dd-option"><input type="checkbox" value="South Western Railway"> South Western Railway</label>
+        <label class="dd-option"><input type="checkbox" value="TfL Rail"> TfL Rail</label>
+        <label class="dd-option"><input type="checkbox" value="Thameslink"> Thameslink</label>
+        <label class="dd-option"><input type="checkbox" value="TransPennine Express"> TransPennine Express</label>
+        <label class="dd-option"><input type="checkbox" value="Transport for Wales"> Transport for Wales</label>
+        <label class="dd-option"><input type="checkbox" value="West Midlands Trains"> West Midlands Trains</label>
+      </div>
+    </div>
+
+    <div class="checkbox-dropdown">
+      <button type="button" class="filter-control dropdown-trigger" id="source-trigger" aria-expanded="false">
+        <span id="source-trigger-label">All sources</span>
+        <span class="dd-arrow">▾</span>
+      </button>
+      <div class="dropdown-panel" id="source-panel" hidden>
+        <label class="dd-option"><input type="checkbox" data-all checked> All sources</label>
+        <label class="dd-option"><input type="checkbox" value="Railway Gazette"> Railway Gazette</label>
+        <label class="dd-option"><input type="checkbox" value="Rail UK"> Rail UK</label>
+        <label class="dd-option"><input type="checkbox" value="RailAdvent"> RailAdvent</label>
+        <label class="dd-option"><input type="checkbox" value="Rail Business Daily"> Rail Business Daily</label>
+        <label class="dd-option"><input type="checkbox" value="Network Rail"> Network Rail</label>
+        <label class="dd-option"><input type="checkbox" value="Rail Technology Magazine"> Rail Technology Magazine</label>
+      </div>
+    </div>
+
+    <button class="filter-clear-btn" id="filter-clear">Clear all</button>
   </div>
 
   <div class="news-status" id="news-status"></div>
@@ -705,14 +624,9 @@ function sourceStyle(source) {
 
 // ── NEWS FILTERS ─────────────────────────────────────────────────
 var FILTER_STATE = {
-  ukOnly: true,
-  date: 'all',       // all | today | week | month | year | custom
-  dateFrom: null,
-  dateTo: null,
-  era: 'all',        // all | pre2020 | 2020-2022 | 2023 | 2024 | 2025 | 2026
-  region: 'all',
+  regions: [],
   operators: [],
-  source: 'all'
+  sources: []
 };
 
 var UK_KEYWORDS = [
@@ -738,54 +652,54 @@ var UK_KEYWORDS = [
 ];
 
 var REGION_KEYWORDS = {
-  'scotland':         ['scotland','scottish','scotrail','caledonian'],
-  'north-east':       ['newcastle','sunderland','durham','tyne','northeast','north east','northern rail'],
-  'north-west':       ['manchester','liverpool','lancashire','cumbria','northwest','north west','avanti','transpennine'],
-  'yorkshire':        ['leeds','sheffield','york','hull','yorkshire','humber'],
-  'east-midlands':    ['nottingham','derby','leicester','east midlands'],
-  'west-midlands':    ['birmingham','wolverhampton','coventry','west midlands','chiltern'],
-  'east-of-england':  ['cambridge','norwich','ipswich','east anglia','greater anglia'],
-  'london':           ['london','tfl','transport for london','overground','elizabeth line','thameslink','southeastern','southern'],
-  'south-east':       ['brighton','kent','sussex','southeastern','gatwick','south eastern'],
-  'south-west':       ['bristol','exeter','plymouth','cornwall','devon','great western','gwr'],
-  'wales':            ['wales','welsh','transport for wales','cardiff','swansea'],
-  'northern-ireland': ['northern ireland','translink','belfast']
+  'Scotland':           ['scotland','scottish','scotrail','caledonian'],
+  'North East England': ['newcastle','sunderland','durham','tyne','northeast'],
+  'North West England': ['manchester','liverpool','lancashire','cumbria','northwest','avanti','transpennine'],
+  'Yorkshire & Humber': ['leeds','sheffield','york','hull','yorkshire','humber'],
+  'East Midlands':      ['nottingham','derby','leicester','east midlands'],
+  'West Midlands':      ['birmingham','wolverhampton','coventry','west midlands','chiltern'],
+  'East of England':    ['cambridge','norwich','ipswich','east anglia','greater anglia'],
+  'London':             ['london','tfl','transport for london','overground','elizabeth line','thameslink'],
+  'South East England': ['brighton','kent','sussex','southeastern','gatwick'],
+  'South West England': ['bristol','exeter','plymouth','cornwall','devon','great western','gwr'],
+  'Wales':              ['wales','welsh','transport for wales','cardiff','swansea'],
+  'Northern Ireland':   ['northern ireland','translink','belfast']
 };
 
 var OPERATOR_KEYWORDS = {
-  'Avanti West Coast':           ['avanti west coast','avanti'],
-  'Chiltern Railways':           ['chiltern railways','chiltern'],
-  'CrossCountry':                ['crosscountry','cross country'],
-  'East Midlands Railway':       ['east midlands railway','emr'],
-  'Gatwick Express':             ['gatwick express'],
+  'Avanti West Coast':           ['avanti west coast'],
+  'c2c':                          ['c2c'],
+  'Chiltern Railways':            ['chiltern railways'],
+  'Colas Rail':                   ['colas rail'],
+  'CrossCountry':                 ['crosscountry'],
+  'DB Cargo':                     ['db cargo'],
+  'East Midlands Railway':        ['east midlands railway'],
+  'Elizabeth line':               ['elizabeth line'],
+  'Freightliner':                 ['freightliner'],
+  'Gatwick Express':              ['gatwick express'],
+  'GB Railfreight':               ['gb railfreight'],
   'Grand Central':                ['grand central'],
   'Greater Anglia':               ['greater anglia'],
-  'Great Western Railway (GWR)': ['great western railway','gwr','great western'],
+  'Great Western Railway':        ['great western railway','gwr'],
   'Heathrow Express':             ['heathrow express'],
+  'HS2':                          ['hs2'],
   'Hull Trains':                  ['hull trains'],
-  'LNER':                          ['lner','london north eastern railway'],
-  'London Northwestern Railway': ['london northwestern railway','london northwestern'],
-  'Lumo':                          ['lumo'],
+  'LNER':                         ['lner'],
+  'London Northwestern Railway':  ['london northwestern railway'],
+  'London Overground':            ['london overground'],
+  'Lumo':                         ['lumo'],
   'Merseyrail':                   ['merseyrail'],
-  'Northern':                      ['northern rail','northern trains'],
-  'ScotRail':                      ['scotrail'],
-  'Southeastern':                  ['southeastern','south eastern'],
-  'Southern':                      ['southern rail'],
-  'South Western Railway':        ['south western railway','swr'],
-  'Thameslink':                    ['thameslink'],
-  'TransPennine Express':          ['transpennine express','transpennine','tpe'],
-  'Transport for Wales':           ['transport for wales','tfw'],
-  'West Midlands Trains':          ['west midlands trains','wmt'],
-  'c2c':                           ['c2c'],
-  'Elizabeth line':                ['elizabeth line'],
-  'London Overground':             ['london overground'],
-  'TfL Rail':                      ['tfl rail'],
-  'Network Rail':                  ['network rail'],
-  'HS2':                           ['hs2'],
-  'DB Cargo':                      ['db cargo'],
-  'Freightliner':                  ['freightliner'],
-  'GB Railfreight':                ['gb railfreight','gbrf'],
-  'Colas Rail':                    ['colas rail','colas']
+  'Network Rail':                 ['network rail'],
+  'Northern':                     ['northern'],
+  'ScotRail':                     ['scotrail'],
+  'Southeastern':                 ['southeastern'],
+  'Southern':                     ['southern'],
+  'South Western Railway':        ['south western railway'],
+  'TfL Rail':                     ['tfl rail'],
+  'Thameslink':                   ['thameslink'],
+  'TransPennine Express':         ['transpennine express','tpe'],
+  'Transport for Wales':          ['transport for wales','tfw'],
+  'West Midlands Trains':         ['west midlands trains']
 };
 
 function textContainsAny(text, keywords) {
@@ -795,85 +709,34 @@ function textContainsAny(text, keywords) {
   return false;
 }
 
-function sameCalendarDay(a, b) {
-  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
-}
-
 function matchesFilters(item) {
   var text = ((item.title || '') + ' ' + (item.description || '')).toLowerCase();
-  var pubDate = item.pubDate ? new Date(item.pubDate) : null;
-  var validDate = !!(pubDate && !isNaN(pubDate.getTime()));
 
-  if (FILTER_STATE.ukOnly && !textContainsAny(text, UK_KEYWORDS)) return false;
+  if (!textContainsAny(text, UK_KEYWORDS)) return false;
 
-  if (FILTER_STATE.source !== 'all' && item.source !== FILTER_STATE.source) return false;
-
-  if (FILTER_STATE.date !== 'all') {
-    if (!validDate) return false;
-    var now = new Date();
-    if (FILTER_STATE.date === 'today') {
-      if (!sameCalendarDay(pubDate, now)) return false;
-    } else if (FILTER_STATE.date === 'week') {
-      var weekAgo = new Date(now); weekAgo.setDate(now.getDate() - 7);
-      if (pubDate < weekAgo || pubDate > now) return false;
-    } else if (FILTER_STATE.date === 'month') {
-      if (pubDate.getFullYear() !== now.getFullYear() || pubDate.getMonth() !== now.getMonth()) return false;
-    } else if (FILTER_STATE.date === 'year') {
-      if (pubDate.getFullYear() !== now.getFullYear()) return false;
-    } else if (FILTER_STATE.date === 'custom') {
-      if (FILTER_STATE.dateFrom && pubDate < new Date(FILTER_STATE.dateFrom)) return false;
-      if (FILTER_STATE.dateTo) {
-        var to = new Date(FILTER_STATE.dateTo);
-        to.setHours(23, 59, 59, 999);
-        if (pubDate > to) return false;
-      }
-    }
-  } else if (FILTER_STATE.era !== 'all') {
-    if (!validDate) return false;
-    var y = pubDate.getFullYear();
-    if (FILTER_STATE.era === 'pre2020' && y >= 2020) return false;
-    if (FILTER_STATE.era === '2020-2022' && (y < 2020 || y > 2022)) return false;
-    if (FILTER_STATE.era === '2023' && y !== 2023) return false;
-    if (FILTER_STATE.era === '2024' && y !== 2024) return false;
-    if (FILTER_STATE.era === '2025' && y !== 2025) return false;
-    if (FILTER_STATE.era === '2026' && y !== 2026) return false;
-  }
-
-  if (FILTER_STATE.region !== 'all') {
-    if (!textContainsAny(text, REGION_KEYWORDS[FILTER_STATE.region] || [])) return false;
+  if (FILTER_STATE.regions.length) {
+    var anyRegion = FILTER_STATE.regions.some(function (r) {
+      return textContainsAny(text, REGION_KEYWORDS[r] || []);
+    });
+    if (!anyRegion) return false;
   }
 
   if (FILTER_STATE.operators.length) {
-    var anyMatch = FILTER_STATE.operators.some(function (op) {
+    var anyOperator = FILTER_STATE.operators.some(function (op) {
       return textContainsAny(text, OPERATOR_KEYWORDS[op] || [op.toLowerCase()]);
     });
-    if (!anyMatch) return false;
+    if (!anyOperator) return false;
+  }
+
+  if (FILTER_STATE.sources.length) {
+    if (FILTER_STATE.sources.indexOf(item.source) === -1) return false;
   }
 
   return true;
 }
 
-function countActiveFilters() {
-  var n = 0;
-  if (!FILTER_STATE.ukOnly) n++;
-  if (FILTER_STATE.date !== 'all') n++;
-  else if (FILTER_STATE.era !== 'all') n++;
-  if (FILTER_STATE.region !== 'all') n++;
-  if (FILTER_STATE.operators.length) n++;
-  if (FILTER_STATE.source !== 'all') n++;
-  return n;
-}
-
-function updateFilterToggle() {
-  var n = countActiveFilters();
-  var badge = document.getElementById('filter-count-badge');
-  badge.textContent = n > 0 ? n + ' active' : '';
-  badge.style.display = n > 0 ? 'inline-flex' : 'none';
-}
-
 function onFilterChange() {
   visibleNewsCount = PAGE_SIZE;
-  updateFilterToggle();
   renderNews();
 }
 
@@ -983,111 +846,114 @@ document.getElementById('news-loadmore').addEventListener('click', function () {
 
 // ── FILTER UI WIRING ─────────────────────────────────────────────
 (function () {
-  var toggle = document.getElementById('filter-toggle');
-  var panel = document.getElementById('filter-panel');
+  var openPanels = [];
 
-  toggle.addEventListener('click', function () {
-    if (panel.hasAttribute('hidden')) {
-      panel.removeAttribute('hidden');
-      toggle.setAttribute('aria-expanded', 'true');
-    } else {
-      panel.setAttribute('hidden', '');
-      toggle.setAttribute('aria-expanded', 'false');
-    }
-  });
-
-  // Expanded by default on desktop, collapsed on mobile
-  if (window.matchMedia('(min-width: 901px)').matches) {
-    panel.removeAttribute('hidden');
-    toggle.setAttribute('aria-expanded', 'true');
+  function closeAllDropdowns() {
+    openPanels.forEach(function (entry) {
+      entry.panel.hidden = true;
+      entry.trigger.classList.remove('open');
+      entry.trigger.setAttribute('aria-expanded', 'false');
+    });
+    openPanels = [];
   }
 
-  document.getElementById('filter-uk-only').addEventListener('change', function () {
-    FILTER_STATE.ukOnly = this.checked;
-    onFilterChange();
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('.checkbox-dropdown')) closeAllDropdowns();
   });
 
-  document.getElementById('filter-date-pills').addEventListener('click', function (e) {
-    var btn = e.target.closest('.filter-pill');
-    if (!btn) return;
-    FILTER_STATE.date = btn.dataset.date;
-    Array.prototype.forEach.call(this.children, function (b) { b.classList.toggle('active', b === btn); });
-    document.getElementById('filter-date-range').style.display = FILTER_STATE.date === 'custom' ? 'flex' : 'none';
-    onFilterChange();
-  });
+  function setupCheckboxDropdown(opts) {
+    var trigger = document.getElementById(opts.triggerId);
+    var label = document.getElementById(opts.labelId);
+    var panel = document.getElementById(opts.panelId);
+    var allInput = panel.querySelector('input[data-all]');
+    var selected = [];
 
-  document.getElementById('filter-era-pills').addEventListener('click', function (e) {
-    var btn = e.target.closest('.filter-pill');
-    if (!btn) return;
-    FILTER_STATE.era = btn.dataset.era;
-    Array.prototype.forEach.call(this.children, function (b) { b.classList.toggle('active', b === btn); });
-    onFilterChange();
-  });
-
-  document.getElementById('filter-region').addEventListener('change', function () {
-    FILTER_STATE.region = this.value;
-    onFilterChange();
-  });
-
-  document.getElementById('filter-operator-pills').addEventListener('click', function (e) {
-    var btn = e.target.closest('.filter-pill');
-    if (!btn) return;
-    var op = btn.dataset.operator;
-    var idx = FILTER_STATE.operators.indexOf(op);
-    if (idx === -1) {
-      FILTER_STATE.operators.push(op);
-      btn.classList.add('active');
-    } else {
-      FILTER_STATE.operators.splice(idx, 1);
-      btn.classList.remove('active');
+    function updateLabel() {
+      if (selected.length === 0) label.textContent = 'All ' + opts.plural;
+      else if (selected.length === 1) label.textContent = '1 ' + opts.singular;
+      else label.textContent = selected.length + ' ' + opts.plural;
     }
-    onFilterChange();
+
+    trigger.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var isOpen = !panel.hidden;
+      closeAllDropdowns();
+      if (!isOpen) {
+        panel.hidden = false;
+        trigger.classList.add('open');
+        trigger.setAttribute('aria-expanded', 'true');
+        openPanels.push({ panel: panel, trigger: trigger });
+      }
+    });
+
+    panel.addEventListener('click', function (e) { e.stopPropagation(); });
+
+    panel.addEventListener('change', function (e) {
+      var input = e.target;
+      if (!input.matches('input[type="checkbox"]')) return;
+
+      if (input === allInput) {
+        if (input.checked) {
+          panel.querySelectorAll('input[type="checkbox"]:not([data-all])').forEach(function (cb) { cb.checked = false; });
+          selected = [];
+        } else {
+          input.checked = true;
+          return;
+        }
+      } else {
+        if (input.checked) {
+          allInput.checked = false;
+          if (selected.indexOf(input.value) === -1) selected.push(input.value);
+        } else {
+          var idx = selected.indexOf(input.value);
+          if (idx !== -1) selected.splice(idx, 1);
+          if (selected.length === 0) allInput.checked = true;
+        }
+      }
+
+      updateLabel();
+      opts.onChange(selected.slice());
+      onFilterChange();
+    });
+
+    return {
+      reset: function () {
+        selected = [];
+        panel.querySelectorAll('input[type="checkbox"]').forEach(function (cb) {
+          cb.checked = !!cb.dataset.all;
+        });
+        updateLabel();
+        opts.onChange([]);
+      }
+    };
+  }
+
+  var regionDropdown = setupCheckboxDropdown({
+    triggerId: 'region-trigger', labelId: 'region-trigger-label', panelId: 'region-panel',
+    singular: 'region', plural: 'regions',
+    onChange: function (selected) { FILTER_STATE.regions = selected; }
   });
 
-  document.getElementById('filter-source-pills').addEventListener('click', function (e) {
-    var btn = e.target.closest('.filter-pill');
-    if (!btn) return;
-    FILTER_STATE.source = btn.dataset.source;
-    Array.prototype.forEach.call(this.children, function (b) { b.classList.toggle('active', b === btn); });
-    onFilterChange();
+  var operatorDropdown = setupCheckboxDropdown({
+    triggerId: 'operator-trigger', labelId: 'operator-trigger-label', panelId: 'operator-panel',
+    singular: 'operator', plural: 'operators',
+    onChange: function (selected) { FILTER_STATE.operators = selected; }
   });
 
-  document.getElementById('filter-date-from').addEventListener('change', function () {
-    FILTER_STATE.dateFrom = this.value || null;
-    onFilterChange();
-  });
-  document.getElementById('filter-date-to').addEventListener('change', function () {
-    FILTER_STATE.dateTo = this.value || null;
-    onFilterChange();
+  var sourceDropdown = setupCheckboxDropdown({
+    triggerId: 'source-trigger', labelId: 'source-trigger-label', panelId: 'source-panel',
+    singular: 'source', plural: 'sources',
+    onChange: function (selected) { FILTER_STATE.sources = selected; }
   });
 
   document.getElementById('filter-clear').addEventListener('click', function () {
-    FILTER_STATE.ukOnly = true;
-    FILTER_STATE.date = 'all';
-    FILTER_STATE.dateFrom = null;
-    FILTER_STATE.dateTo = null;
-    FILTER_STATE.era = 'all';
-    FILTER_STATE.region = 'all';
+    FILTER_STATE.regions = [];
     FILTER_STATE.operators = [];
-    FILTER_STATE.source = 'all';
+    FILTER_STATE.sources = [];
 
-    document.querySelectorAll('#filter-date-pills .filter-pill').forEach(function (b) {
-      b.classList.toggle('active', b.dataset.date === 'all');
-    });
-    document.querySelectorAll('#filter-era-pills .filter-pill').forEach(function (b) {
-      b.classList.toggle('active', b.dataset.era === 'all');
-    });
-    document.querySelectorAll('#filter-operator-pills .filter-pill').forEach(function (b) {
-      b.classList.remove('active');
-    });
-    document.querySelectorAll('#filter-source-pills .filter-pill').forEach(function (b) {
-      b.classList.toggle('active', b.dataset.source === 'all');
-    });
-    document.getElementById('filter-uk-only').checked = true;
-    document.getElementById('filter-region').value = 'all';
-    document.getElementById('filter-date-range').style.display = 'none';
-    document.getElementById('filter-date-from').value = '';
-    document.getElementById('filter-date-to').value = '';
+    regionDropdown.reset();
+    operatorDropdown.reset();
+    sourceDropdown.reset();
 
     onFilterChange();
   });
