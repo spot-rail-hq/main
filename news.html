@@ -300,6 +300,27 @@ body.nav-open .nav-drawer { transform: translateX(0); }
 }
 .filter-select:focus { outline: none; border-color: var(--color-accent-turquoise); }
 
+.uk-toggle { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; }
+.uk-toggle input { position: absolute; opacity: 0; width: 0; height: 0; }
+.uk-toggle-track {
+  position: relative; display: inline-block; width: 40px; height: 22px; flex: none;
+  background: var(--surface2); border: 1px solid rgba(var(--line-rgb),0.08);
+  border-radius: 999px; transition: background .15s ease, border-color .15s ease;
+}
+.uk-toggle-thumb {
+  position: absolute; top: 2px; left: 2px; width: 16px; height: 16px;
+  background: var(--ink-mute); border-radius: 50%;
+  transition: transform .15s ease, background .15s ease;
+}
+.uk-toggle input:checked + .uk-toggle-track {
+  background: rgba(var(--color-accent-turquoise-rgb),0.25); border-color: var(--color-accent-turquoise);
+}
+.uk-toggle input:checked + .uk-toggle-track .uk-toggle-thumb {
+  transform: translateX(18px); background: var(--color-accent-turquoise);
+}
+.uk-toggle-label { font-size: 13px; font-weight: 600; color: var(--ink-dim); }
+.uk-toggle input:checked ~ .uk-toggle-label { color: var(--color-accent-turquoise); }
+
 .filter-foot { display: flex; align-items: center; justify-content: flex-end; }
 .filter-clear {
   font-size: 12.5px; color: var(--ink-mute); cursor: pointer; text-decoration: underline;
@@ -487,11 +508,19 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
 <div class="news-wrap">
   <div class="filter-bar">
     <button class="filter-toggle" id="filter-toggle" aria-expanded="false" aria-controls="filter-panel">
-      <span>🔍 Filter &amp; Search</span>
+      <span>Filter &amp; Search</span>
       <span class="filter-count-badge" id="filter-count-badge"></span>
     </button>
 
     <div class="filter-panel" id="filter-panel" hidden>
+      <div class="filter-group">
+        <label class="uk-toggle">
+          <input type="checkbox" id="filter-uk-only" checked>
+          <span class="uk-toggle-track"><span class="uk-toggle-thumb"></span></span>
+          <span class="uk-toggle-label">UK only</span>
+        </label>
+      </div>
+
       <div class="filter-group">
         <div class="filter-group-label">Date</div>
         <div class="filter-row" id="filter-date-pills">
@@ -676,6 +705,7 @@ function sourceStyle(source) {
 
 // ── NEWS FILTERS ─────────────────────────────────────────────────
 var FILTER_STATE = {
+  ukOnly: true,
   date: 'all',       // all | today | week | month | year | custom
   dateFrom: null,
   dateTo: null,
@@ -684,6 +714,28 @@ var FILTER_STATE = {
   operators: [],
   source: 'all'
 };
+
+var UK_KEYWORDS = [
+  // Countries/nations
+  'uk', 'united kingdom', 'britain', 'british', 'england', 'english',
+  'scotland', 'scottish', 'wales', 'welsh', 'northern ireland',
+  // Operators
+  'network rail', 'avanti', 'chiltern', 'crosscountry', 'gwr',
+  'great western', 'lner', 'southeastern', 'southern', 'thameslink',
+  'transpennine', 'scotrail', 'northern rail', 'merseyrail',
+  'greater anglia', 'c2c', 'lumo', 'hull trains', 'grand central',
+  'west midlands trains', 'transport for wales', 'tfw', 'tfl',
+  'overground', 'elizabeth line', 'heathrow express', 'freightliner',
+  'gb railfreight', 'db cargo', 'colas rail',
+  // Places
+  'london', 'manchester', 'birmingham', 'edinburgh', 'glasgow',
+  'cardiff', 'bristol', 'liverpool', 'leeds', 'sheffield', 'york',
+  'newcastle', 'nottingham', 'leicester', 'cambridge', 'oxford',
+  'hs2', 'crossrail', 'high speed 2', 'northern powerhouse rail',
+  'dft', 'department for transport', 'office of rail',
+  'rail delivery group', 'great british railways', 'gbr',
+  'orr', 'rssb'
+];
 
 var REGION_KEYWORDS = {
   'scotland':         ['scotland','scottish','scotrail','caledonian'],
@@ -752,6 +804,8 @@ function matchesFilters(item) {
   var pubDate = item.pubDate ? new Date(item.pubDate) : null;
   var validDate = !!(pubDate && !isNaN(pubDate.getTime()));
 
+  if (FILTER_STATE.ukOnly && !textContainsAny(text, UK_KEYWORDS)) return false;
+
   if (FILTER_STATE.source !== 'all' && item.source !== FILTER_STATE.source) return false;
 
   if (FILTER_STATE.date !== 'all') {
@@ -801,6 +855,7 @@ function matchesFilters(item) {
 
 function countActiveFilters() {
   var n = 0;
+  if (!FILTER_STATE.ukOnly) n++;
   if (FILTER_STATE.date !== 'all') n++;
   else if (FILTER_STATE.era !== 'all') n++;
   if (FILTER_STATE.region !== 'all') n++;
@@ -947,6 +1002,11 @@ document.getElementById('news-loadmore').addEventListener('click', function () {
     toggle.setAttribute('aria-expanded', 'true');
   }
 
+  document.getElementById('filter-uk-only').addEventListener('change', function () {
+    FILTER_STATE.ukOnly = this.checked;
+    onFilterChange();
+  });
+
   document.getElementById('filter-date-pills').addEventListener('click', function (e) {
     var btn = e.target.closest('.filter-pill');
     if (!btn) return;
@@ -1002,6 +1062,7 @@ document.getElementById('news-loadmore').addEventListener('click', function () {
   });
 
   document.getElementById('filter-clear').addEventListener('click', function () {
+    FILTER_STATE.ukOnly = true;
     FILTER_STATE.date = 'all';
     FILTER_STATE.dateFrom = null;
     FILTER_STATE.dateTo = null;
@@ -1022,6 +1083,7 @@ document.getElementById('news-loadmore').addEventListener('click', function () {
     document.querySelectorAll('#filter-source-pills .filter-pill').forEach(function (b) {
       b.classList.toggle('active', b.dataset.source === 'all');
     });
+    document.getElementById('filter-uk-only').checked = true;
     document.getElementById('filter-region').value = 'all';
     document.getElementById('filter-date-range').style.display = 'none';
     document.getElementById('filter-date-from').value = '';
