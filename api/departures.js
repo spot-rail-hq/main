@@ -96,6 +96,7 @@ export default async function handler(req, res) {
     }
 
     const data = JSON.parse(text);
+    console.log('RTT response sample:', JSON.stringify(data).substring(0, 1000));
     return res.status(200).json(data);
   } catch (err) {
     console.error('RTT proxy error:', err);

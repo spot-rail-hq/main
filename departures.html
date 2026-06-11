@@ -525,23 +525,19 @@ function selectStation(crs) {
   startAutoRefresh();
 }
 
-function formatTime(t) {
-  if (!t || t.length < 4) return '—';
-  return t.slice(0, 2) + ':' + t.slice(2, 4);
+function formatTime(iso) {
+  if (!iso) return '—';
+  var s = String(iso);
+  var t = s.indexOf('T');
+  return t === -1 ? '—' : s.slice(t + 1, t + 6);
 }
 
-function isCancelled(loc) {
-  return loc.cancelled === true || loc.isCancelled === true || loc.displayAs === 'CANCELLED_CALL';
-}
-
-function getStatus(loc) {
-  if (isCancelled(loc)) {
+function getStatus(temporalData, dep) {
+  if (temporalData.displayAs === 'CANCELLED_CALL' || (dep && dep.isCancelled)) {
     return { label: 'Cancelled', color: 'var(--color-accent-magenta)' };
   }
-  var scheduled = loc.scheduledDeparture || loc.gbttBookedDeparture;
-  var realtime = loc.realtimeDeparture;
-  if (realtime && scheduled) {
-    if (realtime !== scheduled) return { label: 'Delayed', color: 'var(--color-accent-amber)' };
+  if (dep && dep.realtimeForecast) {
+    if (dep.realtimeForecast !== dep.scheduleAdvertised) return { label: 'Delayed', color: 'var(--color-accent-amber)' };
     return { label: 'On time', color: 'var(--color-accent-lime)' };
   }
   return { label: 'Scheduled', color: 'var(--ink-mute)' };
@@ -560,7 +556,16 @@ function setRefreshing(state) {
 
 function renderDepartures(data) {
   var services = (data && Array.isArray(data.services)) ? data.services : [];
-  services = services.slice(0, 20);
+
+  if (services.length) {
+    console.log('First service raw:', JSON.stringify(services[0]));
+  }
+
+  // Only services with a "departure" leg are actual departures from this station
+  // (terminating services only have an "arrival" leg).
+  services = services.filter(function (s) {
+    return s.temporalData && s.temporalData.departure;
+  }).slice(0, 20);
 
   if (!services.length) {
     document.getElementById('dep-table-wrap').innerHTML =
@@ -569,15 +574,17 @@ function renderDepartures(data) {
   }
 
   var rows = services.map(function (s) {
-    var loc = s.locationDetail || s;
-    var destArr = loc.destination || [];
-    var dest = (destArr.length && destArr[destArr.length - 1].description) || '—';
-    var scheduled = loc.scheduledDeparture || loc.gbttBookedDeparture;
-    var platform = loc.platform || '—';
-    var status = getStatus(loc);
+    var temporalData = s.temporalData || {};
+    var dep = temporalData.departure || {};
+    var destArr = s.destination || [];
+    var lastDest = destArr.length ? destArr[destArr.length - 1] : null;
+    var dest = (lastDest && lastDest.location && lastDest.location.description) || '—';
+    var platformInfo = (s.locationMetadata && s.locationMetadata.platform) || {};
+    var platform = platformInfo.actual || platformInfo.forecast || platformInfo.planned || '—';
+    var status = getStatus(temporalData, dep);
     return (
       '<tr>' +
-        '<td class="dep-mono">' + escHtml(formatTime(scheduled)) + '</td>' +
+        '<td class="dep-mono">' + escHtml(formatTime(dep.scheduleAdvertised)) + '</td>' +
         '<td>' + escHtml(dest) + '</td>' +
         '<td class="dep-mono">' + escHtml(platform) + '</td>' +
         '<td style="color:' + status.color + '">' + escHtml(status.label) + '</td>' +
