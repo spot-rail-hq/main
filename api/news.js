@@ -21,6 +21,16 @@ const FEEDS = [
 const MAX_ITEMS = 30;
 const DESCRIPTION_LIMIT = 180;
 
+// ─── In-memory cache ──────────────────────────────────────────────────────────
+// Persists across warm invocations on the same Vercel instance (typically
+// several minutes). Most page loads after the first return instantly from here
+// rather than hitting all 6 RSS feeds. TTL matches s-maxage below.
+const CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutes
+let _cache = { items: null, builtAt: 0 };
+
+// Per-feed fetch timeout — prevents one slow/hung feed stalling the response
+const FEED_TIMEOUT_MS = 7000; // 7 seconds
+
 function decodeEntities(str) {
   return str
     .replace(/&amp;/g, '&')
@@ -97,21 +107,6 @@ function extractImage(block) {
   return null;
 }
 
-const fetchWithTimeout = (url, ms = 5000, options = {}) => {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), ms);
-  return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(timer));
-};
-
-async function fetchFeed(feed) {
-  const upstream = await fetchWithTimeout(feed.url, 5000, {
-    headers: { 'User-Agent': 'Mozilla/5.0 (compatible; SpotRailHQ/1.0; +https://srhq.uk)' },
-  });
-  if (!upstream.ok) throw new Error(`HTTP ${upstream.status}`);
-  const xml = await upstream.text();
-  return parseFeed(xml, feed.source);
-}
-
 function parseFeed(xml, source) {
   const blocks = xml.match(/<(?:item|entry)[\s\S]*?<\/(?:item|entry)>/gi) || [];
   return blocks.map((block) => {
@@ -144,16 +139,41 @@ function parseFeed(xml, source) {
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Cache-Control', 's-maxage=1800, stale-while-revalidate=3600');
+  // Edge cache: serve cached response for 15 min, allow stale for 5 min while revalidating
+  res.setHeader('Cache-Control', 's-maxage=900, stale-while-revalidate=300');
 
-  const results = await Promise.all(
-    FEEDS.map(feed => fetchFeed(feed).catch(err => {
-      console.error('Feed failed:', feed.source, err.message);
-      return [];
-    }))
-  );
+  // ── Serve from in-memory cache if still fresh ────────────────────────────
+  const now = Date.now();
+  if (_cache.items && (now - _cache.builtAt) < CACHE_TTL_MS) {
+    res.setHeader('X-Cache', 'HIT');
+    return res.status(200).json(_cache.items);
+  }
 
-  let items = results.flat();
+  // ── Fetch all feeds in parallel, each with an individual timeout ─────────
+  const results = await Promise.allSettled(FEEDS.map(async (feed) => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), FEED_TIMEOUT_MS);
+    try {
+      const upstream = await fetch(feed.url, {
+        signal: controller.signal,
+        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; SpotRailHQ/1.0; +https://srhq.uk)' },
+      });
+      if (!upstream.ok) throw new Error(`${feed.source}: HTTP ${upstream.status}`);
+      const xml = await upstream.text();
+      return parseFeed(xml, feed.source);
+    } finally {
+      clearTimeout(timer);
+    }
+  }));
+
+  let items = [];
+  results.forEach((result, i) => {
+    if (result.status === 'fulfilled') {
+      items = items.concat(result.value);
+    } else {
+      console.error(`Feed failed (${FEEDS[i].source}):`, result.reason && result.reason.message);
+    }
+  });
 
   items.sort((a, b) => {
     const ta = a.pubDate ? new Date(a.pubDate).getTime() : 0;
@@ -161,5 +181,21 @@ export default async function handler(req, res) {
     return tb - ta;
   });
 
-  return res.status(200).json(items.slice(0, MAX_ITEMS));
+  const sliced = items.slice(0, MAX_ITEMS);
+
+  // ── Update in-memory cache (only if we got at least some items) ──────────
+  // If all feeds failed, keep any stale cache rather than caching an empty set
+  if (sliced.length > 0) {
+    _cache = { items: sliced, builtAt: Date.now() };
+    res.setHeader('X-Cache', 'MISS');
+    return res.status(200).json(sliced);
+  }
+
+  // ── All feeds failed — return stale cache if available, else 502 ─────────
+  if (_cache.items) {
+    res.setHeader('X-Cache', 'STALE');
+    return res.status(200).json(_cache.items);
+  }
+
+  return res.status(502).json({ error: 'All RSS feeds unavailable', items: [] });
 }
