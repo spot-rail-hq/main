@@ -3,6 +3,11 @@
   "trailingSlash": false,
   "redirects": [
     {
+      "source": "https://www.srhq.uk/(.*)",
+      "destination": "https://srhq.uk/$1",
+      "permanent": true
+    },
+    {
       "source": "/news.html",
       "destination": "/news",
       "permanent": true
