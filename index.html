@@ -107,6 +107,10 @@ a { color: inherit; text-decoration: none; }
 /* Nav */
 .nav {
   position: sticky; top: 0; z-index: 50;
+}
+.nav::before {
+  content: "";
+  position: absolute; inset: 0; z-index: -1;
   background: rgba(var(--bg-rgb),0.85);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(var(--line-rgb),0.08);
