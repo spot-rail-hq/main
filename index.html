@@ -352,12 +352,13 @@ body.nav-open .nav-drawer { transform: translateX(0); box-shadow: -20px 0 60px r
 }
 .spot-new-btn {
   display: inline-flex; align-items: center; gap: 7px;
-  padding: 11px 16px; background: transparent;
-  color: var(--color-accent-magenta); border: 1px solid rgba(var(--color-accent-magenta-rgb),0.3);
+  padding: 11px 16px; background: var(--color-accent-magenta);
+  color: #000; border: 1px solid transparent;
   border-radius: 10px; font-size: 13px; font-family: 'Manrope', sans-serif;
-  font-weight: 500; cursor: pointer; transition: background .15s, border-color .15s;
+  font-weight: 500; cursor: pointer; transition: opacity .15s;
 }
-.spot-new-btn:hover { background: rgba(var(--color-accent-magenta-rgb),0.08); border-color: rgba(var(--color-accent-magenta-rgb),0.6); }
+.spot-new-btn:hover { opacity: 0.85; }
+:root[data-theme="light"] .spot-new-btn { color: #fff; }
 
 /* Data card (right side of spotlight) */
 .data-card {
