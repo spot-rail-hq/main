@@ -11,8 +11,13 @@
 
 export default async function handler(req, res) {
 
-  // ── CORS: only allow requests from your own domain ──────────────
-  res.setHeader('Access-Control-Allow-Origin', 'https://srhq.uk');
+  // ── CORS: allow production domain and Vercel preview URLs ───────
+  const origin = req.headers.origin || '';
+  const allowedOrigin =
+    origin === 'https://srhq.uk' || origin.endsWith('.vercel.app')
+      ? origin
+      : 'https://srhq.uk';
+  res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -28,7 +33,10 @@ export default async function handler(req, res) {
 
   // ── API key ──────────────────────────────────────────────────────
   const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) return res.status(500).json({ error: 'API key not configured' });
+  if (!apiKey) {
+    console.error('ANTHROPIC_API_KEY is missing or empty in this environment');
+    return res.status(500).json({ error: 'API key not configured' });
+  }
 
   // ── Prompt ───────────────────────────────────────────────────────
   const prompt = `You are a UK railway expert writing for SpotRail HQ, a train enthusiast reference platform.
