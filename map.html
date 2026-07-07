@@ -160,12 +160,16 @@
      window, so it gets its own normal card radius (matches <details> cards
      and the cookie banner elsewhere on the site: 16px), overriding .pill. */
   #news-panel { position: absolute; top: 52px; left: 10px; z-index: 50; overflow: hidden; border-radius: 16px;
-    width: 900px; max-width: calc(100vw - 24px); height: 1300px; max-height: calc(100vh - 90px);
+    width: 500px; max-width: calc(100vw - 24px); height: 600px; max-height: calc(100vh - 90px);
     display: flex; flex-direction: column; }
   .np-header { flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; cursor: pointer; }
   .np-header-left { display: flex; align-items: center; gap: 6px; }
   .np-header-left i { font-size: 12px; color: var(--ink); }
   .np-title { font-size: 18px; font-weight: 600; color: var(--ink-primary); }
+  /* Station name takes over the panel's top-of-box title when a station is
+     tapped — sized to match the category headings on database.html (20px,
+     Archivo, 600). */
+  .np-title.station-mode { font-family: var(--font-display); font-size: 20px; font-weight: 600; letter-spacing: -0.5px; }
   .np-badge { background: var(--m); color: #fff; font-size: 11px; padding: 1px 6px; border-radius: 99px; display: none; }
   .np-badge.show { display: inline-block; }
   .np-pulse { width: 5px; height: 5px; border-radius: 50%; background: var(--m); animation: pulse 1.6s infinite; display: none; }
@@ -174,25 +178,48 @@
   .np-time { font-size: 13px; color: var(--ink); }
   .np-chevron { font-size: 11px; color: var(--ink); transition: transform 0.2s; }
   .np-chevron.flipped { transform: rotate(180deg); }
+  .np-station-clear { display: none; font-size: 16px; color: var(--ink); padding: 0 2px; line-height: 1; }
+  #news-panel.station-selected .np-station-clear { display: inline-flex; }
+  #news-panel.station-selected #np-icon,
+  #news-panel.station-selected #np-badge,
+  #news-panel.station-selected #np-pulse,
+  #news-panel.station-selected #np-time { display: none; }
   .np-body { flex: 1; min-height: 0; overflow-y: auto; }
   #news-panel.collapsed .np-body { display: none; }
   #news-panel.collapsed { height: auto; max-height: none; }
 
-  #dep-board { display: none; border-bottom: 0.5px solid var(--br); padding: 8px 10px 10px; }
+  /* Departure format matches departures.html's table exactly: mono time/platform,
+     14px body cells, plain-colour status text (no pill background), 11px
+     uppercase mono column labels. */
+  #dep-board { display: none; border-bottom: 0.5px solid var(--br); padding: 4px 14px 10px; }
   #dep-board .db-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 6px; }
   #dep-board .db-label { font-family: var(--font-mono); font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--t); }
   #dep-board .db-station { font-size: 13px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 500px; }
-  .dep-row { display: flex; align-items: center; gap: 10px; padding: 5px 0; font-size: 16px; }
-  .dep-time { font-family: var(--font-mono); font-size: 16px; width: 52px; flex-shrink: 0; }
-  .dep-dest { font-size: 16px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .dep-plat { width: 60px; flex-shrink: 0; font-size: 13px; color: var(--ink); }
-  .dep-status { font-size: 13px; padding: 2px 8px; border-radius: 99px; flex-shrink: 0; white-space: nowrap; }
-  .dep-status.on-time { color: var(--t); background: rgba(64,224,208,0.1); }
-  .dep-status.delayed { color: var(--a); background: rgba(245,184,75,0.1); }
-  .dep-status.cancelled { color: var(--m); background: rgba(242,92,193,0.1); }
+  .dep-cols { display: flex; align-items: center; gap: 10px; padding: 6px 0 4px; font-family: var(--font-mono);
+    font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink); border-bottom: 0.5px solid var(--br); }
+  .dep-cols span:nth-child(1) { width: 52px; flex-shrink: 0; }
+  .dep-cols span:nth-child(2) { flex: 1; }
+  .dep-cols span:nth-child(3) { width: 56px; flex-shrink: 0; }
+  .dep-cols span:nth-child(4) { width: 70px; flex-shrink: 0; }
+  .dep-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; font-size: 14px; border-bottom: 0.5px solid rgba(64,224,208,0.06); }
+  .dep-time { font-family: var(--font-mono); font-size: 14px; width: 52px; flex-shrink: 0; }
+  .dep-dest { font-size: 14px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .dep-plat { font-family: var(--font-mono); width: 56px; flex-shrink: 0; font-size: 14px; }
+  .dep-status { font-size: 14px; width: 70px; flex-shrink: 0; white-space: nowrap; }
+  .dep-status.on-time { color: var(--l); }
+  .dep-status.delayed { color: var(--a); }
+  .dep-status.cancelled { color: var(--m); }
+  .dep-status.scheduled { color: var(--ink); }
   .dep-empty { font-size: 9px; color: var(--ink); padding: 6px 0; }
   body.mode-database #dep-board { display: none !important; }
 
+  /* Sticks the "Live news" label + filters to the top of the scroll area so it
+     stays visually separated from departure rows scrolling away above it. The
+     label itself only shows when departures are also present (station
+     selected) — otherwise the panel's own top header already says "Live news". */
+  .news-sticky { position: sticky; top: 0; z-index: 2; background: var(--sf); }
+  .news-sticky-title { display: none; padding: 8px 10px 0; font-size: 13px; font-weight: 500; color: var(--ink-primary); }
+  #news-panel.station-selected .news-sticky-title { display: block; }
   .filter-row { display: flex; gap: 4px; overflow-x: auto; padding: 8px 10px; scrollbar-width: none; }
   .filter-row::-webkit-scrollbar { display: none; }
   .filter-chip { font-size: 13px; padding: 3px 10px; border-radius: 99px; border: 0.5px solid var(--br); color: var(--ink); white-space: nowrap; flex-shrink: 0; }
@@ -333,9 +360,10 @@
 <div id="news-panel" class="pill">
   <div class="np-header" id="np-header-toggle">
     <div class="np-header-left">
-      <i class="ti ti-news"></i>
-      <span class="np-title">Live news</span>
+      <i class="ti ti-news" id="np-icon"></i>
+      <span class="np-title" id="np-title-text">Live news</span>
       <span class="np-badge" id="np-badge">0</span>
+      <button class="np-station-clear" id="np-station-clear" aria-label="Back to live news">×</button>
     </div>
     <div class="np-header-left">
       <span class="np-pulse" id="np-pulse"></span>
@@ -345,13 +373,13 @@
   </div>
   <div class="np-body" id="np-body">
     <div id="dep-board">
-      <div class="db-head">
-        <span class="db-label">Departures</span>
-        <span class="db-station" id="db-station-name"></span>
-      </div>
+      <div class="dep-cols"><span>Sched.</span><span>Destination</span><span>Plat.</span><span>Status</span></div>
       <div id="dep-rows"></div>
     </div>
-    <div class="filter-row" id="filter-row"></div>
+    <div class="news-sticky">
+      <div class="news-sticky-title">Live news</div>
+      <div class="filter-row" id="filter-row"></div>
+    </div>
     <div id="news-items"></div>
     <div class="rebook-cta" id="rebook-cta">Disrupted? Find alternatives →</div>
     <div id="saved-section">
@@ -643,7 +671,8 @@
   function depStatusClass(status) {
     if (status === 'Cancelled') return 'cancelled';
     if (/^\+\d/.test(status) || status === 'Delayed') return 'delayed';
-    return 'on-time';
+    if (status === 'On time') return 'on-time';
+    return 'scheduled';
   }
   function renderDepartureRows(rows, container) {
     if (!rows || !rows.length) { container.innerHTML = '<div class="dep-empty">No departures available right now.</div>'; return; }
@@ -651,15 +680,35 @@
       return '<div class="dep-row">' +
         '<span class="dep-time">' + (d.scheduledTime || '--:--') + '</span>' +
         '<span class="dep-dest">' + d.destination + '</span>' +
-        '<span class="dep-plat">Plat ' + (d.platform || '—') + '</span>' +
+        '<span class="dep-plat">' + (d.platform || '—') + '</span>' +
         '<span class="dep-status ' + depStatusClass(d.status) + '">' + d.status + '</span>' +
         '</div>';
     }).join('');
   }
 
+  // Station name replaces "Live news" as the panel's top-of-box title while a
+  // station is selected; the "×" button (wired below) reverts to the default.
+  var newsPanel = document.getElementById('news-panel');
+  var npTitleText = document.getElementById('np-title-text');
+  function selectStationInPanel(name) {
+    newsPanel.classList.add('station-selected');
+    npTitleText.textContent = name;
+    npTitleText.classList.add('station-mode');
+  }
+  function clearStationSelection() {
+    newsPanel.classList.remove('station-selected');
+    npTitleText.textContent = 'Live news';
+    npTitleText.classList.remove('station-mode');
+    document.getElementById('dep-board').style.display = 'none';
+  }
+  document.getElementById('np-station-clear').addEventListener('click', function (e) {
+    e.stopPropagation();
+    clearStationSelection();
+  });
+
   function openDepartureBoard(name, crs) {
     document.getElementById('dep-board').style.display = 'block';
-    document.getElementById('db-station-name').textContent = name;
+    selectStationInPanel(name);
     document.getElementById('ms-db-station-name').textContent = name;
     var loadingHtml = '<div class="dep-empty">Loading departures…</div>';
     document.getElementById('dep-rows').innerHTML = loadingHtml;
