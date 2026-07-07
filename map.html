@@ -431,10 +431,6 @@
 (function () {
   'use strict';
 
-  // TODO: replace with a real Stadia Maps key — either fetch('/api/config')
-  // and read window.SRHQ_CONFIG.stadiaKey, or inject STADIA_API_KEY server-side.
-  var STADIA_KEY = '';
-
   var CSS_VAR_COLORS = {
     '--color-accent-turquoise': '#40E0D0',
     '--color-accent-magenta': '#F25CC1',
@@ -455,15 +451,26 @@
   var mode = 'live';
 
   // ── Map init ─────────────────────────────────────────────────────────────
-  var map = new maplibregl.Map({
-    container: 'map',
-    style: 'https://tiles.stadiamaps.com/styles/alidade_smooth_dark.json?api_key=' + STADIA_KEY,
-    center: [-2.0, 53.5],
-    zoom: 6,
-    attributionControl: false,
-  });
-  map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-left');
-  map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-left');
+  // Dark OSM fallback (CARTO dark basemap) used when no Stadia key is configured.
+  var FALLBACK_STYLE = {
+    version: 8,
+    sources: {
+      'fallback-dark': {
+        type: 'raster',
+        tiles: [
+          'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+          'https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+          'https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+          'https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+        ],
+        tileSize: 256,
+        attribution: '© OpenStreetMap contributors © CARTO',
+      },
+    },
+    layers: [{ id: 'fallback-dark-layer', type: 'raster', source: 'fallback-dark' }],
+  };
+
+  var map;
 
   function routesGeoJSON() {
     return {
@@ -479,7 +486,31 @@
     };
   }
 
-  map.on('load', function () {
+  (async function initMap() {
+    var config = { stadiaKey: '' };
+    try {
+      config = await fetch('/api/config').then(function (r) { return r.json(); });
+    } catch (e) { console.warn('Falling back to dark OSM tiles — /api/config failed', e); }
+
+    var styleUrl = config.stadiaKey
+      ? 'https://tiles.stadiamaps.com/styles/alidade_smooth_dark.json?api_key=' + config.stadiaKey
+      : null;
+
+    map = new maplibregl.Map({
+      container: 'map',
+      style: styleUrl || FALLBACK_STYLE,
+      center: [-2.0, 53.5],
+      zoom: 6,
+      attributionControl: false,
+    });
+    map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-left');
+    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-left');
+
+    map.on('load', onMapLoad);
+    map.on('click', hideBottomHints);
+  })();
+
+  function onMapLoad() {
     map.addSource('orm', {
       type: 'raster',
       tiles: [
@@ -529,7 +560,7 @@
     }).catch(function (e) { console.error('Failed to load stations.geojson', e); });
 
     wireRouteInteractions();
-  });
+  }
 
   // ── Route interactions (click → popup, hover, dim/highlight) ────────────
   var hoveredRouteFeatureId = null;
@@ -754,7 +785,6 @@
 
   // ── Bottom hints ──────────────────────────────────────────────────────────
   function hideBottomHints() { document.getElementById('bottom-hints').classList.add('hidden'); }
-  map.on('click', hideBottomHints);
 
   // ── Search ────────────────────────────────────────────────────────────────
   var searchBtn = document.getElementById('search-btn');
