@@ -115,10 +115,12 @@
   #header .back-link:hover { color: var(--t); }
   #search-input { display: none; width: 120px; background: transparent; border: none; border-bottom: 1px solid var(--brh); color: var(--ink-primary); font-size: 11px; padding: 3px 2px; }
   #search-input.open { display: inline-block; }
-  .theme-toggle-icon-light { display: none; }
-  .theme-toggle-icon-dark { display: inline; }
-  :root[data-theme="light"] .theme-toggle-icon-light { display: inline; }
-  :root[data-theme="light"] .theme-toggle-icon-dark { display: none; }
+  /* Icon shows the mode you'd switch TO (matches index.html's toggle convention):
+     sun visible in dark mode (tap for light), moon visible in light mode (tap for dark). */
+  .theme-toggle-icon-light { display: inline; }
+  .theme-toggle-icon-dark { display: none; }
+  :root[data-theme="light"] .theme-toggle-icon-light { display: none; }
+  :root[data-theme="light"] .theme-toggle-icon-dark { display: inline; }
 
   /* ── Map controls ─────────────────────────────────────────────── */
   #map-controls { position: absolute; top: 52px; right: 10px; z-index: 50; display: flex; flex-direction: column; gap: 3px; }
@@ -140,7 +142,7 @@
 
   /* ── Cookie consent (compact) ─────────────────────────────────── */
   #cookie-consent { position: absolute; bottom: 34px; left: 10px; z-index: 90; width: min(280px, calc(100vw - 20px));
-    padding: 12px; display: none; }
+    padding: 12px; display: none; border-radius: 16px; }
   #cookie-consent.open { display: block; }
   #cookie-consent p { font-size: 10px; line-height: 1.5; color: var(--ink); margin-bottom: 8px; }
   #cookie-consent .cc-row { display: flex; gap: 6px; }
@@ -154,31 +156,37 @@
   #footer .f-pill:hover { color: var(--t); }
 
   /* ── Live news panel (desktop) ───────────────────────────────── */
-  #news-panel { position: absolute; top: 52px; left: 10px; width: 285px; z-index: 50; overflow: hidden; }
-  .np-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; cursor: pointer; }
+  /* .pill's 99px radius is for small badges/buttons — this is a large content
+     window, so it gets its own normal card radius (matches <details> cards
+     and the cookie banner elsewhere on the site: 16px), overriding .pill. */
+  #news-panel { position: absolute; top: 52px; left: 10px; z-index: 50; overflow: hidden; border-radius: 16px;
+    width: 900px; max-width: calc(100vw - 24px); height: 1300px; max-height: calc(100vh - 90px);
+    display: flex; flex-direction: column; }
+  .np-header { flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; cursor: pointer; }
   .np-header-left { display: flex; align-items: center; gap: 6px; }
   .np-header-left i { font-size: 12px; color: var(--ink); }
-  .np-title { font-size: 13px; font-weight: 500; color: var(--ink-primary); }
-  .np-badge { background: var(--m); color: #fff; font-size: 10px; padding: 1px 6px; border-radius: 99px; display: none; }
+  .np-title { font-size: 18px; font-weight: 600; color: var(--ink-primary); }
+  .np-badge { background: var(--m); color: #fff; font-size: 11px; padding: 1px 6px; border-radius: 99px; display: none; }
   .np-badge.show { display: inline-block; }
   .np-pulse { width: 5px; height: 5px; border-radius: 50%; background: var(--m); animation: pulse 1.6s infinite; display: none; }
   .np-pulse.show { display: block; }
   @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
-  .np-time { font-size: 11px; color: var(--ink); }
+  .np-time { font-size: 13px; color: var(--ink); }
   .np-chevron { font-size: 11px; color: var(--ink); transition: transform 0.2s; }
   .np-chevron.flipped { transform: rotate(180deg); }
-  .np-body { max-height: 72vh; overflow-y: auto; }
+  .np-body { flex: 1; min-height: 0; overflow-y: auto; }
   #news-panel.collapsed .np-body { display: none; }
+  #news-panel.collapsed { height: auto; max-height: none; }
 
   #dep-board { display: none; border-bottom: 0.5px solid var(--br); padding: 8px 10px 10px; }
   #dep-board .db-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 6px; }
-  #dep-board .db-label { font-family: var(--font-mono); font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--t); }
-  #dep-board .db-station { font-size: 11px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 165px; }
-  .dep-row { display: flex; align-items: center; gap: 6px; padding: 3px 0; font-size: 13px; }
-  .dep-time { font-family: var(--font-mono); font-size: 13px; width: 42px; flex-shrink: 0; }
-  .dep-dest { font-size: 13px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .dep-plat { width: 26px; flex-shrink: 0; font-size: 11px; color: var(--ink); }
-  .dep-status { font-size: 11px; padding: 1px 6px; border-radius: 99px; flex-shrink: 0; white-space: nowrap; }
+  #dep-board .db-label { font-family: var(--font-mono); font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--t); }
+  #dep-board .db-station { font-size: 13px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 500px; }
+  .dep-row { display: flex; align-items: center; gap: 10px; padding: 5px 0; font-size: 16px; }
+  .dep-time { font-family: var(--font-mono); font-size: 16px; width: 52px; flex-shrink: 0; }
+  .dep-dest { font-size: 16px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .dep-plat { width: 60px; flex-shrink: 0; font-size: 13px; color: var(--ink); }
+  .dep-status { font-size: 13px; padding: 2px 8px; border-radius: 99px; flex-shrink: 0; white-space: nowrap; }
   .dep-status.on-time { color: var(--t); background: rgba(64,224,208,0.1); }
   .dep-status.delayed { color: var(--a); background: rgba(245,184,75,0.1); }
   .dep-status.cancelled { color: var(--m); background: rgba(242,92,193,0.1); }
@@ -187,34 +195,34 @@
 
   .filter-row { display: flex; gap: 4px; overflow-x: auto; padding: 8px 10px; scrollbar-width: none; }
   .filter-row::-webkit-scrollbar { display: none; }
-  .filter-chip { font-size: 11px; padding: 2px 8px; border-radius: 99px; border: 0.5px solid var(--br); color: var(--ink); white-space: nowrap; flex-shrink: 0; }
+  .filter-chip { font-size: 13px; padding: 3px 10px; border-radius: 99px; border: 0.5px solid var(--br); color: var(--ink); white-space: nowrap; flex-shrink: 0; }
   .filter-chip.active { background: rgba(64,224,208,0.1); border-color: var(--t); color: var(--t); }
 
   .news-item { padding: 5px 10px; border-bottom: 0.5px solid rgba(64,224,208,0.06); display: flex; gap: 6px; }
   .news-item.urgent { background: rgba(242,92,193,0.05); }
   .news-dot { width: 6px; height: 6px; border-radius: 50%; margin-top: 3px; flex-shrink: 0; }
-  .news-title { font-size: 13px; line-height: 1.4; }
+  .news-title { font-size: 15px; line-height: 1.4; }
   .news-item.urgent .news-title { color: var(--ink-primary); }
   .news-item:not(.urgent) .news-title { color: #ccc; }
   :root[data-theme="light"] .news-item:not(.urgent) .news-title { color: #333333; }
-  .news-meta { font-size: 11px; color: var(--ink); margin-top: 2px; }
+  .news-meta { font-size: 13px; color: var(--ink); margin-top: 2px; }
   .news-empty { padding: 10px; font-size: 9px; color: var(--ink); text-align: center; }
 
-  .rebook-cta { display: none; padding: 7px 10px; background: rgba(242,92,193,0.07); font-size: 12px; color: var(--m); }
+  .rebook-cta { display: none; padding: 9px 10px; background: rgba(242,92,193,0.07); font-size: 14px; color: var(--m); }
   .rebook-cta.show { display: block; }
 
   #saved-section { padding: 8px 10px 4px; }
   .saved-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
-  .saved-label { font-family: var(--font-mono); font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink); }
-  .saved-add { font-size: 9px; color: var(--t); }
-  .saved-route { display: flex; align-items: center; gap: 6px; padding: 4px 0; }
+  .saved-label { font-family: var(--font-mono); font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink); }
+  .saved-add { font-size: 13px; color: var(--t); }
+  .saved-route { display: flex; align-items: center; gap: 8px; padding: 5px 0; }
   .saved-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-  .saved-name { font-size: 13px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .saved-sub { font-size: 11px; color: var(--ink); }
-  .saved-remove { font-size: 11px; color: var(--ink); padding: 2px 4px; }
+  .saved-name { font-size: 15px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .saved-sub { font-size: 13px; color: var(--ink); }
+  .saved-remove { font-size: 14px; color: var(--ink); padding: 2px 6px; }
   .saved-empty { font-size: 9px; color: var(--ink); padding: 4px 0 8px; }
 
-  .np-footer { display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; font-size: 11px; color: var(--ink); }
+  .np-footer { flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; font-size: 13px; color: var(--ink); }
   .np-footer a { color: var(--t); }
 
   /* ── Mobile bottom sheet ──────────────────────────────────────── */
@@ -446,6 +454,25 @@
   };
   function themeColors() { return THEME_COLORS[currentTheme()]; }
 
+  // Stadia's Alidade Smooth styles tint parks/woodland green (checked the raw
+  // style JSON: park_fill/landcover_wood/landcover_park use hsl hue 109-120 in
+  // dark, a faint rgb green cast in light). SRHQ's map has no green in its
+  // palette, so these are desaturated to neutral greys pulled from the site's
+  // own dark/light background scale instead — same lightness/alpha as Stadia's
+  // originals, hue and saturation zeroed.
+  var GREY_LANDCOVER = {
+    dark: { park_fill: 'hsla(0,0%,55%,8%)', landcover_wood: 'hsla(0,0%,59%,10%)', landcover_park: 'hsla(0,0%,55%,8%)' },
+    light: { park_fill: 'rgb(231,231,231)', landcover_wood: 'rgb(221,221,221)', landcover_park: 'rgb(214,214,214)' },
+  };
+  function greyOutLandcover(theme) {
+    var overrides = GREY_LANDCOVER[theme];
+    Object.keys(overrides).forEach(function (layerId) {
+      if (map.getLayer(layerId)) {
+        try { map.setPaintProperty(layerId, 'fill-color', overrides[layerId]); } catch (e) {}
+      }
+    });
+  }
+
   var STADIA_STYLE_NAMES = { dark: 'alidade_smooth_dark', light: 'alidade_smooth' };
   function buildMapStyle(theme, stadiaKey) {
     if (stadiaKey) {
@@ -467,7 +494,10 @@
       },
       layers: [{
         id: 'fallback-osm-layer', type: 'raster', source: 'fallback-osm',
-        paint: { 'raster-opacity': theme === 'light' ? 1.0 : 0.12 },
+        // Raster tiles are flat images — individual features (like green
+        // landcover) can't be recolored, so this partially desaturates the
+        // whole tile as a best-effort compromise when no Stadia key is set.
+        paint: { 'raster-opacity': theme === 'light' ? 1.0 : 0.12, 'raster-saturation': -0.5 },
       }],
     };
   }
@@ -504,6 +534,8 @@
   // below — no separate route line data. Re-run after every map.setStyle()
   // (theme switch) since setStyle wipes all sources/layers from the old style.
   function addMapLayers() {
+    greyOutLandcover(currentTheme());
+
     map.addSource('orm-standard', {
       type: 'raster',
       tiles: [
