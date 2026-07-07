@@ -1,27 +1,138 @@
-# Project notes for Claude
+# SpotRail HQ — srhq.uk
 
-This site (srhq.uk) is hosted on Vercel, deployed automatically from the
-`main` branch on GitHub.
+## Project overview
+srhq.uk is a UK railway platform targeting three audiences simultaneously:
+- **Explorers** (curious learners) — monetised via ads and editorial sponsorships
+- **Trip Planners** (planning journeys ahead) — monetised via Trainline/Railcard affiliates
+- **Active Travellers** (travelling today) — monetised via rebook affiliates at highest purchase intent
 
-## vercel.json is high-risk
+The map page is a full-screen interactive map inspired by OpenRailwayMap and Google Maps — no traditional page layout, everything floats over the map canvas.
 
-A single invalid field in `vercel.json` causes Vercel to silently reject
-EVERY future deployment with no visible error in the dashboard — git pushes
-just stop producing new deployments. This already happened once (commit
-`64faf76`) and cost half a day to diagnose.
+## Design tokens — use these exactly, never substitute
+```
+Background:   #07090C
+Surface:      #0E1218 (use at rgba(14,18,24,0.96) for floating panels)
+Turquoise:    #40E0D0  (primary accent)
+Magenta:      #F25CC1  (urgent/Live mode)
+Amber:        #F5B84B  (delays/warnings)
+Lime:         #B8F266  (heritage/positive)
+Dimmed ink:   #9AA4B2  (secondary text)
+Borders:      rgba(64,224,208,0.14) default · rgba(64,224,208,0.28) emphasis
+```
 
-If you ever edit `vercel.json`:
+## Typography
+- Display: Archivo (headings)
+- Body: Manrope
+- Data/monospace: JetBrains Mono (times, codes)
+- Fallback: var(--font-sans) from host
 
-- `redirects[].source` (and `rewrites`/`headers` `source`) must be a PATH
-  starting with `/` — never a full URL with `https://` or a hostname.
-- To redirect/match based on domain (e.g. `www.srhq.uk` vs `srhq.uk`), use
-  `"has": [{ "type": "host", "value": "www.srhq.uk" }]` alongside a path
-  `source`, not the hostname in `source` itself.
-- After committing a `vercel.json` change and the user pushes it, ASK the
-  user to check the Vercel "Deployments" tab and confirm a new deployment
-  appears and reaches "Ready" — do not assume success just because the push
-  worked.
-- If a previously-working deploy pipeline suddenly stops producing any new
-  deployments (including via Deploy Hooks returning 201/PENDING with
-  nothing showing up), check `vercel.json` for validation errors FIRST,
-  before investigating account/billing/Git-integration settings.
+## Stack — STRICT rules
+- Plain HTML + vanilla JS only. NO React, NO Vue, NO frameworks, NO Babel.
+- No external JS beyond MapLibre GL JS and its dependencies.
+- All API calls go through /api/ serverless functions (Vercel/Coolify), never expose keys client-side.
+- CSS: use CSS custom properties. No Tailwind, no CSS-in-JS.
+- Always add `font-family: inherit; font-size: inherit; box-sizing: border-box` resets on buttons and inputs — browsers do NOT inherit these by default and it causes button font size bugs.
+
+## Map page architecture (map.html)
+The map is FULL SCREEN — 100vw × 100vh, no page chrome.
+Everything floats over the map as absolutely positioned panels.
+
+### Floating header (top centre)
+- Pill shape, rgba(14,18,24,0.96) background, blur backdrop
+- Contains: logo · divider · Live tab · Database tab · divider · search icon · star icon · ← srhq.uk back link
+- Live tab = magenta when active (#F25CC1)
+- Database tab = turquoise when active (#40E0D0)
+- All text 10px, icons 12–14px — NEVER larger
+
+### Map library
+- MapLibre GL JS (CDN: https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js)
+- CSS: https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css
+- Base tiles: Stadia Maps Alidade Smooth Dark
+  - Style URL: https://tiles.stadiamaps.com/styles/alidade_smooth_dark.json
+  - Requires ?api_key= param from env var STADIA_API_KEY
+- ORM overlay: OpenRailwayMap standard raster tiles at 55% opacity
+  - URL template: https://{s}.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png
+  - Attribution required: © OpenRailwayMap contributors
+
+### Live news panel (top left, floating)
+- Width: 242px desktop, full-width bottom sheet on mobile
+- Header row: news icon · "Live news" title · urgent badge (magenta) · pulse dot · timestamp · minimise chevron
+- All text 10px throughout — filter chips, news items, meta, buttons ALL 10px
+- Filter chips: 9px, pill shaped, scrollable row (overflow-x auto)
+- News items: urgent first (magenta dot, rgba(242,92,193,0.05) bg, white title text), then chronological
+- NO "running normally" items — only show disruptions and editorial news
+- Departure board section appears ABOVE filters when a station is selected
+- Saved routes section appears below news items
+- Minimise button collapses panel body, chevron flips
+
+### Departure board (inside news panel, shown on station tap)
+- Triggered by clicking a station marker
+- Shows next 4–5 departures: time (JetBrains Mono) | destination | platform | status badge
+- Status badges: On time (turquoise), +N min (amber), Cancelled (magenta)
+- Data source: GET /api/departures?crs=BHM via Huxley2 proxy (or Darwin REST)
+- Station name shown in header alongside "Departures" label
+
+### Map controls (top right)
+- Vertical stack: zoom in, zoom out, layers, my location
+- 26×26px each, surface background, 6px radius
+
+### Bottom hints (bottom left)
+- Small floating pills: "Tap station" · "Tap route" · "Tap fleet"
+- Hidden once user has tapped something
+
+### Footer (bottom right, minimal)
+- "© SpotRail HQ · Data: Network Rail, NRE" — 9px, pill
+- "← Back to srhq.uk" link — 9px, pill
+
+## Mobile layout (≤768px)
+- Same full-screen map, same floating header pill
+- News panel becomes BOTTOM SHEET pinned to bottom of screen
+- Bottom sheet has two tabs: "Departures" and "Live news"
+- Shows 3 news items visible at once, sheet is scrollable for more
+- Minimise button collapses to just the tab bar
+- Departure board tab appears when station is tapped — auto-switches to Departures tab
+
+## Stations GeoJSON
+File: /data/stations.geojson
+Format: FeatureCollection, each feature:
+```json
+{
+  "type": "Feature",
+  "geometry": {"type": "Point", "coordinates": [lng, lat]},
+  "properties": {"name": "Birmingham New Street", "crs": "BHM", "toc": "Avanti WC"}
+}
+```
+Include top 50 UK stations to start. Markers: 8px circle, turquoise stroke, dark fill, glow on hover.
+
+## Live news / incidents data
+- Source: GET /api/incidents (polls every 60s)
+- /api/incidents fetches from National Rail Knowledgebase incidents endpoint
+- Requires DARWIN_TOKEN env var
+- Returns: [{id, summary, region, toc, severity, timestamp, affectedCRS:[]}]
+- Urgent = severity >= 2
+- News items from existing api/news.js RSS aggregator
+
+## Saved routes (localStorage)
+- Key: srhq_saved_routes
+- Value: JSON array of {name, crs, toc, line, addedAt}
+- Render in saved section with live status dot colour-coded from incidents
+- Add button opens a simple text input → saves on Enter
+
+## Database mode
+- Hides departure board
+- Shows map with ORM infrastructure overlay at full opacity
+- History slider appears below legend at bottom
+- History data: OpenHistoricalMap vector tiles, year filter on slider drag
+- Era snap-points: 1845, 1880, 1923, 1965, 1994, 2025
+
+## Legend bar (Database mode only, bottom of screen)
+- National Rail (turquoise) · Metro/LRT (purple) · Heritage (amber) · Closed (dashed)
+- History button right-aligned → expands year slider above legend
+
+## What NOT to do
+- Never show jargon to users: no STANOX, CRS codes (internal only), headcodes
+- Never hardcode hex colours — use the CSS vars defined in :root
+- Never use font-size below 9px
+- Never use position:fixed (breaks iframe rendering)
+- Never add React, Vue, or any framework
+- Never put API keys in client-side JS
