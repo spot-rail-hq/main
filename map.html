@@ -1,32 +1,19 @@
 <!doctype html>
-<!-- SpotRail map.html · build 2026-06-08-legendfix · legend sidebar visible at all widths -->
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<script>
-(function () {
-  try {
-    var t = localStorage.getItem('srhq-theme');
-    if (!t) t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark';
-    if (t === 'light') document.documentElement.setAttribute('data-theme', 'light');
-  } catch (e) {}
-})();
-</script>
-<title>Network Map | SRHQ — SpotRail HQ</title>
+<title>SpotRail HQ — UK Railway Map</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="Live UK railway map with departure boards, disruption alerts, and rolling stock information" />
 <link rel="icon" type="image/svg+xml" href="/img/srhq-favicon.svg">
 <link rel="shortcut icon" href="/img/srhq-favicon.svg">
-<link rel="icon" type="image/png" sizes="192x192" href="/img/favicon-192.svg">
-<link rel="icon" type="image/png" sizes="512x512" href="/img/favicon-512.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="/img/apple-touch-icon.svg">
-<meta name="description" content="Explore the UK rail network interactively on SRHQ. Station locations, live overlays and the full Great British railway network in one map." />
 <meta name="robots" content="index, follow" />
 <meta name="author" content="SpotRail HQ" />
 <link rel="canonical" href="https://srhq.uk/map" />
 
-<!-- Open Graph -->
-<meta property="og:title" content="Network Map | SRHQ — SpotRail HQ" />
-<meta property="og:description" content="Explore SpotRail HQ's interactive map of Britain's rail network, showing mainline routes, operators, journey times and rolling stock classes running each line." />
+<meta property="og:title" content="SpotRail HQ — UK Railway Map" />
+<meta property="og:description" content="Explore SpotRail HQ's interactive map of Britain's rail network — live departure boards, disruption alerts, mainline routes and rolling stock." />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://srhq.uk/map" />
 <meta property="og:site_name" content="SpotRail HQ" />
@@ -34,531 +21,947 @@
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
 
-<!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="Network Map | SRHQ — SpotRail HQ" />
-<meta name="twitter:description" content="Explore SpotRail HQ's interactive map of Britain's rail network, showing mainline routes, operators, journey times and rolling stock classes running each line." />
+<meta name="twitter:title" content="SpotRail HQ — UK Railway Map" />
+<meta name="twitter:description" content="Live UK railway map with departure boards, disruption alerts, mainline routes and rolling stock information." />
 <meta name="twitter:image" content="https://srhq.uk/img/og-image.jpg" />
 
-<!-- Structured data -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "WebApplication",
   "name": "SpotRail HQ Interactive Railway Map",
   "url": "https://srhq.uk/map",
-  "description": "Interactive map of the UK rail network showing train routes, stations and spotting locations.",
+  "description": "Interactive map of the UK rail network showing live departures, disruptions, train routes, stations and spotting locations.",
   "applicationCategory": "Travel",
-  "creator": {
-    "@type": "Organization",
-    "name": "SpotRail HQ",
-    "url": "https://srhq.uk"
-  }
+  "creator": { "@type": "Organization", "name": "SpotRail HQ", "url": "https://srhq.uk" }
 }
 </script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Manrope:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css" />
+
 <style>
   :root {
-    --bg: #07090C;        --bg-rgb: 7,9,12;
-    --surface: #0E1218;   --surface-rgb: 14,18,24;
-    --surface2: #141922;
-    --ink: #E8ECF2;
-    --ink-dim: #9AA4B2;
-    --ink-mute: #6B7687;
-    --line-rgb: 255,255,255;
+    --t: #40E0D0; --m: #F25CC1; --a: #F5B84B; --l: #B8F266;
+    --ink: #9AA4B2; --bg: #07090C; --sf: rgba(14,18,24,0.96);
+    --br: rgba(64,224,208,0.14); --brh: rgba(64,224,208,0.28);
+    --font-display: 'Archivo', system-ui, sans-serif;
+    --font-body: 'Manrope', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  button, input { font-family: inherit; font-size: inherit; -webkit-appearance: none; appearance: none; }
+  html, body { width: 100vw; height: 100vh; overflow: hidden; position: relative; background: var(--bg); }
+  body { font-family: var(--font-body); color: #fff; }
+  a { color: inherit; text-decoration: none; }
+  button { background: none; border: none; cursor: pointer; color: inherit; }
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-thumb { background: var(--brh); border-radius: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  *:focus-visible { outline: 2px solid var(--t); outline-offset: 2px; }
 
-    --color-accent-turquoise: #40E0D0;  --color-accent-turquoise-rgb: 64,224,208;
-    --color-accent-magenta: #F25CC1;    --color-accent-magenta-rgb: 242,92,193;
-    --color-accent-amber: #F5B84B;      --color-accent-amber-rgb: 245,184,75;
-    --color-accent-lime: #B8F266;       --color-accent-lime-rgb: 184,242,102;
-    --color-text-dimmed: var(--ink-mute);
-    --color-text-secondary: var(--ink-dim);
-  }
-  :root[data-theme="light"] {
-    --bg: #F2F4F7;        --bg-rgb: 242,244,247;
-    --surface: #FFFFFF;   --surface-rgb: 255,255,255;
-    --surface2: #E8EBF0;
-    --ink: #0C0F14;
-    --ink-dim: #2D3748;
-    --ink-mute: #4A5568;
-    --line-rgb: 7,9,12;
+  #map { position: absolute; inset: 0; }
+  .maplibregl-ctrl-attrib { font-size: 9px !important; background: rgba(7,9,12,0.7) !important; color: var(--ink) !important; }
+  .maplibregl-ctrl-attrib a { color: var(--ink) !important; }
+  .maplibregl-popup-content { background: var(--sf) !important; color: #fff; border: 0.5px solid var(--brh); border-radius: 8px; font-family: var(--font-body); font-size: 10px; padding: 6px 10px !important; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+  .maplibregl-popup-tip { border-top-color: var(--sf) !important; border-bottom-color: var(--sf) !important; }
+  .maplibregl-popup-close-button { display: none; }
 
-    --color-accent-turquoise: #1A9E8F;  --color-accent-turquoise-rgb: 26,158,143;
-    --color-accent-magenta: #C4237A;    --color-accent-magenta-rgb: 196,35,122;
-    --color-accent-amber: #B8860B;      --color-accent-amber-rgb: 184,134,11;
-    --color-accent-lime: #4A7C00;       --color-accent-lime-rgb: 74,124,0;
-    --color-text-dimmed: #4A5568;
-    --color-text-secondary: #2D3748;
-  }
-  *, *::before, *::after {
-    transition: background-color 400ms ease, color 400ms ease, border-color 400ms ease, opacity 400ms ease;
-  }
-  html { transition: background-color 400ms ease, color 400ms ease; }
-  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); font-family: Manrope, system-ui, sans-serif; }
-  * { box-sizing: border-box; }
-  ::selection { background: var(--color-accent-turquoise); color: #07090C; }
-  a { color: inherit; }
+  .pill { background: var(--sf); border: 0.5px solid var(--brh); border-radius: 99px; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+  .icon-btn { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 6px; color: var(--ink); font-size: 13px; background: var(--sf); border: 0.5px solid var(--brh); }
+  .icon-btn:hover { color: var(--t); border-color: var(--t); }
 
-  .theme-toggle {
-    display: inline-flex; align-items: center; justify-content: center;
-    padding: 0; background: transparent; border: 1px solid rgba(var(--line-rgb),0.08);
-    border-radius: 10px; width: 40px; height: 40px; cursor: pointer; color: var(--ink);
-  }
-  .theme-toggle svg { display: block; }
-  .theme-toggle .icon-moon { display: none; }
-  :root[data-theme="light"] .theme-toggle .icon-sun { display: none; }
-  :root[data-theme="light"] .theme-toggle .icon-moon { display: block; }
+  /* ── Floating header ─────────────────────────────────────────── */
+  #header { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 100;
+    display: flex; align-items: center; gap: 6px; padding: 5px 8px 5px 12px; white-space: nowrap; }
+  #header .logo { display: flex; align-items: center; gap: 5px; font-family: var(--font-display); font-size: 11px; font-weight: 500; color: var(--t); }
+  #header .divider { width: 0.5px; height: 16px; background: var(--br); }
+  .header-tab { display: flex; align-items: center; gap: 4px; padding: 5px 9px; border-radius: 99px; font-size: 10px; color: var(--ink); }
+  .header-tab i { font-size: 12px; }
+  .header-tab.live-on { background: var(--m); color: #fff; }
+  .header-tab.db-on { background: var(--t); color: #07090C; }
+  #header .back-link { display: flex; align-items: center; gap: 3px; font-size: 9px; color: var(--ink); padding: 5px 8px 5px 4px; }
+  #header .back-link:hover { color: var(--t); }
+  #search-input { display: none; width: 120px; background: transparent; border: none; border-bottom: 1px solid var(--brh); color: #fff; font-size: 10px; padding: 3px 2px; }
+  #search-input.open { display: inline-block; }
 
-  /* Leaflet overrides for dark theme */
-  .leaflet-container { background: var(--bg) !important; font-family: Manrope, sans-serif !important; }
-  .leaflet-control-attribution { background: rgba(var(--surface-rgb),0.85) !important; color: var(--ink-mute) !important; font-size: 10px !important; padding: 2px 8px !important; }
-  .leaflet-control-attribution a { color: var(--ink-dim) !important; }
-  .leaflet-control-zoom a { background: rgba(var(--surface-rgb),0.9) !important; color: var(--ink) !important; border: 1px solid rgba(var(--line-rgb),0.1) !important; }
-  .leaflet-control-zoom a:hover { background: rgba(var(--color-accent-turquoise-rgb),0.15) !important; color: var(--color-accent-turquoise) !important; }
-  /* Force tile layer to greyscale+invert so it reads dark */
-  .dark-tiles { filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.92) saturate(0.55); }
-  .station-label {
-    display: inline-block; width: auto; height: auto;
-    background: rgba(14,18,24,0.85); color: #F5F5F5;
-    padding: 3px 8px; border-radius: 6px; font-size: 11px;
-    border: 1px solid rgba(255,255,255,0.15); white-space: nowrap;
-    font-family: Manrope, sans-serif; font-weight: 500; letter-spacing: 0.2px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.4);
-  }
-  .station-label.endpoint { font-size: 12.5px; font-weight: 600; }
-  :root[data-theme="light"] .station-label {
-    background: rgba(255,255,255,0.92); color: #07090C;
-    border: 1px solid #CBD5E0;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  /* ── Map controls ─────────────────────────────────────────────── */
+  #map-controls { position: absolute; top: 52px; right: 10px; z-index: 50; display: flex; flex-direction: column; gap: 3px; }
+  #map-controls .icon-btn[aria-pressed="true"] { color: var(--t); border-color: var(--t); }
+
+  /* ── Routes legend panel (preserved route toggle list) ───────── */
+  #routes-panel { position: absolute; top: 175px; right: 10px; width: 190px; max-height: calc(100vh - 210px);
+    overflow-y: auto; z-index: 55; padding: 10px; display: none; }
+  #routes-panel.open { display: block; }
+  #routes-panel .rp-title { font-family: var(--font-mono); font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink); margin-bottom: 8px; }
+  .rp-route { width: 100%; text-align: left; display: flex; align-items: center; gap: 8px; padding: 6px 6px; border-radius: 6px; font-size: 10px; color: #fff; margin-bottom: 2px; }
+  .rp-route.active { background: rgba(64,224,208,0.12); }
+  .rp-route .swatch { width: 14px; height: 2.5px; border-radius: 2px; flex-shrink: 0; }
+  .rp-route span.rname { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* ── Route popup (preserved route detail) ────────────────────── */
+  #route-popup { position: absolute; bottom: 46px; left: 50%; transform: translateX(-50%); z-index: 70;
+    width: min(360px, calc(100vw - 24px)); max-height: 46vh; overflow-y: auto; padding: 16px; display: none; }
+  #route-popup.open { display: block; }
+  #route-popup .rp-close { position: absolute; top: 8px; right: 10px; font-size: 16px; color: var(--ink); }
+  #route-popup .rp-head { display: flex; align-items: center; gap: 8px; }
+  #route-popup .rp-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+  #route-popup .rp-label { font-family: var(--font-mono); font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; }
+  #route-popup h3 { font-family: var(--font-display); font-size: 16px; font-weight: 600; margin: 8px 0 6px; }
+  #route-popup .rp-journey { font-size: 11px; color: var(--ink); line-height: 1.5; }
+  #route-popup .rp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+  #route-popup .rp-grid-label { font-family: var(--font-mono); font-size: 8px; letter-spacing: 1px; text-transform: uppercase; color: var(--ink); }
+  #route-popup .rp-grid-val { font-size: 10px; margin-top: 2px; }
+  #route-popup .rp-classes { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+  #route-popup .rp-classes a { padding: 3px 7px; border-radius: 6px; font-family: var(--font-mono); font-size: 9px; border: 0.5px solid var(--brh); }
+  #route-popup .rp-about { margin-top: 10px; padding-top: 10px; border-top: 0.5px solid var(--br); font-size: 10px; color: var(--ink); line-height: 1.5; }
+
+  /* ── Region jump ──────────────────────────────────────────────── */
+  #region-jump { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); z-index: 45;
+    display: flex; gap: 4px; padding: 4px; align-items: center; }
+  #region-jump .rj-label { font-family: var(--font-mono); font-size: 8px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink); padding: 0 6px; }
+  #region-jump button { font-size: 10px; padding: 5px 9px; border-radius: 99px; color: var(--ink); }
+  #region-jump button:hover { color: var(--t); background: rgba(64,224,208,0.08); }
+  body.mode-database #region-jump { display: none; }
+
+  /* ── Bottom hints ─────────────────────────────────────────────── */
+  #bottom-hints { position: absolute; bottom: 10px; left: 10px; z-index: 30; display: flex; gap: 5px; }
+  #bottom-hints .hint { padding: 4px 9px; border-radius: 99px; font-size: 9px; color: var(--ink); }
+  #bottom-hints.hidden { display: none; }
+  body.mode-database #bottom-hints { display: none; }
+
+  /* ── Cookie consent (compact) ─────────────────────────────────── */
+  #cookie-consent { position: absolute; bottom: 34px; left: 10px; z-index: 90; width: min(280px, calc(100vw - 20px));
+    padding: 12px; display: none; }
+  #cookie-consent.open { display: block; }
+  #cookie-consent p { font-size: 10px; line-height: 1.5; color: var(--ink); margin-bottom: 8px; }
+  #cookie-consent .cc-row { display: flex; gap: 6px; }
+  #cookie-consent button { font-size: 9px; padding: 5px 10px; border-radius: 6px; }
+  #cookie-consent .cc-accept { background: var(--t); color: #07090C; font-weight: 600; }
+  #cookie-consent .cc-reject { border: 0.5px solid var(--brh); color: var(--ink); }
+
+  /* ── Footer ───────────────────────────────────────────────────── */
+  #footer { position: absolute; bottom: 10px; right: 10px; z-index: 40; display: flex; gap: 6px; }
+  #footer .f-pill { padding: 5px 10px; font-size: 9px; color: var(--ink); }
+  #footer .f-pill:hover { color: var(--t); }
+
+  /* ── Live news panel (desktop) ───────────────────────────────── */
+  #news-panel { position: absolute; top: 52px; left: 10px; width: 242px; z-index: 50; overflow: hidden; }
+  .np-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; cursor: pointer; }
+  .np-header-left { display: flex; align-items: center; gap: 6px; }
+  .np-header-left i { font-size: 12px; color: var(--ink); }
+  .np-title { font-size: 10px; font-weight: 500; color: #fff; }
+  .np-badge { background: var(--m); color: #fff; font-size: 8px; padding: 1px 6px; border-radius: 99px; display: none; }
+  .np-badge.show { display: inline-block; }
+  .np-pulse { width: 5px; height: 5px; border-radius: 50%; background: var(--m); animation: pulse 1.6s infinite; display: none; }
+  .np-pulse.show { display: block; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+  .np-time { font-size: 9px; color: var(--ink); }
+  .np-chevron { font-size: 11px; color: var(--ink); transition: transform 0.2s; }
+  .np-chevron.flipped { transform: rotate(180deg); }
+  .np-body { max-height: 72vh; overflow-y: auto; }
+  #news-panel.collapsed .np-body { display: none; }
+
+  #dep-board { display: none; border-bottom: 0.5px solid var(--br); padding: 8px 10px 10px; }
+  #dep-board .db-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 6px; }
+  #dep-board .db-label { font-family: var(--font-mono); font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--t); }
+  #dep-board .db-station { font-size: 9px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 130px; }
+  .dep-row { display: flex; align-items: center; gap: 6px; padding: 3px 0; font-size: 10px; }
+  .dep-time { font-family: var(--font-mono); width: 34px; flex-shrink: 0; }
+  .dep-dest { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .dep-plat { width: 22px; flex-shrink: 0; font-size: 9px; color: var(--ink); }
+  .dep-status { font-size: 9px; padding: 1px 6px; border-radius: 99px; flex-shrink: 0; white-space: nowrap; }
+  .dep-status.on-time { color: var(--t); background: rgba(64,224,208,0.1); }
+  .dep-status.delayed { color: var(--a); background: rgba(245,184,75,0.1); }
+  .dep-status.cancelled { color: var(--m); background: rgba(242,92,193,0.1); }
+  .dep-empty { font-size: 9px; color: var(--ink); padding: 6px 0; }
+  body.mode-database #dep-board { display: none !important; }
+
+  .filter-row { display: flex; gap: 4px; overflow-x: auto; padding: 8px 10px; scrollbar-width: none; }
+  .filter-row::-webkit-scrollbar { display: none; }
+  .filter-chip { font-size: 9px; padding: 2px 8px; border-radius: 99px; border: 0.5px solid var(--br); color: var(--ink); white-space: nowrap; flex-shrink: 0; }
+  .filter-chip.active { background: rgba(64,224,208,0.1); border-color: var(--t); color: var(--t); }
+
+  .news-item { padding: 5px 10px; border-bottom: 0.5px solid rgba(64,224,208,0.06); display: flex; gap: 6px; }
+  .news-item.urgent { background: rgba(242,92,193,0.05); }
+  .news-dot { width: 6px; height: 6px; border-radius: 50%; margin-top: 3px; flex-shrink: 0; }
+  .news-title { font-size: 10px; line-height: 1.4; }
+  .news-item.urgent .news-title { color: #fff; }
+  .news-item:not(.urgent) .news-title { color: #ccc; }
+  .news-meta { font-size: 9px; color: var(--ink); margin-top: 2px; }
+  .news-empty { padding: 10px; font-size: 9px; color: var(--ink); text-align: center; }
+
+  .rebook-cta { display: none; padding: 7px 10px; background: rgba(242,92,193,0.07); font-size: 9px; color: var(--m); }
+  .rebook-cta.show { display: block; }
+
+  #saved-section { padding: 8px 10px 4px; }
+  .saved-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .saved-label { font-family: var(--font-mono); font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink); }
+  .saved-add { font-size: 9px; color: var(--t); }
+  .saved-route { display: flex; align-items: center; gap: 6px; padding: 4px 0; }
+  .saved-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .saved-name { font-size: 10px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .saved-sub { font-size: 9px; color: var(--ink); }
+  .saved-remove { font-size: 11px; color: var(--ink); padding: 2px 4px; }
+  .saved-empty { font-size: 9px; color: var(--ink); padding: 4px 0 8px; }
+
+  .np-footer { display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; font-size: 9px; color: var(--ink); }
+  .np-footer a { color: var(--t); }
+
+  /* ── Mobile bottom sheet ──────────────────────────────────────── */
+  #mobile-sheet { display: none; position: absolute; bottom: 0; left: 0; right: 0; z-index: 50;
+    border-radius: 12px 12px 0 0; border-top: 0.5px solid var(--brh); background: var(--sf);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+  .ms-handle-row { display: flex; align-items: center; justify-content: center; position: relative; padding: 8px 0 4px; }
+  .ms-handle { width: 28px; height: 2.5px; border-radius: 2px; background: rgba(154,164,178,0.3); }
+  .ms-min-btn { position: absolute; right: 12px; top: 6px; font-size: 12px; color: var(--ink); }
+  .ms-tabs { display: flex; border-bottom: 0.5px solid var(--br); }
+  .ms-tab { flex: 1; text-align: center; padding: 8px 0; font-size: 10px; font-weight: 500; color: var(--ink); border-bottom: 1.5px solid transparent; display: flex; align-items: center; justify-content: center; gap: 4px; }
+  .ms-tab.active { color: var(--t); border-bottom-color: var(--t); }
+  .ms-badge { background: var(--m); color: #fff; font-size: 8px; padding: 0 5px; border-radius: 99px; display: none; }
+  .ms-badge.show { display: inline-block; }
+  .ms-body { max-height: 220px; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 6px 10px 4px; }
+  .ms-view { display: none; }
+  .ms-view.active { display: block; }
+  .ms-scroll-note { text-align: center; font-size: 9px; font-style: italic; color: var(--ink); padding: 4px 0 8px; }
+  #mobile-sheet.collapsed .ms-tabs, #mobile-sheet.collapsed .ms-body, #mobile-sheet.collapsed .ms-scroll-note { display: none; }
+
+  @media (max-width: 768px) {
+    #news-panel { display: none; }
+    #mobile-sheet { display: block; }
+    body.mode-database #mobile-sheet { display: none; }
+    #routes-panel { top: 175px; right: 6px; width: 160px; }
+    #header { max-width: calc(100vw - 12px); overflow-x: auto; }
   }
 
-  /* Mobile/tablet — keep popup full-width and the legend compact */
-  @media (max-width: 900px) {
-    .popup-card { left: 12px !important; right: 12px !important; top: 12px !important;
-                  width: auto !important; max-height: calc(100% - 24px); overflow-y: auto; }
-    /* Keep the route sidebar visible — just trim it and leave room for the
-       bottom "Jump to" bar so the two don't collide. */
-    .legend-card { width: 208px !important; right: 12px !important; top: 12px !important;
-                   max-height: calc(100% - 96px) !important; }
-    .region-jump { left: 12px !important; right: 12px !important; transform: translateZ(0) !important;
-                   bottom: 12px !important; flex-wrap: wrap !important; justify-content: center; }
-    .map-frame { height: 70vh !important; min-height: 480px !important; }
-    .map-section { padding: 0 16px 28px !important; }
-    .map-header { padding: 32px 16px 16px !important; }
-    .map-header h1 { font-size: clamp(32px, 8vw, 52px) !important; }
-  }
-  @media (max-width: 560px) {
-    .legend-card { width: 168px !important; }
-  }
+  /* ── Legend bar + year bar (Database mode) ───────────────────── */
+  #legend-bar { display: none; position: absolute; bottom: 0; left: 0; right: 0; z-index: 40;
+    background: var(--sf); border-top: 0.5px solid var(--br); padding: 6px 12px;
+    align-items: center; justify-content: space-between; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+  body.mode-database #legend-bar { display: flex; }
+  .legend-items { display: flex; gap: 14px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 9px; color: var(--ink); }
+  .legend-line { width: 14px; height: 2px; }
+  .legend-line.closed { background-image: repeating-linear-gradient(to right, rgba(64,224,208,0.4) 0 4px, transparent 4px 7px); }
+  #history-btn { font-size: 9px; color: var(--ink); padding: 4px 9px; border-radius: 99px; border: 0.5px solid var(--brh); }
+  #history-btn.active { color: var(--t); border-color: var(--t); }
+
+  #year-bar { display: none; position: absolute; bottom: 36px; left: 0; right: 0; z-index: 41;
+    background: var(--sf); padding: 10px 12px; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+  #year-bar.open { display: block; }
+  .yb-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .yb-year { font-family: var(--font-mono); font-size: 14px; color: var(--t); }
+  .yb-era-chip { font-size: 9px; padding: 2px 8px; border-radius: 99px; background: rgba(64,224,208,0.1); color: var(--t); }
+  #year-slider { width: 100%; accent-color: var(--t); }
+  .yb-snaps { display: flex; justify-content: space-between; margin-top: 4px; }
+  .yb-snap { font-size: 9px; color: var(--ink); }
+  .yb-context { font-size: 9px; color: var(--ink); margin-top: 6px; line-height: 1.5; }
 </style>
-<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
-<script type="text/babel" src="shared.jsx?v=5"></script>
-<script type="text/babel" src="map-data.jsx?v=2"></script>
 </head>
 <body>
-<main>
-<div id="root"></div>
+
+<div id="map" role="application" aria-label="Interactive UK railway map"></div>
+
+<div id="header" class="pill">
+  <div class="logo"><i class="ti ti-train-freight-caboose"></i> SpotRail HQ</div>
+  <div class="divider"></div>
+  <button class="header-tab live-on" id="tab-live" aria-label="Live mode" aria-pressed="true"><i class="ti ti-activity"></i>Live</button>
+  <button class="header-tab" id="tab-database" aria-label="Database mode" aria-pressed="false"><i class="ti ti-database"></i>Database</button>
+  <div class="divider"></div>
+  <button class="icon-btn" id="search-btn" aria-label="Search stations" style="background:transparent;border:none;width:auto;height:auto;padding:4px;"><i class="ti ti-search"></i></button>
+  <input id="search-input" type="text" placeholder="Find a station…" aria-label="Search stations" />
+  <button class="icon-btn" id="star-btn" aria-label="Saved routes" style="background:transparent;border:none;width:auto;height:auto;padding:4px;"><i class="ti ti-star"></i></button>
+  <a href="index.html" class="back-link"><i class="ti ti-arrow-left"></i>srhq.uk</a>
+</div>
+
+<div id="map-controls">
+  <button class="icon-btn" id="zoom-in" aria-label="Zoom in"><i class="ti ti-plus"></i></button>
+  <button class="icon-btn" id="zoom-out" aria-label="Zoom out"><i class="ti ti-minus"></i></button>
+  <button class="icon-btn" id="layers-btn" aria-label="Toggle routes legend" aria-pressed="false"><i class="ti ti-layers-intersect"></i></button>
+  <button class="icon-btn" id="my-location" aria-label="Find my location"><i class="ti ti-current-location"></i></button>
+</div>
+
+<div id="routes-panel" class="pill">
+  <div class="rp-title">Routes</div>
+  <div id="rp-list"></div>
+</div>
+
+<div id="route-popup" class="pill">
+  <button class="rp-close" id="rp-close-btn" aria-label="Close route detail">×</button>
+  <div id="rp-content"></div>
+</div>
+
+<div id="region-jump" class="pill">
+  <span class="rj-label">Jump to</span>
+  <button data-lng="-3.2" data-lat="54.5" data-zoom="6">All UK</button>
+  <button data-lng="-0.1278" data-lat="51.5074" data-zoom="11">London</button>
+  <button data-lng="-1.9" data-lat="52.4778" data-zoom="11">Birmingham</button>
+  <button data-lng="-2.2307" data-lat="53.4775" data-zoom="11">Manchester</button>
+  <button data-lng="-4.2579" data-lat="55.8586" data-zoom="11">Glasgow</button>
+  <button data-lng="-3.1883" data-lat="55.9521" data-zoom="11">Edinburgh</button>
+</div>
+
+<div id="bottom-hints">
+  <span class="hint pill">Tap station</span>
+  <span class="hint pill">Tap route</span>
+  <span class="hint pill">Tap fleet</span>
+</div>
+
+<div id="cookie-consent" class="pill" role="dialog" aria-label="Cookie consent">
+  <p>We use cookies to run SpotRail HQ and understand how the map is used. <a href="/#" style="color:var(--t);text-decoration:underline;">Cookie policy</a>.</p>
+  <div class="cc-row">
+    <button class="cc-accept" id="cc-accept">Accept all</button>
+    <button class="cc-reject" id="cc-reject">Reject</button>
+  </div>
+</div>
+
+<div id="footer">
+  <a href="index.html" class="f-pill pill">← Back to srhq.uk</a>
+  <span class="f-pill pill">© SpotRail HQ · Data: Network Rail, NRE</span>
+</div>
+
+<div id="news-panel" class="pill">
+  <div class="np-header" id="np-header-toggle">
+    <div class="np-header-left">
+      <i class="ti ti-news"></i>
+      <span class="np-title">Live news</span>
+      <span class="np-badge" id="np-badge">0</span>
+    </div>
+    <div class="np-header-left">
+      <span class="np-pulse" id="np-pulse"></span>
+      <span class="np-time" id="np-time">--:--</span>
+      <i class="ti ti-chevron-down np-chevron" id="np-chevron"></i>
+    </div>
+  </div>
+  <div class="np-body" id="np-body">
+    <div id="dep-board">
+      <div class="db-head">
+        <span class="db-label">Departures</span>
+        <span class="db-station" id="db-station-name"></span>
+      </div>
+      <div id="dep-rows"></div>
+    </div>
+    <div class="filter-row" id="filter-row"></div>
+    <div id="news-items"></div>
+    <div class="rebook-cta" id="rebook-cta">Disrupted? Find alternatives →</div>
+    <div id="saved-section">
+      <div class="saved-head">
+        <span class="saved-label">Saved routes</span>
+        <button class="saved-add" id="saved-add-btn">+ Add</button>
+      </div>
+      <div id="saved-list"></div>
+    </div>
+    <div class="np-footer">
+      <a href="news.html">More news</a>
+      <span id="np-count">0 of 0</span>
+    </div>
+  </div>
+</div>
+
+<div id="mobile-sheet">
+  <div class="ms-handle-row">
+    <div class="ms-handle"></div>
+    <button class="ms-min-btn" id="ms-min-btn" aria-label="Minimise sheet"><i class="ti ti-chevron-down"></i></button>
+  </div>
+  <div class="ms-tabs">
+    <button class="ms-tab" id="ms-tab-departures" aria-label="Departures tab">Departures</button>
+    <button class="ms-tab active" id="ms-tab-news" aria-label="Live news tab">Live news <span class="ms-badge" id="ms-badge">0</span></button>
+  </div>
+  <div class="ms-body">
+    <div class="ms-view" id="ms-view-departures">
+      <div class="db-head" style="margin-bottom:6px;">
+        <span class="db-label">Departures</span>
+        <span class="db-station" id="ms-db-station-name"></span>
+      </div>
+      <div id="ms-dep-rows"></div>
+    </div>
+    <div class="ms-view active" id="ms-view-news">
+      <div class="filter-row" id="ms-filter-row" style="padding:0 0 8px;"></div>
+      <div id="ms-news-items"></div>
+      <div class="rebook-cta" id="ms-rebook-cta">Disrupted? Find alternatives →</div>
+    </div>
+  </div>
+  <div class="ms-scroll-note">↑ Scroll for more</div>
+</div>
+
+<div id="legend-bar">
+  <div class="legend-items">
+    <span class="legend-item"><span class="legend-line" style="background:rgba(64,224,208,0.7);"></span>National Rail</span>
+    <span class="legend-item"><span class="legend-line" style="background:rgba(178,90,210,0.6);"></span>Metro/LRT</span>
+    <span class="legend-item"><span class="legend-line" style="background:rgba(245,184,75,0.6);"></span>Heritage</span>
+    <span class="legend-item"><span class="legend-line closed"></span>Closed</span>
+  </div>
+  <button id="history-btn">History</button>
+</div>
+
+<div id="year-bar">
+  <div class="yb-top">
+    <span class="yb-year" id="yb-year">2025</span>
+    <span class="yb-era-chip" id="yb-era-chip">Today</span>
+  </div>
+  <input type="range" id="year-slider" min="1825" max="2025" value="2025" step="1" aria-label="History year" />
+  <div class="yb-snaps">
+    <button class="yb-snap" data-year="1845">1845</button>
+    <button class="yb-snap" data-year="1880">1880</button>
+    <button class="yb-snap" data-year="1923">1923</button>
+    <button class="yb-snap" data-year="1965">1965</button>
+    <button class="yb-snap" data-year="1994">1994</button>
+    <button class="yb-snap" data-year="2025">Today</button>
+  </div>
+  <div class="yb-context" id="yb-context"></div>
+</div>
+
 <noscript>
-  <div style="max-width:1280px;margin:0 auto;padding:32px;line-height:1.6">
+  <div style="max-width:900px;margin:40px auto;padding:24px;line-height:1.6;color:#fff;">
     <h1>The British mainline network</h1>
-    <p>
-      Britain's principal passenger routes on a real map. SpotRail HQ's interactive map shows
-      each line's operator, typical journey time, and the rolling-stock classes that work it.
-    </p>
-    <h2>Routes</h2>
-    <ul>
-      <li><strong>West Coast Main Line</strong> — Avanti West Coast · Caledonian Sleeper · LNR. London Euston ↔ Glasgow Central, 4h 10m.</li>
-      <li><strong>East Coast Main Line</strong> — LNER · Lumo · Grand Central · Hull Trains. London King's Cross ↔ Edinburgh Waverley, 4h 20m.</li>
-      <li><strong>Great Western Main Line</strong> — GWR · Heathrow Express. London Paddington ↔ Cardiff / Swansea.</li>
-      <li><strong>Midland Main Line</strong> — East Midlands Railway. London St Pancras ↔ Sheffield, 2h.</li>
-      <li><strong>CrossCountry</strong> — CrossCountry. Aberdeen ↔ Penzance, the longest scheduled journey in Britain.</li>
-      <li><strong>South Western Main Line</strong> — South Western Railway. London Waterloo ↔ Exeter (West of England line).</li>
-      <li><strong>Brighton Main Line</strong> — Southern · Thameslink · Gatwick Express. London Victoria / London Bridge ↔ Brighton, 55m.</li>
-      <li><strong>High Speed 1 · Kent</strong> — Southeastern. London St Pancras ↔ Ashford / Dover via HS1.</li>
-      <li><strong>Great Eastern Main Line</strong> — Greater Anglia. London Liverpool Street ↔ Norwich, 1h 50m.</li>
-      <li><strong>TransPennine (North)</strong> — TransPennine Express · Northern. Liverpool ↔ Manchester ↔ Leeds ↔ Newcastle.</li>
-      <li><strong>North Wales Coast Line</strong> — Avanti West Coast · Transport for Wales. Holyhead ↔ Crewe (→ London / Manchester).</li>
-      <li><strong>Welsh Marches</strong> — Transport for Wales. Cardiff ↔ Shrewsbury ↔ Manchester.</li>
-      <li><strong>Highland Main Line</strong> — ScotRail · Caledonian Sleeper. Edinburgh ↔ Perth ↔ Inverness.</li>
-    </ul>
-    <p>Click any route on the interactive map to see its operator, journey time, stations and the rolling-stock classes that run it.</p>
+    <p>SpotRail HQ's interactive map shows live departures, disruption alerts and Britain's principal passenger
+      routes — West Coast Main Line, East Coast Main Line, Great Western Main Line, Midland Main Line, CrossCountry,
+      South Western Main Line, Brighton Main Line, Kent via HS1, Great Eastern Main Line, TransPennine, North Wales
+      Coast Line, Welsh Marches and the Highland Main Line. Enable JavaScript to use the interactive map.</p>
   </div>
 </noscript>
-</main>
-<script type="text/babel">
-function Header() {
-  return (
-    <section className="map-header" style={{ maxWidth: 1280, margin: '0 auto', padding: '56px 32px 20px' }}>
-      <div style={{ fontFamily: SRHQ.mono, fontSize: 11, letterSpacing: 3,
-                    textTransform: 'uppercase', color: SRHQ.turq }}>Network map</div>
-      <h1 style={{ fontFamily: SRHQ.display, fontSize: 'clamp(40px, 5vw, 72px)',
-                   fontWeight: 700, letterSpacing: -2.4, lineHeight: 1,
-                   margin: '14px 0 0' }}>
-        The British <span style={{ color: SRHQ.turq, fontWeight: 500 }}>mainline</span> network.
-      </h1>
-      <p style={{ fontSize: 17, color: SRHQ.inkDim, maxWidth: 640,
-                  marginTop: 20, lineHeight: 1.55 }}>
-        Britain's principal passenger routes on a real map. Click any line to see the
-        operator, typical journey time, and the rolling-stock classes that work it.
-      </p>
-    </section>
-  );
-}
 
-function Popup({ route, onClose }) {
-  if (!route) return null;
-  return (
-    <div className="popup-card" style={{
-      position: 'absolute', left: 20, top: 20, width: 340,
-      transform: 'translateZ(0)', WebkitTransform: 'translateZ(0)',
-      background: 'rgba(var(--surface-rgb),0.92)', backdropFilter: 'blur(14px)',
-      WebkitBackdropFilter: 'blur(14px)',
-      border: `1px solid ${colorAlpha(route.color, '55')}`, borderRadius: 16, padding: 20,
-      boxShadow: `0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px ${colorAlpha(route.color, '22')} inset`,
-      fontFamily: SRHQ.body, zIndex: 600,
-    }}>
-      <button onClick={onClose} style={{
-        position: 'absolute', top: 12, right: 12, background: 'transparent',
-        border: 'none', color: SRHQ.inkDim, fontSize: 20, cursor: 'pointer',
-      }}>×</button>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <span style={{ width: 12, height: 12, borderRadius: 3, background: route.color,
-                        boxShadow: `0 0 0 4px ${colorAlpha(route.color, '22')}` }} />
-        <span style={{ fontFamily: SRHQ.mono, fontSize: 10.5, letterSpacing: 2,
-                       textTransform: 'uppercase', color: route.color }}>Route</span>
-      </div>
-      <div style={{ fontFamily: SRHQ.display, fontSize: 22, fontWeight: 600,
-                    letterSpacing: -0.7, marginTop: 10, lineHeight: 1.15 }}>{route.name}</div>
-      <div style={{ fontSize: 13, color: SRHQ.inkDim, marginTop: 8, lineHeight: 1.55 }}>
-        {route.journey}
-      </div>
-      <div className="popup-grid" style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-        <div>
-          <div style={{ fontFamily: SRHQ.mono, fontSize: 10, letterSpacing: 2,
-                        textTransform: 'uppercase', color: SRHQ.inkMute }}>Frequency</div>
-          <div style={{ fontSize: 13, color: SRHQ.ink, marginTop: 4 }}>{route.freq}</div>
-        </div>
-        <div>
-          <div style={{ fontFamily: SRHQ.mono, fontSize: 10, letterSpacing: 2,
-                        textTransform: 'uppercase', color: SRHQ.inkMute }}>Stations</div>
-          <div style={{ fontSize: 13, color: SRHQ.ink, marginTop: 4 }}>
-            {route.path[0]} ↔ {route.path[route.path.length - 1]}
-          </div>
-        </div>
-      </div>
-      <div style={{ marginTop: 14 }}>
-        <div style={{ fontFamily: SRHQ.mono, fontSize: 10, letterSpacing: 2,
-                      textTransform: 'uppercase', color: SRHQ.inkMute }}>Operator(s)</div>
-        <div style={{ fontSize: 13, color: SRHQ.ink, marginTop: 4, lineHeight: 1.5 }}>{route.operator}</div>
-      </div>
-      <div style={{ marginTop: 14 }}>
-        <div style={{ fontFamily: SRHQ.mono, fontSize: 10, letterSpacing: 2,
-                      textTransform: 'uppercase', color: SRHQ.inkMute, marginBottom: 8 }}>
-          Classes on this route
-        </div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-          {route.classes.map(c => (
-            <a key={c} href={`/database#class-${c}`} style={{
-              padding: '5px 10px', borderRadius: 8, fontFamily: SRHQ.mono,
-              fontSize: 12, color: route.color, textDecoration: 'none',
-              background: colorAlpha(route.color, '14'), border: `1px solid ${colorAlpha(route.color, '44')}`,
-            }}>{c}</a>
-          ))}
-        </div>
-      </div>
-      <div style={{ marginTop: 14, paddingTop: 14,
-                    borderTop: `1px solid ${SRHQ.line}`,
-                    fontSize: 13, color: SRHQ.inkDim, lineHeight: 1.55 }}>
-        {route.about}
-      </div>
-    </div>
-  );
-}
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="map-data.jsx"></script>
+<script>
+(function () {
+  'use strict';
 
-function Legend({ active, setActive }) {
-  const isLight = useTheme() === 'light';
-  return (
-    <div className="legend-card" style={{
-      position: 'absolute', right: 16, top: 16, width: 240, zIndex: 500,
-      transform: 'translateZ(0)', WebkitTransform: 'translateZ(0)',
-      background: isLight ? '#FFFFFF' : 'rgba(var(--surface-rgb),0.85)',
-      backdropFilter: 'blur(10px)',
-      WebkitBackdropFilter: 'blur(10px)',
-      border: `1px solid ${isLight ? '#E2E8F0' : SRHQ.line}`, borderRadius: 14, padding: '14px 14px',
-      color: isLight ? '#07090C' : undefined,
-      fontFamily: SRHQ.body, maxHeight: 'calc(100% - 32px)', overflowY: 'auto',
-    }}>
-      <div style={{ fontFamily: SRHQ.mono, fontSize: 10, letterSpacing: 2,
-                    textTransform: 'uppercase', color: SRHQ.inkMute,
-                    marginBottom: 10 }}>Routes · {ROUTES.length}</div>
-      {ROUTES.map(r => {
-        const on = active === r.id;
-        return (
-          <button key={r.id} onClick={() => setActive(on ? null : r.id)}
-                  style={{
-            width: '100%', textAlign: 'left', display: 'flex',
-            alignItems: 'center', gap: 10, padding: '6px 8px',
-            background: on ? colorAlpha(r.color, '14') : 'transparent',
-            border: `1px solid ${on ? colorAlpha(r.color, '55') : 'transparent'}`,
-            borderRadius: 8, cursor: 'pointer', color: SRHQ.ink,
-            marginBottom: 2, fontSize: 12.5, fontFamily: SRHQ.body,
-          }}>
-            <span style={{ width: 16, height: 3, borderRadius: 2, background: r.color,
-                            flexShrink: 0 }} />
-            <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden',
-                            textOverflow: 'ellipsis' }}>{r.name}</span>
-          </button>
-        );
-      })}
-    </div>
-  );
-}
+  // TODO: replace with a real Stadia Maps key — either fetch('/api/config')
+  // and read window.SRHQ_CONFIG.stadiaKey, or inject STADIA_API_KEY server-side.
+  var STADIA_KEY = '';
 
-function RegionJump({ map }) {
-  const isLight = useTheme() === 'light';
-  const regions = [
-    { id: 'all',        name: 'All UK',      c: [54.5, -3.2],    z: 6 },
-    { id: 'london',     name: 'London',      c: [51.5074, -0.1278], z: 11 },
-    { id: 'birmingham', name: 'Birmingham',  c: [52.4778, -1.9],  z: 11 },
-    { id: 'manchester', name: 'Manchester',  c: [53.4775, -2.2307], z: 11 },
-    { id: 'glasgow',    name: 'Glasgow',     c: [55.8586, -4.2579], z: 11 },
-    { id: 'edinburgh',  name: 'Edinburgh',   c: [55.9521, -3.1883], z: 11 },
-  ];
-  return (
-    <div className="region-jump" style={{
-      position: 'absolute', left: '50%', transform: 'translateX(-50%)',
-      bottom: 16, zIndex: 500, display: 'flex', gap: 6,
-      background: isLight ? '#FFFFFF' : 'rgba(var(--surface-rgb),0.85)',
-      backdropFilter: 'blur(10px)',
-      WebkitBackdropFilter: 'blur(10px)',
-      border: `1px solid ${isLight ? '#CBD5E0' : SRHQ.line}`, borderRadius: 12, padding: 6,
-    }}>
-      <span style={{ alignSelf: 'center', padding: '0 8px 0 4px',
-                     fontFamily: SRHQ.mono, fontSize: 10, letterSpacing: 2,
-                     textTransform: 'uppercase', color: isLight ? '#07090C' : SRHQ.inkMute }}>Jump to</span>
-      {regions.map(r => (
-        <button key={r.id} onClick={() => map?.flyTo(r.c, r.z, { duration: 0.8 })}
-                style={{
-          background: isLight ? '#FFFFFF' : 'transparent',
-          border: `1px solid ${isLight ? '#CBD5E0' : SRHQ.line}`,
-          borderRadius: 8, padding: '6px 12px', cursor: 'pointer',
-          color: isLight ? '#07090C' : SRHQ.ink, fontFamily: SRHQ.body, fontSize: 12.5,
-        }}
-        onMouseEnter={e => {
-          e.currentTarget.style.background = isLight ? '#F5F5F0' : 'rgba(var(--color-accent-turquoise-rgb),0.1)';
-          e.currentTarget.style.borderColor = isLight ? '#1A9E8F' : colorAlpha(SRHQ.turq, '66');
-        }}
-        onMouseLeave={e => {
-          e.currentTarget.style.background = isLight ? '#FFFFFF' : 'transparent';
-          e.currentTarget.style.borderColor = isLight ? '#CBD5E0' : SRHQ.line;
-        }}>
-          {r.name}
-        </button>
-      ))}
-    </div>
-  );
-}
+  var CSS_VAR_COLORS = {
+    '--color-accent-turquoise': '#40E0D0',
+    '--color-accent-magenta': '#F25CC1',
+    '--color-accent-amber': '#F5B84B',
+    '--color-accent-lime': '#B8F266',
+  };
+  function resolveColor(c) {
+    var m = /^var\((--[\w-]+)\)$/.exec(c || '');
+    return m ? (CSS_VAR_COLORS[m[1]] || '#40E0D0') : c;
+  }
 
-function MapView({ active, setActive, setMap }) {
-  const mapRef = React.useRef(null);
-  const mapObj = React.useRef(null);
-  const layersRef = React.useRef({ routes: {}, markers: {} });
-  const tilesRef = React.useRef({ base: null, labels: null, theme: null });
+  var ROUTES = window.ROUTES || [];
+  var stationsData = null;   // parsed /data/stations.geojson, ids assigned
+  var activeRouteId = null;
+  var selectedCrs = null;
+  var incidents = [];
+  var activeFilter = 'all';
+  var mode = 'live';
 
-  // Theme-aware basemap: CARTO Dark Matter for dark mode, CARTO Voyager for
-  // light mode. Adds the new tiles on top of the old ones and removes the
-  // old layer once the new tiles have rendered, so the swap doesn't flicker.
-  const applyTileLayer = React.useCallback((theme) => {
-    const map = mapObj.current;
-    if (!map || tilesRef.current.theme === theme) return;
-    const old = tilesRef.current;
-    let base, labels = null;
-    if (theme === 'light') {
-      base = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-        subdomains: 'abcd', maxZoom: 20,
-      }).addTo(map);
-    } else {
-      // CARTO Dark Matter — clean, neutral dark OSM basemap (no road coloring).
-      base = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-        subdomains: 'abcd', maxZoom: 20,
-      }).addTo(map);
-      // City / town labels on top
-      labels = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png', {
-        subdomains: 'abcd', maxZoom: 20,
-      }).addTo(map);
-    }
-    let cleaned = false;
-    const cleanup = () => {
-      if (cleaned) return;
-      cleaned = true;
-      if (old.base) map.removeLayer(old.base);
-      if (old.labels) map.removeLayer(old.labels);
+  // ── Map init ─────────────────────────────────────────────────────────────
+  var map = new maplibregl.Map({
+    container: 'map',
+    style: 'https://tiles.stadiamaps.com/styles/alidade_smooth_dark.json?api_key=' + STADIA_KEY,
+    center: [-2.0, 53.5],
+    zoom: 6,
+    attributionControl: false,
+  });
+  map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-left');
+  map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-left');
+
+  function routesGeoJSON() {
+    return {
+      type: 'FeatureCollection',
+      features: ROUTES.map(function (r, i) {
+        var coords = (r.geometry && r.geometry.length ? r.geometry : []).map(function (ll) { return [ll[1], ll[0]]; });
+        return {
+          type: 'Feature', id: i,
+          geometry: { type: 'LineString', coordinates: coords },
+          properties: { id: r.id, name: r.name, color: resolveColor(r.color) },
+        };
+      }),
     };
-    base.once('load', cleanup);
-    setTimeout(cleanup, 400);
-    tilesRef.current = { base, labels, theme };
-  }, []);
+  }
 
-  React.useEffect(() => {
-    if (mapObj.current) return;
-    const map = L.map(mapRef.current, {
-      center: [54.5, -3.2], zoom: 6, minZoom: 5, maxZoom: 14,
-      zoomControl: true, attributionControl: true,
-      worldCopyJump: false,
+  map.on('load', function () {
+    map.addSource('orm', {
+      type: 'raster',
+      tiles: [
+        'https://a.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png',
+        'https://b.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png',
+      ],
+      tileSize: 256,
+      attribution: '© OpenRailwayMap contributors',
     });
-    mapObj.current = map;
-    setMap(map);
+    map.addLayer({ id: 'orm', type: 'raster', source: 'orm', paint: { 'raster-opacity': 0.55 } });
 
-    const initialTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
-    applyTileLayer(initialTheme);
-
-    const themeObserver = new MutationObserver(() => {
-      const theme = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
-      applyTileLayer(theme);
+    map.addSource('routes', { type: 'geojson', data: routesGeoJSON() });
+    map.addLayer({
+      id: 'routes-glow', type: 'line', source: 'routes',
+      layout: { 'line-cap': 'round', 'line-join': 'round' },
+      paint: { 'line-color': ['get', 'color'], 'line-width': ['interpolate', ['linear'], ['zoom'], 5, 7, 10, 16], 'line-opacity': 0.18 },
     });
-    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
-
-    // Routes
-    ROUTES.forEach(r => {
-      // Use detailed geometry if provided; otherwise fall back to city-pair straight line.
-      const latlngs = r.geometry && r.geometry.length
-        ? r.geometry
-        : r.path.map(s => STATIONS[s]).filter(Boolean);
-      // soft glow underlay
-      const glow = L.polyline(latlngs, { color: r.color, weight: 10, opacity: 0.18,
-        lineCap: 'round', lineJoin: 'round', interactive: false }).addTo(map);
-      const line = L.polyline(latlngs, { color: r.color, weight: 3.5, opacity: 0.95,
-        lineCap: 'round', lineJoin: 'round' }).addTo(map);
-      line.on('click', () => setActive(r.id));
-      line.on('mouseover', () => { line.setStyle({ weight: 6 }); });
-      line.on('mouseout', () => { line.setStyle({ weight: 3.5 }); });
-      layersRef.current.routes[r.id] = { glow, line };
+    map.addLayer({
+      id: 'routes-line', type: 'line', source: 'routes',
+      layout: { 'line-cap': 'round', 'line-join': 'round' },
+      paint: {
+        'line-color': ['get', 'color'],
+        'line-width': ['case', ['boolean', ['feature-state', 'hover'], false], 6, ['interpolate', ['linear'], ['zoom'], 5, 2.5, 10, 4]],
+        'line-opacity': 0.95,
+      },
     });
 
-    // Stations
-    Object.entries(STATIONS).forEach(([name, ll]) => {
-      const m = L.circleMarker(ll, {
-        radius: 4, color: 'rgba(255,255,255,0.5)', weight: 1.8,
-        fillColor: '#07090C', fillOpacity: 1,
-      }).addTo(map);
-      const label = L.marker(ll, {
-        icon: L.divIcon({ className: '', html: `<div class="station-label">${name}</div>`,
-          iconAnchor: [-6, 10] }),
-        interactive: false,
-      }).addTo(map);
-      layersRef.current.markers[name] = { m, label };
-    });
-
-    return () => { themeObserver.disconnect(); map.remove(); mapObj.current = null; };
-  }, []);
-
-  // Respond to active route changes: dim others, highlight endpoints
-  React.useEffect(() => {
-    const { routes, markers } = layersRef.current;
-    Object.entries(routes).forEach(([id, { glow, line }]) => {
-      const dim = active && active !== id;
-      line.setStyle({ opacity: dim ? 0.18 : 0.95 });
-      glow.setStyle({ opacity: dim ? 0.05 : 0.18 });
-    });
-    const activeRoute = ROUTES.find(r => r.id === active);
-    const endSet = new Set();
-    const midSet = new Set();
-    if (activeRoute) {
-      endSet.add(activeRoute.path[0]);
-      endSet.add(activeRoute.path[activeRoute.path.length - 1]);
-      activeRoute.path.forEach(s => midSet.add(s));
-    }
-    Object.entries(markers).forEach(([name, { m, label }]) => {
-      const isEnd = endSet.has(name);
-      const isMid = midSet.has(name);
-      const color = activeRoute?.color || 'rgba(255,255,255,0.5)';
-      m.setStyle({
-        radius: isEnd ? 7 : isMid ? 5 : 4,
-        color: isEnd || isMid ? color : 'rgba(255,255,255,0.5)',
-        weight: isEnd ? 3 : 1.8,
+    fetch('/data/stations.geojson').then(function (r) { return r.json(); }).then(function (gj) {
+      gj.features.forEach(function (f, i) { f.id = i; });
+      stationsData = gj;
+      map.addSource('stations', { type: 'geojson', data: gj });
+      map.addLayer({
+        id: 'stations-circle', type: 'circle', source: 'stations',
+        paint: {
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, 5, 10, 7],
+          'circle-color': ['case', ['any', ['boolean', ['feature-state', 'hover'], false], ['boolean', ['feature-state', 'active'], false]], 'rgba(64,224,208,0.15)', 'rgba(7,9,12,0.9)'],
+          'circle-stroke-width': ['case', ['boolean', ['feature-state', 'hover'], false], 2.5, ['case', ['boolean', ['feature-state', 'active'], false], 2.6, 1.8]],
+          'circle-stroke-color': '#40E0D0',
+        },
       });
-      const el = label.getElement();
-      if (el) {
-        const inner = el.querySelector('.station-label');
-        if (inner) {
-          inner.classList.toggle('endpoint', isEnd);
-          inner.style.display = (activeRoute && !isMid) ? 'none' : '';
-        }
-      }
-    });
-    // Fit bounds when a route is selected.
-    // Leaflet padding is a Point [x, y]. The route detail popup sits over the
-    // left of the map on desktop (~360px wide) and across the top on mobile, so
-    // we pad asymmetrically to keep the whole route clear of it — and cap the
-    // zoom so short routes (e.g. Brighton) don't blow up too close.
-    if (activeRoute && mapObj.current) {
-      const bounds = L.latLngBounds(
-        (activeRoute.geometry && activeRoute.geometry.length
-          ? activeRoute.geometry
-          : activeRoute.path.map(s => STATIONS[s]))
-      );
-      const mobile = window.innerWidth <= 900;
-      mapObj.current.flyToBounds(bounds, {
-        paddingTopLeft: mobile ? [40, 300] : [380, 80],
-        paddingBottomRight: [60, 80],
-        maxZoom: 9,
-        duration: 0.6,
+      map.addLayer({
+        id: 'stations-label', type: 'symbol', source: 'stations', minzoom: 9,
+        layout: { 'text-field': ['get', 'name'], 'text-size': 10, 'text-anchor': 'top', 'text-offset': [0, 0.6] },
+        paint: { 'text-color': '#9AA4B2', 'text-halo-color': 'rgba(7,9,12,0.8)', 'text-halo-width': 1 },
       });
+      wireStationInteractions();
+    }).catch(function (e) { console.error('Failed to load stations.geojson', e); });
+
+    wireRouteInteractions();
+  });
+
+  // ── Route interactions (click → popup, hover, dim/highlight) ────────────
+  var hoveredRouteFeatureId = null;
+  function wireRouteInteractions() {
+    map.on('mousemove', 'routes-line', function (e) {
+      map.getCanvas().style.cursor = 'pointer';
+      if (!e.features.length) return;
+      if (hoveredRouteFeatureId !== null) map.setFeatureState({ source: 'routes', id: hoveredRouteFeatureId }, { hover: false });
+      hoveredRouteFeatureId = e.features[0].id;
+      map.setFeatureState({ source: 'routes', id: hoveredRouteFeatureId }, { hover: true });
+    });
+    map.on('mouseleave', 'routes-line', function () {
+      map.getCanvas().style.cursor = '';
+      if (hoveredRouteFeatureId !== null) map.setFeatureState({ source: 'routes', id: hoveredRouteFeatureId }, { hover: false });
+      hoveredRouteFeatureId = null;
+    });
+    map.on('click', 'routes-line', function (e) {
+      if (!e.features.length) return;
+      selectRoute(e.features[0].properties.id);
+    });
+  }
+
+  function setRouteDim(activeId) {
+    if (activeId) {
+      map.setPaintProperty('routes-line', 'line-opacity', ['match', ['get', 'id'], activeId, 0.95, 0.18]);
+      map.setPaintProperty('routes-glow', 'line-opacity', ['match', ['get', 'id'], activeId, 0.18, 0.05]);
+    } else {
+      map.setPaintProperty('routes-line', 'line-opacity', 0.95);
+      map.setPaintProperty('routes-glow', 'line-opacity', 0.18);
     }
-  }, [active]);
+  }
 
-  return <div ref={mapRef} style={{ position: 'absolute', inset: 0 }} />;
-}
+  function stationFeaturesMatchingCity(cityName) {
+    if (!stationsData) return [];
+    var lc = cityName.toLowerCase();
+    return stationsData.features.filter(function (f) { return f.properties.name.toLowerCase().indexOf(lc) === 0; });
+  }
 
-function App() {
-  const [active, setActive] = React.useState(null);
-  const [map, setMap] = React.useState(null);
-  const route = ROUTES.find(r => r.id === active);
+  var highlightedStationIds = [];
+  function clearStationHighlights() {
+    highlightedStationIds.forEach(function (id) { map.setFeatureState({ source: 'stations', id: id }, { active: false }); });
+    highlightedStationIds = [];
+  }
+  function highlightRouteStations(route) {
+    clearStationHighlights();
+    if (!route || !stationsData) return;
+    route.path.forEach(function (city) {
+      stationFeaturesMatchingCity(city).forEach(function (f) {
+        map.setFeatureState({ source: 'stations', id: f.id }, { active: true });
+        highlightedStationIds.push(f.id);
+      });
+    });
+  }
 
-  return (
-    <>
-      <TopNav current="/map" />
-      <Header />
+  function selectRoute(id) {
+    activeRouteId = id;
+    setRouteDim(id);
+    var route = ROUTES.find(function (r) { return r.id === id; });
+    if (!route) return;
+    highlightRouteStations(route);
+    renderRoutePopup(route);
+    renderRoutesPanel();
+    var coords = (route.geometry || []).map(function (ll) { return [ll[1], ll[0]]; });
+    if (coords.length) {
+      var bounds = coords.reduce(function (b, c) { return b.extend(c); }, new maplibregl.LngLatBounds(coords[0], coords[0]));
+      map.fitBounds(bounds, { padding: { top: 80, bottom: 220, left: 40, right: 40 }, maxZoom: 9, duration: 600 });
+    }
+  }
 
-      <section className="map-section" style={{ maxWidth: 1280, margin: '0 auto', padding: '0 32px 40px' }}>
-        <div className="map-frame" style={{
-          position: 'relative',
-          transform: 'translateZ(0)', WebkitTransform: 'translateZ(0)',
-          background: SRHQ.surface, border: `1px solid ${SRHQ.line}`,
-          borderRadius: 20, overflow: 'hidden', height: '78vh', minHeight: 600,
-        }}>
-          <MapView active={active} setActive={setActive} setMap={setMap} />
-          <Legend active={active} setActive={setActive} />
-          <RegionJump map={map} />
-          {route && <Popup route={route} onClose={() => setActive(null)} />}
-        </div>
+  function closeRoutePopup() {
+    activeRouteId = null;
+    setRouteDim(null);
+    clearStationHighlights();
+    document.getElementById('route-popup').classList.remove('open');
+    renderRoutesPanel();
+  }
+  document.getElementById('rp-close-btn').addEventListener('click', closeRoutePopup);
 
-        <div style={{ display: 'flex', gap: 16, marginTop: 16, flexWrap: 'wrap',
-                      fontFamily: SRHQ.mono, fontSize: 11.5, color: SRHQ.inkMute,
-                      letterSpacing: 0.5 }}>
-          <span>Base map · OpenStreetMap via CARTO</span>
-          <span>·</span>
-          <span>Routes follow the actual railway corridors (hand-traced from OSM)</span>
-          <span>·</span>
-          <span>Click a line or use the legend to isolate a route</span>
-        </div>
-      </section>
-      <Footer />
-      <CookieConsent />
-    </>
-  );
-}
+  function renderRoutePopup(route) {
+    var el = document.getElementById('rp-content');
+    var color = resolveColor(route.color);
+    var classesHtml = route.classes.map(function (c) {
+      return '<a href="/database#class-' + c + '" style="color:' + color + ';border-color:' + color + '55;">' + c + '</a>';
+    }).join('');
+    el.innerHTML =
+      '<div class="rp-head"><span class="rp-dot" style="background:' + color + ';"></span>' +
+      '<span class="rp-label" style="color:' + color + ';">Route</span></div>' +
+      '<h3>' + route.name + '</h3>' +
+      '<div class="rp-journey">' + route.journey + '</div>' +
+      '<div class="rp-grid">' +
+        '<div><div class="rp-grid-label">Frequency</div><div class="rp-grid-val">' + route.freq + '</div></div>' +
+        '<div><div class="rp-grid-label">Operator</div><div class="rp-grid-val">' + route.operator + '</div></div>' +
+      '</div>' +
+      '<div class="rp-classes">' + classesHtml + '</div>' +
+      '<div class="rp-about">' + route.about + '</div>';
+    document.getElementById('route-popup').classList.add('open');
+  }
 
-ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  function renderRoutesPanel() {
+    var list = document.getElementById('rp-list');
+    list.innerHTML = ROUTES.map(function (r) {
+      var color = resolveColor(r.color);
+      var active = r.id === activeRouteId;
+      return '<button class="rp-route' + (active ? ' active' : '') + '" data-route="' + r.id + '">' +
+        '<span class="swatch" style="background:' + color + ';"></span>' +
+        '<span class="rname">' + r.name + '</span></button>';
+    }).join('');
+    Array.prototype.forEach.call(list.querySelectorAll('.rp-route'), function (btn) {
+      btn.addEventListener('click', function () {
+        var id = btn.getAttribute('data-route');
+        if (id === activeRouteId) { closeRoutePopup(); } else { selectRoute(id); }
+      });
+    });
+  }
+  renderRoutesPanel();
+
+  // ── Station interactions (click → departure board) ───────────────────────
+  var hoveredStationFeatureId = null;
+  function wireStationInteractions() {
+    map.on('mousemove', 'stations-circle', function (e) {
+      map.getCanvas().style.cursor = 'pointer';
+      if (!e.features.length) return;
+      if (hoveredStationFeatureId !== null) map.setFeatureState({ source: 'stations', id: hoveredStationFeatureId }, { hover: false });
+      hoveredStationFeatureId = e.features[0].id;
+      map.setFeatureState({ source: 'stations', id: hoveredStationFeatureId }, { hover: true });
+    });
+    map.on('mouseleave', 'stations-circle', function () {
+      map.getCanvas().style.cursor = '';
+      if (hoveredStationFeatureId !== null) map.setFeatureState({ source: 'stations', id: hoveredStationFeatureId }, { hover: false });
+      hoveredStationFeatureId = null;
+    });
+    map.on('click', 'stations-circle', function (e) {
+      if (!e.features.length) return;
+      var props = e.features[0].properties;
+      hideBottomHints();
+      selectedCrs = props.crs;
+      showStationTooltip(e.lngLat, props.name);
+      openDepartureBoard(props.name, props.crs);
+      switchMobileTab('departures');
+    });
+  }
+
+  var stationTooltip = null;
+  function showStationTooltip(lngLat, name) {
+    if (stationTooltip) stationTooltip.remove();
+    stationTooltip = new maplibregl.Popup({ closeButton: false, closeOnClick: false, offset: 14 })
+      .setLngLat(lngLat)
+      .setHTML('<strong>' + name + '</strong><br>tap for departures')
+      .addTo(map);
+    setTimeout(function () { if (stationTooltip) { stationTooltip.remove(); stationTooltip = null; } }, 2200);
+  }
+
+  function depStatusClass(status) {
+    if (status === 'Cancelled') return 'cancelled';
+    if (/^\+\d/.test(status) || status === 'Delayed') return 'delayed';
+    return 'on-time';
+  }
+  function renderDepartureRows(rows, container) {
+    if (!rows || !rows.length) { container.innerHTML = '<div class="dep-empty">No departures available right now.</div>'; return; }
+    container.innerHTML = rows.slice(0, 5).map(function (d) {
+      return '<div class="dep-row">' +
+        '<span class="dep-time">' + (d.scheduledTime || '--:--') + '</span>' +
+        '<span class="dep-dest">' + d.destination + '</span>' +
+        '<span class="dep-plat">Plat ' + (d.platform || '—') + '</span>' +
+        '<span class="dep-status ' + depStatusClass(d.status) + '">' + d.status + '</span>' +
+        '</div>';
+    }).join('');
+  }
+
+  function openDepartureBoard(name, crs) {
+    document.getElementById('dep-board').style.display = 'block';
+    document.getElementById('db-station-name').textContent = name;
+    document.getElementById('ms-db-station-name').textContent = name;
+    var loadingHtml = '<div class="dep-empty">Loading departures…</div>';
+    document.getElementById('dep-rows').innerHTML = loadingHtml;
+    document.getElementById('ms-dep-rows').innerHTML = loadingHtml;
+    fetch('/api/map-departures?crs=' + encodeURIComponent(crs)).then(function (r) { return r.json(); }).then(function (rows) {
+      renderDepartureRows(rows, document.getElementById('dep-rows'));
+      renderDepartureRows(rows, document.getElementById('ms-dep-rows'));
+    }).catch(function () {
+      renderDepartureRows([], document.getElementById('dep-rows'));
+      renderDepartureRows([], document.getElementById('ms-dep-rows'));
+    });
+  }
+
+  // ── Header: mode switching (Live / Database) ─────────────────────────────
+  var tabLive = document.getElementById('tab-live');
+  var tabDb = document.getElementById('tab-database');
+  function setMode(newMode) {
+    mode = newMode;
+    document.body.classList.toggle('mode-database', mode === 'database');
+    tabLive.classList.toggle('live-on', mode === 'live');
+    tabLive.setAttribute('aria-pressed', mode === 'live');
+    tabDb.classList.toggle('db-on', mode === 'database');
+    tabDb.setAttribute('aria-pressed', mode === 'database');
+    if (map.getLayer('orm')) map.setPaintProperty('orm', 'raster-opacity', mode === 'database' ? 0.7 : 0.55);
+  }
+  tabLive.addEventListener('click', function () { setMode('live'); });
+  tabDb.addEventListener('click', function () { setMode('database'); });
+
+  // ── Map controls ─────────────────────────────────────────────────────────
+  document.getElementById('zoom-in').addEventListener('click', function () { map.zoomIn(); });
+  document.getElementById('zoom-out').addEventListener('click', function () { map.zoomOut(); });
+  var layersBtn = document.getElementById('layers-btn');
+  layersBtn.addEventListener('click', function () {
+    var open = document.getElementById('routes-panel').classList.toggle('open');
+    layersBtn.setAttribute('aria-pressed', open);
+  });
+  document.getElementById('my-location').addEventListener('click', function () {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(function (pos) {
+      map.flyTo({ center: [pos.coords.longitude, pos.coords.latitude], zoom: 12 });
+    });
+  });
+
+  // ── Region jump ───────────────────────────────────────────────────────────
+  Array.prototype.forEach.call(document.querySelectorAll('#region-jump button[data-lng]'), function (btn) {
+    btn.addEventListener('click', function () {
+      map.flyTo({ center: [parseFloat(btn.dataset.lng), parseFloat(btn.dataset.lat)], zoom: parseFloat(btn.dataset.zoom), duration: 800 });
+    });
+  });
+
+  // ── Bottom hints ──────────────────────────────────────────────────────────
+  function hideBottomHints() { document.getElementById('bottom-hints').classList.add('hidden'); }
+  map.on('click', hideBottomHints);
+
+  // ── Search ────────────────────────────────────────────────────────────────
+  var searchBtn = document.getElementById('search-btn');
+  var searchInput = document.getElementById('search-input');
+  searchBtn.addEventListener('click', function () {
+    searchInput.classList.toggle('open');
+    if (searchInput.classList.contains('open')) searchInput.focus();
+  });
+  searchInput.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter' || !stationsData) return;
+    var q = searchInput.value.trim().toLowerCase();
+    if (!q) return;
+    var match = stationsData.features.find(function (f) { return f.properties.name.toLowerCase().indexOf(q) !== -1; });
+    if (match) {
+      var coords = match.geometry.coordinates;
+      hideBottomHints();
+      map.flyTo({ center: coords, zoom: 11, duration: 800 });
+      showStationTooltip({ lng: coords[0], lat: coords[1] }, match.properties.name);
+      selectedCrs = match.properties.crs;
+      openDepartureBoard(match.properties.name, match.properties.crs);
+      switchMobileTab('departures');
+    }
+  });
+
+  // ── Star (saved routes shortcut) ─────────────────────────────────────────
+  document.getElementById('star-btn').addEventListener('click', function () {
+    document.getElementById('news-panel').classList.remove('collapsed');
+    document.getElementById('saved-section').scrollIntoView({ block: 'nearest' });
+    switchMobileTab('news');
+  });
+
+  // ── News panel minimise ───────────────────────────────────────────────────
+  document.getElementById('np-header-toggle').addEventListener('click', function () {
+    var panel = document.getElementById('news-panel');
+    var collapsed = panel.classList.toggle('collapsed');
+    document.getElementById('np-chevron').classList.toggle('flipped', collapsed);
+  });
+
+  // ── Mobile sheet ──────────────────────────────────────────────────────────
+  function switchMobileTab(tab) {
+    var isDep = tab === 'departures';
+    document.getElementById('ms-tab-departures').classList.toggle('active', isDep);
+    document.getElementById('ms-tab-news').classList.toggle('active', !isDep);
+    document.getElementById('ms-view-departures').classList.toggle('active', isDep);
+    document.getElementById('ms-view-news').classList.toggle('active', !isDep);
+    document.getElementById('mobile-sheet').classList.remove('collapsed');
+  }
+  document.getElementById('ms-tab-departures').addEventListener('click', function () { switchMobileTab('departures'); });
+  document.getElementById('ms-tab-news').addEventListener('click', function () { switchMobileTab('news'); });
+  document.getElementById('ms-min-btn').addEventListener('click', function () {
+    var sheet = document.getElementById('mobile-sheet');
+    var collapsed = sheet.classList.toggle('collapsed');
+    document.getElementById('ms-min-btn').querySelector('i').style.transform = collapsed ? 'rotate(180deg)' : '';
+  });
+
+  // ── Filters (client-side categories over incidents) ──────────────────────
+  var FILTERS = ['All', 'Urgent', 'North', 'Midlands', 'South', 'WCML', 'ECML', 'GWR', 'Heritage'];
+  function renderFilterRow(containerId, onSelect) {
+    var el = document.getElementById(containerId);
+    el.innerHTML = FILTERS.map(function (f) {
+      var key = f.toLowerCase();
+      return '<button class="filter-chip' + (key === activeFilter ? ' active' : '') + '" data-filter="' + key + '">' + f + '</button>';
+    }).join('');
+    Array.prototype.forEach.call(el.querySelectorAll('.filter-chip'), function (btn) {
+      btn.addEventListener('click', function () {
+        activeFilter = btn.dataset.filter;
+        onSelect();
+      });
+    });
+  }
+
+  function newsItemsHtml() {
+    var filtered = incidents.filter(function (n) {
+      if (activeFilter === 'all') return true;
+      if (activeFilter === 'urgent') return n.severity >= 2;
+      return (n.region || '').toLowerCase() === activeFilter || (n.line || '').toLowerCase() === activeFilter;
+    });
+    if (!filtered.length) return '<div class="news-empty">No live disruptions right now.</div>';
+    var sorted = filtered.slice().sort(function (a, b) { return (b.severity || 0) - (a.severity || 0); });
+    return sorted.map(function (n) {
+      var urgent = n.severity >= 2;
+      var dotColor = urgent ? 'var(--m)' : 'var(--t)';
+      return '<div class="news-item' + (urgent ? ' urgent' : '') + '">' +
+        '<span class="news-dot" style="background:' + dotColor + ';"></span>' +
+        '<div><div class="news-title">' + n.summary + '</div>' +
+        '<div class="news-meta">' + (n.timestamp || '') + ' · ' + (n.region || n.toc || '') + '</div></div></div>';
+    }).join('');
+  }
+
+  function renderNews() {
+    document.getElementById('news-items').innerHTML = newsItemsHtml();
+    document.getElementById('ms-news-items').innerHTML = newsItemsHtml();
+    var urgentCount = incidents.filter(function (n) { return n.severity >= 2; }).length;
+    var badge = document.getElementById('np-badge');
+    var msBadge = document.getElementById('ms-badge');
+    badge.textContent = urgentCount; badge.classList.toggle('show', urgentCount > 0);
+    msBadge.textContent = urgentCount; msBadge.classList.toggle('show', urgentCount > 0);
+    document.getElementById('np-pulse').classList.toggle('show', urgentCount > 0);
+    document.getElementById('rebook-cta').classList.toggle('show', urgentCount > 0);
+    document.getElementById('ms-rebook-cta').classList.toggle('show', urgentCount > 0);
+    document.getElementById('np-count').textContent = Math.min(incidents.length, 5) + ' of ' + incidents.length;
+    var now = new Date();
+    document.getElementById('np-time').textContent = now.toTimeString().slice(0, 5);
+  }
+
+  function pollIncidents() {
+    fetch('/api/incidents', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (data) {
+      incidents = Array.isArray(data) ? data : [];
+      renderNews();
+    }).catch(function () { incidents = []; renderNews(); });
+  }
+  renderFilterRow('filter-row', renderNews);
+  renderFilterRow('ms-filter-row', renderNews);
+  pollIncidents();
+  setInterval(pollIncidents, 60000);
+
+  // ── Saved routes (localStorage) ──────────────────────────────────────────
+  var SAVED_KEY = 'srhq_saved_routes';
+  function getSavedRoutes() {
+    try { return JSON.parse(localStorage.getItem(SAVED_KEY)) || []; } catch (e) { return []; }
+  }
+  function setSavedRoutes(list) {
+    try { localStorage.setItem(SAVED_KEY, JSON.stringify(list)); } catch (e) {}
+  }
+  function statusDotColor(crs) {
+    var affected = incidents.some(function (n) { return (n.affectedCRS || []).indexOf(crs) !== -1 && n.severity >= 2; });
+    return affected ? 'var(--m)' : 'var(--t)';
+  }
+  function renderSaved() {
+    var list = getSavedRoutes();
+    var el = document.getElementById('saved-list');
+    if (!list.length) { el.innerHTML = '<div class="saved-empty">No saved routes yet — tap a station to save</div>'; return; }
+    el.innerHTML = list.map(function (r, i) {
+      return '<div class="saved-route">' +
+        '<span class="saved-dot" style="background:' + statusDotColor(r.crs) + ';"></span>' +
+        '<span class="saved-name">' + r.name + '</span>' +
+        '<span class="saved-sub">' + (r.toc || '') + '</span>' +
+        '<button class="saved-remove" data-idx="' + i + '" aria-label="Remove saved route">×</button></div>';
+    }).join('');
+    Array.prototype.forEach.call(el.querySelectorAll('.saved-remove'), function (btn) {
+      btn.addEventListener('click', function () {
+        var list = getSavedRoutes();
+        list.splice(parseInt(btn.dataset.idx, 10), 1);
+        setSavedRoutes(list);
+        renderSaved();
+      });
+    });
+  }
+  document.getElementById('saved-add-btn').addEventListener('click', function () {
+    if (!selectedCrs || !stationsData) { alert('Tap a station on the map first, then Add to save it.'); return; }
+    var feature = stationsData.features.find(function (f) { return f.properties.crs === selectedCrs; });
+    if (!feature) return;
+    var name = prompt('Save this station as:', feature.properties.name);
+    if (name === null) return;
+    var list = getSavedRoutes();
+    list.push({ name: name || feature.properties.name, crs: feature.properties.crs, toc: feature.properties.toc, addedAt: new Date().toISOString() });
+    setSavedRoutes(list);
+    renderSaved();
+  });
+  renderSaved();
+
+  // ── Cookie consent (compact vanilla banner) ──────────────────────────────
+  var COOKIE_KEY = 'srhq-cookie-consent.v1';
+  (function initCookieConsent() {
+    var stored = null;
+    try { stored = localStorage.getItem(COOKIE_KEY); } catch (e) {}
+    if (!stored) setTimeout(function () { document.getElementById('cookie-consent').classList.add('open'); }, 600);
+  })();
+  function persistCookieChoice(choice) {
+    try { localStorage.setItem(COOKIE_KEY, JSON.stringify({ necessary: true, analytics: choice, marketing: choice, ts: new Date().toISOString() })); } catch (e) {}
+    document.getElementById('cookie-consent').classList.remove('open');
+  }
+  document.getElementById('cc-accept').addEventListener('click', function () { persistCookieChoice(true); });
+  document.getElementById('cc-reject').addEventListener('click', function () { persistCookieChoice(false); });
+
+  // ── Database mode: history slider ────────────────────────────────────────
+  var ERA_INFO = {
+    1845: 'The Railway Mania era — hundreds of competing companies laid track across Britain.',
+    1880: 'The "Big Four"’ predecessors expand — mainlines link every major city.',
+    1923: 'The Grouping — over 120 companies consolidated into the Big Four (GWR, LMS, LNER, SR).',
+    1965: 'Post-Beeching — thousands of miles of branch lines closed to traffic.',
+    1994: 'On the eve of privatisation — British Rail sectors prepare for franchising.',
+    2025: 'Today’s network — electrified mainlines, high-speed services and open access operators.',
+  };
+  var historyBtn = document.getElementById('history-btn');
+  var yearBar = document.getElementById('year-bar');
+  historyBtn.addEventListener('click', function () {
+    var open = yearBar.classList.toggle('open');
+    historyBtn.classList.toggle('active', open);
+  });
+  var yearSlider = document.getElementById('year-slider');
+  function updateYear(year) {
+    year = parseInt(year, 10);
+    document.getElementById('yb-year').textContent = year >= 2025 ? 'Today' : year;
+    var snaps = [1845, 1880, 1923, 1965, 1994, 2025];
+    var closest = snaps.reduce(function (a, b) { return Math.abs(b - year) < Math.abs(a - year) ? b : a; });
+    document.getElementById('yb-era-chip').textContent = closest >= 2025 ? 'Today' : closest;
+    document.getElementById('yb-context').textContent = ERA_INFO[closest] || '';
+    // TODO: swap in OpenHistoricalMap vector tiles for this year once an
+    // OHM tile endpoint/key is available — currently UI-only.
+  }
+  yearSlider.addEventListener('input', function () { updateYear(yearSlider.value); });
+  Array.prototype.forEach.call(document.querySelectorAll('.yb-snap'), function (btn) {
+    btn.addEventListener('click', function () { yearSlider.value = btn.dataset.year; updateYear(btn.dataset.year); });
+  });
+  updateYear(2025);
+})();
 </script>
 </body>
 </html>
