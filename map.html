@@ -2,6 +2,15 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
+<script>
+(function () {
+  try {
+    var t = localStorage.getItem('srhq-theme');
+    if (!t) t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark';
+    if (t === 'light') document.documentElement.setAttribute('data-theme', 'light');
+  } catch (e) {}
+})();
+</script>
 <title>SpotRail HQ — UK Railway Map</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="description" content="Live UK railway map with departure boards, disruption alerts, and rolling stock information" />
@@ -45,80 +54,75 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css" />
 
 <style>
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  button, input, select, textarea {
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    -webkit-appearance: none;
+    appearance: none;
+    border: none;
+    background: none;
+    cursor: pointer;
+  }
+
   :root {
     --t: #40E0D0; --m: #F25CC1; --a: #F5B84B; --l: #B8F266;
-    --ink: #9AA4B2; --bg: #07090C; --sf: rgba(14,18,24,0.96);
+    --ink: #9AA4B2; --ink-primary: #ffffff; --bg: #07090C; --sf: rgba(14,18,24,0.96);
     --br: rgba(64,224,208,0.14); --brh: rgba(64,224,208,0.28);
     --font-display: 'Archivo', system-ui, sans-serif;
     --font-body: 'Manrope', system-ui, sans-serif;
     --font-mono: 'JetBrains Mono', ui-monospace, monospace;
   }
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  button, input { font-family: inherit; font-size: inherit; -webkit-appearance: none; appearance: none; }
+  :root[data-theme="light"] {
+    --t: #0AABA0;
+    --ink: #444444; --ink-primary: #07090C; --bg: #f0f0f0; --sf: rgba(255,255,255,0.95);
+    --br: rgba(0,0,0,0.06); --brh: rgba(0,0,0,0.12);
+  }
   html, body { width: 100vw; height: 100vh; overflow: hidden; position: relative; background: var(--bg); }
-  body { font-family: var(--font-body); color: #fff; }
+  body { font-family: var(--font-body); color: var(--ink-primary); }
   a { color: inherit; text-decoration: none; }
-  button { background: none; border: none; cursor: pointer; color: inherit; }
   ::-webkit-scrollbar { width: 5px; height: 5px; }
   ::-webkit-scrollbar-thumb { background: var(--brh); border-radius: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
   *:focus-visible { outline: 2px solid var(--t); outline-offset: 2px; }
 
-  #map { position: absolute; inset: 0; }
+  #map { position: absolute; inset: 0; background: var(--bg); }
   .maplibregl-ctrl-attrib { font-size: 9px !important; background: rgba(7,9,12,0.7) !important; color: var(--ink) !important; }
   .maplibregl-ctrl-attrib a { color: var(--ink) !important; }
-  .maplibregl-popup-content { background: var(--sf) !important; color: #fff; border: 0.5px solid var(--brh); border-radius: 8px; font-family: var(--font-body); font-size: 10px; padding: 6px 10px !important; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+  .maplibregl-popup-content { background: var(--sf) !important; color: var(--ink-primary); border: 0.5px solid var(--brh); border-radius: 8px; font-family: var(--font-body); font-size: 10px; padding: 6px 10px !important; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
   .maplibregl-popup-tip { border-top-color: var(--sf) !important; border-bottom-color: var(--sf) !important; }
   .maplibregl-popup-close-button { display: none; }
 
   .pill { background: var(--sf); border: 0.5px solid var(--brh); border-radius: 99px; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
-  .icon-btn { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 6px; color: var(--ink); font-size: 13px; background: var(--sf); border: 0.5px solid var(--brh); }
+  .icon-btn { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 6px; color: var(--ink); font-size: 14px; background: var(--sf); border: 0.5px solid var(--brh); }
   .icon-btn:hover { color: var(--t); border-color: var(--t); }
 
   /* ── Floating header ─────────────────────────────────────────── */
   #header { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 100;
     display: flex; align-items: center; gap: 6px; padding: 5px 8px 5px 12px; white-space: nowrap; }
-  #header .logo { display: flex; align-items: center; gap: 5px; font-family: var(--font-display); font-size: 11px; font-weight: 500; color: var(--t); }
+  #header .logo { display: flex; align-items: center; gap: 5px; font-family: var(--font-display); font-size: 13px; font-weight: 500; color: var(--t); }
   #header .divider { width: 0.5px; height: 16px; background: var(--br); }
-  .header-tab { display: flex; align-items: center; gap: 4px; padding: 5px 9px; border-radius: 99px; font-size: 10px; color: var(--ink); }
-  .header-tab i { font-size: 12px; }
+  .header-tab { display: flex; align-items: center; gap: 4px; padding: 5px 9px; border-radius: 99px; font-size: 12px; font-weight: 500; color: var(--ink); }
+  .header-tab i { font-size: 14px; }
   .header-tab.live-on { background: var(--m); color: #fff; }
   .header-tab.db-on { background: var(--t); color: #07090C; }
-  #header .back-link { display: flex; align-items: center; gap: 3px; font-size: 9px; color: var(--ink); padding: 5px 8px 5px 4px; }
+  #header .back-link { display: flex; align-items: center; gap: 3px; font-size: 11px; color: var(--ink); padding: 5px 8px 5px 4px; }
   #header .back-link:hover { color: var(--t); }
-  #search-input { display: none; width: 120px; background: transparent; border: none; border-bottom: 1px solid var(--brh); color: #fff; font-size: 10px; padding: 3px 2px; }
+  #search-input { display: none; width: 120px; background: transparent; border: none; border-bottom: 1px solid var(--brh); color: var(--ink-primary); font-size: 11px; padding: 3px 2px; }
   #search-input.open { display: inline-block; }
+  .theme-toggle-icon-light { display: none; }
+  .theme-toggle-icon-dark { display: inline; }
+  :root[data-theme="light"] .theme-toggle-icon-light { display: inline; }
+  :root[data-theme="light"] .theme-toggle-icon-dark { display: none; }
 
   /* ── Map controls ─────────────────────────────────────────────── */
   #map-controls { position: absolute; top: 52px; right: 10px; z-index: 50; display: flex; flex-direction: column; gap: 3px; }
   #map-controls .icon-btn[aria-pressed="true"] { color: var(--t); border-color: var(--t); }
-
-  /* ── Routes legend panel (preserved route toggle list) ───────── */
-  #routes-panel { position: absolute; top: 175px; right: 10px; width: 190px; max-height: calc(100vh - 210px);
-    overflow-y: auto; z-index: 55; padding: 10px; display: none; }
-  #routes-panel.open { display: block; }
-  #routes-panel .rp-title { font-family: var(--font-mono); font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink); margin-bottom: 8px; }
-  .rp-route { width: 100%; text-align: left; display: flex; align-items: center; gap: 8px; padding: 6px 6px; border-radius: 6px; font-size: 10px; color: #fff; margin-bottom: 2px; }
-  .rp-route.active { background: rgba(64,224,208,0.12); }
-  .rp-route .swatch { width: 14px; height: 2.5px; border-radius: 2px; flex-shrink: 0; }
-  .rp-route span.rname { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-  /* ── Route popup (preserved route detail) ────────────────────── */
-  #route-popup { position: absolute; bottom: 46px; left: 50%; transform: translateX(-50%); z-index: 70;
-    width: min(360px, calc(100vw - 24px)); max-height: 46vh; overflow-y: auto; padding: 16px; display: none; }
-  #route-popup.open { display: block; }
-  #route-popup .rp-close { position: absolute; top: 8px; right: 10px; font-size: 16px; color: var(--ink); }
-  #route-popup .rp-head { display: flex; align-items: center; gap: 8px; }
-  #route-popup .rp-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
-  #route-popup .rp-label { font-family: var(--font-mono); font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; }
-  #route-popup h3 { font-family: var(--font-display); font-size: 16px; font-weight: 600; margin: 8px 0 6px; }
-  #route-popup .rp-journey { font-size: 11px; color: var(--ink); line-height: 1.5; }
-  #route-popup .rp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
-  #route-popup .rp-grid-label { font-family: var(--font-mono); font-size: 8px; letter-spacing: 1px; text-transform: uppercase; color: var(--ink); }
-  #route-popup .rp-grid-val { font-size: 10px; margin-top: 2px; }
-  #route-popup .rp-classes { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
-  #route-popup .rp-classes a { padding: 3px 7px; border-radius: 6px; font-family: var(--font-mono); font-size: 9px; border: 0.5px solid var(--brh); }
-  #route-popup .rp-about { margin-top: 10px; padding-top: 10px; border-top: 0.5px solid var(--br); font-size: 10px; color: var(--ink); line-height: 1.5; }
 
   /* ── Region jump ──────────────────────────────────────────────── */
   #region-jump { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); z-index: 45;
@@ -146,21 +150,21 @@
 
   /* ── Footer ───────────────────────────────────────────────────── */
   #footer { position: absolute; bottom: 10px; right: 10px; z-index: 40; display: flex; gap: 6px; }
-  #footer .f-pill { padding: 5px 10px; font-size: 9px; color: var(--ink); }
+  #footer .f-pill { padding: 5px 10px; font-size: 11px; color: var(--ink); }
   #footer .f-pill:hover { color: var(--t); }
 
   /* ── Live news panel (desktop) ───────────────────────────────── */
-  #news-panel { position: absolute; top: 52px; left: 10px; width: 242px; z-index: 50; overflow: hidden; }
+  #news-panel { position: absolute; top: 52px; left: 10px; width: 285px; z-index: 50; overflow: hidden; }
   .np-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; cursor: pointer; }
   .np-header-left { display: flex; align-items: center; gap: 6px; }
   .np-header-left i { font-size: 12px; color: var(--ink); }
-  .np-title { font-size: 10px; font-weight: 500; color: #fff; }
-  .np-badge { background: var(--m); color: #fff; font-size: 8px; padding: 1px 6px; border-radius: 99px; display: none; }
+  .np-title { font-size: 13px; font-weight: 500; color: var(--ink-primary); }
+  .np-badge { background: var(--m); color: #fff; font-size: 10px; padding: 1px 6px; border-radius: 99px; display: none; }
   .np-badge.show { display: inline-block; }
   .np-pulse { width: 5px; height: 5px; border-radius: 50%; background: var(--m); animation: pulse 1.6s infinite; display: none; }
   .np-pulse.show { display: block; }
   @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
-  .np-time { font-size: 9px; color: var(--ink); }
+  .np-time { font-size: 11px; color: var(--ink); }
   .np-chevron { font-size: 11px; color: var(--ink); transition: transform 0.2s; }
   .np-chevron.flipped { transform: rotate(180deg); }
   .np-body { max-height: 72vh; overflow-y: auto; }
@@ -168,13 +172,13 @@
 
   #dep-board { display: none; border-bottom: 0.5px solid var(--br); padding: 8px 10px 10px; }
   #dep-board .db-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 6px; }
-  #dep-board .db-label { font-family: var(--font-mono); font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--t); }
-  #dep-board .db-station { font-size: 9px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 130px; }
-  .dep-row { display: flex; align-items: center; gap: 6px; padding: 3px 0; font-size: 10px; }
-  .dep-time { font-family: var(--font-mono); width: 34px; flex-shrink: 0; }
-  .dep-dest { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .dep-plat { width: 22px; flex-shrink: 0; font-size: 9px; color: var(--ink); }
-  .dep-status { font-size: 9px; padding: 1px 6px; border-radius: 99px; flex-shrink: 0; white-space: nowrap; }
+  #dep-board .db-label { font-family: var(--font-mono); font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--t); }
+  #dep-board .db-station { font-size: 11px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 165px; }
+  .dep-row { display: flex; align-items: center; gap: 6px; padding: 3px 0; font-size: 13px; }
+  .dep-time { font-family: var(--font-mono); font-size: 13px; width: 42px; flex-shrink: 0; }
+  .dep-dest { font-size: 13px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .dep-plat { width: 26px; flex-shrink: 0; font-size: 11px; color: var(--ink); }
+  .dep-status { font-size: 11px; padding: 1px 6px; border-radius: 99px; flex-shrink: 0; white-space: nowrap; }
   .dep-status.on-time { color: var(--t); background: rgba(64,224,208,0.1); }
   .dep-status.delayed { color: var(--a); background: rgba(245,184,75,0.1); }
   .dep-status.cancelled { color: var(--m); background: rgba(242,92,193,0.1); }
@@ -183,33 +187,34 @@
 
   .filter-row { display: flex; gap: 4px; overflow-x: auto; padding: 8px 10px; scrollbar-width: none; }
   .filter-row::-webkit-scrollbar { display: none; }
-  .filter-chip { font-size: 9px; padding: 2px 8px; border-radius: 99px; border: 0.5px solid var(--br); color: var(--ink); white-space: nowrap; flex-shrink: 0; }
+  .filter-chip { font-size: 11px; padding: 2px 8px; border-radius: 99px; border: 0.5px solid var(--br); color: var(--ink); white-space: nowrap; flex-shrink: 0; }
   .filter-chip.active { background: rgba(64,224,208,0.1); border-color: var(--t); color: var(--t); }
 
   .news-item { padding: 5px 10px; border-bottom: 0.5px solid rgba(64,224,208,0.06); display: flex; gap: 6px; }
   .news-item.urgent { background: rgba(242,92,193,0.05); }
   .news-dot { width: 6px; height: 6px; border-radius: 50%; margin-top: 3px; flex-shrink: 0; }
-  .news-title { font-size: 10px; line-height: 1.4; }
-  .news-item.urgent .news-title { color: #fff; }
+  .news-title { font-size: 13px; line-height: 1.4; }
+  .news-item.urgent .news-title { color: var(--ink-primary); }
   .news-item:not(.urgent) .news-title { color: #ccc; }
-  .news-meta { font-size: 9px; color: var(--ink); margin-top: 2px; }
+  :root[data-theme="light"] .news-item:not(.urgent) .news-title { color: #333333; }
+  .news-meta { font-size: 11px; color: var(--ink); margin-top: 2px; }
   .news-empty { padding: 10px; font-size: 9px; color: var(--ink); text-align: center; }
 
-  .rebook-cta { display: none; padding: 7px 10px; background: rgba(242,92,193,0.07); font-size: 9px; color: var(--m); }
+  .rebook-cta { display: none; padding: 7px 10px; background: rgba(242,92,193,0.07); font-size: 12px; color: var(--m); }
   .rebook-cta.show { display: block; }
 
   #saved-section { padding: 8px 10px 4px; }
   .saved-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
-  .saved-label { font-family: var(--font-mono); font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink); }
+  .saved-label { font-family: var(--font-mono); font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink); }
   .saved-add { font-size: 9px; color: var(--t); }
   .saved-route { display: flex; align-items: center; gap: 6px; padding: 4px 0; }
   .saved-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-  .saved-name { font-size: 10px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .saved-sub { font-size: 9px; color: var(--ink); }
+  .saved-name { font-size: 13px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .saved-sub { font-size: 11px; color: var(--ink); }
   .saved-remove { font-size: 11px; color: var(--ink); padding: 2px 4px; }
   .saved-empty { font-size: 9px; color: var(--ink); padding: 4px 0 8px; }
 
-  .np-footer { display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; font-size: 9px; color: var(--ink); }
+  .np-footer { display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; font-size: 11px; color: var(--ink); }
   .np-footer a { color: var(--t); }
 
   /* ── Mobile bottom sheet ──────────────────────────────────────── */
@@ -234,7 +239,6 @@
     #news-panel { display: none; }
     #mobile-sheet { display: block; }
     body.mode-database #mobile-sheet { display: none; }
-    #routes-panel { top: 175px; right: 6px; width: 160px; }
     #header { max-width: calc(100vw - 12px); overflow-x: auto; }
   }
 
@@ -275,29 +279,23 @@
   <button class="icon-btn" id="search-btn" aria-label="Search stations" style="background:transparent;border:none;width:auto;height:auto;padding:4px;"><i class="ti ti-search"></i></button>
   <input id="search-input" type="text" placeholder="Find a station…" aria-label="Search stations" />
   <button class="icon-btn" id="star-btn" aria-label="Saved routes" style="background:transparent;border:none;width:auto;height:auto;padding:4px;"><i class="ti ti-star"></i></button>
+  <button class="icon-btn" id="theme-toggle" aria-label="Toggle light and dark theme" style="background:transparent;border:none;width:auto;height:auto;padding:4px;">
+    <i class="ti ti-sun theme-toggle-icon-light"></i>
+    <i class="ti ti-moon theme-toggle-icon-dark"></i>
+  </button>
   <a href="index.html" class="back-link"><i class="ti ti-arrow-left"></i>srhq.uk</a>
 </div>
 
 <div id="map-controls">
   <button class="icon-btn" id="zoom-in" aria-label="Zoom in"><i class="ti ti-plus"></i></button>
   <button class="icon-btn" id="zoom-out" aria-label="Zoom out"><i class="ti ti-minus"></i></button>
-  <button class="icon-btn" id="layers-btn" aria-label="Toggle routes legend" aria-pressed="false"><i class="ti ti-layers-intersect"></i></button>
+  <button class="icon-btn" id="layers-btn" aria-label="Toggle railway infrastructure overlay" aria-pressed="true"><i class="ti ti-layers-intersect"></i></button>
   <button class="icon-btn" id="my-location" aria-label="Find my location"><i class="ti ti-current-location"></i></button>
-</div>
-
-<div id="routes-panel" class="pill">
-  <div class="rp-title">Routes</div>
-  <div id="rp-list"></div>
-</div>
-
-<div id="route-popup" class="pill">
-  <button class="rp-close" id="rp-close-btn" aria-label="Close route detail">×</button>
-  <div id="rp-content"></div>
 </div>
 
 <div id="region-jump" class="pill">
   <span class="rj-label">Jump to</span>
-  <button data-lng="-3.2" data-lat="54.5" data-zoom="6">All UK</button>
+  <button data-lng="-2.5" data-lat="54.5" data-zoom="5.5">All UK</button>
   <button data-lng="-0.1278" data-lat="51.5074" data-zoom="11">London</button>
   <button data-lng="-1.9" data-lat="52.4778" data-zoom="11">Birmingham</button>
   <button data-lng="-2.2307" data-lat="53.4775" data-zoom="11">Manchester</button>
@@ -418,264 +416,161 @@
 <noscript>
   <div style="max-width:900px;margin:40px auto;padding:24px;line-height:1.6;color:#fff;">
     <h1>The British mainline network</h1>
-    <p>SpotRail HQ's interactive map shows live departures, disruption alerts and Britain's principal passenger
-      routes — West Coast Main Line, East Coast Main Line, Great Western Main Line, Midland Main Line, CrossCountry,
-      South Western Main Line, Brighton Main Line, Kent via HS1, Great Eastern Main Line, TransPennine, North Wales
-      Coast Line, Welsh Marches and the Highland Main Line. Enable JavaScript to use the interactive map.</p>
+    <p>SpotRail HQ's interactive map shows live departures, disruption alerts and Britain's rail network via
+      OpenRailwayMap infrastructure overlays — mainlines, heritage lines and branch lines across Great Britain.
+      Enable JavaScript to use the interactive map.</p>
   </div>
 </noscript>
 
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
-<script src="map-data.jsx"></script>
 <script>
 (function () {
   'use strict';
 
-  var CSS_VAR_COLORS = {
-    '--color-accent-turquoise': '#40E0D0',
-    '--color-accent-magenta': '#F25CC1',
-    '--color-accent-amber': '#F5B84B',
-    '--color-accent-lime': '#B8F266',
-  };
-  function resolveColor(c) {
-    var m = /^var\((--[\w-]+)\)$/.exec(c || '');
-    return m ? (CSS_VAR_COLORS[m[1]] || '#40E0D0') : c;
-  }
-
-  var ROUTES = window.ROUTES || [];
   var stationsData = null;   // parsed /data/stations.geojson, ids assigned
-  var activeRouteId = null;
+  var stationInteractionsWired = false;
   var selectedCrs = null;
   var incidents = [];
   var activeFilter = 'all';
   var mode = 'live';
+  var ormVisible = true;
+  var currentStadiaKey = '';
 
-  // ── Map init ─────────────────────────────────────────────────────────────
-  // Dark OSM fallback (CARTO dark basemap) used when no Stadia key is configured.
-  var FALLBACK_STYLE = {
-    version: 8,
-    sources: {
-      'fallback-dark': {
-        type: 'raster',
-        tiles: [
-          'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-          'https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-          'https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-          'https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-        ],
-        tileSize: 256,
-        attribution: '© OpenStreetMap contributors © CARTO',
-      },
-    },
-    layers: [{ id: 'fallback-dark-layer', type: 'raster', source: 'fallback-dark' }],
+  function currentTheme() {
+    return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+  }
+
+  var THEME_COLORS = {
+    dark: { accent: '#40E0D0', stationFill: 'rgba(7,9,12,0.9)', stationHoverFill: 'rgba(64,224,208,0.15)', labelColor: '#9AA4B2', labelHalo: 'rgba(7,9,12,0.8)' },
+    light: { accent: '#0AABA0', stationFill: 'rgba(240,240,240,0.9)', stationHoverFill: 'rgba(10,171,160,0.15)', labelColor: '#444444', labelHalo: 'rgba(255,255,255,0.85)' },
   };
+  function themeColors() { return THEME_COLORS[currentTheme()]; }
 
-  var map;
-
-  function routesGeoJSON() {
+  var STADIA_STYLE_NAMES = { dark: 'alidade_smooth_dark', light: 'alidade_smooth' };
+  function buildMapStyle(theme, stadiaKey) {
+    if (stadiaKey) {
+      return 'https://tiles.stadiamaps.com/styles/' + STADIA_STYLE_NAMES[theme] + '.json?api_key=' + stadiaKey;
+    }
     return {
-      type: 'FeatureCollection',
-      features: ROUTES.map(function (r, i) {
-        var coords = (r.geometry && r.geometry.length ? r.geometry : []).map(function (ll) { return [ll[1], ll[0]]; });
-        return {
-          type: 'Feature', id: i,
-          geometry: { type: 'LineString', coordinates: coords },
-          properties: { id: r.id, name: r.name, color: resolveColor(r.color) },
-        };
-      }),
+      version: 8,
+      sources: {
+        'fallback-osm': {
+          type: 'raster',
+          tiles: [
+            'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png',
+          ],
+          tileSize: 256,
+          attribution: '© OpenStreetMap contributors',
+        },
+      },
+      layers: [{
+        id: 'fallback-osm-layer', type: 'raster', source: 'fallback-osm',
+        paint: { 'raster-opacity': theme === 'light' ? 1.0 : 0.12 },
+      }],
     };
   }
+
+  var map;
 
   (async function initMap() {
     var config = { stadiaKey: '' };
     try {
       config = await fetch('/api/config').then(function (r) { return r.json(); });
-    } catch (e) { console.warn('Falling back to dark OSM tiles — /api/config failed', e); }
+    } catch (e) { console.warn('Falling back to OSM tiles — /api/config failed', e); }
+    currentStadiaKey = config.stadiaKey || '';
 
-    var styleUrl = config.stadiaKey
-      ? 'https://tiles.stadiamaps.com/styles/alidade_smooth_dark.json?api_key=' + config.stadiaKey
-      : null;
+    var mobile = window.innerWidth < 768;
+    var initCenter = mobile ? [-2.5, 54.0] : [-2.5, 54.5];
+    var initZoom = mobile ? 4.8 : 5.5;
 
     map = new maplibregl.Map({
       container: 'map',
-      style: styleUrl || FALLBACK_STYLE,
-      center: [-2.0, 53.5],
-      zoom: 6,
+      style: buildMapStyle(currentTheme(), currentStadiaKey),
+      center: initCenter,
+      zoom: initZoom,
       attributionControl: false,
     });
     map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-left');
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-left');
 
-    map.on('load', onMapLoad);
+    map.on('load', addMapLayers);
     map.on('click', hideBottomHints);
   })();
 
-  function onMapLoad() {
-    map.addSource('orm', {
+  // ── Map layers: OpenRailwayMap infrastructure overlay + stations ────────
+  // The railway network itself is rendered entirely by the ORM raster tiles
+  // below — no separate route line data. Re-run after every map.setStyle()
+  // (theme switch) since setStyle wipes all sources/layers from the old style.
+  function addMapLayers() {
+    map.addSource('orm-standard', {
       type: 'raster',
       tiles: [
         'https://a.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png',
         'https://b.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png',
+        'https://c.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png',
       ],
       tileSize: 256,
-      attribution: '© OpenRailwayMap contributors',
-    });
-    map.addLayer({ id: 'orm', type: 'raster', source: 'orm', paint: { 'raster-opacity': 0.55 } });
-
-    map.addSource('routes', { type: 'geojson', data: routesGeoJSON() });
-    map.addLayer({
-      id: 'routes-glow', type: 'line', source: 'routes',
-      layout: { 'line-cap': 'round', 'line-join': 'round' },
-      paint: { 'line-color': ['get', 'color'], 'line-width': ['interpolate', ['linear'], ['zoom'], 5, 7, 10, 16], 'line-opacity': 0.18 },
+      maxzoom: 19,
+      minzoom: 2,
+      attribution: '© <a href="https://www.openrailwaymap.org">OpenRailwayMap</a> contributors',
     });
     map.addLayer({
-      id: 'routes-line', type: 'line', source: 'routes',
-      layout: { 'line-cap': 'round', 'line-join': 'round' },
-      paint: {
-        'line-color': ['get', 'color'],
-        'line-width': ['case', ['boolean', ['feature-state', 'hover'], false], 6, ['interpolate', ['linear'], ['zoom'], 5, 2.5, 10, 4]],
-        'line-opacity': 0.95,
-      },
+      id: 'orm-standard-layer', type: 'raster', source: 'orm-standard',
+      layout: { visibility: ormVisible ? 'visible' : 'none' },
+      paint: { 'raster-opacity': 0.9 },
     });
 
-    fetch('/data/stations.geojson').then(function (r) { return r.json(); }).then(function (gj) {
-      gj.features.forEach(function (f, i) { f.id = i; });
-      stationsData = gj;
-      map.addSource('stations', { type: 'geojson', data: gj });
-      map.addLayer({
-        id: 'stations-circle', type: 'circle', source: 'stations',
-        paint: {
-          'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, 5, 10, 7],
-          'circle-color': ['case', ['any', ['boolean', ['feature-state', 'hover'], false], ['boolean', ['feature-state', 'active'], false]], 'rgba(64,224,208,0.15)', 'rgba(7,9,12,0.9)'],
-          'circle-stroke-width': ['case', ['boolean', ['feature-state', 'hover'], false], 2.5, ['case', ['boolean', ['feature-state', 'active'], false], 2.6, 1.8]],
-          'circle-stroke-color': '#40E0D0',
-        },
-      });
-      map.addLayer({
-        id: 'stations-label', type: 'symbol', source: 'stations', minzoom: 9,
-        layout: { 'text-field': ['get', 'name'], 'text-size': 10, 'text-anchor': 'top', 'text-offset': [0, 0.6] },
-        paint: { 'text-color': '#9AA4B2', 'text-halo-color': 'rgba(7,9,12,0.8)', 'text-halo-width': 1 },
-      });
-      wireStationInteractions();
-    }).catch(function (e) { console.error('Failed to load stations.geojson', e); });
-
-    wireRouteInteractions();
-  }
-
-  // ── Route interactions (click → popup, hover, dim/highlight) ────────────
-  var hoveredRouteFeatureId = null;
-  function wireRouteInteractions() {
-    map.on('mousemove', 'routes-line', function (e) {
-      map.getCanvas().style.cursor = 'pointer';
-      if (!e.features.length) return;
-      if (hoveredRouteFeatureId !== null) map.setFeatureState({ source: 'routes', id: hoveredRouteFeatureId }, { hover: false });
-      hoveredRouteFeatureId = e.features[0].id;
-      map.setFeatureState({ source: 'routes', id: hoveredRouteFeatureId }, { hover: true });
-    });
-    map.on('mouseleave', 'routes-line', function () {
-      map.getCanvas().style.cursor = '';
-      if (hoveredRouteFeatureId !== null) map.setFeatureState({ source: 'routes', id: hoveredRouteFeatureId }, { hover: false });
-      hoveredRouteFeatureId = null;
-    });
-    map.on('click', 'routes-line', function (e) {
-      if (!e.features.length) return;
-      selectRoute(e.features[0].properties.id);
-    });
-  }
-
-  function setRouteDim(activeId) {
-    if (activeId) {
-      map.setPaintProperty('routes-line', 'line-opacity', ['match', ['get', 'id'], activeId, 0.95, 0.18]);
-      map.setPaintProperty('routes-glow', 'line-opacity', ['match', ['get', 'id'], activeId, 0.18, 0.05]);
+    if (stationsData) {
+      addStationsLayer(stationsData);
     } else {
-      map.setPaintProperty('routes-line', 'line-opacity', 0.95);
-      map.setPaintProperty('routes-glow', 'line-opacity', 0.18);
+      fetch('/data/stations.geojson').then(function (r) { return r.json(); }).then(function (gj) {
+        gj.features.forEach(function (f, i) { f.id = i; });
+        stationsData = gj;
+        addStationsLayer(stationsData);
+      }).catch(function (e) { console.error('Failed to load stations.geojson', e); });
     }
   }
 
-  function stationFeaturesMatchingCity(cityName) {
-    if (!stationsData) return [];
-    var lc = cityName.toLowerCase();
-    return stationsData.features.filter(function (f) { return f.properties.name.toLowerCase().indexOf(lc) === 0; });
+  function stationsCirclePaint() {
+    var c = themeColors();
+    return {
+      'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, 5, 10, 7],
+      'circle-color': ['case', ['boolean', ['feature-state', 'hover'], false], c.stationHoverFill, c.stationFill],
+      'circle-stroke-width': ['case', ['boolean', ['feature-state', 'hover'], false], 2.5, 1.8],
+      'circle-stroke-color': c.accent,
+    };
   }
 
-  var highlightedStationIds = [];
-  function clearStationHighlights() {
-    highlightedStationIds.forEach(function (id) { map.setFeatureState({ source: 'stations', id: id }, { active: false }); });
-    highlightedStationIds = [];
-  }
-  function highlightRouteStations(route) {
-    clearStationHighlights();
-    if (!route || !stationsData) return;
-    route.path.forEach(function (city) {
-      stationFeaturesMatchingCity(city).forEach(function (f) {
-        map.setFeatureState({ source: 'stations', id: f.id }, { active: true });
-        highlightedStationIds.push(f.id);
-      });
+  function addStationsLayer(gj) {
+    var c = themeColors();
+    map.addSource('stations', { type: 'geojson', data: gj });
+    map.addLayer({ id: 'stations-circle', type: 'circle', source: 'stations', paint: stationsCirclePaint() });
+    map.addLayer({
+      id: 'stations-label', type: 'symbol', source: 'stations', minzoom: 9,
+      layout: { 'text-field': ['get', 'name'], 'text-size': 10, 'text-anchor': 'top', 'text-offset': [0, 0.6] },
+      paint: { 'text-color': c.labelColor, 'text-halo-color': c.labelHalo, 'text-halo-width': 1 },
     });
+    if (!stationInteractionsWired) { wireStationInteractions(); stationInteractionsWired = true; }
   }
 
-  function selectRoute(id) {
-    activeRouteId = id;
-    setRouteDim(id);
-    var route = ROUTES.find(function (r) { return r.id === id; });
-    if (!route) return;
-    highlightRouteStations(route);
-    renderRoutePopup(route);
-    renderRoutesPanel();
-    var coords = (route.geometry || []).map(function (ll) { return [ll[1], ll[0]]; });
-    if (coords.length) {
-      var bounds = coords.reduce(function (b, c) { return b.extend(c); }, new maplibregl.LngLatBounds(coords[0], coords[0]));
-      map.fitBounds(bounds, { padding: { top: 80, bottom: 220, left: 40, right: 40 }, maxZoom: 9, duration: 600 });
-    }
+  // ── Theme toggle ──────────────────────────────────────────────────────────
+  var THEME_KEY = 'srhq-theme';
+  function applyThemeAttribute(theme) {
+    if (theme === 'light') document.documentElement.setAttribute('data-theme', 'light');
+    else document.documentElement.removeAttribute('data-theme');
   }
-
-  function closeRoutePopup() {
-    activeRouteId = null;
-    setRouteDim(null);
-    clearStationHighlights();
-    document.getElementById('route-popup').classList.remove('open');
-    renderRoutesPanel();
+  function toggleTheme() {
+    var next = currentTheme() === 'light' ? 'dark' : 'light';
+    applyThemeAttribute(next);
+    try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
+    if (!map) return;
+    map.setStyle(buildMapStyle(next, currentStadiaKey));
+    map.once('style.load', addMapLayers);
   }
-  document.getElementById('rp-close-btn').addEventListener('click', closeRoutePopup);
-
-  function renderRoutePopup(route) {
-    var el = document.getElementById('rp-content');
-    var color = resolveColor(route.color);
-    var classesHtml = route.classes.map(function (c) {
-      return '<a href="/database#class-' + c + '" style="color:' + color + ';border-color:' + color + '55;">' + c + '</a>';
-    }).join('');
-    el.innerHTML =
-      '<div class="rp-head"><span class="rp-dot" style="background:' + color + ';"></span>' +
-      '<span class="rp-label" style="color:' + color + ';">Route</span></div>' +
-      '<h3>' + route.name + '</h3>' +
-      '<div class="rp-journey">' + route.journey + '</div>' +
-      '<div class="rp-grid">' +
-        '<div><div class="rp-grid-label">Frequency</div><div class="rp-grid-val">' + route.freq + '</div></div>' +
-        '<div><div class="rp-grid-label">Operator</div><div class="rp-grid-val">' + route.operator + '</div></div>' +
-      '</div>' +
-      '<div class="rp-classes">' + classesHtml + '</div>' +
-      '<div class="rp-about">' + route.about + '</div>';
-    document.getElementById('route-popup').classList.add('open');
-  }
-
-  function renderRoutesPanel() {
-    var list = document.getElementById('rp-list');
-    list.innerHTML = ROUTES.map(function (r) {
-      var color = resolveColor(r.color);
-      var active = r.id === activeRouteId;
-      return '<button class="rp-route' + (active ? ' active' : '') + '" data-route="' + r.id + '">' +
-        '<span class="swatch" style="background:' + color + ';"></span>' +
-        '<span class="rname">' + r.name + '</span></button>';
-    }).join('');
-    Array.prototype.forEach.call(list.querySelectorAll('.rp-route'), function (btn) {
-      btn.addEventListener('click', function () {
-        var id = btn.getAttribute('data-route');
-        if (id === activeRouteId) { closeRoutePopup(); } else { selectRoute(id); }
-      });
-    });
-  }
-  renderRoutesPanel();
+  window.srhqToggleMapTheme = toggleTheme;
+  document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
 
   // ── Station interactions (click → departure board) ───────────────────────
   var hoveredStationFeatureId = null;
@@ -756,7 +651,6 @@
     tabLive.setAttribute('aria-pressed', mode === 'live');
     tabDb.classList.toggle('db-on', mode === 'database');
     tabDb.setAttribute('aria-pressed', mode === 'database');
-    if (map.getLayer('orm')) map.setPaintProperty('orm', 'raster-opacity', mode === 'database' ? 0.7 : 0.55);
   }
   tabLive.addEventListener('click', function () { setMode('live'); });
   tabDb.addEventListener('click', function () { setMode('database'); });
@@ -766,8 +660,10 @@
   document.getElementById('zoom-out').addEventListener('click', function () { map.zoomOut(); });
   var layersBtn = document.getElementById('layers-btn');
   layersBtn.addEventListener('click', function () {
-    var open = document.getElementById('routes-panel').classList.toggle('open');
-    layersBtn.setAttribute('aria-pressed', open);
+    if (!map || !map.getLayer('orm-standard-layer')) return;
+    ormVisible = !ormVisible;
+    map.setLayoutProperty('orm-standard-layer', 'visibility', ormVisible ? 'visible' : 'none');
+    layersBtn.setAttribute('aria-pressed', String(ormVisible));
   });
   document.getElementById('my-location').addEventListener('click', function () {
     if (!navigator.geolocation) return;
