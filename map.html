@@ -223,12 +223,16 @@
      recomputed live via ResizeObserver. A fixed CSS offset can't track a
      variable-height sidebar, which is why this used to drift out of place
      whenever the sidebar was shorter than its 35vh max. ─────────────────── */
+  /* region-jump (outer) is a plain, non-scrolling positioned card — it just
+     holds the fade overlays. #rj-scroll (inner) is the actual horizontally-
+     scrolling flex row. Splitting them is what keeps the fade pinned to the
+     edges instead of scrolling away with the chips (see the HTML comment). */
   #region-jump { position: absolute; top: calc(var(--nav-h) + 10px); left: 10px; z-index: 55;
-    display: flex; align-items: center; gap: 6px; padding: 8px 12px;
+    padding: 8px 12px; max-width: calc(100vw - 20px);
     background: var(--sf); border: 0.5px solid var(--brh); border-radius: 16px;
-    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-    max-width: calc(100vw - 20px); overflow-x: auto; scrollbar-width: none; }
-  #region-jump::-webkit-scrollbar { display: none; }
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+  #rj-scroll { display: flex; align-items: center; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+  #rj-scroll::-webkit-scrollbar { display: none; }
   #region-jump .rj-label { font-family: var(--font-body); font-size: 14px; font-weight: 500; color: var(--ink-mute); padding: 0 2px 0 2px; margin-right: 6px; flex-shrink: 0; }
   body.mode-database #region-jump { display: none; }
 
@@ -567,14 +571,19 @@
      below the sidebar, control-cluster below region-jump) is computed in JS
      from each other's actual rendered position, since the sidebar's height
      varies with its content and a fixed CSS offset can't track that. -->
+<!-- region-jump itself no longer scrolls — only #rj-scroll inside it does —
+     so the .scroll-fade edge overlays (on region-jump) stay put at the edges
+     instead of scrolling away with the chips. -->
 <div id="region-jump" class="scroll-fade">
-  <span class="rj-label">Jump to</span>
-  <button class="filter-chip active" data-lng="-2.5" data-lat="54.5" data-zoom="5.5">All UK</button>
-  <button class="filter-chip" data-lng="-0.1278" data-lat="51.5074" data-zoom="11">London</button>
-  <button class="filter-chip" data-lng="-1.9" data-lat="52.4778" data-zoom="11">Birmingham</button>
-  <button class="filter-chip" data-lng="-2.2307" data-lat="53.4775" data-zoom="11">Manchester</button>
-  <button class="filter-chip" data-lng="-4.2579" data-lat="55.8586" data-zoom="11">Glasgow</button>
-  <button class="filter-chip" data-lng="-3.1883" data-lat="55.9521" data-zoom="11">Edinburgh</button>
+  <div id="rj-scroll">
+    <span class="rj-label">Jump to</span>
+    <button class="filter-chip active" data-lng="-2.5" data-lat="54.5" data-zoom="5.5">All UK</button>
+    <button class="filter-chip" data-lng="-0.1278" data-lat="51.5074" data-zoom="11">London</button>
+    <button class="filter-chip" data-lng="-1.9" data-lat="52.4778" data-zoom="11">Birmingham</button>
+    <button class="filter-chip" data-lng="-2.2307" data-lat="53.4775" data-zoom="11">Manchester</button>
+    <button class="filter-chip" data-lng="-4.2579" data-lat="55.8586" data-zoom="11">Glasgow</button>
+    <button class="filter-chip" data-lng="-3.1883" data-lat="55.9521" data-zoom="11">Edinburgh</button>
+  </div>
 </div>
 <div id="control-cluster">
   <div class="map-controls">
@@ -1151,7 +1160,7 @@
     }
     html += '<div class="sb-sticky" data-anim-row>' +
       '<div class="sb-sticky-title-row"><span class="sb-sticky-title">Live updates</span><span class="sb-sticky-time" id="sb-updates-time">--:--</span></div>' +
-      '<div class="filter-row scroll-fade" id="filter-row"></div>' +
+      '<div class="scroll-fade"><div class="filter-row" id="filter-row"></div></div>' +
       '</div>' +
       '<div id="news-items"></div>' +
       '<div class="rebook-cta" id="rebook-cta" data-anim-row>Disrupted? Find alternatives →</div>' +
@@ -1358,8 +1367,8 @@
     }, true);
   }
 
-  enableWheelToHorizontalScroll(document.getElementById('region-jump'));
-  enableDragToScroll(document.getElementById('region-jump'));
+  enableWheelToHorizontalScroll(document.getElementById('rj-scroll'));
+  enableDragToScroll(document.getElementById('rj-scroll'));
 
   // ── Floating cluster stacking (region-jump below the sidebar, the zoom/
   // layers/location column below region-jump) ──────────────────────────────
