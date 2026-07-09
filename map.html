@@ -246,16 +246,6 @@
     #region-jump { left: 10px; right: 10px; max-width: none; }
   }
 
-  /* ── Bottom hints ─────────────────────────────────────────────── */
-  #bottom-hints { position: absolute; z-index: 30; display: flex; gap: 5px;
-    top: calc(var(--nav-h) + 10px); left: 10px; }
-  #bottom-hints .hint { padding: 4px 9px; border-radius: 99px; font-size: 9px; color: var(--ink); }
-  #bottom-hints.hidden { display: none; }
-  body.mode-database #bottom-hints { display: none; }
-  @media (min-width: 769px) {
-    #bottom-hints { top: auto; bottom: 10px; left: var(--sidebar-edge); }
-  }
-
   /* ── Cookie consent (compact) ─────────────────────────────────── */
   #cookie-consent { position: absolute; bottom: 10px; z-index: 90; width: min(280px, calc(100vw - 20px));
     left: 10px; padding: 12px; display: none; border-radius: 16px; }
@@ -273,7 +263,7 @@
      Simpler cousin of the history panel's floating-card treatment: just a
      search icon + input, no other controls. Hidden in Database mode since it
      would otherwise fight the legend/history stack for the same bottom
-     strip (same convention #region-jump/#bottom-hints already use). ────── */
+     strip (same convention #region-jump already uses). ─────────────────── */
   #mobile-search { display: none; position: absolute; left: 10px; right: 10px; bottom: 14px; z-index: 56;
     background: var(--sf); border: 0.5px solid var(--brh); border-radius: 12px;
     backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
@@ -583,12 +573,6 @@
   </div>
 </div>
 
-<div id="bottom-hints">
-  <span class="hint pill">Tap station</span>
-  <span class="hint pill">Tap route</span>
-  <span class="hint pill">Tap fleet</span>
-</div>
-
 <div id="cookie-consent" class="pill" role="dialog" aria-label="Cookie consent">
   <p>We use cookies to run SpotRail HQ and understand how the map is used. <a href="/#" style="color:var(--t);text-decoration:underline;">Cookie policy</a>.</p>
   <div class="cc-row">
@@ -866,7 +850,6 @@
     );
 
     map.on('load', addMapLayers);
-    map.on('click', hideBottomHints);
   })();
 
   // ── Map layers: OpenRailwayMap infrastructure overlay + stations ────────
@@ -1063,7 +1046,6 @@
     map.on('click', 'stations-circle', function (e) {
       if (!e.features.length) return;
       var props = e.features[0].properties;
-      hideBottomHints();
       selectStation(props.name, props.crs);
     });
   }
@@ -1248,7 +1230,6 @@
         renderDepartureRows(rows);
       }).catch(function () { if (mySeq === selectionSeq) renderDepartureRows([]); });
 
-    hideBottomHints();
     if (from.lat != null && from.lon != null && to.lat != null && to.lon != null) {
       var bounds = new maplibregl.LngLatBounds([from.lon, from.lat], [from.lon, from.lat]);
       bounds.extend([to.lon, to.lat]);
@@ -1323,29 +1304,43 @@
   // overflow-x:auto only gives you trackpad-swipe and scrollbar-drag for
   // free; a plain click-and-hold drag with a mouse, which is what "drag the
   // bar sideways" means to most people, needs to be built by hand. Pointer
-  // Events unify mouse/touch/pen into one implementation. A `moved` flag
-  // suppresses the click that would otherwise fire on whatever chip the
-  // pointer happens to land on when the drag ends, so dragging never
-  // accidentally selects a chip.
+  // Events unify mouse/touch/pen into one implementation.
+  //
+  // setPointerCapture() is deliberately NOT called on pointerdown — doing
+  // that unconditionally is what broke every chip's click in the first
+  // pass: capturing the pointer immediately interferes with the browser's
+  // native click synthesis even for a plain tap with no movement at all.
+  // Instead, capture is only engaged once the pointer has actually moved
+  // past a small threshold, i.e. once it's a real drag — a genuine click
+  // never triggers capture (or anything else here) at all, so it reaches
+  // the chip's own listener completely undisturbed.
   function enableDragToScroll(el) {
-    var dragging = false, moved = false, startX = 0, startScrollLeft = 0;
+    var down = false, dragging = false, moved = false, startX = 0, startScrollLeft = 0, pointerId = null;
     el.addEventListener('pointerdown', function (e) {
       if (e.pointerType === 'mouse' && e.button !== 0) return;
-      dragging = true;
+      down = true;
+      dragging = false;
       moved = false;
       startX = e.clientX;
       startScrollLeft = el.scrollLeft;
-      el.setPointerCapture(e.pointerId);
+      pointerId = e.pointerId;
     });
     el.addEventListener('pointermove', function (e) {
-      if (!dragging) return;
+      if (!down) return;
       var dx = e.clientX - startX;
-      if (Math.abs(dx) > 3) moved = true;
-      el.scrollLeft = startScrollLeft - dx;
+      if (!dragging && Math.abs(dx) > 3) {
+        dragging = true;
+        moved = true;
+        try { el.setPointerCapture(pointerId); } catch (err) {}
+      }
+      if (dragging) el.scrollLeft = startScrollLeft - dx;
     });
-    function stopDrag() { dragging = false; }
+    function stopDrag() { down = false; dragging = false; }
     el.addEventListener('pointerup', stopDrag);
     el.addEventListener('pointercancel', stopDrag);
+    // Only a genuine drag (moved = true) suppresses the trailing click —
+    // this only matters for whatever chip the pointer happens to be over
+    // when a drag ends, so it doesn't get accidentally selected.
     el.addEventListener('click', function (e) {
       if (moved) { e.preventDefault(); e.stopPropagation(); }
     }, true);
@@ -1384,9 +1379,6 @@
   new ResizeObserver(positionFloatingClusters).observe(regionJumpEl);
   window.addEventListener('resize', positionFloatingClusters);
   positionFloatingClusters();
-
-  // ── Bottom hints ──────────────────────────────────────────────────────────
-  function hideBottomHints() { document.getElementById('bottom-hints').classList.add('hidden'); }
 
   // ── Search (single station, and from/to) ──────────────────────────────────
   var searchBtn = document.getElementById('sb-search-btn');
@@ -1460,7 +1452,6 @@
 
   var stationPick = null;
   function submitStationPick(picked) {
-    hideBottomHints();
     if (picked.lat != null && picked.lon != null) map.flyTo({ center: [picked.lon, picked.lat], zoom: 11, duration: 800 });
     selectStation(picked.name, picked.crs);
   }
@@ -1622,7 +1613,6 @@
         var crs = row.dataset.crs;
         var feature = stationsData && stationsData.features.find(function (f) { return f.properties.crs === crs; });
         if (!feature) return;
-        hideBottomHints();
         map.flyTo({ center: feature.geometry.coordinates, zoom: 11, duration: 800 });
         selectStation(feature.properties.name, feature.properties.crs);
       });
