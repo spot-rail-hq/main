@@ -1887,10 +1887,28 @@
   });
 
   // ── Region jump ───────────────────────────────────────────────────────────
+  // On desktop, plain flyTo({center}) centers the target in the FULL window
+  // width — but the sidebar covers the left portion of that, so the point
+  // visually lands left-of-center in the actually-free map area. MapLibre's
+  // padding option shifts the effective center to account for that.
+  // #region-jump itself already sits flush at the sidebar's right edge on
+  // desktop (left: var(--sidebar-edge)), so its own rendered left edge IS
+  // the pixel value needed — no need to duplicate that width math here.
+  // Not applied on tablet/mobile, where the sidebar is a top sheet rather
+  // than a left-side overlay, so there's no horizontal offset to correct.
+  function regionJumpFlyToPadding() {
+    if (window.innerWidth <= 768) return undefined;
+    return { left: regionJumpEl.getBoundingClientRect().left, top: 0, right: 0, bottom: 0 };
+  }
   var regionJumpBtns = document.querySelectorAll('#region-jump button[data-lng]');
   Array.prototype.forEach.call(regionJumpBtns, function (btn) {
     btn.addEventListener('click', function () {
-      map.flyTo({ center: [parseFloat(btn.dataset.lng), parseFloat(btn.dataset.lat)], zoom: parseFloat(btn.dataset.zoom), duration: 800 });
+      map.flyTo({
+        center: [parseFloat(btn.dataset.lng), parseFloat(btn.dataset.lat)],
+        zoom: parseFloat(btn.dataset.zoom),
+        duration: 800,
+        padding: regionJumpFlyToPadding(),
+      });
       Array.prototype.forEach.call(regionJumpBtns, function (b) { b.classList.toggle('active', b === btn); });
     });
   });

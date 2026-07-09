@@ -1,38 +1,3 @@
 {
-  "_notes": "Keyed by a short operator code (your own convention — GWR, AWC, etc). fleet_classes store the EXACT display label as it should appear (not a bare number + assumed 'Class ' prefix) — this covers cases like Manchester Metrolink's M5000 that don't follow the 'Class NN' pattern. 'id' is used to link through to that vehicle's entry on the database page; 'display' is shown verbatim, no reformatting. franchises is the full history; sidebar should show the current one as a simple 'Operating since {start}' line by default, with the full array available as an expandable detail.",
-
-  "GWR": {
-    "name": "Great Western Railway",
-    "logo_url": "",
-    "regions_served": {
-      "main": ["Greater London", "South East England", "South West England", "South Wales"],
-      "other": ["East Midlands", "West Midlands"]
-    },
-    "parent_company": "FirstGroup",
-    "stations_operated": 198,
-    "wikipedia_url": "https://en.wikipedia.org/wiki/Great_Western_Railway_(train_operating_company)",
-    "fleet_classes": [
-      { "id": "08", "display": "Class 08" },
-      { "id": "57", "display": "Class 57" },
-      { "id": "150", "display": "Class 150" },
-      { "id": "158", "display": "Class 158" }
-    ],
-    "franchises": [
-      { "name": "InterCity Great Western", "start": "1996-02-04", "end": "2006-03-31" },
-      { "name": "Greater Western", "start": "2006-04-01", "end": null }
-    ]
-  },
-
-  "TFGM": {
-    "name": "Manchester Metrolink",
-    "logo_url": "",
-    "regions_served": { "main": ["Greater Manchester"], "other": [] },
-    "parent_company": "Transport for Greater Manchester",
-    "stations_operated": 99,
-    "wikipedia_url": "https://en.wikipedia.org/wiki/Manchester_Metrolink",
-    "fleet_classes": [
-      { "id": "M5000", "display": "M5000" }
-    ],
-    "franchises": []
-  }
+  "_notes": "Keyed by a short operator code (your own convention — GWR, AWC, etc). fleet_classes store the EXACT display label as it should appear (not a bare number + assumed 'Class ' prefix) — this covers cases like Manchester Metrolink's M5000 that don't follow the 'Class NN' pattern. 'id' is used to link through to that vehicle's entry on the database page; 'display' is shown verbatim, no reformatting. franchises is the full history; sidebar should show the current one as a simple 'Operating since {start}' line by default, with the full array available as an expandable detail."
 }
