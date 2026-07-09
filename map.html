@@ -80,11 +80,31 @@
     --sidebar-w: 400px;
     --sidebar-gap: 10px;
     --sidebar-edge: calc(var(--sidebar-w) + var(--sidebar-gap));
+    --nav-h: 72px;
+
+    /* Canonical site-wide tokens (same names/values as departures.html's
+       master nav) — used only by the .nav/.nav-drawer* rules below, ported
+       verbatim so the header matches the rest of the site exactly. The
+       map-specific vars above (--t, --sf, --br, etc.) remain the source of
+       truth for the sidebar/map-control styling built in the Stage A-C pass. */
+    --bg-rgb: 7,9,12; --surface: #0E1218; --surface-rgb: 14,18,24; --surface2: #141922;
+    --ink-site: #E8ECF2; --ink-dim: #9AA4B2; --ink-mute: #6B7687; --line-rgb: 255,255,255;
+    --color-accent-turquoise: #40E0D0; --color-accent-turquoise-rgb: 64,224,208;
+    --color-accent-magenta: #F25CC1; --color-accent-magenta-rgb: 242,92,193;
+    --color-accent-amber: #F5B84B; --color-accent-amber-rgb: 245,184,75;
+    --color-accent-lime: #B8F266; --color-accent-lime-rgb: 184,242,102;
   }
   :root[data-theme="light"] {
     --t: #0AABA0;
     --ink: #444444; --ink-primary: #07090C; --bg: #f0f0f0; --sf: rgba(255,255,255,0.95);
     --br: rgba(0,0,0,0.06); --brh: rgba(0,0,0,0.12);
+
+    --bg-rgb: 242,244,247; --surface: #FFFFFF; --surface-rgb: 255,255,255; --surface2: #E8EBF0;
+    --ink-site: #0C0F14; --ink-dim: #2D3748; --ink-mute: #4A5568; --line-rgb: 7,9,12;
+    --color-accent-turquoise: #1A9E8F; --color-accent-turquoise-rgb: 26,158,143;
+    --color-accent-magenta: #C4237A; --color-accent-magenta-rgb: 196,35,122;
+    --color-accent-amber: #B8860B; --color-accent-amber-rgb: 184,134,11;
+    --color-accent-lime: #4A7C00; --color-accent-lime-rgb: 74,124,0;
   }
   html, body { width: 100vw; height: 100vh; overflow: hidden; position: relative; background: var(--bg); }
   body { font-family: var(--font-body); color: var(--ink-primary); }
@@ -111,10 +131,72 @@
   .ghost-btn { display: inline-flex; align-items: center; justify-content: center; color: var(--ink); background: transparent; border: none; width: auto; height: auto; padding: 4px; }
   .ghost-btn:hover { color: var(--t); }
 
-  /* ── Floating header (brand only — tabs/search/theme moved into sidebar) ── */
-  #header { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 100;
-    display: flex; align-items: center; padding: 6px 12px; white-space: nowrap; }
-  #header .logo { display: flex; align-items: center; gap: 5px; font-family: var(--font-display); font-size: 13px; font-weight: 500; color: var(--t); }
+  /* ── Master site header — ported verbatim (classes/vars) from departures.html
+     so it's pixel/behaviour-identical to every other page. Persists above the
+     map; floating panels below are offset by --nav-h to clear it. ────────── */
+  .nav { position: sticky; top: 0; z-index: 100; }
+  .nav::before {
+    content: ""; position: absolute; inset: 0; z-index: -1;
+    background: rgba(var(--bg-rgb),0.85); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(var(--line-rgb),0.08);
+  }
+  .nav-inner { max-width: 1280px; margin: 0 auto; padding: 0 32px; min-height: var(--nav-h);
+    display: flex; align-items: center; justify-content: space-between; }
+  .nav-controls { display: flex; align-items: center; gap: 10px; }
+  .brandmark { display: inline-flex; align-items: center; gap: 10px;
+    font-family: 'Archivo', sans-serif; font-weight: 700; font-size: 17px;
+    letter-spacing: -0.6px; color: var(--ink-site); }
+  .nav-links { display: flex; gap: 6px; }
+  .nav-link { padding: 8px 14px; border-radius: 999px; font-size: 13.5px; font-weight: 500;
+    color: var(--ink-site); border: 1px solid transparent; transition: background .15s; }
+  .nav-link:hover { background: rgba(var(--line-rgb),0.06); }
+  .nav-link.active { background: var(--color-accent-turquoise); color: #07090C; }
+  .nav-link.active:hover { background: var(--color-accent-turquoise); }
+  :root[data-theme="light"] .nav-link.active { color: #FFFFFF; }
+  .nav-burger { display: none; padding: 0; background: transparent; border: 1px solid rgba(var(--line-rgb),0.08);
+    border-radius: 10px; width: 40px; height: 40px; cursor: pointer;
+    align-items: center; justify-content: center; color: var(--ink-site); }
+  .nav-burger svg { display: block; }
+  .site-theme-toggle { display: inline-flex; align-items: center; justify-content: center;
+    padding: 0; background: transparent; border: 1px solid rgba(var(--line-rgb),0.08);
+    border-radius: 10px; width: 40px; height: 40px; cursor: pointer; color: var(--ink-site); }
+  .site-theme-toggle svg { display: block; }
+  .site-theme-toggle .icon-moon { display: none; }
+  :root[data-theme="light"] .site-theme-toggle .icon-sun { display: none; }
+  :root[data-theme="light"] .site-theme-toggle .icon-moon { display: block; }
+  .nav-scrim { position: fixed; inset: 0; background: rgba(var(--bg-rgb),0.6);
+    z-index: 150; opacity: 0; pointer-events: none; transition: opacity .2s ease; }
+  .nav-drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(80vw, 320px);
+    background: var(--surface); z-index: 151; padding: 20px 22px; display: flex; flex-direction: column;
+    transform: translateX(calc(100% + 1px)); transition: transform .25s ease; }
+  body.nav-open { overflow: hidden; }
+  body.nav-open .nav-scrim { opacity: 1; pointer-events: auto; }
+  body.nav-open .nav-drawer { transform: translateX(0); box-shadow: -20px 0 60px rgba(0,0,0,0.5); border-left: 1px solid rgba(var(--line-rgb),0.08); }
+  .nav-drawer-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+  .nav-drawer-head .label { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--ink-mute); }
+  .nav-drawer-close { background: transparent; border: none; cursor: pointer; color: var(--ink-dim);
+    font-size: 22px; line-height: 1; padding: 4px; }
+  .nav-drawer-links { display: flex; flex-direction: column; gap: 4px; }
+  .nav-drawer-link { padding: 14px 16px; border-radius: 12px; font-size: 16px; font-weight: 500;
+    color: var(--ink-site); text-decoration: none; border: 1px solid transparent;
+    display: flex; align-items: center; justify-content: space-between; }
+  .nav-drawer-link:hover { background: rgba(var(--line-rgb),0.04); }
+  .nav-drawer-link.active { color: var(--color-accent-turquoise);
+    background: rgba(var(--color-accent-turquoise-rgb),0.14);
+    border-color: rgba(var(--color-accent-turquoise-rgb),0.44); }
+  .nav-drawer-link .arr { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-mute); }
+  .nav-drawer-link.active .arr { color: var(--color-accent-turquoise); }
+  .nav-drawer-foot { margin-top: auto; padding-top: 24px; border-top: 1px solid rgba(var(--line-rgb),0.08);
+    font-size: 12px; color: var(--ink-mute); line-height: 1.6; }
+  .nav-drawer-foot .mono { font-family: 'JetBrains Mono', monospace; }
+  @media (max-width: 900px) {
+    .nav-links { display: none; }
+    .nav-burger { display: inline-flex; }
+  }
+  @media (max-width: 560px) {
+    .nav-inner { padding: 0 20px; }
+  }
 
   .header-tab { display: flex; align-items: center; gap: 4px; padding: 5px 9px; border-radius: 99px; font-size: 12px; font-weight: 500; color: var(--ink); }
   .header-tab i { font-size: 14px; }
@@ -130,7 +212,7 @@
   /* ── Map control cluster: zoom/layers/location + jump-to (beside sidebar on
      desktop, top-left corner on tablet/mobile so it never sits over the
      bottom sheet) ─────────────────────────────────────────────────────── */
-  #control-cluster { position: absolute; top: 10px; left: 10px; z-index: 55; display: flex; flex-direction: column; gap: 10px; }
+  #control-cluster { position: absolute; top: calc(var(--nav-h) + 10px); left: 10px; z-index: 55; display: flex; flex-direction: column; gap: 10px; }
   .map-controls { display: flex; flex-direction: column; gap: 3px; }
   #region-jump { display: flex; flex-direction: column; gap: 2px; padding: 5px; }
   #region-jump .rj-label { font-family: var(--font-mono); font-size: 8px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink); padding: 2px 6px 3px; }
@@ -144,7 +226,7 @@
 
   /* ── Bottom hints ─────────────────────────────────────────────── */
   #bottom-hints { position: absolute; z-index: 30; display: flex; gap: 5px;
-    top: 52px; left: 10px; }
+    top: calc(var(--nav-h) + 10px); left: 10px; }
   #bottom-hints .hint { padding: 4px 9px; border-radius: 99px; font-size: 9px; color: var(--ink); }
   #bottom-hints.hidden { display: none; }
   body.mode-database #bottom-hints { display: none; }
@@ -173,11 +255,10 @@
     display: flex; flex-direction: column; overflow: hidden; }
 
   @media (min-width: 769px) {
-    #sidebar { top: 0; left: 0; bottom: 0; width: var(--sidebar-w); border-radius: 0 16px 16px 0; border-left: none; }
+    #sidebar { top: var(--nav-h); left: 0; bottom: 0; width: var(--sidebar-w); border-radius: 0 16px 16px 0; border-left: none; }
   }
   @media (max-width: 768px) {
     #sidebar { left: 0; right: 0; bottom: 0; max-height: 33vh; border-radius: 16px 16px 0 0; border-bottom: none; }
-    #header { max-width: calc(100vw - 12px); overflow-x: auto; }
   }
 
   .sb-handle-row { display: none; align-items: center; justify-content: center; position: relative; padding: 8px 0 4px; flex-shrink: 0; }
@@ -322,11 +403,62 @@
 </head>
 <body>
 
-<div id="map" role="application" aria-label="Interactive UK railway map"></div>
+<!-- Master site header — identical markup/behaviour to departures.html's nav -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="brandmark">
+      <img src="img/srhq-logo.svg" alt="SpotRail HQ" class="logo-img" style="height:40px; width:auto; max-width:320px" />
+    </a>
+    <div class="nav-controls">
+      <div class="nav-links">
+        <a href="/news" class="nav-link">News</a>
+        <a href="/departures" class="nav-link">Live Departures</a>
+        <a href="/database" class="nav-link">Database</a>
+        <a href="/map" class="nav-link active">Network Map</a>
+      </div>
+      <button class="site-theme-toggle" id="siteThemeToggle" aria-label="Toggle color theme">
+        <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"/>
+          <line x1="12" y1="1" x2="12" y2="3"/>
+          <line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/>
+          <line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+        <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
+      <button class="nav-burger" id="navBurger" aria-label="Open menu">
+        <svg width="18" height="14" viewBox="0 0 18 14" fill="none">
+          <path d="M1 1 H17 M1 7 H17 M1 13 H17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+</nav>
+<div class="nav-scrim" id="navScrim"></div>
+<aside class="nav-drawer" id="navDrawer" aria-label="Menu">
+  <div class="nav-drawer-head">
+    <span class="label">Menu</span>
+    <button class="nav-drawer-close" id="navClose" aria-label="Close menu">×</button>
+  </div>
+  <div class="nav-drawer-links">
+    <a href="/news" class="nav-drawer-link"><span>News</span><span class="arr">→</span></a>
+    <a href="/departures" class="nav-drawer-link"><span>Live Departures</span><span class="arr">→</span></a>
+    <a href="/database" class="nav-drawer-link"><span>Database</span><span class="arr">→</span></a>
+    <a href="/map" class="nav-drawer-link active"><span>Network Map</span><span class="arr">→</span></a>
+  </div>
+  <div class="nav-drawer-foot">
+    An independent UK railway resource.<br/>
+    <span class="mono">v0.1 · phase 1</span>
+  </div>
+</aside>
 
-<div id="header" class="pill">
-  <div class="logo"><i class="ti ti-train-freight-caboose"></i> SpotRail HQ</div>
-</div>
+<div id="map" role="application" aria-label="Interactive UK railway map"></div>
 
 <div id="control-cluster">
   <div class="map-controls pill" style="padding:3px;">
@@ -650,16 +782,39 @@
     if (theme === 'light') document.documentElement.setAttribute('data-theme', 'light');
     else document.documentElement.removeAttribute('data-theme');
   }
+  // Matches every other page's logo-swap convention (applyLogos() in
+  // departures.html) — the master header's <img class="logo-img"> needs the
+  // light/dark variant swapped manually since it isn't a CSS-only toggle.
+  function applyHeaderLogo() {
+    var src = currentTheme() === 'light' ? 'img/srhq-logo-light.svg' : 'img/srhq-logo.svg';
+    Array.prototype.forEach.call(document.querySelectorAll('.logo-img'), function (img) { img.src = src; });
+  }
   function toggleTheme() {
     var next = currentTheme() === 'light' ? 'dark' : 'light';
     applyThemeAttribute(next);
     try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
+    applyHeaderLogo();
     if (!map) return;
     map.setStyle(buildMapStyle(next, currentStadiaKey));
     map.once('style.load', addMapLayers);
   }
   window.srhqToggleMapTheme = toggleTheme;
   document.getElementById('sb-theme-toggle').addEventListener('click', toggleTheme);
+  document.getElementById('siteThemeToggle').addEventListener('click', toggleTheme);
+  applyHeaderLogo();
+
+  // ── Master header: mobile nav drawer ──────────────────────────────────────
+  (function () {
+    var burger = document.getElementById('navBurger');
+    var closeBtn = document.getElementById('navClose');
+    var scrim = document.getElementById('navScrim');
+    var open = function () { document.body.classList.add('nav-open'); };
+    var shut = function () { document.body.classList.remove('nav-open'); };
+    if (burger) burger.addEventListener('click', open);
+    if (closeBtn) closeBtn.addEventListener('click', shut);
+    if (scrim) scrim.addEventListener('click', shut);
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') shut(); });
+  })();
 
   // ── Station hover tooltip (instant — no fade delay on show/hide) ─────────
   var hoverTooltipEl = null;
