@@ -77,6 +77,9 @@
     --font-display: 'Archivo', system-ui, sans-serif;
     --font-body: 'Manrope', system-ui, sans-serif;
     --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+    --sidebar-w: 400px;
+    --sidebar-gap: 10px;
+    --sidebar-edge: calc(var(--sidebar-w) + var(--sidebar-gap));
   }
   :root[data-theme="light"] {
     --t: #0AABA0;
@@ -92,6 +95,9 @@
   *:focus-visible { outline: 2px solid var(--t); outline-offset: 2px; }
 
   #map { position: absolute; inset: 0; background: var(--bg); }
+  #station-hover-tip { position: absolute; z-index: 60; transform: translate(-50%, -100%) translateY(-8px);
+    padding: 3px 8px; font-size: 10px; font-weight: 500; color: var(--ink-primary); white-space: nowrap;
+    pointer-events: none; display: none; }
   .maplibregl-ctrl-attrib { font-size: 9px !important; background: rgba(7,9,12,0.7) !important; color: var(--ink) !important; }
   .maplibregl-ctrl-attrib a { color: var(--ink) !important; }
   .maplibregl-popup-content { background: var(--sf) !important; color: var(--ink-primary); border: 0.5px solid var(--brh); border-radius: 8px; font-family: var(--font-body); font-size: 10px; padding: 6px 10px !important; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
@@ -101,20 +107,19 @@
   .pill { background: var(--sf); border: 0.5px solid var(--brh); border-radius: 99px; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
   .icon-btn { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 6px; color: var(--ink); font-size: 14px; background: var(--sf); border: 0.5px solid var(--brh); }
   .icon-btn:hover { color: var(--t); border-color: var(--t); }
+  .icon-btn[aria-pressed="true"] { color: var(--t); border-color: var(--t); }
+  .ghost-btn { display: inline-flex; align-items: center; justify-content: center; color: var(--ink); background: transparent; border: none; width: auto; height: auto; padding: 4px; }
+  .ghost-btn:hover { color: var(--t); }
 
-  /* ── Floating header ─────────────────────────────────────────── */
+  /* ── Floating header (brand only — tabs/search/theme moved into sidebar) ── */
   #header { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 100;
-    display: flex; align-items: center; gap: 6px; padding: 5px 8px 5px 12px; white-space: nowrap; }
+    display: flex; align-items: center; padding: 6px 12px; white-space: nowrap; }
   #header .logo { display: flex; align-items: center; gap: 5px; font-family: var(--font-display); font-size: 13px; font-weight: 500; color: var(--t); }
-  #header .divider { width: 0.5px; height: 16px; background: var(--br); }
+
   .header-tab { display: flex; align-items: center; gap: 4px; padding: 5px 9px; border-radius: 99px; font-size: 12px; font-weight: 500; color: var(--ink); }
   .header-tab i { font-size: 14px; }
   .header-tab.live-on { background: var(--m); color: #fff; }
   .header-tab.db-on { background: var(--t); color: #07090C; }
-  #header .back-link { display: flex; align-items: center; gap: 3px; font-size: 11px; color: var(--ink); padding: 5px 8px 5px 4px; }
-  #header .back-link:hover { color: var(--t); }
-  #search-input { display: none; width: 120px; background: transparent; border: none; border-bottom: 1px solid var(--brh); color: var(--ink-primary); font-size: 11px; padding: 3px 2px; }
-  #search-input.open { display: inline-block; }
   /* Icon shows the mode you'd switch TO (matches index.html's toggle convention):
      sun visible in dark mode (tap for light), moon visible in light mode (tap for dark). */
   .theme-toggle-icon-light { display: inline; }
@@ -122,27 +127,35 @@
   :root[data-theme="light"] .theme-toggle-icon-light { display: none; }
   :root[data-theme="light"] .theme-toggle-icon-dark { display: inline; }
 
-  /* ── Map controls ─────────────────────────────────────────────── */
-  #map-controls { position: absolute; top: 52px; right: 10px; z-index: 50; display: flex; flex-direction: column; gap: 3px; }
-  #map-controls .icon-btn[aria-pressed="true"] { color: var(--t); border-color: var(--t); }
-
-  /* ── Region jump ──────────────────────────────────────────────── */
-  #region-jump { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); z-index: 45;
-    display: flex; gap: 4px; padding: 4px; align-items: center; }
-  #region-jump .rj-label { font-family: var(--font-mono); font-size: 8px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink); padding: 0 6px; }
-  #region-jump button { font-size: 10px; padding: 5px 9px; border-radius: 99px; color: var(--ink); }
+  /* ── Map control cluster: zoom/layers/location + jump-to (beside sidebar on
+     desktop, top-left corner on tablet/mobile so it never sits over the
+     bottom sheet) ─────────────────────────────────────────────────────── */
+  #control-cluster { position: absolute; top: 10px; left: 10px; z-index: 55; display: flex; flex-direction: column; gap: 10px; }
+  .map-controls { display: flex; flex-direction: column; gap: 3px; }
+  #region-jump { display: flex; flex-direction: column; gap: 2px; padding: 5px; }
+  #region-jump .rj-label { font-family: var(--font-mono); font-size: 8px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink); padding: 2px 6px 3px; }
+  #region-jump button { font-size: 10px; padding: 5px 9px; border-radius: 6px; color: var(--ink); text-align: left; }
   #region-jump button:hover { color: var(--t); background: rgba(64,224,208,0.08); }
   body.mode-database #region-jump { display: none; }
 
+  @media (min-width: 769px) {
+    #control-cluster { left: var(--sidebar-edge); }
+  }
+
   /* ── Bottom hints ─────────────────────────────────────────────── */
-  #bottom-hints { position: absolute; bottom: 10px; left: 10px; z-index: 30; display: flex; gap: 5px; }
+  #bottom-hints { position: absolute; z-index: 30; display: flex; gap: 5px;
+    top: 52px; left: 10px; }
   #bottom-hints .hint { padding: 4px 9px; border-radius: 99px; font-size: 9px; color: var(--ink); }
   #bottom-hints.hidden { display: none; }
   body.mode-database #bottom-hints { display: none; }
+  @media (min-width: 769px) {
+    #bottom-hints { top: auto; bottom: 10px; left: var(--sidebar-edge); }
+  }
 
   /* ── Cookie consent (compact) ─────────────────────────────────── */
-  #cookie-consent { position: absolute; bottom: 34px; left: 10px; z-index: 90; width: min(280px, calc(100vw - 20px));
-    padding: 12px; display: none; border-radius: 16px; }
+  #cookie-consent { position: absolute; bottom: 10px; z-index: 90; width: min(280px, calc(100vw - 20px));
+    left: 10px; padding: 12px; display: none; border-radius: 16px; }
+  @media (min-width: 769px) { #cookie-consent { left: var(--sidebar-edge); } }
   #cookie-consent.open { display: block; }
   #cookie-consent p { font-size: 10px; line-height: 1.5; color: var(--ink); margin-bottom: 8px; }
   #cookie-consent .cc-row { display: flex; gap: 6px; }
@@ -150,155 +163,161 @@
   #cookie-consent .cc-accept { background: var(--t); color: #07090C; font-weight: 600; }
   #cookie-consent .cc-reject { border: 0.5px solid var(--brh); color: var(--ink); }
 
-  /* ── Footer ───────────────────────────────────────────────────── */
-  #footer { position: absolute; bottom: 10px; right: 10px; z-index: 40; display: flex; gap: 6px; }
-  #footer .f-pill { padding: 5px 10px; font-size: 11px; color: var(--ink); }
-  #footer .f-pill:hover { color: var(--t); }
+  /* ── Sidebar (desktop) / bottom sheet (tablet+mobile) ────────────────────
+     Persistent, non-modal — the map stays interactive alongside it. Always
+     rendered (never fully hidden): default state is the live-news feed with
+     the "All" filter, so the top chrome (mode tabs, search, theme toggle) and
+     the bottom attribution strip are always reachable. ──────────────────── */
+  #sidebar { position: absolute; z-index: 70; background: var(--sf); border: 0.5px solid var(--brh);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    display: flex; flex-direction: column; overflow: hidden; }
 
-  /* ── Live news panel (desktop) ───────────────────────────────── */
-  /* .pill's 99px radius is for small badges/buttons — this is a large content
-     window, so it gets its own normal card radius (matches <details> cards
-     and the cookie banner elsewhere on the site: 16px), overriding .pill. */
-  #news-panel { position: absolute; top: 52px; left: 10px; z-index: 50; overflow: hidden; border-radius: 16px;
-    width: 500px; max-width: calc(100vw - 24px); height: 600px; max-height: calc(100vh - 90px);
-    display: flex; flex-direction: column; }
-  .np-header { flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; cursor: pointer; }
-  .np-header-left { display: flex; align-items: center; gap: 6px; }
-  .np-header-left i { font-size: 12px; color: var(--ink); }
-  .np-title { font-size: 18px; font-weight: 600; color: var(--ink-primary); }
-  /* Station name takes over the panel's top-of-box title when a station is
-     tapped — sized to match the category headings on database.html (20px,
-     Archivo, 600). */
-  .np-title.station-mode { font-family: var(--font-display); font-size: 20px; font-weight: 600; letter-spacing: -0.5px; }
-  .np-badge { background: var(--m); color: #fff; font-size: 11px; padding: 1px 6px; border-radius: 99px; display: none; }
-  .np-badge.show { display: inline-block; }
-  .np-pulse { width: 5px; height: 5px; border-radius: 50%; background: var(--m); animation: pulse 1.6s infinite; display: none; }
-  .np-pulse.show { display: block; }
-  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
-  .np-time { font-size: 13px; color: var(--ink); }
-  .np-chevron { font-size: 11px; color: var(--ink); transition: transform 0.2s; }
-  .np-chevron.flipped { transform: rotate(180deg); }
-  .np-station-clear { display: none; font-size: 16px; color: var(--ink); padding: 0 2px; line-height: 1; }
-  #news-panel.station-selected .np-station-clear { display: inline-flex; }
-  #news-panel.station-selected #np-icon,
-  #news-panel.station-selected #np-badge,
-  #news-panel.station-selected #np-pulse,
-  #news-panel.station-selected #np-time { display: none; }
-  .np-body { flex: 1; min-height: 0; overflow-y: auto; }
-  #news-panel.collapsed .np-body { display: none; }
-  #news-panel.collapsed { height: auto; max-height: none; }
+  @media (min-width: 769px) {
+    #sidebar { top: 0; left: 0; bottom: 0; width: var(--sidebar-w); border-radius: 0 16px 16px 0; border-left: none; }
+  }
+  @media (max-width: 768px) {
+    #sidebar { left: 0; right: 0; bottom: 0; max-height: 33vh; border-radius: 16px 16px 0 0; border-bottom: none; }
+    #header { max-width: calc(100vw - 12px); overflow-x: auto; }
+  }
+
+  .sb-handle-row { display: none; align-items: center; justify-content: center; position: relative; padding: 8px 0 4px; flex-shrink: 0; }
+  @media (max-width: 768px) { .sb-handle-row { display: flex; } }
+  .sb-handle { width: 28px; height: 2.5px; border-radius: 2px; background: rgba(154,164,178,0.3); }
+  #sb-min-btn { position: absolute; right: 12px; top: 6px; font-size: 12px; }
+  #sb-min-btn i { transition: transform 0.2s; }
+  #sidebar.collapsed #sb-min-btn i { transform: rotate(180deg); }
+  #sidebar.collapsed .sb-top-lower, #sidebar.collapsed .sb-selection, #sidebar.collapsed #sb-body, #sidebar.collapsed #sb-attribution { display: none; }
+
+  .sb-top { flex-shrink: 0; border-bottom: 0.5px solid var(--br); }
+  .sb-top-upper { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px 6px; gap: 6px; }
+  .sb-top-tabs { display: flex; gap: 4px; }
+  .sb-top-actions { display: flex; align-items: center; gap: 2px; }
+  .sb-top-lower { padding: 0 10px 8px; }
+  #sb-search-input { display: none; width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--brh); color: var(--ink-primary); font-size: 12px; padding: 4px 2px; margin-top: 6px; }
+  #sb-search-input.open { display: block; }
+
+  .sb-search-modes { display: none; gap: 4px; margin-top: 6px; }
+  .sb-search-modes.open { display: flex; }
+  .sb-mode-chip { font-size: 11px; padding: 3px 9px; border-radius: 99px; border: 0.5px solid var(--br); color: var(--ink); }
+  .sb-mode-chip.active { background: rgba(64,224,208,0.1); border-color: var(--t); color: var(--t); }
+  .sb-fromto-row { display: none; gap: 6px; margin-top: 6px; align-items: center; }
+  .sb-fromto-row.open { display: flex; }
+  .sb-fromto-row input { flex: 1; min-width: 0; background: transparent; border: none; border-bottom: 1px solid var(--brh); color: var(--ink-primary); font-size: 12px; padding: 4px 2px; }
+  .sb-fromto-row i { font-size: 12px; color: var(--ink); flex-shrink: 0; }
+
+  /* Selected station/route/network row — star sits inline between the name
+     and the close (×) icon, replacing the old separate "Saved routes" list. */
+  .sb-selection { display: none; align-items: center; gap: 8px; padding: 10px; border-bottom: 0.5px solid var(--br); flex-shrink: 0; }
+  #sidebar.has-selection .sb-selection { display: flex; }
+  .sb-selection-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    font-family: var(--font-display); font-size: 18px; font-weight: 600; letter-spacing: -0.3px; }
+  #sb-star-btn.starred { color: var(--a); }
+  #sb-star-btn.starred i::before { content: "\ea78"; } /* ti-star-filled */
+  #sb-clear-btn { font-size: 18px; line-height: 1; padding: 2px 4px; }
+
+  #sb-body { flex: 1; min-height: 0; overflow-y: auto; }
 
   /* Departure format matches departures.html's table exactly: mono time/platform,
      14px body cells, plain-colour status text (no pill background), 11px
      uppercase mono column labels. */
-  #dep-board { display: none; border-bottom: 0.5px solid var(--br); padding: 4px 14px 10px; }
-  #dep-board .db-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 6px; }
-  #dep-board .db-label { font-family: var(--font-mono); font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--t); }
-  #dep-board .db-station { font-size: 13px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 500px; }
+  #sb-dep-board { display: none; border-bottom: 0.5px solid var(--br); padding: 8px 10px 10px; }
+  #sb-dep-board .db-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 6px; }
+  #sb-dep-board .db-label { font-family: var(--font-mono); font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--t); }
+  #sb-dep-board .db-station { font-size: 12px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 260px; }
   .dep-cols { display: flex; align-items: center; gap: 10px; padding: 6px 0 4px; font-family: var(--font-mono);
     font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink); border-bottom: 0.5px solid var(--br); }
   .dep-cols span:nth-child(1) { width: 52px; flex-shrink: 0; }
   .dep-cols span:nth-child(2) { flex: 1; }
-  .dep-cols span:nth-child(3) { width: 56px; flex-shrink: 0; }
-  .dep-cols span:nth-child(4) { width: 70px; flex-shrink: 0; }
+  .dep-cols span:nth-child(3) { width: 50px; flex-shrink: 0; }
+  .dep-cols span:nth-child(4) { width: 64px; flex-shrink: 0; }
   .dep-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; font-size: 14px; border-bottom: 0.5px solid rgba(64,224,208,0.06); }
   .dep-time { font-family: var(--font-mono); font-size: 14px; width: 52px; flex-shrink: 0; }
   .dep-dest { font-size: 14px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .dep-plat { font-family: var(--font-mono); width: 56px; flex-shrink: 0; font-size: 14px; }
-  .dep-status { font-size: 14px; width: 70px; flex-shrink: 0; white-space: nowrap; }
+  .dep-plat { font-family: var(--font-mono); width: 50px; flex-shrink: 0; font-size: 14px; }
+  .dep-status { font-size: 14px; width: 64px; flex-shrink: 0; white-space: nowrap; }
   .dep-status.on-time { color: var(--l); }
   .dep-status.delayed { color: var(--a); }
   .dep-status.cancelled { color: var(--m); }
   .dep-status.scheduled { color: var(--ink); }
   .dep-empty { font-size: 13px; color: var(--ink); padding: 6px 0; }
-  body.mode-database #dep-board { display: none !important; }
+  body.mode-database #sb-dep-board { display: none !important; }
 
   /* Sticks the "Live news" label + filters to the top of the scroll area so it
      stays visually separated from departure rows scrolling away above it. The
-     label itself only shows when departures are also present (station
-     selected) — otherwise the panel's own top header already says "Live news". */
-  .news-sticky { position: sticky; top: 0; z-index: 2; background: var(--sf); }
-  .news-sticky-title { display: none; padding: 8px 10px 0; font-size: 13px; font-weight: 500; color: var(--ink-primary); }
-  #news-panel.station-selected .news-sticky-title { display: block; }
+     label only shows when a departure board is also present above it. */
+  .sb-sticky { position: sticky; top: 0; z-index: 2; background: var(--sf); }
+  .sb-sticky-title { display: none; padding: 8px 10px 0; font-size: 12px; font-weight: 500; color: var(--ink-primary); }
+  #sidebar.has-selection .sb-sticky-title { display: block; }
   .filter-row { display: flex; gap: 4px; overflow-x: auto; padding: 8px 10px; scrollbar-width: none; }
   .filter-row::-webkit-scrollbar { display: none; }
-  .filter-chip { font-size: 13px; padding: 3px 10px; border-radius: 99px; border: 0.5px solid var(--br); color: var(--ink); white-space: nowrap; flex-shrink: 0; }
+  .filter-chip { font-size: 12px; padding: 3px 10px; border-radius: 99px; border: 0.5px solid var(--br); color: var(--ink); white-space: nowrap; flex-shrink: 0; }
   .filter-chip.active { background: rgba(64,224,208,0.1); border-color: var(--t); color: var(--t); }
 
-  .news-item { padding: 5px 10px; border-bottom: 0.5px solid rgba(64,224,208,0.06); display: flex; gap: 6px; }
+  .news-item { padding: 6px 10px; border-bottom: 0.5px solid rgba(64,224,208,0.06); display: flex; gap: 6px; }
   .news-item.urgent { background: rgba(242,92,193,0.05); }
   .news-dot { width: 6px; height: 6px; border-radius: 50%; margin-top: 3px; flex-shrink: 0; }
-  .news-title { font-size: 15px; line-height: 1.4; }
+  .news-title { font-size: 14px; line-height: 1.4; }
   .news-item.urgent .news-title { color: var(--ink-primary); }
   .news-item:not(.urgent) .news-title { color: #ccc; }
   :root[data-theme="light"] .news-item:not(.urgent) .news-title { color: #333333; }
-  .news-meta { font-size: 13px; color: var(--ink); margin-top: 2px; }
+  .news-meta { font-size: 12px; color: var(--ink); margin-top: 2px; display: flex; gap: 8px; align-items: center; }
+  .news-link { color: var(--t); }
+  .news-link:hover { text-decoration: underline; }
   .news-empty { padding: 10px; font-size: 13px; color: var(--ink); text-align: center; }
 
-  .rebook-cta { display: none; padding: 9px 10px; background: rgba(242,92,193,0.07); font-size: 14px; color: var(--m); }
+  .rebook-cta { display: none; padding: 9px 10px; background: rgba(242,92,193,0.07); font-size: 13px; color: var(--m); }
   .rebook-cta.show { display: block; }
 
-  #saved-section { padding: 8px 10px 4px; }
-  .saved-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
-  .saved-label { font-family: var(--font-mono); font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink); }
-  .saved-add { font-size: 13px; color: var(--t); }
-  .saved-route { display: flex; align-items: center; gap: 8px; padding: 5px 0; }
-  .saved-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-  .saved-name { font-size: 15px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .saved-sub { font-size: 13px; color: var(--ink); }
-  .saved-remove { font-size: 14px; color: var(--ink); padding: 2px 6px; }
-  .saved-empty { font-size: 13px; color: var(--ink); padding: 4px 0 8px; }
+  .sb-footer-inline { flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; font-size: 12px; color: var(--ink); }
+  .sb-footer-inline a { color: var(--t); }
 
-  .np-footer { flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; font-size: 13px; color: var(--ink); }
-  .np-footer a { color: var(--t); }
+  /* Persistent bottom strip — copyright/data attribution, never scrolls away
+     and never disappears (map-tile/data-source attribution requirement). */
+  #sb-attribution { flex-shrink: 0; padding: 6px 10px; border-top: 0.5px solid var(--br); font-size: 10px; color: var(--ink); text-align: center; }
 
-  /* ── Mobile bottom sheet ──────────────────────────────────────── */
-  #mobile-sheet { display: none; position: absolute; bottom: 0; left: 0; right: 0; z-index: 50;
-    border-radius: 12px 12px 0 0; border-top: 0.5px solid var(--brh); background: var(--sf);
-    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
-  .ms-handle-row { display: flex; align-items: center; justify-content: center; position: relative; padding: 8px 0 4px; }
-  .ms-handle { width: 28px; height: 2.5px; border-radius: 2px; background: rgba(154,164,178,0.3); }
-  .ms-min-btn { position: absolute; right: 12px; top: 6px; font-size: 12px; color: var(--ink); }
-  .ms-tabs { display: flex; border-bottom: 0.5px solid var(--br); }
-  .ms-tab { flex: 1; text-align: center; padding: 8px 0; font-size: 10px; font-weight: 500; color: var(--ink); border-bottom: 1.5px solid transparent; display: flex; align-items: center; justify-content: center; gap: 4px; }
-  .ms-tab.active { color: var(--t); border-bottom-color: var(--t); }
-  .ms-badge { background: var(--m); color: #fff; font-size: 8px; padding: 0 5px; border-radius: 99px; display: none; }
-  .ms-badge.show { display: inline-block; }
-  .ms-body { max-height: 220px; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 6px 10px 4px; }
-  .ms-view { display: none; }
-  .ms-view.active { display: block; }
-  .ms-scroll-note { text-align: center; font-size: 9px; font-style: italic; color: var(--ink); padding: 4px 0 8px; }
-  #mobile-sheet.collapsed .ms-tabs, #mobile-sheet.collapsed .ms-body, #mobile-sheet.collapsed .ms-scroll-note { display: none; }
+  /* Sidebar content block — swapped as a unit on every selection change
+     (station tap, search, from/to submit, clear). Whole-block opacity is
+     animated on the container itself; [data-anim-row] children get their own
+     staggered fade+rise entrance, both driven from JS (transition/opacity/
+     transform are set inline per-cycle since rows are freshly re-mounted,
+     not persistent nodes with toggled classes). */
+  .sb-content-block { display: flex; flex-direction: column; }
 
-  @media (max-width: 768px) {
-    #news-panel { display: none; }
-    #mobile-sheet { display: block; }
-    body.mode-database #mobile-sheet { display: none; }
-    #header { max-width: calc(100vw - 12px); overflow-x: auto; }
-  }
-
-  /* ── Legend bar + year bar (Database mode) ───────────────────── */
-  #legend-bar { display: none; position: absolute; bottom: 0; left: 0; right: 0; z-index: 40;
-    background: var(--sf); border-top: 0.5px solid var(--br); padding: 6px 12px;
-    align-items: center; justify-content: space-between; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+  /* ── Legend bar + history panel (Database mode) ──────────────────────────
+     Both float independently of the sidebar, bottom-center of the visible
+     map area. On desktop that's the viewport minus the sidebar's width; on
+     tablet/mobile the sidebar collapses to its handle+tabs strip in Database
+     mode (see setMode()) so this stack has the full width below it. ────── */
+  #legend-bar { display: none; position: absolute; left: 10px; right: 10px; bottom: 10px; z-index: 40;
+    background: var(--sf); border: 0.5px solid var(--brh); border-radius: 12px; padding: 6px 12px;
+    align-items: center; justify-content: center; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
   body.mode-database #legend-bar { display: flex; }
-  .legend-items { display: flex; gap: 14px; flex-wrap: wrap; }
-  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 13px; color: var(--ink); }
+  .legend-items { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--ink); }
   .legend-line { width: 14px; height: 2px; }
   .legend-line.closed { background-image: repeating-linear-gradient(to right, rgba(64,224,208,0.4) 0 4px, transparent 4px 7px); }
-  #history-btn { font-size: 13px; color: var(--ink); padding: 4px 9px; border-radius: 99px; border: 0.5px solid var(--brh); }
-  #history-btn.active { color: var(--t); border-color: var(--t); }
 
-  #year-bar { display: none; position: absolute; bottom: 36px; left: 0; right: 0; z-index: 41;
-    background: var(--sf); padding: 10px 12px; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
-  #year-bar.open { display: block; }
-  .yb-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
-  .yb-year { font-family: var(--font-mono); font-size: 14px; color: var(--t); }
-  .yb-era-chip { font-size: 13px; padding: 2px 8px; border-radius: 99px; background: rgba(64,224,208,0.1); color: var(--t); }
+  #history-panel { display: none; position: absolute; z-index: 41; left: 50%; transform: translateX(-50%);
+    bottom: 54px; width: min(420px, calc(100vw - 20px));
+    background: var(--sf); border: 0.5px solid var(--brh); border-radius: 12px;
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+  body.mode-database #history-panel { display: block; }
+  @media (min-width: 769px) { #history-panel { left: calc(50% + (var(--sidebar-edge) / 2)); } }
+  @media (max-width: 768px) { #history-panel { bottom: 70px; } }
+
+  .hp-head { display: flex; align-items: center; gap: 8px; padding: 8px 10px; }
+  #hp-toggle { flex-shrink: 0; }
+  #hp-toggle i { transition: transform 0.2s; }
+  #history-panel.collapsed #hp-toggle i { transform: rotate(-90deg); }
+  .hp-year { font-family: var(--font-mono); font-size: 13px; color: var(--t); }
+  .hp-era-chip { font-size: 12px; padding: 2px 8px; border-radius: 99px; background: rgba(64,224,208,0.1); color: var(--t); }
+  .hp-body { padding: 0 12px 10px; }
+  #history-panel.collapsed .hp-body { display: none; }
+  #history-panel.collapsed .hp-head { padding-bottom: 8px; }
   #year-slider { width: 100%; accent-color: var(--t); }
-  .yb-snaps { display: flex; justify-content: space-between; margin-top: 4px; }
-  .yb-snap { font-size: 13px; color: var(--ink); }
-  .yb-context { font-size: 13px; color: var(--ink); margin-top: 6px; line-height: 1.5; }
+  .hp-snaps { display: flex; justify-content: space-between; margin-top: 4px; }
+  .hp-snap { font-size: 12px; color: var(--ink); }
+  .hp-context { font-size: 12px; color: var(--ink); margin-top: 6px; line-height: 1.5; }
 </style>
 </head>
 <body>
@@ -307,35 +326,24 @@
 
 <div id="header" class="pill">
   <div class="logo"><i class="ti ti-train-freight-caboose"></i> SpotRail HQ</div>
-  <div class="divider"></div>
-  <button class="header-tab live-on" id="tab-live" aria-label="Live mode" aria-pressed="true"><i class="ti ti-activity"></i>Live</button>
-  <button class="header-tab" id="tab-database" aria-label="Database mode" aria-pressed="false"><i class="ti ti-database"></i>Database</button>
-  <div class="divider"></div>
-  <button class="icon-btn" id="search-btn" aria-label="Search stations" style="background:transparent;border:none;width:auto;height:auto;padding:4px;"><i class="ti ti-search"></i></button>
-  <input id="search-input" type="text" placeholder="Find a station…" aria-label="Search stations" />
-  <button class="icon-btn" id="star-btn" aria-label="Saved routes" style="background:transparent;border:none;width:auto;height:auto;padding:4px;"><i class="ti ti-star"></i></button>
-  <button class="icon-btn" id="theme-toggle" aria-label="Toggle light and dark theme" style="background:transparent;border:none;width:auto;height:auto;padding:4px;">
-    <i class="ti ti-sun theme-toggle-icon-light"></i>
-    <i class="ti ti-moon theme-toggle-icon-dark"></i>
-  </button>
-  <a href="index.html" class="back-link"><i class="ti ti-arrow-left"></i>srhq.uk</a>
 </div>
 
-<div id="map-controls">
-  <button class="icon-btn" id="zoom-in" aria-label="Zoom in"><i class="ti ti-plus"></i></button>
-  <button class="icon-btn" id="zoom-out" aria-label="Zoom out"><i class="ti ti-minus"></i></button>
-  <button class="icon-btn" id="layers-btn" aria-label="Toggle railway infrastructure overlay" aria-pressed="true"><i class="ti ti-layers-intersect"></i></button>
-  <button class="icon-btn" id="my-location" aria-label="Find my location"><i class="ti ti-current-location"></i></button>
-</div>
-
-<div id="region-jump" class="pill">
-  <span class="rj-label">Jump to</span>
-  <button data-lng="-2.5" data-lat="54.5" data-zoom="5.5">All UK</button>
-  <button data-lng="-0.1278" data-lat="51.5074" data-zoom="11">London</button>
-  <button data-lng="-1.9" data-lat="52.4778" data-zoom="11">Birmingham</button>
-  <button data-lng="-2.2307" data-lat="53.4775" data-zoom="11">Manchester</button>
-  <button data-lng="-4.2579" data-lat="55.8586" data-zoom="11">Glasgow</button>
-  <button data-lng="-3.1883" data-lat="55.9521" data-zoom="11">Edinburgh</button>
+<div id="control-cluster">
+  <div class="map-controls pill" style="padding:3px;">
+    <button class="icon-btn" id="zoom-in" aria-label="Zoom in"><i class="ti ti-plus"></i></button>
+    <button class="icon-btn" id="zoom-out" aria-label="Zoom out"><i class="ti ti-minus"></i></button>
+    <button class="icon-btn" id="layers-btn" aria-label="Toggle railway infrastructure overlay" aria-pressed="true"><i class="ti ti-layers-intersect"></i></button>
+    <button class="icon-btn" id="my-location" aria-label="Find my location"><i class="ti ti-current-location"></i></button>
+  </div>
+  <div id="region-jump" class="pill">
+    <span class="rj-label">Jump to</span>
+    <button data-lng="-2.5" data-lat="54.5" data-zoom="5.5">All UK</button>
+    <button data-lng="-0.1278" data-lat="51.5074" data-zoom="11">London</button>
+    <button data-lng="-1.9" data-lat="52.4778" data-zoom="11">Birmingham</button>
+    <button data-lng="-2.2307" data-lat="53.4775" data-zoom="11">Manchester</button>
+    <button data-lng="-4.2579" data-lat="55.8586" data-zoom="11">Glasgow</button>
+    <button data-lng="-3.1883" data-lat="55.9521" data-zoom="11">Edinburgh</button>
+  </div>
 </div>
 
 <div id="bottom-hints">
@@ -352,74 +360,51 @@
   </div>
 </div>
 
-<div id="footer">
-  <a href="index.html" class="f-pill pill">← Back to srhq.uk</a>
-  <span class="f-pill pill">© SpotRail HQ · Data: Network Rail, NRE</span>
-</div>
+<div id="sidebar">
+  <div class="sb-handle-row">
+    <div class="sb-handle"></div>
+    <button class="ghost-btn" id="sb-min-btn" aria-label="Minimise sidebar"><i class="ti ti-chevron-down"></i></button>
+  </div>
 
-<div id="news-panel" class="pill">
-  <div class="np-header" id="np-header-toggle">
-    <div class="np-header-left">
-      <i class="ti ti-news" id="np-icon"></i>
-      <span class="np-title" id="np-title-text">Live news</span>
-      <span class="np-badge" id="np-badge">0</span>
-      <button class="np-station-clear" id="np-station-clear" aria-label="Back to live news">×</button>
-    </div>
-    <div class="np-header-left">
-      <span class="np-pulse" id="np-pulse"></span>
-      <span class="np-time" id="np-time">--:--</span>
-      <i class="ti ti-chevron-down np-chevron" id="np-chevron"></i>
-    </div>
-  </div>
-  <div class="np-body" id="np-body">
-    <div id="dep-board">
-      <div class="dep-cols"><span>Sched.</span><span>Destination</span><span>Plat.</span><span>Status</span></div>
-      <div id="dep-rows"></div>
-    </div>
-    <div class="news-sticky">
-      <div class="news-sticky-title">Live news</div>
-      <div class="filter-row" id="filter-row"></div>
-    </div>
-    <div id="news-items"></div>
-    <div class="rebook-cta" id="rebook-cta">Disrupted? Find alternatives →</div>
-    <div id="saved-section">
-      <div class="saved-head">
-        <span class="saved-label">Saved routes</span>
-        <button class="saved-add" id="saved-add-btn">+ Add</button>
+  <div class="sb-top">
+    <div class="sb-top-upper">
+      <div class="sb-top-tabs">
+        <button class="header-tab live-on" id="sb-tab-live" aria-label="Live mode" aria-pressed="true"><i class="ti ti-activity"></i>Live</button>
+        <button class="header-tab" id="sb-tab-database" aria-label="Database mode" aria-pressed="false"><i class="ti ti-database"></i>Database</button>
       </div>
-      <div id="saved-list"></div>
+      <div class="sb-top-actions">
+        <button class="ghost-btn" id="sb-search-btn" aria-label="Search stations"><i class="ti ti-search"></i></button>
+        <button class="ghost-btn" id="sb-theme-toggle" aria-label="Toggle light and dark theme">
+          <i class="ti ti-sun theme-toggle-icon-light"></i>
+          <i class="ti ti-moon theme-toggle-icon-dark"></i>
+        </button>
+      </div>
     </div>
-    <div class="np-footer">
-      <a href="news.html">More news</a>
-      <span id="np-count">0 of 0</span>
+    <div class="sb-top-lower">
+      <input id="sb-search-input" type="text" placeholder="Find a station…" aria-label="Search stations" />
+      <div class="sb-search-modes" id="sb-search-modes">
+        <button class="sb-mode-chip active" id="sb-mode-station" data-mode="station">Station</button>
+        <button class="sb-mode-chip" id="sb-mode-fromto" data-mode="fromto">From → To</button>
+      </div>
+      <div class="sb-fromto-row" id="sb-fromto-row">
+        <input id="sb-from-input" type="text" placeholder="From…" aria-label="From station" />
+        <i class="ti ti-arrow-right"></i>
+        <input id="sb-to-input" type="text" placeholder="To…" aria-label="To station" />
+      </div>
     </div>
   </div>
-</div>
 
-<div id="mobile-sheet">
-  <div class="ms-handle-row">
-    <div class="ms-handle"></div>
-    <button class="ms-min-btn" id="ms-min-btn" aria-label="Minimise sheet"><i class="ti ti-chevron-down"></i></button>
+  <div class="sb-selection">
+    <span class="sb-selection-title" id="sb-selection-title"></span>
+    <button class="ghost-btn" id="sb-star-btn" aria-label="Save this station"><i class="ti ti-star"></i></button>
+    <button class="ghost-btn" id="sb-clear-btn" aria-label="Clear selection">×</button>
   </div>
-  <div class="ms-tabs">
-    <button class="ms-tab" id="ms-tab-departures" aria-label="Departures tab">Departures</button>
-    <button class="ms-tab active" id="ms-tab-news" aria-label="Live news tab">Live news <span class="ms-badge" id="ms-badge">0</span></button>
+
+  <div id="sb-body">
+    <div class="sb-content-block" id="sb-content-block"></div>
   </div>
-  <div class="ms-body">
-    <div class="ms-view" id="ms-view-departures">
-      <div class="db-head" style="margin-bottom:6px;">
-        <span class="db-label">Departures</span>
-        <span class="db-station" id="ms-db-station-name"></span>
-      </div>
-      <div id="ms-dep-rows"></div>
-    </div>
-    <div class="ms-view active" id="ms-view-news">
-      <div class="filter-row" id="ms-filter-row" style="padding:0 0 8px;"></div>
-      <div id="ms-news-items"></div>
-      <div class="rebook-cta" id="ms-rebook-cta">Disrupted? Find alternatives →</div>
-    </div>
-  </div>
-  <div class="ms-scroll-note">↑ Scroll for more</div>
+
+  <div id="sb-attribution">© SpotRail HQ · Data: Network Rail, NRE</div>
 </div>
 
 <div id="legend-bar">
@@ -429,24 +414,26 @@
     <span class="legend-item"><span class="legend-line" style="background:rgba(245,184,75,0.6);"></span>Heritage</span>
     <span class="legend-item"><span class="legend-line closed"></span>Closed</span>
   </div>
-  <button id="history-btn">History</button>
 </div>
 
-<div id="year-bar">
-  <div class="yb-top">
-    <span class="yb-year" id="yb-year">2025</span>
-    <span class="yb-era-chip" id="yb-era-chip">Today</span>
+<div id="history-panel">
+  <div class="hp-head">
+    <button class="ghost-btn" id="hp-toggle" aria-label="Expand or collapse history panel"><i class="ti ti-chevron-down"></i></button>
+    <span class="hp-year" id="hp-year">2025</span>
+    <span class="hp-era-chip" id="hp-era-chip">Today</span>
   </div>
-  <input type="range" id="year-slider" min="1825" max="2025" value="2025" step="1" aria-label="History year" />
-  <div class="yb-snaps">
-    <button class="yb-snap" data-year="1845">1845</button>
-    <button class="yb-snap" data-year="1880">1880</button>
-    <button class="yb-snap" data-year="1923">1923</button>
-    <button class="yb-snap" data-year="1965">1965</button>
-    <button class="yb-snap" data-year="1994">1994</button>
-    <button class="yb-snap" data-year="2025">Today</button>
+  <div class="hp-body">
+    <input type="range" id="year-slider" min="1825" max="2025" value="2025" step="1" aria-label="History year" />
+    <div class="hp-snaps">
+      <button class="hp-snap" data-year="1845">1845</button>
+      <button class="hp-snap" data-year="1880">1880</button>
+      <button class="hp-snap" data-year="1923">1923</button>
+      <button class="hp-snap" data-year="1965">1965</button>
+      <button class="hp-snap" data-year="1994">1994</button>
+      <button class="hp-snap" data-year="2025">Today</button>
+    </div>
+    <div class="hp-context" id="hp-context"></div>
   </div>
-  <div class="yb-context" id="yb-context"></div>
 </div>
 
 <noscript>
@@ -465,12 +452,18 @@
 
   var stationsData = null;   // parsed /data/stations.geojson, ids assigned
   var stationInteractionsWired = false;
-  var selectedCrs = null;
   var incidents = [];
   var activeFilter = 'all';
   var mode = 'live';
   var ormVisible = true;
   var currentStadiaKey = '';
+
+  // Current sidebar selection. type: 'none' | 'station' | 'fromto'.
+  // 'route' and 'network' types aren't wired yet — route/network click
+  // selection + the highlight polyline were removed in the previous map.html
+  // rebuild (commit eca9aa1) and haven't been rebuilt; this shape is ready to
+  // extend once that's revisited.
+  var selection = { type: 'none' };
 
   function currentTheme() {
     return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
@@ -554,8 +547,10 @@
       maxBoundsViscosity: 1.0,
       attributionControl: false,
     });
-    map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-left');
-    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-left');
+    // 'top-right' rather than a map corner the sidebar/bottom-sheet would
+    // cover — the sidebar spans the full left edge on desktop and the full
+    // width at the bottom on tablet/mobile.
+    map.addControl(new maplibregl.AttributionControl({ compact: true }), 'top-right');
 
     map.fitBounds(
       [[-8.5, 49.5], [2.0, 61.0]],
@@ -570,8 +565,33 @@
   // The railway network itself is rendered entirely by the ORM raster tiles
   // below — no separate route line data. Re-run after every map.setStyle()
   // (theme switch) since setStyle wipes all sources/layers from the old style.
+  // Sea/ocean name labels ("North Sea"/"Nordsee"/"Noordzee"...) come from the
+  // Stadia style's water_name source-layer. Checked the raw style JSON:
+  // water_name_ocean (point, class=ocean) is definitely sea/ocean names;
+  // water_name_line (LineString, no class filter) is very likely also sea/ocean
+  // names since this schema's only other water_name class is "lake" and lakes
+  // aren't stored as line geometry. water_name_nonocean (class != ocean — lake
+  // names like Windermere) is left alone deliberately.
+  // KNOWN LIMITATION (not solved here): non-UK place labels (country/city names
+  // outside GB) are not filtered out — the style's place_country/place_city/etc
+  // layers carry no iso_a2 (or similar) property to filter on, and this could
+  // not be confirmed against the live vector tiles (no Stadia API key or
+  // browser available in this environment to inspect actual tile data).
+  // Foreign railway lines from the OpenRailwayMap raster overlay also can't be
+  // filtered by country — that's a separate, accepted limitation until a
+  // vector rail tile source replaces the raster ORM overlay.
+  var OCEAN_LABEL_LAYERS = ['water_name_ocean', 'water_name_line'];
+  function hideOceanLabels() {
+    OCEAN_LABEL_LAYERS.forEach(function (id) {
+      if (map.getLayer(id)) {
+        try { map.setLayoutProperty(id, 'visibility', 'none'); } catch (e) {}
+      }
+    });
+  }
+
   function addMapLayers() {
     greyOutLandcover(currentTheme());
+    hideOceanLabels();
 
     map.addSource('orm-standard', {
       type: 'raster',
@@ -639,7 +659,30 @@
     map.once('style.load', addMapLayers);
   }
   window.srhqToggleMapTheme = toggleTheme;
-  document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+  document.getElementById('sb-theme-toggle').addEventListener('click', toggleTheme);
+
+  // ── Station hover tooltip (instant — no fade delay on show/hide) ─────────
+  var hoverTooltipEl = null;
+  function ensureHoverTooltipEl() {
+    if (!hoverTooltipEl) {
+      hoverTooltipEl = document.createElement('div');
+      hoverTooltipEl.id = 'station-hover-tip';
+      hoverTooltipEl.className = 'pill';
+      document.getElementById('map').appendChild(hoverTooltipEl);
+    }
+    return hoverTooltipEl;
+  }
+  function showHoverTooltip(coords, name) {
+    var el = ensureHoverTooltipEl();
+    el.textContent = name;
+    var pt = map.project(coords);
+    el.style.left = pt.x + 'px';
+    el.style.top = pt.y + 'px';
+    el.style.display = 'block';
+  }
+  function hideHoverTooltip() {
+    if (hoverTooltipEl) hoverTooltipEl.style.display = 'none';
+  }
 
   // ── Station interactions (click → departure board) ───────────────────────
   var hoveredStationFeatureId = null;
@@ -647,34 +690,28 @@
     map.on('mousemove', 'stations-circle', function (e) {
       map.getCanvas().style.cursor = 'pointer';
       if (!e.features.length) return;
-      if (hoveredStationFeatureId !== null) map.setFeatureState({ source: 'stations', id: hoveredStationFeatureId }, { hover: false });
-      hoveredStationFeatureId = e.features[0].id;
-      map.setFeatureState({ source: 'stations', id: hoveredStationFeatureId }, { hover: true });
+      var f = e.features[0];
+      if (hoveredStationFeatureId !== f.id) {
+        if (hoveredStationFeatureId !== null) map.setFeatureState({ source: 'stations', id: hoveredStationFeatureId }, { hover: false });
+        hoveredStationFeatureId = f.id;
+        map.setFeatureState({ source: 'stations', id: hoveredStationFeatureId }, { hover: true });
+      }
+      showHoverTooltip(f.geometry.coordinates, f.properties.name);
     });
     map.on('mouseleave', 'stations-circle', function () {
       map.getCanvas().style.cursor = '';
       if (hoveredStationFeatureId !== null) map.setFeatureState({ source: 'stations', id: hoveredStationFeatureId }, { hover: false });
       hoveredStationFeatureId = null;
+      hideHoverTooltip();
     });
+    map.on('zoomstart', hideHoverTooltip);
+    map.on('dragstart', hideHoverTooltip);
     map.on('click', 'stations-circle', function (e) {
       if (!e.features.length) return;
       var props = e.features[0].properties;
       hideBottomHints();
-      selectedCrs = props.crs;
-      showStationTooltip(e.lngLat, props.name);
-      openDepartureBoard(props.name, props.crs);
-      switchMobileTab('departures');
+      selectStation(props.name, props.crs);
     });
-  }
-
-  var stationTooltip = null;
-  function showStationTooltip(lngLat, name) {
-    if (stationTooltip) stationTooltip.remove();
-    stationTooltip = new maplibregl.Popup({ closeButton: false, closeOnClick: false, offset: 14 })
-      .setLngLat(lngLat)
-      .setHTML('<strong>' + name + '</strong><br>tap for departures')
-      .addTo(map);
-    setTimeout(function () { if (stationTooltip) { stationTooltip.remove(); stationTooltip = null; } }, 2200);
   }
 
   function depStatusClass(status) {
@@ -683,9 +720,9 @@
     if (status === 'On time') return 'on-time';
     return 'scheduled';
   }
-  function renderDepartureRows(rows, container) {
-    if (!rows || !rows.length) { container.innerHTML = '<div class="dep-empty">No departures available right now.</div>'; return; }
-    container.innerHTML = rows.slice(0, 5).map(function (d) {
+  function departureRowsHtml(rows) {
+    if (!rows || !rows.length) return '<div class="dep-empty">No departures available right now.</div>';
+    return rows.slice(0, 5).map(function (d) {
       return '<div class="dep-row">' +
         '<span class="dep-time">' + (d.scheduledTime || '--:--') + '</span>' +
         '<span class="dep-dest">' + d.destination + '</span>' +
@@ -694,46 +731,169 @@
         '</div>';
     }).join('');
   }
-
-  // Station name replaces "Live news" as the panel's top-of-box title while a
-  // station is selected; the "×" button (wired below) reverts to the default.
-  var newsPanel = document.getElementById('news-panel');
-  var npTitleText = document.getElementById('np-title-text');
-  function selectStationInPanel(name) {
-    newsPanel.classList.add('station-selected');
-    npTitleText.textContent = name;
-    npTitleText.classList.add('station-mode');
+  function renderDepartureRows(rows) {
+    var container = document.getElementById('sb-dep-rows');
+    if (container) container.innerHTML = departureRowsHtml(rows);
   }
-  function clearStationSelection() {
-    newsPanel.classList.remove('station-selected');
-    npTitleText.textContent = 'Live news';
-    npTitleText.classList.remove('station-mode');
-    document.getElementById('dep-board').style.display = 'none';
-  }
-  document.getElementById('np-station-clear').addEventListener('click', function (e) {
-    e.stopPropagation();
-    clearStationSelection();
-  });
 
-  function openDepartureBoard(name, crs) {
-    document.getElementById('dep-board').style.display = 'block';
-    selectStationInPanel(name);
-    document.getElementById('ms-db-station-name').textContent = name;
-    var loadingHtml = '<div class="dep-empty">Loading departures…</div>';
-    document.getElementById('dep-rows').innerHTML = loadingHtml;
-    document.getElementById('ms-dep-rows').innerHTML = loadingHtml;
-    fetch('/api/map-departures?crs=' + encodeURIComponent(crs)).then(function (r) { return r.json(); }).then(function (rows) {
-      renderDepartureRows(rows, document.getElementById('dep-rows'));
-      renderDepartureRows(rows, document.getElementById('ms-dep-rows'));
-    }).catch(function () {
-      renderDepartureRows([], document.getElementById('dep-rows'));
-      renderDepartureRows([], document.getElementById('ms-dep-rows'));
+  // ── Sidebar selection state (station / from-to / none) ───────────────────
+  var sidebarEl = document.getElementById('sidebar');
+  var selTitleEl = document.getElementById('sb-selection-title');
+  var starBtn = document.getElementById('sb-star-btn');
+
+  function renderSelectionChrome() {
+    if (selection.type === 'none') {
+      sidebarEl.classList.remove('has-selection');
+      selTitleEl.textContent = '';
+      starBtn.style.display = 'none';
+      return;
+    }
+    sidebarEl.classList.add('has-selection');
+    if (selection.type === 'station') {
+      selTitleEl.textContent = selection.name;
+      starBtn.style.display = '';
+      starBtn.classList.toggle('starred', isStarred(selection.crs));
+    } else if (selection.type === 'fromto') {
+      selTitleEl.textContent = selection.fromName + ' → ' + selection.toName;
+      // Saved routes are single-station records — a from/to pair doesn't map
+      // onto that shape, so the star toggle is hidden in this mode.
+      starBtn.style.display = 'none';
+    }
+  }
+
+  // ── Sidebar content build + animated transition (#14) ────────────────────
+  // Whole-block fade-out, then a per-row staggered fade+rise entrance, on
+  // every selection change. Content is rebuilt from scratch each cycle (not
+  // persistent nodes with toggled classes) so an interrupted cycle can never
+  // leave stale rows or a stale departure-board label behind. `selectionSeq`
+  // both cancels an in-flight animation (a newer call always wins — no
+  // queueing) and guards against a slow, superseded departures fetch writing
+  // its result into the wrong (newer) board.
+  var EXIT_MS = 110;
+  var ROW_MS = 200;
+  var STAGGER_MS = 30;
+  var ENTRANCE_EASE = 'cubic-bezier(0.16, 1, 0.3, 1)';
+  var contentBlock = document.getElementById('sb-content-block');
+  var selectionSeq = 0;
+
+  function sidebarSkeletonHtml() {
+    var showBoard = selection.type === 'station' || selection.type === 'fromto';
+    var html = '';
+    if (showBoard) {
+      var label = selection.type === 'fromto' ? 'Next trains' : 'Departures';
+      var stationText = selection.type === 'station' ? selection.name : (selection.fromName + ' → ' + selection.toName);
+      html += '<div id="sb-dep-board" data-anim-row style="display:block;">' +
+        '<div class="db-head"><span class="db-label">' + label + '</span><span class="db-station">' + stationText + '</span></div>' +
+        '<div class="dep-cols"><span>Sched.</span><span>Destination</span><span>Plat.</span><span>Status</span></div>' +
+        '<div id="sb-dep-rows"><div class="dep-empty">Loading departures…</div></div>' +
+        '</div>';
+    } else {
+      html += '<div id="sb-dep-board" style="display:none;"><div id="sb-dep-rows"></div></div>';
+    }
+    html += '<div class="sb-sticky" data-anim-row>' +
+      '<div class="sb-sticky-title">Live news</div>' +
+      '<div class="filter-row" id="filter-row"></div>' +
+      '</div>' +
+      '<div id="news-items"></div>' +
+      '<div class="rebook-cta" id="rebook-cta" data-anim-row>Disrupted? Find alternatives →</div>' +
+      '<div class="sb-footer-inline" data-anim-row>' +
+      '<a href="news.html">More news</a><span id="sb-count">0 of 0</span>' +
+      '</div>';
+    return html;
+  }
+
+  // Rebuilds #sb-content-block for the current `selection` and re-wires the
+  // filter row + news feed inside it. Shared by the animated transition below
+  // and by the very first (unanimated) render on page load.
+  function rebuildSidebarContent() {
+    contentBlock.innerHTML = sidebarSkeletonHtml();
+    renderFilterRow('filter-row', renderNews);
+    renderNews();
+  }
+
+  function playEntranceStagger(mySeq) {
+    var rows = contentBlock.querySelectorAll('[data-anim-row]');
+    Array.prototype.forEach.call(rows, function (row) {
+      row.style.transition = 'none';
+      row.style.opacity = '0';
+      row.style.transform = 'translateY(8px)';
+    });
+    // Force layout so the 0/translateY(8px) start state is committed before
+    // the delayed transitions below kick in — otherwise the browser can
+    // coalesce it with the final state and skip the animation entirely.
+    void contentBlock.offsetHeight;
+    Array.prototype.forEach.call(rows, function (row, i) {
+      setTimeout(function () {
+        if (mySeq !== selectionSeq) return; // superseded — abandon this cycle
+        row.style.transition = 'opacity ' + ROW_MS + 'ms ' + ENTRANCE_EASE + ', transform ' + ROW_MS + 'ms ' + ENTRANCE_EASE;
+        row.style.opacity = '1';
+        row.style.transform = 'translateY(0)';
+      }, i * STAGGER_MS);
     });
   }
 
+  function animateSidebarTransition() {
+    var mySeq = selectionSeq;
+    contentBlock.style.transition = 'opacity ' + EXIT_MS + 'ms ease-out';
+    contentBlock.style.opacity = '0';
+    setTimeout(function () {
+      if (mySeq !== selectionSeq) return; // a newer selection cancelled this cycle
+      rebuildSidebarContent();
+      contentBlock.style.transition = 'none';
+      contentBlock.style.opacity = '1';
+      playEntranceStagger(mySeq);
+    }, EXIT_MS);
+  }
+
+  function expandSidebarIfCollapsed() {
+    sidebarEl.classList.remove('collapsed');
+  }
+
+  function selectStation(name, crs) {
+    var mySeq = ++selectionSeq;
+    selection = { type: 'station', name: name, crs: crs };
+    renderSelectionChrome();
+    expandSidebarIfCollapsed();
+    animateSidebarTransition();
+    fetch('/api/map-departures?crs=' + encodeURIComponent(crs)).then(function (r) { return r.json(); }).then(function (rows) {
+      if (mySeq !== selectionSeq) return; // a newer selection replaced this board already
+      renderDepartureRows(rows);
+    }).catch(function () { if (mySeq === selectionSeq) renderDepartureRows([]); });
+  }
+
+  function selectFromTo(fromF, toF) {
+    var mySeq = ++selectionSeq;
+    selection = {
+      type: 'fromto',
+      fromCrs: fromF.properties.crs, fromName: fromF.properties.name,
+      toCrs: toF.properties.crs, toName: toF.properties.name,
+    };
+    renderSelectionChrome();
+    expandSidebarIfCollapsed();
+    animateSidebarTransition();
+    fetch('/api/map-departures?crs=' + encodeURIComponent(fromF.properties.crs) + '&to=' + encodeURIComponent(toF.properties.crs))
+      .then(function (r) { return r.json(); }).then(function (rows) {
+        if (mySeq !== selectionSeq) return;
+        renderDepartureRows(rows);
+      }).catch(function () { if (mySeq === selectionSeq) renderDepartureRows([]); });
+
+    hideBottomHints();
+    var bounds = new maplibregl.LngLatBounds(fromF.geometry.coordinates, fromF.geometry.coordinates);
+    bounds.extend(toF.geometry.coordinates);
+    map.fitBounds(bounds, { padding: 80, duration: 800 });
+  }
+
+  function clearSelection() {
+    ++selectionSeq;
+    selection = { type: 'none' };
+    renderSelectionChrome();
+    animateSidebarTransition();
+  }
+  document.getElementById('sb-clear-btn').addEventListener('click', clearSelection);
+
   // ── Header: mode switching (Live / Database) ─────────────────────────────
-  var tabLive = document.getElementById('tab-live');
-  var tabDb = document.getElementById('tab-database');
+  var tabLive = document.getElementById('sb-tab-live');
+  var tabDb = document.getElementById('sb-tab-database');
   function setMode(newMode) {
     mode = newMode;
     document.body.classList.toggle('mode-database', mode === 'database');
@@ -741,6 +901,14 @@
     tabLive.setAttribute('aria-pressed', mode === 'live');
     tabDb.classList.toggle('db-on', mode === 'database');
     tabDb.setAttribute('aria-pressed', mode === 'database');
+    // On tablet/mobile the bottom sheet and the Database-mode legend/history
+    // stack both want the bottom of the screen — collapse the sheet to just
+    // its handle+tabs strip so the mode toggle stays reachable without
+    // overlapping the legend bar. Desktop keeps the sidebar's live feed
+    // visible in both modes (only the departure board hides via CSS).
+    if (window.innerWidth <= 768) {
+      sidebarEl.classList.toggle('collapsed', mode === 'database');
+    }
   }
   tabLive.addEventListener('click', function () { setMode('live'); });
   tabDb.addEventListener('click', function () { setMode('database'); });
@@ -772,58 +940,61 @@
   // ── Bottom hints ──────────────────────────────────────────────────────────
   function hideBottomHints() { document.getElementById('bottom-hints').classList.add('hidden'); }
 
-  // ── Search ────────────────────────────────────────────────────────────────
-  var searchBtn = document.getElementById('search-btn');
-  var searchInput = document.getElementById('search-input');
+  // ── Search (single station, and from/to) ──────────────────────────────────
+  var searchBtn = document.getElementById('sb-search-btn');
+  var searchInput = document.getElementById('sb-search-input');
+  var searchModes = document.getElementById('sb-search-modes');
+  var fromToRow = document.getElementById('sb-fromto-row');
+  var fromInput = document.getElementById('sb-from-input');
+  var toInput = document.getElementById('sb-to-input');
+  var searchMode = 'station';
+
+  function setSearchMode(m) {
+    searchMode = m;
+    document.getElementById('sb-mode-station').classList.toggle('active', m === 'station');
+    document.getElementById('sb-mode-fromto').classList.toggle('active', m === 'fromto');
+    searchInput.classList.toggle('open', m === 'station');
+    fromToRow.classList.toggle('open', m === 'fromto');
+    if (m === 'station') searchInput.focus(); else fromInput.focus();
+  }
+  document.getElementById('sb-mode-station').addEventListener('click', function () { setSearchMode('station'); });
+  document.getElementById('sb-mode-fromto').addEventListener('click', function () { setSearchMode('fromto'); });
+
   searchBtn.addEventListener('click', function () {
-    searchInput.classList.toggle('open');
-    if (searchInput.classList.contains('open')) searchInput.focus();
+    var opening = !searchModes.classList.contains('open');
+    searchModes.classList.toggle('open', opening);
+    if (opening) setSearchMode(searchMode);
+    else { searchInput.classList.remove('open'); fromToRow.classList.remove('open'); }
   });
+
+  function findStationFeature(q) {
+    q = q.trim().toLowerCase();
+    if (!q || !stationsData) return null;
+    return stationsData.features.find(function (f) { return f.properties.name.toLowerCase().indexOf(q) !== -1; });
+  }
+
   searchInput.addEventListener('keydown', function (e) {
-    if (e.key !== 'Enter' || !stationsData) return;
-    var q = searchInput.value.trim().toLowerCase();
-    if (!q) return;
-    var match = stationsData.features.find(function (f) { return f.properties.name.toLowerCase().indexOf(q) !== -1; });
+    if (e.key !== 'Enter') return;
+    var match = findStationFeature(searchInput.value);
     if (match) {
       var coords = match.geometry.coordinates;
       hideBottomHints();
       map.flyTo({ center: coords, zoom: 11, duration: 800 });
-      showStationTooltip({ lng: coords[0], lat: coords[1] }, match.properties.name);
-      selectedCrs = match.properties.crs;
-      openDepartureBoard(match.properties.name, match.properties.crs);
-      switchMobileTab('departures');
+      selectStation(match.properties.name, match.properties.crs);
     }
   });
 
-  // ── Star (saved routes shortcut) ─────────────────────────────────────────
-  document.getElementById('star-btn').addEventListener('click', function () {
-    document.getElementById('news-panel').classList.remove('collapsed');
-    document.getElementById('saved-section').scrollIntoView({ block: 'nearest' });
-    switchMobileTab('news');
-  });
-
-  // ── News panel minimise ───────────────────────────────────────────────────
-  document.getElementById('np-header-toggle').addEventListener('click', function () {
-    var panel = document.getElementById('news-panel');
-    var collapsed = panel.classList.toggle('collapsed');
-    document.getElementById('np-chevron').classList.toggle('flipped', collapsed);
-  });
-
-  // ── Mobile sheet ──────────────────────────────────────────────────────────
-  function switchMobileTab(tab) {
-    var isDep = tab === 'departures';
-    document.getElementById('ms-tab-departures').classList.toggle('active', isDep);
-    document.getElementById('ms-tab-news').classList.toggle('active', !isDep);
-    document.getElementById('ms-view-departures').classList.toggle('active', isDep);
-    document.getElementById('ms-view-news').classList.toggle('active', !isDep);
-    document.getElementById('mobile-sheet').classList.remove('collapsed');
+  function trySubmitFromTo() {
+    var fromMatch = findStationFeature(fromInput.value);
+    var toMatch = findStationFeature(toInput.value);
+    if (fromMatch && toMatch) selectFromTo(fromMatch, toMatch);
   }
-  document.getElementById('ms-tab-departures').addEventListener('click', function () { switchMobileTab('departures'); });
-  document.getElementById('ms-tab-news').addEventListener('click', function () { switchMobileTab('news'); });
-  document.getElementById('ms-min-btn').addEventListener('click', function () {
-    var sheet = document.getElementById('mobile-sheet');
-    var collapsed = sheet.classList.toggle('collapsed');
-    document.getElementById('ms-min-btn').querySelector('i').style.transform = collapsed ? 'rotate(180deg)' : '';
+  fromInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') toInput.focus(); });
+  toInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') trySubmitFromTo(); });
+
+  // ── Sidebar minimise (tablet/mobile only — see CSS) ───────────────────────
+  document.getElementById('sb-min-btn').addEventListener('click', function () {
+    sidebarEl.classList.toggle('collapsed');
   });
 
   // ── Filters (client-side categories over incidents) ──────────────────────
@@ -842,38 +1013,38 @@
     });
   }
 
+  function escapeAttr(str) {
+    return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
   function newsItemsHtml() {
     var filtered = incidents.filter(function (n) {
       if (activeFilter === 'all') return true;
       if (activeFilter === 'urgent') return n.severity >= 2;
       return (n.region || '').toLowerCase() === activeFilter || (n.line || '').toLowerCase() === activeFilter;
     });
-    if (!filtered.length) return '<div class="news-empty">No live disruptions right now.</div>';
+    if (!filtered.length) return '<div class="news-empty" data-anim-row>No live disruptions right now.</div>';
     var sorted = filtered.slice().sort(function (a, b) { return (b.severity || 0) - (a.severity || 0); });
     return sorted.map(function (n) {
       var urgent = n.severity >= 2;
       var dotColor = urgent ? 'var(--m)' : 'var(--t)';
-      return '<div class="news-item' + (urgent ? ' urgent' : '') + '">' +
+      // Links out to the original source article when the underlying
+      // news/incident record carries one (api/incidents.js is currently a
+      // stub with no `link` field — this renders inert until that's wired up
+      // with a real feed; not adding a new fetch here per instruction).
+      var linkHtml = n.link ? '<a class="news-link" href="' + escapeAttr(n.link) + '" target="_blank" rel="noopener">Source →</a>' : '';
+      return '<div class="news-item' + (urgent ? ' urgent' : '') + '" data-anim-row>' +
         '<span class="news-dot" style="background:' + dotColor + ';"></span>' +
         '<div><div class="news-title">' + n.summary + '</div>' +
-        '<div class="news-meta">' + (n.timestamp || '') + ' · ' + (n.region || n.toc || '') + '</div></div></div>';
+        '<div class="news-meta"><span>' + (n.timestamp || '') + ' · ' + (n.region || n.toc || '') + '</span>' + linkHtml + '</div></div></div>';
     }).join('');
   }
 
   function renderNews() {
     document.getElementById('news-items').innerHTML = newsItemsHtml();
-    document.getElementById('ms-news-items').innerHTML = newsItemsHtml();
     var urgentCount = incidents.filter(function (n) { return n.severity >= 2; }).length;
-    var badge = document.getElementById('np-badge');
-    var msBadge = document.getElementById('ms-badge');
-    badge.textContent = urgentCount; badge.classList.toggle('show', urgentCount > 0);
-    msBadge.textContent = urgentCount; msBadge.classList.toggle('show', urgentCount > 0);
-    document.getElementById('np-pulse').classList.toggle('show', urgentCount > 0);
     document.getElementById('rebook-cta').classList.toggle('show', urgentCount > 0);
-    document.getElementById('ms-rebook-cta').classList.toggle('show', urgentCount > 0);
-    document.getElementById('np-count').textContent = Math.min(incidents.length, 5) + ' of ' + incidents.length;
-    var now = new Date();
-    document.getElementById('np-time').textContent = now.toTimeString().slice(0, 5);
+    document.getElementById('sb-count').textContent = Math.min(incidents.length, 5) + ' of ' + incidents.length;
   }
 
   function pollIncidents() {
@@ -882,12 +1053,12 @@
       renderNews();
     }).catch(function () { incidents = []; renderNews(); });
   }
-  renderFilterRow('filter-row', renderNews);
-  renderFilterRow('ms-filter-row', renderNews);
+  rebuildSidebarContent(); // initial, unanimated — #14 only fires on selection changes thereafter
   pollIncidents();
   setInterval(pollIncidents, 60000);
 
-  // ── Saved routes (localStorage) ──────────────────────────────────────────
+  // ── Saved routes (localStorage) — star toggle now lives inline in the
+  // selection row instead of a separate "Saved routes" list section. ───────
   var SAVED_KEY = 'srhq_saved_routes';
   function getSavedRoutes() {
     try { return JSON.parse(localStorage.getItem(SAVED_KEY)) || []; } catch (e) { return []; }
@@ -895,42 +1066,22 @@
   function setSavedRoutes(list) {
     try { localStorage.setItem(SAVED_KEY, JSON.stringify(list)); } catch (e) {}
   }
-  function statusDotColor(crs) {
-    var affected = incidents.some(function (n) { return (n.affectedCRS || []).indexOf(crs) !== -1 && n.severity >= 2; });
-    return affected ? 'var(--m)' : 'var(--t)';
+  function isStarred(crs) {
+    return getSavedRoutes().some(function (r) { return r.crs === crs; });
   }
-  function renderSaved() {
+  starBtn.addEventListener('click', function () {
+    if (selection.type !== 'station') return;
     var list = getSavedRoutes();
-    var el = document.getElementById('saved-list');
-    if (!list.length) { el.innerHTML = '<div class="saved-empty">No saved routes yet — tap a station to save</div>'; return; }
-    el.innerHTML = list.map(function (r, i) {
-      return '<div class="saved-route">' +
-        '<span class="saved-dot" style="background:' + statusDotColor(r.crs) + ';"></span>' +
-        '<span class="saved-name">' + r.name + '</span>' +
-        '<span class="saved-sub">' + (r.toc || '') + '</span>' +
-        '<button class="saved-remove" data-idx="' + i + '" aria-label="Remove saved route">×</button></div>';
-    }).join('');
-    Array.prototype.forEach.call(el.querySelectorAll('.saved-remove'), function (btn) {
-      btn.addEventListener('click', function () {
-        var list = getSavedRoutes();
-        list.splice(parseInt(btn.dataset.idx, 10), 1);
-        setSavedRoutes(list);
-        renderSaved();
-      });
-    });
-  }
-  document.getElementById('saved-add-btn').addEventListener('click', function () {
-    if (!selectedCrs || !stationsData) { alert('Tap a station on the map first, then Add to save it.'); return; }
-    var feature = stationsData.features.find(function (f) { return f.properties.crs === selectedCrs; });
-    if (!feature) return;
-    var name = prompt('Save this station as:', feature.properties.name);
-    if (name === null) return;
-    var list = getSavedRoutes();
-    list.push({ name: name || feature.properties.name, crs: feature.properties.crs, toc: feature.properties.toc, addedAt: new Date().toISOString() });
+    var idx = list.findIndex(function (r) { return r.crs === selection.crs; });
+    if (idx !== -1) {
+      list.splice(idx, 1);
+    } else {
+      var feature = stationsData && stationsData.features.find(function (f) { return f.properties.crs === selection.crs; });
+      list.push({ name: selection.name, crs: selection.crs, toc: feature ? feature.properties.toc : '', addedAt: new Date().toISOString() });
+    }
     setSavedRoutes(list);
-    renderSaved();
+    starBtn.classList.toggle('starred', isStarred(selection.crs));
   });
-  renderSaved();
 
   // ── Cookie consent (compact vanilla banner) ──────────────────────────────
   var COOKIE_KEY = 'srhq-cookie-consent.v1';
@@ -946,7 +1097,7 @@
   document.getElementById('cc-accept').addEventListener('click', function () { persistCookieChoice(true); });
   document.getElementById('cc-reject').addEventListener('click', function () { persistCookieChoice(false); });
 
-  // ── Database mode: history slider ────────────────────────────────────────
+  // ── Database mode: history panel ──────────────────────────────────────────
   var ERA_INFO = {
     1845: 'The Railway Mania era — hundreds of competing companies laid track across Britain.',
     1880: 'The "Big Four"’ predecessors expand — mainlines link every major city.',
@@ -955,25 +1106,23 @@
     1994: 'On the eve of privatisation — British Rail sectors prepare for franchising.',
     2025: 'Today’s network — electrified mainlines, high-speed services and open access operators.',
   };
-  var historyBtn = document.getElementById('history-btn');
-  var yearBar = document.getElementById('year-bar');
-  historyBtn.addEventListener('click', function () {
-    var open = yearBar.classList.toggle('open');
-    historyBtn.classList.toggle('active', open);
+  var historyPanel = document.getElementById('history-panel');
+  document.getElementById('hp-toggle').addEventListener('click', function () {
+    historyPanel.classList.toggle('collapsed');
   });
   var yearSlider = document.getElementById('year-slider');
   function updateYear(year) {
     year = parseInt(year, 10);
-    document.getElementById('yb-year').textContent = year >= 2025 ? 'Today' : year;
+    document.getElementById('hp-year').textContent = year >= 2025 ? 'Today' : year;
     var snaps = [1845, 1880, 1923, 1965, 1994, 2025];
     var closest = snaps.reduce(function (a, b) { return Math.abs(b - year) < Math.abs(a - year) ? b : a; });
-    document.getElementById('yb-era-chip').textContent = closest >= 2025 ? 'Today' : closest;
-    document.getElementById('yb-context').textContent = ERA_INFO[closest] || '';
+    document.getElementById('hp-era-chip').textContent = closest >= 2025 ? 'Today' : closest;
+    document.getElementById('hp-context').textContent = ERA_INFO[closest] || '';
     // TODO: swap in OpenHistoricalMap vector tiles for this year once an
     // OHM tile endpoint/key is available — currently UI-only.
   }
   yearSlider.addEventListener('input', function () { updateYear(yearSlider.value); });
-  Array.prototype.forEach.call(document.querySelectorAll('.yb-snap'), function (btn) {
+  Array.prototype.forEach.call(document.querySelectorAll('.hp-snap'), function (btn) {
     btn.addEventListener('click', function () { yearSlider.value = btn.dataset.year; updateYear(btn.dataset.year); });
   });
   updateYear(2025);

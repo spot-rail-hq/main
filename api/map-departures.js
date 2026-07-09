@@ -7,6 +7,8 @@
  * a free public Darwin proxy that needs no auth for basic lookups.
  *
  * GET /api/map-departures?crs=BHM
+ * GET /api/map-departures?crs=BHM&to=PAD  (Huxley2's FilterType.to — next
+ *   departures from BHM whose board shows PAD, i.e. a from/to board)
  * Returns: [{ scheduledTime, destination, platform, status, etd }, ...]
  */
 
@@ -19,9 +21,15 @@ export default async function handler(req, res) {
   if (!crs) {
     return res.status(400).json({ error: 'MISSING_CRS' });
   }
+  const toRaw = (req.query.to || '').toString().toUpperCase();
+  const to = toRaw.replace(/[^A-Z0-9]/g, '').slice(0, 3);
 
   try {
-    const upstream = await fetch(`https://huxley2.azurewebsites.net/departures/${crs}/5`);
+    const upstream = await fetch(
+      to
+        ? `https://huxley2.azurewebsites.net/departures/${crs}/to/${to}/5`
+        : `https://huxley2.azurewebsites.net/departures/${crs}/5`
+    );
     if (!upstream.ok) {
       return res.status(upstream.ok ? 200 : 502).json([]);
     }
