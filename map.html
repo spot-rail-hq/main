@@ -280,17 +280,36 @@
   .sb-top-tabs { display: flex; gap: 4px; }
   .sb-top-actions { display: flex; align-items: center; gap: 6px; }
   .sb-top-lower { padding: 0 16px 14px; }
-  #sb-search-input { display: none; width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--brh); color: var(--ink-primary); font-size: 12px; padding: 4px 2px; margin-top: 6px; }
-  #sb-search-input.open { display: block; }
+  /* Search panel — hidden until the search icon is tapped. Tab toggle is
+     mono/uppercase text (no pill background), matching Search_bar.png rather
+     than the filter-chip pill style used elsewhere. */
+  .sb-search-panel { display: none; margin-top: 10px; }
+  .sb-search-panel.open { display: block; }
+  .sb-search-modes { display: flex; gap: 20px; padding-bottom: 12px; }
+  .sb-search-mode-tab { font-family: var(--font-mono); font-size: 14px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--ink); }
+  .sb-search-mode-tab.active { color: var(--t); }
 
-  .sb-search-modes { display: none; gap: 4px; margin-top: 6px; }
-  .sb-search-modes.open { display: flex; }
-  .sb-mode-chip { font-size: 11px; padding: 3px 9px; border-radius: 99px; border: 0.5px solid var(--br); color: var(--ink); }
-  .sb-mode-chip.active { background: rgba(64,224,208,0.1); border-color: var(--t); color: var(--t); }
-  .sb-fromto-row { display: none; gap: 6px; margin-top: 6px; align-items: center; }
-  .sb-fromto-row.open { display: flex; }
-  .sb-fromto-row input { flex: 1; min-width: 0; background: transparent; border: none; border-bottom: 1px solid var(--brh); color: var(--ink-primary); font-size: 12px; padding: 4px 2px; }
-  .sb-fromto-row i { font-size: 12px; color: var(--ink); flex-shrink: 0; }
+  /* Rounded field + its autocomplete dropdown. Each field/dropdown pair sits
+     in an .sb-ac-wrap so the dropdown can be positioned relative to just
+     that input. */
+  .sb-ac-wrap { position: relative; }
+  .sb-ac-wrap + .sb-ac-wrap { margin-top: 10px; }
+  .sb-search-field { width: 100%; padding: 12px 14px; border-radius: 12px; border: 0.5px solid var(--brh);
+    background: transparent; color: var(--ink-primary); font-size: 14px; }
+  .sb-search-field::placeholder { color: var(--ink); }
+  .sb-search-field:focus { border-color: var(--t); }
+  .sb-station-field { display: none; }
+  .sb-station-field.open { display: block; }
+  .sb-fromto-fields { display: none; flex-direction: column; }
+  .sb-fromto-fields.open { display: flex; }
+
+  .sb-ac-list { display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 5;
+    max-height: 220px; overflow-y: auto; background: var(--sf); border: 0.5px solid var(--brh); border-radius: 12px;
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+  .sb-ac-list.open { display: block; }
+  .sb-ac-list.dropup { top: auto; bottom: calc(100% + 4px); }
+  .sb-ac-item { display: block; width: 100%; text-align: left; padding: 9px 14px; font-size: 13px; color: var(--ink-primary); }
+  .sb-ac-item:hover { background: rgba(64,224,208,0.08); color: var(--t); }
 
   /* Selected station/route/network row — star sits inline between the name
      and the close (×) icon, replacing the old separate "Saved routes" list.
@@ -539,15 +558,27 @@
       </div>
     </div>
     <div class="sb-top-lower">
-      <input id="sb-search-input" type="text" placeholder="Find a station…" aria-label="Search stations" />
-      <div class="sb-search-modes" id="sb-search-modes">
-        <button class="sb-mode-chip active" id="sb-mode-station" data-mode="station">Station</button>
-        <button class="sb-mode-chip" id="sb-mode-fromto" data-mode="fromto">From → To</button>
-      </div>
-      <div class="sb-fromto-row" id="sb-fromto-row">
-        <input id="sb-from-input" type="text" placeholder="From…" aria-label="From station" />
-        <i class="ti ti-arrow-right"></i>
-        <input id="sb-to-input" type="text" placeholder="To…" aria-label="To station" />
+      <div class="sb-search-panel" id="sb-search-panel">
+        <div class="sb-search-modes" id="sb-search-modes">
+          <button class="sb-search-mode-tab active" id="sb-mode-station" data-mode="station">Station</button>
+          <button class="sb-search-mode-tab" id="sb-mode-fromto" data-mode="fromto">Destination</button>
+        </div>
+        <div class="sb-station-field open" id="sb-station-field-wrap">
+          <div class="sb-ac-wrap">
+            <input id="sb-search-input" class="sb-search-field" type="text" placeholder="Station" aria-label="Search stations" autocomplete="off" />
+            <div class="sb-ac-list" id="sb-ac-station"></div>
+          </div>
+        </div>
+        <div class="sb-fromto-fields" id="sb-fromto-row">
+          <div class="sb-ac-wrap">
+            <input id="sb-from-input" class="sb-search-field" type="text" placeholder="From" aria-label="From station" autocomplete="off" />
+            <div class="sb-ac-list" id="sb-ac-from"></div>
+          </div>
+          <div class="sb-ac-wrap">
+            <input id="sb-to-input" class="sb-search-field" type="text" placeholder="To" aria-label="To station" autocomplete="off" />
+            <div class="sb-ac-list" id="sb-ac-to"></div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -1139,7 +1170,8 @@
   // ── Search (single station, and from/to) ──────────────────────────────────
   var searchBtn = document.getElementById('sb-search-btn');
   var searchInput = document.getElementById('sb-search-input');
-  var searchModes = document.getElementById('sb-search-modes');
+  var searchPanel = document.getElementById('sb-search-panel');
+  var stationFieldWrap = document.getElementById('sb-station-field-wrap');
   var fromToRow = document.getElementById('sb-fromto-row');
   var fromInput = document.getElementById('sb-from-input');
   var toInput = document.getElementById('sb-to-input');
@@ -1149,7 +1181,7 @@
     searchMode = m;
     document.getElementById('sb-mode-station').classList.toggle('active', m === 'station');
     document.getElementById('sb-mode-fromto').classList.toggle('active', m === 'fromto');
-    searchInput.classList.toggle('open', m === 'station');
+    stationFieldWrap.classList.toggle('open', m === 'station');
     fromToRow.classList.toggle('open', m === 'fromto');
     if (m === 'station') searchInput.focus(); else fromInput.focus();
   }
@@ -1157,10 +1189,9 @@
   document.getElementById('sb-mode-fromto').addEventListener('click', function () { setSearchMode('fromto'); });
 
   searchBtn.addEventListener('click', function () {
-    var opening = !searchModes.classList.contains('open');
-    searchModes.classList.toggle('open', opening);
+    var opening = !searchPanel.classList.contains('open');
+    searchPanel.classList.toggle('open', opening);
     if (opening) setSearchMode(searchMode);
-    else { searchInput.classList.remove('open'); fromToRow.classList.remove('open'); }
   });
 
   function findStationFeature(q) {
