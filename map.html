@@ -211,31 +211,30 @@
   .header-tab { display: flex; align-items: center; padding: 8px 14px; border-radius: 999px; font-size: 13.5px; font-weight: 500; color: var(--ink); }
   .header-tab.live-on, .header-tab.db-on { background: var(--t); color: #07090C; }
 
-  /* ── Map control cluster: zoom/layers/location beside a horizontal "Jump to"
-     bar (desktop: beside the sidebar; tablet/mobile: top-left corner so it
-     never sits over the bottom sheet). Top-aligned as one row. ──────────── */
-  #control-cluster { position: absolute; top: calc(var(--nav-h) + 10px); left: 10px; z-index: 55; display: flex; flex-direction: row; align-items: flex-start; gap: 10px; }
+  /* ── Map control cluster: "Jump to" bar above, zoom/layers/location column
+     below it (column-reverse flips the DOM order, which is
+     [.map-controls, #region-jump], without touching the markup). Desktop:
+     beside the sidebar. Tablet/mobile: right below the top-anchored sidebar's
+     35vh cap, with a gap. ─────────────────────────────────────────────── */
+  #control-cluster { position: absolute; top: calc(var(--nav-h) + 10px); left: 10px; z-index: 55;
+    display: flex; flex-direction: column-reverse; align-items: flex-start; gap: 10px; }
   .map-controls { display: flex; flex-direction: column; gap: 3px; }
-  #region-jump { display: flex; flex-direction: row; align-items: center; gap: 4px; padding: 6px 10px;
-    background: var(--sf); border: 0.5px solid var(--brh); border-radius: 8px;
+  /* Same rounded-card radius as the sidebar (16px), and pills styled exactly
+     like the filter chips inside it — border-only by default, filled
+     turquoise for whichever region was last jumped to. */
+  #region-jump { display: flex; align-items: center; gap: 6px; padding: 8px 12px;
+    background: var(--sf); border: 0.5px solid var(--brh); border-radius: 16px;
     backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
     max-width: calc(100vw - 90px); overflow-x: auto; scrollbar-width: none; }
   #region-jump::-webkit-scrollbar { display: none; }
-  #region-jump .rj-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink); padding: 0 6px 0 2px; flex-shrink: 0; }
-  #region-jump button { font-size: 14px; padding: 6px 10px; border-radius: 6px; color: var(--ink); white-space: nowrap; flex-shrink: 0; }
-  #region-jump button:hover { color: var(--t); background: rgba(64,224,208,0.08); }
+  #region-jump .rj-label { font-family: var(--font-body); font-size: 14px; font-weight: 500; color: var(--ink); padding: 0 2px 0 2px; flex-shrink: 0; }
   body.mode-database #region-jump { display: none; }
 
   @media (min-width: 769px) {
     #control-cluster { left: var(--sidebar-edge); }
   }
-  /* Mobile/tablet: sidebar is now top-anchored (see #sidebar below) and caps
-     at 35vh, so this cluster sits below it instead of overlapping it — Jump
-     to first, zoom controls beneath (column-reverse flips the DOM order,
-     which is [.map-controls, #region-jump], without touching desktop's row
-     layout or the markup). */
   @media (max-width: 768px) {
-    #control-cluster { top: calc(var(--nav-h) + 35vh + 10px); flex-direction: column-reverse; }
+    #control-cluster { top: calc(var(--nav-h) + 35vh + 10px); }
   }
 
   /* ── Bottom hints ─────────────────────────────────────────────── */
@@ -542,12 +541,12 @@
   </div>
   <div id="region-jump">
     <span class="rj-label">Jump to</span>
-    <button data-lng="-2.5" data-lat="54.5" data-zoom="5.5">All UK</button>
-    <button data-lng="-0.1278" data-lat="51.5074" data-zoom="11">London</button>
-    <button data-lng="-1.9" data-lat="52.4778" data-zoom="11">Birmingham</button>
-    <button data-lng="-2.2307" data-lat="53.4775" data-zoom="11">Manchester</button>
-    <button data-lng="-4.2579" data-lat="55.8586" data-zoom="11">Glasgow</button>
-    <button data-lng="-3.1883" data-lat="55.9521" data-zoom="11">Edinburgh</button>
+    <button class="filter-chip active" data-lng="-2.5" data-lat="54.5" data-zoom="5.5">All UK</button>
+    <button class="filter-chip" data-lng="-0.1278" data-lat="51.5074" data-zoom="11">London</button>
+    <button class="filter-chip" data-lng="-1.9" data-lat="52.4778" data-zoom="11">Birmingham</button>
+    <button class="filter-chip" data-lng="-2.2307" data-lat="53.4775" data-zoom="11">Manchester</button>
+    <button class="filter-chip" data-lng="-4.2579" data-lat="55.8586" data-zoom="11">Glasgow</button>
+    <button class="filter-chip" data-lng="-3.1883" data-lat="55.9521" data-zoom="11">Edinburgh</button>
   </div>
 </div>
 
@@ -819,10 +818,8 @@
       style: buildMapStyle(currentTheme(), currentStadiaKey),
       center: initCenter,
       zoom: initZoom,
-      maxBounds: [[-12, 49], [3.5, 61.5]],
       minZoom: 5,
       maxZoom: 18,
-      maxBoundsViscosity: 1.0,
       attributionControl: false,
     });
     // 'top-right' rather than a map corner the sidebar/bottom-sheet would
@@ -871,23 +868,37 @@
     greyOutLandcover(currentTheme());
     hideOceanLabels();
 
-    map.addSource('orm-standard', {
-      type: 'raster',
-      tiles: [
-        'https://a.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png',
-        'https://b.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png',
-        'https://c.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png',
-      ],
-      tileSize: 256,
-      maxzoom: 19,
-      minzoom: 2,
-      attribution: '© <a href="https://www.openrailwaymap.org">OpenRailwayMap</a> contributors',
-    });
-    map.addLayer({
-      id: 'orm-standard-layer', type: 'raster', source: 'orm-standard',
-      layout: { visibility: ormVisible ? 'visible' : 'none' },
-      paint: { 'raster-opacity': 0.9 },
-    });
+    // Guarded with getSource/getLayer checks — belt-and-suspenders alongside
+    // { diff: false } on setStyle() below. Without diff:false, MapLibre's
+    // style diffing occasionally decided these runtime-added (not part of
+    // either style JSON) source/layer still matched across a theme toggle
+    // and left it in place, so the addSource() call here threw "already
+    // exists" and aborted the rest of this function — which is why the ORM
+    // route overlay (and the landcover regrey below it, since it never got
+    // this far on the *next* toggle) would vanish after switching themes.
+    if (!map.getSource('orm-standard')) {
+      map.addSource('orm-standard', {
+        type: 'raster',
+        tiles: [
+          'https://a.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png',
+          'https://b.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png',
+          'https://c.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png',
+        ],
+        tileSize: 256,
+        maxzoom: 19,
+        minzoom: 2,
+        attribution: '© <a href="https://www.openrailwaymap.org">OpenRailwayMap</a> contributors',
+      });
+    }
+    if (!map.getLayer('orm-standard-layer')) {
+      map.addLayer({
+        id: 'orm-standard-layer', type: 'raster', source: 'orm-standard',
+        layout: { visibility: ormVisible ? 'visible' : 'none' },
+        paint: { 'raster-opacity': 0.9 },
+      });
+    } else {
+      map.setLayoutProperty('orm-standard-layer', 'visibility', ormVisible ? 'visible' : 'none');
+    }
 
     if (stationsData) {
       addStationsLayer(stationsData);
@@ -912,13 +923,21 @@
 
   function addStationsLayer(gj) {
     var c = themeColors();
-    map.addSource('stations', { type: 'geojson', data: gj });
-    map.addLayer({ id: 'stations-circle', type: 'circle', source: 'stations', paint: stationsCirclePaint() });
-    map.addLayer({
-      id: 'stations-label', type: 'symbol', source: 'stations', minzoom: 9,
-      layout: { 'text-field': ['get', 'name'], 'text-size': 10, 'text-anchor': 'top', 'text-offset': [0, 0.6] },
-      paint: { 'text-color': c.labelColor, 'text-halo-color': c.labelHalo, 'text-halo-width': 1 },
-    });
+    if (!map.getSource('stations')) {
+      map.addSource('stations', { type: 'geojson', data: gj });
+    } else {
+      map.getSource('stations').setData(gj);
+    }
+    if (!map.getLayer('stations-circle')) {
+      map.addLayer({ id: 'stations-circle', type: 'circle', source: 'stations', paint: stationsCirclePaint() });
+    }
+    if (!map.getLayer('stations-label')) {
+      map.addLayer({
+        id: 'stations-label', type: 'symbol', source: 'stations', minzoom: 9,
+        layout: { 'text-field': ['get', 'name'], 'text-size': 10, 'text-anchor': 'top', 'text-offset': [0, 0.6] },
+        paint: { 'text-color': c.labelColor, 'text-halo-color': c.labelHalo, 'text-halo-width': 1 },
+      });
+    }
     if (!stationInteractionsWired) { wireStationInteractions(); stationInteractionsWired = true; }
   }
 
@@ -941,7 +960,9 @@
     try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
     applyHeaderLogo();
     if (!map) return;
-    map.setStyle(buildMapStyle(next, currentStadiaKey));
+    // diff:false forces a full teardown/rebuild of the style instead of
+    // MapLibre's default diffing — see the comment in addMapLayers() for why.
+    map.setStyle(buildMapStyle(next, currentStadiaKey), { diff: false });
     map.once('style.load', addMapLayers);
   }
   window.srhqToggleMapTheme = toggleTheme;
@@ -1246,11 +1267,25 @@
   });
 
   // ── Region jump ───────────────────────────────────────────────────────────
-  Array.prototype.forEach.call(document.querySelectorAll('#region-jump button[data-lng]'), function (btn) {
+  var regionJumpBtns = document.querySelectorAll('#region-jump button[data-lng]');
+  Array.prototype.forEach.call(regionJumpBtns, function (btn) {
     btn.addEventListener('click', function () {
       map.flyTo({ center: [parseFloat(btn.dataset.lng), parseFloat(btn.dataset.lat)], zoom: parseFloat(btn.dataset.zoom), duration: 800 });
+      Array.prototype.forEach.call(regionJumpBtns, function (b) { b.classList.toggle('active', b === btn); });
     });
   });
+
+  // A plain (non-shift) mouse wheel only scrolls vertically by default, which
+  // makes a horizontally-scrolling row feel broken/unresponsive to anyone not
+  // using a trackpad — redirect vertical wheel delta to horizontal scroll.
+  function enableWheelToHorizontalScroll(el) {
+    el.addEventListener('wheel', function (e) {
+      if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return; // already horizontal (trackpad) — let it be
+      el.scrollLeft += e.deltaY;
+      e.preventDefault();
+    }, { passive: false });
+  }
+  enableWheelToHorizontalScroll(document.getElementById('region-jump'));
 
   // ── Bottom hints ──────────────────────────────────────────────────────────
   function hideBottomHints() { document.getElementById('bottom-hints').classList.add('hidden'); }
@@ -1385,9 +1420,16 @@
       var key = f.toLowerCase();
       return '<button class="filter-chip' + (key === activeFilter ? ' active' : '') + '" data-filter="' + key + '">' + f + '</button>';
     }).join('');
-    Array.prototype.forEach.call(el.querySelectorAll('.filter-chip'), function (btn) {
+    enableWheelToHorizontalScroll(el);
+    var chips = el.querySelectorAll('.filter-chip');
+    Array.prototype.forEach.call(chips, function (btn) {
       btn.addEventListener('click', function () {
         activeFilter = btn.dataset.filter;
+        // onSelect() (renderNews) only re-renders the news list, not this
+        // row, so the active highlight has to move here directly — otherwise
+        // clicking a chip visibly does nothing when there happen to be no
+        // incidents to re-filter (as now, with the incidents API stubbed).
+        Array.prototype.forEach.call(chips, function (b) { b.classList.toggle('active', b === btn); });
         onSelect();
       });
     });
