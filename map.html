@@ -116,7 +116,7 @@
 
   #map { position: absolute; inset: 0; background: var(--bg); }
   #station-hover-tip { position: absolute; z-index: 60; transform: translate(-50%, -100%) translateY(-8px);
-    padding: 3px 8px; font-size: 10px; font-weight: 500; color: var(--ink-primary); white-space: nowrap;
+    padding: 4px 10px; font-size: 14px; font-weight: 500; color: var(--ink-primary); white-space: nowrap;
     pointer-events: none; display: none; }
   .maplibregl-ctrl-attrib { font-size: 9px !important; background: rgba(7,9,12,0.7) !important; color: var(--ink) !important; }
   .maplibregl-ctrl-attrib a { color: var(--ink) !important; }
@@ -126,10 +126,16 @@
 
   .pill { background: var(--sf); border: 0.5px solid var(--brh); border-radius: 99px; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
   .icon-btn { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 6px; color: var(--ink); font-size: 14px; background: var(--sf); border: 0.5px solid var(--brh); }
-  .icon-btn:hover { color: var(--t); border-color: var(--t); }
+  /* Hover only hints (border), it never recolors the icon — otherwise a
+     toggled-OFF button (aria-pressed=false) still LOOKS "on" while hovered,
+     which is exactly the confusion reported. Only aria-pressed=true (the
+     actual on/off state) gets the full turquoise treatment, so hover can
+     never visually impersonate it. */
+  .icon-btn:hover { border-color: var(--t); }
   .icon-btn[aria-pressed="true"] { color: var(--t); border-color: var(--t); }
   .ghost-btn { display: inline-flex; align-items: center; justify-content: center; color: var(--ink); background: transparent; border: none; width: auto; height: auto; padding: 4px; }
   .ghost-btn:hover { color: var(--t); }
+  .ghost-btn[aria-pressed="true"] { color: var(--t); }
 
   /* ── Master site header — ported verbatim (classes/vars) from departures.html
      so it's pixel/behaviour-identical to every other page. Persists above the
@@ -198,25 +204,25 @@
     .nav-inner { padding: 0 20px; }
   }
 
-  .header-tab { display: flex; align-items: center; gap: 4px; padding: 5px 9px; border-radius: 99px; font-size: 12px; font-weight: 500; color: var(--ink); }
-  .header-tab i { font-size: 14px; }
-  .header-tab.live-on { background: var(--m); color: #fff; }
-  .header-tab.db-on { background: var(--t); color: #07090C; }
-  /* Icon shows the mode you'd switch TO (matches index.html's toggle convention):
-     sun visible in dark mode (tap for light), moon visible in light mode (tap for dark). */
-  .theme-toggle-icon-light { display: inline; }
-  .theme-toggle-icon-dark { display: none; }
-  :root[data-theme="light"] .theme-toggle-icon-light { display: none; }
-  :root[data-theme="light"] .theme-toggle-icon-dark { display: inline; }
+  /* Sized/shaped to match .nav-link — the site's standard rounded pill button
+     (8px/14px padding, 13.5px text) — text-only, no icons. Active = turquoise
+     for whichever mode is on, matching the site accent (not the old
+     magenta-for-Live/turquoise-for-Database split). */
+  .header-tab { display: flex; align-items: center; padding: 8px 14px; border-radius: 999px; font-size: 13.5px; font-weight: 500; color: var(--ink); }
+  .header-tab.live-on, .header-tab.db-on { background: var(--t); color: #07090C; }
 
-  /* ── Map control cluster: zoom/layers/location + jump-to (beside sidebar on
-     desktop, top-left corner on tablet/mobile so it never sits over the
-     bottom sheet) ─────────────────────────────────────────────────────── */
-  #control-cluster { position: absolute; top: calc(var(--nav-h) + 10px); left: 10px; z-index: 55; display: flex; flex-direction: column; gap: 10px; }
+  /* ── Map control cluster: zoom/layers/location beside a horizontal "Jump to"
+     bar (desktop: beside the sidebar; tablet/mobile: top-left corner so it
+     never sits over the bottom sheet). Top-aligned as one row. ──────────── */
+  #control-cluster { position: absolute; top: calc(var(--nav-h) + 10px); left: 10px; z-index: 55; display: flex; flex-direction: row; align-items: flex-start; gap: 10px; }
   .map-controls { display: flex; flex-direction: column; gap: 3px; }
-  #region-jump { display: flex; flex-direction: column; gap: 2px; padding: 5px; }
-  #region-jump .rj-label { font-family: var(--font-mono); font-size: 8px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink); padding: 2px 6px 3px; }
-  #region-jump button { font-size: 10px; padding: 5px 9px; border-radius: 6px; color: var(--ink); text-align: left; }
+  #region-jump { display: flex; flex-direction: row; align-items: center; gap: 4px; padding: 6px 10px;
+    background: var(--sf); border: 0.5px solid var(--brh); border-radius: 8px;
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    max-width: calc(100vw - 90px); overflow-x: auto; scrollbar-width: none; }
+  #region-jump::-webkit-scrollbar { display: none; }
+  #region-jump .rj-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink); padding: 0 6px 0 2px; flex-shrink: 0; }
+  #region-jump button { font-size: 14px; padding: 6px 10px; border-radius: 6px; color: var(--ink); white-space: nowrap; flex-shrink: 0; }
   #region-jump button:hover { color: var(--t); background: rgba(64,224,208,0.08); }
   body.mode-database #region-jump { display: none; }
 
@@ -270,10 +276,10 @@
   #sidebar.collapsed .sb-top-lower, #sidebar.collapsed .sb-selection, #sidebar.collapsed #sb-body, #sidebar.collapsed #sb-attribution { display: none; }
 
   .sb-top { flex-shrink: 0; border-bottom: 0.5px solid var(--br); }
-  .sb-top-upper { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px 6px; gap: 6px; }
+  .sb-top-upper { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px 8px; gap: 6px; }
   .sb-top-tabs { display: flex; gap: 4px; }
-  .sb-top-actions { display: flex; align-items: center; gap: 2px; }
-  .sb-top-lower { padding: 0 10px 8px; }
+  .sb-top-actions { display: flex; align-items: center; gap: 6px; }
+  .sb-top-lower { padding: 0 16px 14px; }
   #sb-search-input { display: none; width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--brh); color: var(--ink-primary); font-size: 12px; padding: 4px 2px; margin-top: 6px; }
   #sb-search-input.open { display: block; }
 
@@ -287,21 +293,25 @@
   .sb-fromto-row i { font-size: 12px; color: var(--ink); flex-shrink: 0; }
 
   /* Selected station/route/network row — star sits inline between the name
-     and the close (×) icon, replacing the old separate "Saved routes" list. */
-  .sb-selection { display: none; align-items: center; gap: 8px; padding: 10px; border-bottom: 0.5px solid var(--br); flex-shrink: 0; }
+     and the close (×) icon, replacing the old separate "Saved routes" list.
+     Name size matches database.html's category section headers exactly
+     (Archivo 20px/600/-0.5px — e.g. "Intercity & High Speed"). */
+  .sb-selection { display: none; align-items: center; gap: 8px; padding: 14px 16px; border-bottom: 0.5px solid var(--br); flex-shrink: 0; }
   #sidebar.has-selection .sb-selection { display: flex; }
   .sb-selection-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    font-family: var(--font-display); font-size: 18px; font-weight: 600; letter-spacing: -0.3px; }
+    font-family: var(--font-display); font-size: 20px; font-weight: 600; letter-spacing: -0.5px; }
   #sb-star-btn.starred { color: var(--a); }
-  #sb-star-btn.starred i::before { content: "\ea78"; } /* ti-star-filled */
+  #sb-star-btn.starred i::before { content: "\f6a6"; } /* ti-star-filled — was "\ea78", which renders as ⌘ in this webfont */
+  #sb-saved-toggle[aria-pressed="true"] i::before { content: "\f6a6"; }
   #sb-clear-btn { font-size: 18px; line-height: 1; padding: 2px 4px; }
 
   #sb-body { flex: 1; min-height: 0; overflow-y: auto; }
 
   /* Departure format matches departures.html's table exactly: mono time/platform,
      14px body cells, plain-colour status text (no pill background), 11px
-     uppercase mono column labels. */
-  #sb-dep-board { display: none; border-bottom: 0.5px solid var(--br); padding: 8px 10px 10px; }
+     uppercase mono column labels, alternating row background (var(--surface2),
+     same token/value departures.html's .dep-table uses). */
+  #sb-dep-board { display: none; border-bottom: 0.5px solid var(--br); padding: 12px 16px 14px; }
   #sb-dep-board .db-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 6px; }
   #sb-dep-board .db-label { font-family: var(--font-mono); font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--t); }
   #sb-dep-board .db-station { font-size: 12px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 260px; }
@@ -311,7 +321,8 @@
   .dep-cols span:nth-child(2) { flex: 1; }
   .dep-cols span:nth-child(3) { width: 50px; flex-shrink: 0; }
   .dep-cols span:nth-child(4) { width: 64px; flex-shrink: 0; }
-  .dep-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; font-size: 14px; border-bottom: 0.5px solid rgba(64,224,208,0.06); }
+  .dep-row { display: flex; align-items: center; gap: 10px; padding: 6px 4px; margin: 0 -4px; font-size: 14px; border-bottom: 0.5px solid rgba(64,224,208,0.06); }
+  .dep-row:nth-child(even) { background: var(--surface2); }
   .dep-time { font-family: var(--font-mono); font-size: 14px; width: 52px; flex-shrink: 0; }
   .dep-dest { font-size: 14px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .dep-plat { font-family: var(--font-mono); width: 50px; flex-shrink: 0; font-size: 14px; }
@@ -323,38 +334,56 @@
   .dep-empty { font-size: 13px; color: var(--ink); padding: 6px 0; }
   body.mode-database #sb-dep-board { display: none !important; }
 
-  /* Sticks the "Live news" label + filters to the top of the scroll area so it
-     stays visually separated from departure rows scrolling away above it. The
-     label only shows when a departure board is also present above it. */
+  /* Sticks the "Live updates" label + filters to the top of the scroll area so
+     it stays visually separated from departure rows scrolling away above it.
+     Styled like the other mono/uppercase section labels (db-label, saved-label). */
   .sb-sticky { position: sticky; top: 0; z-index: 2; background: var(--sf); }
-  .sb-sticky-title { display: none; padding: 8px 10px 0; font-size: 12px; font-weight: 500; color: var(--ink-primary); }
-  #sidebar.has-selection .sb-sticky-title { display: block; }
-  .filter-row { display: flex; gap: 4px; overflow-x: auto; padding: 8px 10px; scrollbar-width: none; }
+  .sb-sticky-title-row { display: none; align-items: baseline; justify-content: space-between; padding: 12px 16px 0; }
+  #sidebar.has-selection .sb-sticky-title-row { display: flex; }
+  .sb-sticky-title { font-family: var(--font-mono); font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--t); }
+  .sb-sticky-time { font-family: var(--font-mono); font-size: 12px; color: var(--ink); }
+  .filter-row { display: flex; gap: 6px; overflow-x: auto; padding: 10px 16px; scrollbar-width: none;
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 20px), transparent);
+    mask-image: linear-gradient(to right, #000 calc(100% - 20px), transparent); }
   .filter-row::-webkit-scrollbar { display: none; }
-  .filter-chip { font-size: 12px; padding: 3px 10px; border-radius: 99px; border: 0.5px solid var(--br); color: var(--ink); white-space: nowrap; flex-shrink: 0; }
+  .filter-chip { font-size: 13px; padding: 6px 13px; border-radius: 99px; border: 0.5px solid var(--br); color: var(--ink); white-space: nowrap; flex-shrink: 0; }
   .filter-chip.active { background: rgba(64,224,208,0.1); border-color: var(--t); color: var(--t); }
 
-  .news-item { padding: 6px 10px; border-bottom: 0.5px solid rgba(64,224,208,0.06); display: flex; gap: 6px; }
+  .news-item { padding: 10px 16px; border-bottom: 0.5px solid rgba(64,224,208,0.06); display: flex; align-items: flex-start; gap: 8px; }
   .news-item.urgent { background: rgba(242,92,193,0.05); }
-  .news-dot { width: 6px; height: 6px; border-radius: 50%; margin-top: 3px; flex-shrink: 0; }
-  .news-title { font-size: 14px; line-height: 1.4; }
+  .news-item i.news-icon { font-size: 15px; margin-top: 1px; flex-shrink: 0; }
+  .news-item.urgent i.news-icon { color: var(--m); }
+  .news-item:not(.urgent) i.news-icon { color: var(--t); }
+  .news-title { font-size: 14px; line-height: 1.4; flex: 1; }
   .news-item.urgent .news-title { color: var(--ink-primary); }
   .news-item:not(.urgent) .news-title { color: #ccc; }
   :root[data-theme="light"] .news-item:not(.urgent) .news-title { color: #333333; }
-  .news-meta { font-size: 12px; color: var(--ink); margin-top: 2px; display: flex; gap: 8px; align-items: center; }
+  .news-meta { font-size: 12px; color: var(--ink); margin-top: 3px; display: flex; gap: 8px; align-items: center; }
   .news-link { color: var(--t); }
   .news-link:hover { text-decoration: underline; }
-  .news-empty { padding: 10px; font-size: 13px; color: var(--ink); text-align: center; }
+  .news-chevron { font-size: 13px; color: var(--ink); margin-top: 2px; flex-shrink: 0; }
+  .news-empty { padding: 14px 16px; font-size: 13px; color: var(--ink); text-align: center; }
 
-  .rebook-cta { display: none; padding: 9px 10px; background: rgba(242,92,193,0.07); font-size: 13px; color: var(--m); }
+  .rebook-cta { display: none; padding: 10px 16px; background: rgba(242,92,193,0.07); font-size: 13px; color: var(--m); }
   .rebook-cta.show { display: block; }
 
-  .sb-footer-inline { flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; font-size: 12px; color: var(--ink); }
-  .sb-footer-inline a { color: var(--t); }
+  .sb-footer-inline { flex-shrink: 0; display: flex; align-items: center; justify-content: flex-end; padding: 10px 16px; font-size: 12px; color: var(--ink); }
+
+  /* Saved-stations view — toggled via the star icon next to search, top of
+     the sidebar; shows everything favorited via srhq_saved_routes. Reuses the
+     same 14px/alternating-row convention as the departures table. */
+  .sv-list { padding: 4px 0; }
+  .sv-item { display: flex; align-items: center; gap: 10px; padding: 10px 16px; font-size: 14px; border-bottom: 0.5px solid rgba(64,224,208,0.06); cursor: pointer; }
+  .sv-item:nth-child(even) { background: var(--surface2); }
+  .sv-item:hover { color: var(--t); }
+  .sv-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .sv-sub { font-size: 12px; color: var(--ink); flex-shrink: 0; }
+  .sv-remove { font-size: 15px; padding: 2px 6px; }
+  .sv-empty { padding: 16px; font-size: 13px; color: var(--ink); text-align: center; }
 
   /* Persistent bottom strip — copyright/data attribution, never scrolls away
      and never disappears (map-tile/data-source attribution requirement). */
-  #sb-attribution { flex-shrink: 0; padding: 6px 10px; border-top: 0.5px solid var(--br); font-size: 10px; color: var(--ink); text-align: center; }
+  #sb-attribution { flex-shrink: 0; padding: 8px 16px; border-top: 0.5px solid var(--br); font-size: 10px; color: var(--ink); text-align: left; }
 
   /* Sidebar content block — swapped as a unit on every selection change
      (station tap, search, from/to submit, clear). Whole-block opacity is
@@ -461,13 +490,13 @@
 <div id="map" role="application" aria-label="Interactive UK railway map"></div>
 
 <div id="control-cluster">
-  <div class="map-controls pill" style="padding:3px;">
+  <div class="map-controls">
     <button class="icon-btn" id="zoom-in" aria-label="Zoom in"><i class="ti ti-plus"></i></button>
     <button class="icon-btn" id="zoom-out" aria-label="Zoom out"><i class="ti ti-minus"></i></button>
     <button class="icon-btn" id="layers-btn" aria-label="Toggle railway infrastructure overlay" aria-pressed="true"><i class="ti ti-layers-intersect"></i></button>
     <button class="icon-btn" id="my-location" aria-label="Find my location"><i class="ti ti-current-location"></i></button>
   </div>
-  <div id="region-jump" class="pill">
+  <div id="region-jump">
     <span class="rj-label">Jump to</span>
     <button data-lng="-2.5" data-lat="54.5" data-zoom="5.5">All UK</button>
     <button data-lng="-0.1278" data-lat="51.5074" data-zoom="11">London</button>
@@ -501,15 +530,12 @@
   <div class="sb-top">
     <div class="sb-top-upper">
       <div class="sb-top-tabs">
-        <button class="header-tab live-on" id="sb-tab-live" aria-label="Live mode" aria-pressed="true"><i class="ti ti-activity"></i>Live</button>
-        <button class="header-tab" id="sb-tab-database" aria-label="Database mode" aria-pressed="false"><i class="ti ti-database"></i>Database</button>
+        <button class="header-tab live-on" id="sb-tab-live" aria-label="Live mode" aria-pressed="true">Live</button>
+        <button class="header-tab" id="sb-tab-database" aria-label="Database mode" aria-pressed="false">Database</button>
       </div>
       <div class="sb-top-actions">
         <button class="ghost-btn" id="sb-search-btn" aria-label="Search stations"><i class="ti ti-search"></i></button>
-        <button class="ghost-btn" id="sb-theme-toggle" aria-label="Toggle light and dark theme">
-          <i class="ti ti-sun theme-toggle-icon-light"></i>
-          <i class="ti ti-moon theme-toggle-icon-dark"></i>
-        </button>
+        <button class="ghost-btn" id="sb-saved-toggle" aria-label="Show saved stations" aria-pressed="false"><i class="ti ti-star"></i></button>
       </div>
     </div>
     <div class="sb-top-lower">
@@ -799,7 +825,6 @@
     map.once('style.load', addMapLayers);
   }
   window.srhqToggleMapTheme = toggleTheme;
-  document.getElementById('sb-theme-toggle').addEventListener('click', toggleTheme);
   document.getElementById('siteThemeToggle').addEventListener('click', toggleTheme);
   applyHeaderLogo();
 
@@ -891,12 +916,14 @@
     if (container) container.innerHTML = departureRowsHtml(rows);
   }
 
-  // ── Sidebar selection state (station / from-to / none) ───────────────────
+  // ── Sidebar selection state (station / from-to / saved-list / none) ──────
   var sidebarEl = document.getElementById('sidebar');
   var selTitleEl = document.getElementById('sb-selection-title');
   var starBtn = document.getElementById('sb-star-btn');
+  var savedToggleBtn = document.getElementById('sb-saved-toggle');
 
   function renderSelectionChrome() {
+    savedToggleBtn.setAttribute('aria-pressed', String(selection.type === 'saved'));
     if (selection.type === 'none') {
       sidebarEl.classList.remove('has-selection');
       selTitleEl.textContent = '';
@@ -912,6 +939,12 @@
       selTitleEl.textContent = selection.fromName + ' → ' + selection.toName;
       // Saved routes are single-station records — a from/to pair doesn't map
       // onto that shape, so the star toggle is hidden in this mode.
+      starBtn.style.display = 'none';
+    } else if (selection.type === 'saved') {
+      selTitleEl.textContent = 'Saved stations';
+      // The per-selection star (favorite the CURRENT station) doesn't apply
+      // while browsing the saved list itself — that's what sb-saved-toggle,
+      // up in the top bar, is for.
       starBtn.style.display = 'none';
     }
   }
@@ -932,6 +965,9 @@
   var selectionSeq = 0;
 
   function sidebarSkeletonHtml() {
+    if (selection.type === 'saved') {
+      return '<div class="sv-list" id="sv-list" data-anim-row>' + savedListRowsHtml() + '</div>';
+    }
     var showBoard = selection.type === 'station' || selection.type === 'fromto';
     var html = '';
     if (showBoard) {
@@ -946,24 +982,29 @@
       html += '<div id="sb-dep-board" style="display:none;"><div id="sb-dep-rows"></div></div>';
     }
     html += '<div class="sb-sticky" data-anim-row>' +
-      '<div class="sb-sticky-title">Live news</div>' +
+      '<div class="sb-sticky-title-row"><span class="sb-sticky-title">Live updates</span><span class="sb-sticky-time" id="sb-updates-time">--:--</span></div>' +
       '<div class="filter-row" id="filter-row"></div>' +
       '</div>' +
       '<div id="news-items"></div>' +
       '<div class="rebook-cta" id="rebook-cta" data-anim-row>Disrupted? Find alternatives →</div>' +
       '<div class="sb-footer-inline" data-anim-row>' +
-      '<a href="news.html">More news</a><span id="sb-count">0 of 0</span>' +
+      '<span id="sb-count">0 of 0</span>' +
       '</div>';
     return html;
   }
 
-  // Rebuilds #sb-content-block for the current `selection` and re-wires the
-  // filter row + news feed inside it. Shared by the animated transition below
-  // and by the very first (unanimated) render on page load.
+  // Rebuilds #sb-content-block for the current `selection` and re-wires
+  // whatever's inside it — the filter row + news feed normally, or the saved-
+  // stations list when the saved view is open. Shared by the animated
+  // transition below and by the very first (unanimated) render on page load.
   function rebuildSidebarContent() {
     contentBlock.innerHTML = sidebarSkeletonHtml();
-    renderFilterRow('filter-row', renderNews);
-    renderNews();
+    if (selection.type === 'saved') {
+      wireSavedListRows();
+    } else {
+      renderFilterRow('filter-row', renderNews);
+      renderNews();
+    }
   }
 
   function playEntranceStagger(mySeq) {
@@ -1172,6 +1213,10 @@
     return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
+  // Restyled to match departures.html's row conventions: a leading status
+  // icon (colored by severity) instead of a plain dot, a trailing chevron,
+  // and a visible per-item timestamp (n.timestamp — was already being
+  // rendered, just less prominently).
   function newsItemsHtml() {
     var filtered = incidents.filter(function (n) {
       if (activeFilter === 'all') return true;
@@ -1182,16 +1227,16 @@
     var sorted = filtered.slice().sort(function (a, b) { return (b.severity || 0) - (a.severity || 0); });
     return sorted.map(function (n) {
       var urgent = n.severity >= 2;
-      var dotColor = urgent ? 'var(--m)' : 'var(--t)';
       // Links out to the original source article when the underlying
       // news/incident record carries one (api/incidents.js is currently a
       // stub with no `link` field — this renders inert until that's wired up
       // with a real feed; not adding a new fetch here per instruction).
       var linkHtml = n.link ? '<a class="news-link" href="' + escapeAttr(n.link) + '" target="_blank" rel="noopener">Source →</a>' : '';
       return '<div class="news-item' + (urgent ? ' urgent' : '') + '" data-anim-row>' +
-        '<span class="news-dot" style="background:' + dotColor + ';"></span>' +
+        '<i class="ti ti-alert-triangle news-icon"></i>' +
         '<div><div class="news-title">' + n.summary + '</div>' +
-        '<div class="news-meta"><span>' + (n.timestamp || '') + ' · ' + (n.region || n.toc || '') + '</span>' + linkHtml + '</div></div></div>';
+        '<div class="news-meta"><span>' + (n.timestamp || '') + ' · ' + (n.region || n.toc || '') + '</span>' + linkHtml + '</div></div>' +
+        '<i class="ti ti-chevron-right news-chevron"></i></div>';
     }).join('');
   }
 
@@ -1200,6 +1245,8 @@
     var urgentCount = incidents.filter(function (n) { return n.severity >= 2; }).length;
     document.getElementById('rebook-cta').classList.toggle('show', urgentCount > 0);
     document.getElementById('sb-count').textContent = Math.min(incidents.length, 5) + ' of ' + incidents.length;
+    var timeEl = document.getElementById('sb-updates-time');
+    if (timeEl) timeEl.textContent = new Date().toTimeString().slice(0, 5);
   }
 
   function pollIncidents() {
@@ -1212,8 +1259,9 @@
   pollIncidents();
   setInterval(pollIncidents, 60000);
 
-  // ── Saved routes (localStorage) — star toggle now lives inline in the
-  // selection row instead of a separate "Saved routes" list section. ───────
+  // ── Saved routes (localStorage) — per-station star lives inline in the
+  // selection row; the top-bar star (sb-saved-toggle) opens/closes the full
+  // saved-stations list view below. ─────────────────────────────────────────
   var SAVED_KEY = 'srhq_saved_routes';
   function getSavedRoutes() {
     try { return JSON.parse(localStorage.getItem(SAVED_KEY)) || []; } catch (e) { return []; }
@@ -1224,6 +1272,59 @@
   function isStarred(crs) {
     return getSavedRoutes().some(function (r) { return r.crs === crs; });
   }
+
+  function savedListRowsHtml() {
+    var list = getSavedRoutes();
+    if (!list.length) return '<div class="sv-empty" data-anim-row>No saved stations yet — tap the star on a station to save it.</div>';
+    return list.map(function (r, i) {
+      return '<div class="sv-item" data-anim-row data-idx="' + i + '" data-crs="' + escapeAttr(r.crs) + '">' +
+        '<span class="sv-name">' + r.name + '</span>' +
+        '<span class="sv-sub">' + (r.toc || '') + '</span>' +
+        '<button class="ghost-btn sv-remove" data-idx="' + i + '" aria-label="Remove saved station">×</button>' +
+        '</div>';
+    }).join('');
+  }
+  function renderSavedListInPlace() {
+    var el = document.getElementById('sv-list');
+    if (el) el.innerHTML = savedListRowsHtml();
+    wireSavedListRows();
+  }
+  function wireSavedListRows() {
+    var listEl = document.getElementById('sv-list');
+    if (!listEl) return;
+    Array.prototype.forEach.call(listEl.querySelectorAll('.sv-item'), function (row) {
+      row.addEventListener('click', function () {
+        var crs = row.dataset.crs;
+        var feature = stationsData && stationsData.features.find(function (f) { return f.properties.crs === crs; });
+        if (!feature) return;
+        hideBottomHints();
+        map.flyTo({ center: feature.geometry.coordinates, zoom: 11, duration: 800 });
+        selectStation(feature.properties.name, feature.properties.crs);
+      });
+    });
+    Array.prototype.forEach.call(listEl.querySelectorAll('.sv-remove'), function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var list = getSavedRoutes();
+        list.splice(parseInt(btn.dataset.idx, 10), 1);
+        setSavedRoutes(list);
+        renderSavedListInPlace();
+      });
+    });
+  }
+
+  function selectSavedView() {
+    ++selectionSeq;
+    selection = { type: 'saved' };
+    renderSelectionChrome();
+    expandSidebarIfCollapsed();
+    animateSidebarTransition();
+  }
+  savedToggleBtn.addEventListener('click', function () {
+    if (selection.type === 'saved') clearSelection();
+    else selectSavedView();
+  });
+
   starBtn.addEventListener('click', function () {
     if (selection.type !== 'station') return;
     var list = getSavedRoutes();
