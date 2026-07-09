@@ -228,12 +228,17 @@
      scrolling flex row. Splitting them is what keeps the fade pinned to the
      edges instead of scrolling away with the chips (see the HTML comment). */
   #region-jump { position: absolute; top: calc(var(--nav-h) + 10px); left: 10px; z-index: 55;
-    padding: 8px 12px; max-width: calc(100vw - 20px);
+    display: flex; align-items: center; padding: 8px 12px; max-width: calc(100vw - 20px);
     background: var(--sf); border: 0.5px solid var(--brh); border-radius: 16px;
     backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+  /* flex:1 + min-width:0 is what actually lets #rj-scroll's overflow-x kick
+     in here — without min-width:0, a flex item defaults to not shrinking
+     below its content's intrinsic width, so it would just keep growing the
+     whole bar instead of scrolling. */
+  #region-jump .scroll-fade { flex: 1; min-width: 0; }
   #rj-scroll { display: flex; align-items: center; gap: 6px; overflow-x: auto; scrollbar-width: none; }
   #rj-scroll::-webkit-scrollbar { display: none; }
-  #region-jump .rj-label { font-family: var(--font-body); font-size: 14px; font-weight: 500; color: var(--ink-mute); text-transform: uppercase; padding: 0 2px 0 2px; margin-right: 6px; flex-shrink: 0; }
+  #region-jump .rj-label { font-family: var(--font-body); font-size: 14px; font-weight: 500; color: var(--ink-mute); text-transform: uppercase; padding: 0 2px 0 2px; margin-right: 8px; flex-shrink: 0; }
   body.mode-database #region-jump { display: none; }
 
   #control-cluster { position: absolute; top: calc(var(--nav-h) + 10px); left: 10px; z-index: 55; }
@@ -448,7 +453,7 @@
      or drag no matter how they're layered. */
   .scroll-fade { position: relative; }
   .scroll-fade::before, .scroll-fade::after {
-    content: ""; position: absolute; top: 0; bottom: 0; width: 28px; z-index: 3; pointer-events: none; }
+    content: ""; position: absolute; top: 0; bottom: 0; width: 16px; z-index: 3; pointer-events: none; }
   .scroll-fade::before { left: 0; background: linear-gradient(to right, var(--sf), transparent); }
   .scroll-fade::after { right: 0; background: linear-gradient(to left, var(--sf), transparent); }
 
@@ -616,18 +621,22 @@
      below the sidebar, control-cluster below region-jump) is computed in JS
      from each other's actual rendered position, since the sidebar's height
      varies with its content and a fixed CSS offset can't track that. -->
-<!-- region-jump itself no longer scrolls — only #rj-scroll inside it does —
-     so the .scroll-fade edge overlays (on region-jump) stay put at the edges
-     instead of scrolling away with the chips. -->
-<div id="region-jump" class="scroll-fade">
-  <div id="rj-scroll">
-    <span class="rj-label">Jump to</span>
-    <button class="filter-chip active" data-lng="-2.5" data-lat="54.5" data-zoom="5.5">All UK</button>
-    <button class="filter-chip" data-lng="-0.1278" data-lat="51.5074" data-zoom="11">London</button>
-    <button class="filter-chip" data-lng="-1.9" data-lat="52.4778" data-zoom="11">Birmingham</button>
-    <button class="filter-chip" data-lng="-2.2307" data-lat="53.4775" data-zoom="11">Manchester</button>
-    <button class="filter-chip" data-lng="-4.2579" data-lat="55.8586" data-zoom="11">Glasgow</button>
-    <button class="filter-chip" data-lng="-3.1883" data-lat="55.9521" data-zoom="11">Edinburgh</button>
+<!-- region-jump itself no longer scrolls — only #rj-scroll inside it does.
+     The static "Jump to" label sits OUTSIDE the .scroll-fade wrapper (which
+     now wraps only #rj-scroll, not the whole bar) so the edge fade can never
+     cover it — it only fades the chips, which is the only part that
+     actually scrolls. -->
+<div id="region-jump">
+  <span class="rj-label">Jump to</span>
+  <div class="scroll-fade">
+    <div id="rj-scroll">
+      <button class="filter-chip active" data-lng="-2.5" data-lat="54.5" data-zoom="5.5">All UK</button>
+      <button class="filter-chip" data-lng="-0.1278" data-lat="51.5074" data-zoom="11">London</button>
+      <button class="filter-chip" data-lng="-1.9" data-lat="52.4778" data-zoom="11">Birmingham</button>
+      <button class="filter-chip" data-lng="-2.2307" data-lat="53.4775" data-zoom="11">Manchester</button>
+      <button class="filter-chip" data-lng="-4.2579" data-lat="55.8586" data-zoom="11">Glasgow</button>
+      <button class="filter-chip" data-lng="-3.1883" data-lat="55.9521" data-zoom="11">Edinburgh</button>
+    </div>
   </div>
 </div>
 <div id="control-cluster">
