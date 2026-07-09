@@ -227,7 +227,7 @@
     backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
     max-width: calc(100vw - 90px); overflow-x: auto; scrollbar-width: none; }
   #region-jump::-webkit-scrollbar { display: none; }
-  #region-jump .rj-label { font-family: var(--font-body); font-size: 14px; font-weight: 500; color: var(--ink); padding: 0 2px 0 2px; flex-shrink: 0; }
+  #region-jump .rj-label { font-family: var(--font-body); font-size: 14px; font-weight: 500; color: var(--ink-mute); padding: 0 2px 0 2px; margin-right: 6px; flex-shrink: 0; }
   body.mode-database #region-jump { display: none; }
 
   @media (min-width: 769px) {
@@ -385,9 +385,13 @@
   #sidebar.has-selection .sb-sticky-title-row { display: flex; }
   .sb-sticky-title { font-family: var(--font-mono); font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--t); }
   .sb-sticky-time { font-family: var(--font-mono); font-size: 12px; color: var(--ink); }
+  /* No mask-image fade here (unlike an earlier version) — it's a known
+     WebKit/Safari quirk that mask-image on an overflow:auto/scroll container
+     can silently break its scrollability, which is exactly what was
+     happening: #region-jump (no mask) scrolled fine, this row (masked)
+     didn't, on both desktop and mobile Safari. */
   .filter-row { display: flex; gap: 6px; overflow-x: auto; padding: 10px 16px; scrollbar-width: none;
-    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 20px), transparent);
-    mask-image: linear-gradient(to right, #000 calc(100% - 20px), transparent); }
+    -webkit-overflow-scrolling: touch; }
   .filter-row::-webkit-scrollbar { display: none; }
   .filter-chip { font-size: 13px; padding: 6px 13px; border-radius: 99px; border: 0.5px solid var(--br); color: var(--ink); white-space: nowrap; flex-shrink: 0; }
   .filter-chip.active { background: rgba(64,224,208,0.1); border-color: var(--t); color: var(--t); }
