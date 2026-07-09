@@ -233,7 +233,7 @@
     backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
   #rj-scroll { display: flex; align-items: center; gap: 6px; overflow-x: auto; scrollbar-width: none; }
   #rj-scroll::-webkit-scrollbar { display: none; }
-  #region-jump .rj-label { font-family: var(--font-body); font-size: 14px; font-weight: 500; color: var(--ink-mute); padding: 0 2px 0 2px; margin-right: 6px; flex-shrink: 0; }
+  #region-jump .rj-label { font-family: var(--font-body); font-size: 14px; font-weight: 500; color: var(--ink-mute); text-transform: uppercase; padding: 0 2px 0 2px; margin-right: 6px; flex-shrink: 0; }
   body.mode-database #region-jump { display: none; }
 
   #control-cluster { position: absolute; top: calc(var(--nav-h) + 10px); left: 10px; z-index: 55; }
@@ -400,9 +400,8 @@
   .db-empty { padding: 16px; }
   .db-empty .db-label { margin-bottom: 8px; }
   .db-empty p { font-size: 13px; color: var(--ink); line-height: 1.5; }
-  .db-browse-section { padding-top: 6px; }
-  .db-browse-section .db-label { padding: 8px 16px 4px; }
   .db-franchise-list { padding: 6px 16px 10px; font-size: 13px; color: var(--ink); line-height: 1.8; list-style: none; }
+  .db-hint { padding: 24px 20px; font-size: 13px; color: var(--ink); text-align: center; line-height: 1.6; }
   .dep-cols { display: flex; align-items: center; gap: 10px; padding: 6px 0 4px; font-family: var(--font-mono);
     font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink); border-bottom: 0.5px solid var(--br); }
   .dep-cols span:nth-child(1) { width: 52px; flex-shrink: 0; }
@@ -1415,27 +1414,19 @@
   }
   function wireOperatorDetail() {} // no interactive content yet — fleet-class chips are plain text (see Task 3 notes in the summary)
 
+  // A full "browse all routes/operators" list was here, generated straight
+  // from routes/operators-content.json — with the schema still only holding
+  // one placeholder route and two placeholder operators, that read as
+  // sample/debug content rather than a real feature, so it's been pulled
+  // in favor of a plain hint until there's enough curated content to
+  // justify a real browse UI. selectRoute()/selectOperator() and their
+  // detail views are untouched and still reachable — a route via its
+  // stopping-station rows or its map polyline, an operator via the chips in
+  // a station's Services list — this only removes the default-view list.
   function databaseDefaultSkeletonHtml() {
-    var routeIds = Object.keys(routesContent);
-    var opCodes = Object.keys(operatorsContent);
-    var html = '<div class="db-browse-section" data-anim-row><div class="db-label">Routes</div>' +
-      (routeIds.length
-        ? routeIds.map(function (id) { return '<div class="sv-item db-browse-item" data-kind="route" data-id="' + escapeAttr(id) + '"><span class="sv-name">' + escapeAttr(routesContent[id].name) + '</span></div>'; }).join('')
-        : '<div class="sv-empty">No routes catalogued yet.</div>') + '</div>';
-    html += '<div class="db-browse-section" data-anim-row><div class="db-label">Operators</div>' +
-      (opCodes.length
-        ? opCodes.map(function (code) { return '<div class="sv-item db-browse-item" data-kind="operator" data-id="' + escapeAttr(code) + '"><span class="sv-name">' + escapeAttr(operatorsContent[code].name) + '</span></div>'; }).join('')
-        : '<div class="sv-empty">No operators catalogued yet.</div>') + '</div>';
-    return html;
+    return '<div class="db-hint" data-anim-row>Tap a station or route on the map for more detail.</div>';
   }
-  function wireDatabaseDefault() {
-    Array.prototype.forEach.call(contentBlock.querySelectorAll('.db-browse-item'), function (row) {
-      row.addEventListener('click', function () {
-        if (row.dataset.kind === 'route') selectRoute(row.dataset.id);
-        else selectOperator(row.dataset.id);
-      });
-    });
-  }
+  function wireDatabaseDefault() {} // nothing to wire — see comment above
 
   function sidebarSkeletonHtml() {
     if (selection.type === 'saved') return '<div class="sv-list" id="sv-list" data-anim-row>' + savedListRowsHtml() + '</div>';
