@@ -411,6 +411,18 @@
   .filter-chip { font-size: 13px; padding: 6px 13px; border-radius: 99px; border: 0.5px solid var(--br); color: var(--ink); white-space: nowrap; flex-shrink: 0; }
   .filter-chip.active { background: rgba(64,224,208,0.1); border-color: var(--t); color: var(--t); }
 
+  /* Edge-fade hint for horizontally-scrollable rows — deliberately built as
+     pointer-events:none overlay pseudo-elements, NOT mask-image, since
+     mask-image is exactly what broke scrolling on this row before. These
+     sit on top of the row only (each element scopes its own fade — nothing
+     bleeds into the sidebar/card around it) and can never intercept a click
+     or drag no matter how they're layered. */
+  .scroll-fade { position: relative; }
+  .scroll-fade::before, .scroll-fade::after {
+    content: ""; position: absolute; top: 0; bottom: 0; width: 28px; z-index: 3; pointer-events: none; }
+  .scroll-fade::before { left: 0; background: linear-gradient(to right, var(--sf), transparent); }
+  .scroll-fade::after { right: 0; background: linear-gradient(to left, var(--sf), transparent); }
+
   .news-item { padding: 10px 16px; border-bottom: 0.5px solid rgba(64,224,208,0.06); display: flex; align-items: flex-start; gap: 8px; }
   .news-item.urgent { background: rgba(242,92,193,0.05); }
   .news-item i.news-icon { font-size: 15px; margin-top: 1px; flex-shrink: 0; }
@@ -555,7 +567,7 @@
      below the sidebar, control-cluster below region-jump) is computed in JS
      from each other's actual rendered position, since the sidebar's height
      varies with its content and a fixed CSS offset can't track that. -->
-<div id="region-jump">
+<div id="region-jump" class="scroll-fade">
   <span class="rj-label">Jump to</span>
   <button class="filter-chip active" data-lng="-2.5" data-lat="54.5" data-zoom="5.5">All UK</button>
   <button class="filter-chip" data-lng="-0.1278" data-lat="51.5074" data-zoom="11">London</button>
@@ -1139,7 +1151,7 @@
     }
     html += '<div class="sb-sticky" data-anim-row>' +
       '<div class="sb-sticky-title-row"><span class="sb-sticky-title">Live updates</span><span class="sb-sticky-time" id="sb-updates-time">--:--</span></div>' +
-      '<div class="filter-row" id="filter-row"></div>' +
+      '<div class="filter-row scroll-fade" id="filter-row"></div>' +
       '</div>' +
       '<div id="news-items"></div>' +
       '<div class="rebook-cta" id="rebook-cta" data-anim-row>Disrupted? Find alternatives →</div>' +
