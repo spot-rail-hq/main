@@ -1,0 +1,14 @@
+{
+  "_notes": "Keyed by a route slug (endpoint CRS codes joined, e.g. PAD-BTH). This ID convention is a placeholder — still open from an earlier session: are routes hand-curated editorial entities, or derived from CORPUS/SCHEDULE reference data? Schema below works either way; stopping_stations is an ordered array of CRS codes, each linkable to the corresponding stations-content.json entry.",
+
+  "PAD-BTH": {
+    "name": "London Paddington \u2194 Bath Spa",
+    "operator": "Great Western Railway",
+    "type": "Commuter Rail",
+    "length_km": 27.75,
+    "stopping_stations": ["PAD", "RDG", "DID", "SWI", "CPM", "BTH"],
+    "opened_year": 1833,
+    "operating_since": 1837,
+    "wikipedia_url": null
+  }
+}

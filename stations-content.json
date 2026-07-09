@@ -1,0 +1,35 @@
+{
+  "_notes": "Keyed by CRS code (matches naptan_stations.crs). Lat/lon/tiploc already live in Postgres — don't duplicate here. Google Map / Street View links are NOT stored; construct at render time from naptan_stations lat/lon using: https://www.google.com/maps/search/?api=1&query={lat},{lon} and https://www.google.com/maps/@?api=1&map_action=pano&viewpoint={lat},{lon}. Any field can be null/empty until curated — sidebar should hide empty fields, not show placeholders.",
+
+  "MAN": {
+    "name": "Manchester Piccadilly",
+    "photo": {
+      "url": "",
+      "attribution": "Photo by [author], Wikimedia Commons, CC BY-SA 4.0",
+      "source_url": ""
+    },
+    "location": "Manchester, Greater Manchester, England",
+    "platforms": "14 (National Rail), 2 (Manchester Metrolink)",
+    "operators": ["Avanti West Coast", "CrossCountry", "East Midlands Railway", "Northern Trains"],
+    "wikipedia_url": "https://en.wikipedia.org/wiki/Manchester_Piccadilly_railway_station",
+    "opened_year": 1842,
+    "listed_status": null,
+    "notable_features": []
+  },
+
+  "PAD": {
+    "name": "London Paddington",
+    "photo": {
+      "url": "",
+      "attribution": "",
+      "source_url": ""
+    },
+    "location": "Paddington, City of Westminster, London",
+    "platforms": "14 (National Rail), 4 (Elizabeth line)",
+    "operators": ["Great Western Railway", "Elizabeth line", "Heathrow Express"],
+    "wikipedia_url": "https://en.wikipedia.org/wiki/London_Paddington_station",
+    "opened_year": 1838,
+    "listed_status": "Grade I listed",
+    "notable_features": ["Designed by Isambard Kingdom Brunel"]
+  }
+}

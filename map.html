@@ -375,8 +375,34 @@
      same token/value departures.html's .dep-table uses). */
   #sb-dep-board { display: none; border-bottom: 0.5px solid var(--br); padding: 12px 16px 14px; }
   #sb-dep-board .db-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 6px; }
-  #sb-dep-board .db-label { font-family: var(--font-mono); font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--t); }
+  /* Unscoped (was #sb-dep-board .db-label) so Database-mode content below can
+     reuse the exact same mono/uppercase/turquoise section-label style
+     instead of duplicating it under a new class name. */
+  .db-label { font-family: var(--font-mono); font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--t); }
   #sb-dep-board .db-station { font-size: 12px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 260px; }
+
+  /* ── Database-mode content (Task 3) ───────────────────────────────────────
+     Reuses existing conventions throughout: .db-label above, .filter-chip
+     for services/fleet chips, .sv-item/.sv-name/.sv-empty (already used for
+     saved stations) for the stopping-stations and browse lists, and the
+     same data-anim-row stagger every other sidebar view already uses. */
+  .db-field { padding: 10px 16px; }
+  .db-field .db-label { margin-bottom: 4px; }
+  .db-value { font-size: 14px; color: var(--ink-primary); line-height: 1.5; }
+  .db-photo { padding: 0 16px 10px; }
+  .db-photo img { width: 100%; border-radius: 10px; display: block; }
+  .db-photo-credit { font-size: 11px; color: var(--ink); margin-top: 4px; }
+  .db-links { display: flex; gap: 16px; }
+  .db-links a { font-family: var(--font-mono); font-size: 12px; letter-spacing: 1px; text-transform: uppercase; color: var(--t); }
+  .db-chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+  .db-wiki-link { display: block; padding: 10px 16px; font-family: var(--font-mono); font-size: 12px;
+    letter-spacing: 1px; text-transform: uppercase; color: var(--t); }
+  .db-empty { padding: 16px; }
+  .db-empty .db-label { margin-bottom: 8px; }
+  .db-empty p { font-size: 13px; color: var(--ink); line-height: 1.5; }
+  .db-browse-section { padding-top: 6px; }
+  .db-browse-section .db-label { padding: 8px 16px 4px; }
+  .db-franchise-list { padding: 6px 16px 10px; font-size: 13px; color: var(--ink); line-height: 1.8; list-style: none; }
   .dep-cols { display: flex; align-items: center; gap: 10px; padding: 6px 0 4px; font-family: var(--font-mono);
     font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink); border-bottom: 0.5px solid var(--br); }
   .dep-cols span:nth-child(1) { width: 52px; flex-shrink: 0; }
@@ -794,11 +820,64 @@
     return matches.slice(0, limit || 7);
   }
 
-  // Current sidebar selection. type: 'none' | 'station' | 'fromto'.
-  // 'route' and 'network' types aren't wired yet — route/network click
-  // selection + the highlight polyline were removed in the previous map.html
-  // rebuild (commit eca9aa1) and haven't been rebuilt; this shape is ready to
-  // extend once that's revisited.
+  // ── Database content (stations/routes/operators) ──────────────────────────
+  // Keyed objects straight from the JSON files (minus the "_notes" key each
+  // one carries for schema documentation). Loaded once, up front, same
+  // pattern as station-list.json above. If the current sidebar view depends
+  // on one of these and it finishes loading late, re-render in place
+  // (no re-animation — this is a background data arrival, not a user action).
+  var stationsContent = {}, routesContent = {}, operatorsContent = {};
+  var operatorNameToCode = {}; // station.operators entries are display names (e.g. "Great Western Railway"), not codes — this resolves a name back to operators-content.json's key (e.g. "GWR") when one exists, for the clickable chips in Task 1/3.
+  function rebuildOperatorNameIndex() {
+    operatorNameToCode = {};
+    Object.keys(operatorsContent).forEach(function (code) {
+      if (operatorsContent[code] && operatorsContent[code].name) operatorNameToCode[operatorsContent[code].name] = code;
+    });
+  }
+  function loadJsonContent(url, onLoaded) {
+    fetch(url).then(function (r) { if (!r.ok) throw new Error(url + ' missing'); return r.json(); })
+      .then(function (data) {
+        var clean = {};
+        if (data && typeof data === 'object') {
+          Object.keys(data).forEach(function (k) { if (k !== '_notes') clean[k] = data[k]; });
+        }
+        onLoaded(clean);
+      })
+      .catch(function (e) { console.warn(url + ' unavailable', e); });
+  }
+  loadJsonContent('/stations-content.json', function (d) {
+    stationsContent = d;
+    if (mode === 'database' && selectedStationCrs) rebuildSidebarContent();
+  });
+  loadJsonContent('/routes-content.json', function (d) {
+    routesContent = d;
+    if (selection.type === 'route') rebuildSidebarContent();
+    else if (mode === 'database' && !selectedStationCrs && selection.type === 'none') rebuildSidebarContent();
+  });
+  loadJsonContent('/operators-content.json', function (d) {
+    operatorsContent = d;
+    rebuildOperatorNameIndex();
+    if (selection.type === 'operator') rebuildSidebarContent();
+    else if (mode === 'database' && !selectedStationCrs && selection.type === 'none') rebuildSidebarContent();
+  });
+
+  // ── Sidebar selection state ────────────────────────────────────────────────
+  // selectedStationCrs/Name is the ONE shared "which station is selected"
+  // state that both Live and Database rendering read from (Task 4) — it
+  // persists across mode switches, unlike `selection` below.
+  //
+  // `selection` covers the other, mode-specific sidebar views: 'fromto' and
+  // 'saved' only make sense in Live; 'route' and 'operator' only make sense
+  // in Database. setMode() drops whichever of these doesn't belong in the
+  // mode being switched to (falling back to the shared station, or that
+  // mode's default) rather than carrying a stale, inapplicable view across.
+  //
+  // TODO: route/network selection doesn't exist in the Live tab yet (routes
+  // are Database-only for now per this task's scope) — once it does, it'll
+  // need to join the shared-state treatment selectedStationCrs already gets,
+  // instead of living only in `selection`.
+  var selectedStationCrs = null;
+  var selectedStationName = null;
   var selection = { type: 'none' };
 
   function currentTheme() {
@@ -967,6 +1046,11 @@
         addStationsLayer(stationsData);
       }).catch(function (e) { console.error('Failed to load stations.geojson', e); });
     }
+
+    // Same setStyle-wipes-runtime-layers issue as orm-standard/stations above
+    // — redraw the route highlight (Task 2) if one is currently selected, so
+    // it survives a theme toggle instead of silently vanishing.
+    if (selection.type === 'route' && selection.id) drawRoutePolyline(selection.id);
   }
 
   function stationsCirclePaint() {
@@ -1120,29 +1204,48 @@
   var starBtn = document.getElementById('sb-star-btn');
   var savedToggleBtn = document.getElementById('sb-saved-toggle');
 
+  // 'station' isn't a `selection.type` any more — it's implied by
+  // selectedStationCrs whenever `selection` itself is 'none', so the shared
+  // station survives a tab switch without living inside the mode-specific
+  // `selection` object at all.
+  function effectiveSelectionType() {
+    if (selection.type !== 'none') return selection.type;
+    return selectedStationCrs ? 'station' : 'none';
+  }
+
   function renderSelectionChrome() {
     savedToggleBtn.setAttribute('aria-pressed', String(selection.type === 'saved'));
-    if (selection.type === 'none') {
+    if (selection.type !== 'route') clearRoutePolyline(); // Task 2: polyline only persists while a route is actually selected
+    var type = effectiveSelectionType();
+    if (type === 'none') {
       sidebarEl.classList.remove('has-selection');
       selTitleEl.textContent = '';
       starBtn.style.display = 'none';
       return;
     }
     sidebarEl.classList.add('has-selection');
-    if (selection.type === 'station') {
-      selTitleEl.textContent = selection.name;
+    if (type === 'station') {
+      selTitleEl.textContent = selectedStationName;
       starBtn.style.display = '';
-      starBtn.classList.toggle('starred', isStarred(selection.crs));
-    } else if (selection.type === 'fromto') {
+      starBtn.classList.toggle('starred', isStarred(selectedStationCrs));
+    } else if (type === 'fromto') {
       selTitleEl.textContent = selection.fromName + ' → ' + selection.toName;
       // Saved routes are single-station records — a from/to pair doesn't map
       // onto that shape, so the star toggle is hidden in this mode.
       starBtn.style.display = 'none';
-    } else if (selection.type === 'saved') {
+    } else if (type === 'saved') {
       selTitleEl.textContent = 'Saved stations';
       // The per-selection star (favorite the CURRENT station) doesn't apply
       // while browsing the saved list itself — that's what sb-saved-toggle,
       // up in the top bar, is for.
+      starBtn.style.display = 'none';
+    } else if (type === 'route') {
+      var r = routesContent[selection.id];
+      selTitleEl.textContent = (r && r.name) || selection.fallbackName || 'Route';
+      starBtn.style.display = 'none';
+    } else if (type === 'operator') {
+      var o = selection.code && operatorsContent[selection.code];
+      selTitleEl.textContent = (o && o.name) || selection.fallbackName || 'Operator';
       starBtn.style.display = 'none';
     }
   }
@@ -1162,24 +1265,21 @@
   var contentBlock = document.getElementById('sb-content-block');
   var selectionSeq = 0;
 
-  function sidebarSkeletonHtml() {
-    if (selection.type === 'saved') {
-      return '<div class="sv-list" id="sv-list" data-anim-row>' + savedListRowsHtml() + '</div>';
-    }
-    var showBoard = selection.type === 'station' || selection.type === 'fromto';
-    var html = '';
-    if (showBoard) {
-      var label = selection.type === 'fromto' ? 'Next trains' : 'Departures';
-      var stationText = selection.type === 'station' ? selection.name : (selection.fromName + ' → ' + selection.toName);
-      html += '<div id="sb-dep-board" data-anim-row style="display:block;">' +
-        '<div class="db-head"><span class="db-label">' + label + '</span><span class="db-station">' + stationText + '</span></div>' +
-        '<div class="dep-cols"><span>Sched.</span><span>Destination</span><span>Plat.</span><span>Status</span></div>' +
-        '<div id="sb-dep-rows"><div class="dep-empty">Loading departures…</div></div>' +
-        '</div>';
-    } else {
-      html += '<div id="sb-dep-board" style="display:none;"><div id="sb-dep-rows"></div></div>';
-    }
-    html += '<div class="sb-sticky" data-anim-row>' +
+  // ── Live-mode content (unchanged behaviour — station board / from-to board
+  // / the live news feed default — just split into named pieces so the
+  // Database-mode branches below can sit alongside them cleanly). ─────────
+  function depBoardHtml(label, stationText) {
+    return '<div id="sb-dep-board" data-anim-row style="display:block;">' +
+      '<div class="db-head"><span class="db-label">' + label + '</span><span class="db-station">' + stationText + '</span></div>' +
+      '<div class="dep-cols"><span>Sched.</span><span>Destination</span><span>Plat.</span><span>Status</span></div>' +
+      '<div id="sb-dep-rows"><div class="dep-empty">Loading departures…</div></div>' +
+      '</div>';
+  }
+  function emptyDepBoardHtml() {
+    return '<div id="sb-dep-board" style="display:none;"><div id="sb-dep-rows"></div></div>';
+  }
+  function liveNewsBlockHtml() {
+    return '<div class="sb-sticky" data-anim-row>' +
       '<div class="sb-sticky-title-row"><span class="sb-sticky-title">Live updates</span><span class="sb-sticky-time" id="sb-updates-time">--:--</span></div>' +
       '<div class="scroll-fade"><div class="filter-row" id="filter-row"></div></div>' +
       '</div>' +
@@ -1188,17 +1288,180 @@
       '<div class="sb-footer-inline" data-anim-row>' +
       '<span id="sb-count">0 of 0</span>' +
       '</div>';
-    return html;
+  }
+  function stationLiveSkeletonHtml() {
+    return depBoardHtml('Departures', selectedStationName) + liveNewsBlockHtml();
+  }
+  function fromToSkeletonHtml() {
+    return depBoardHtml('Next trains', selection.fromName + ' → ' + selection.toName) + liveNewsBlockHtml();
+  }
+  function liveDefaultSkeletonHtml() {
+    return emptyDepBoardHtml() + liveNewsBlockHtml();
   }
 
-  // Rebuilds #sb-content-block for the current `selection` and re-wires
-  // whatever's inside it — the filter row + news feed normally, or the saved-
-  // stations list when the saved view is open. Shared by the animated
-  // transition below and by the very first (unanimated) render on page load.
+  // ── Database-mode content (Task 3) ────────────────────────────────────────
+  // .db-label is the same mono/uppercase/turquoise section-label style
+  // "DEPARTURES"/"Next trains" already use, just no longer scoped under
+  // #sb-dep-board so it's reusable here too — same visual language, per the
+  // instruction to keep the existing look.
+  function dbFieldHtml(label, valueHtml) {
+    if (valueHtml === null || valueHtml === undefined || valueHtml === '') return '';
+    return '<div class="db-field" data-anim-row><div class="db-label">' + label + '</div><div class="db-value">' + valueHtml + '</div></div>';
+  }
+  function dbComingSoonHtml(title) {
+    return '<div class="db-empty" data-anim-row><div class="db-label">' + escapeAttr(title || '') + '</div>' +
+      '<p>No database entry yet — content coming soon.</p></div>';
+  }
+
+  function stationDatabaseSkeletonHtml() {
+    var crs = (selectedStationCrs || '').toUpperCase();
+    var s = stationsContent[crs];
+    if (!s) return dbComingSoonHtml(selectedStationName || crs);
+    var html = '';
+    if (s.photo && s.photo.url) {
+      html += '<div class="db-photo" data-anim-row><img src="' + escapeAttr(s.photo.url) + '" alt="' + escapeAttr(s.name || '') + '" loading="lazy" />' +
+        (s.photo.attribution ? '<div class="db-photo-credit">' + s.photo.attribution + '</div>' : '') + '</div>';
+    }
+    html += dbFieldHtml('Location', s.location);
+    // Google Map / Street View aren't stored — constructed at render time
+    // from lat/lon, per stations-content.json's own _notes.
+    var coords = coordsForCrs(crs);
+    if (coords) {
+      html += '<div class="db-field" data-anim-row><div class="db-links">' +
+        '<a href="https://www.google.com/maps/search/?api=1&query=' + coords[1] + ',' + coords[0] + '" target="_blank" rel="noopener">Google Map</a>' +
+        '<a href="https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=' + coords[1] + ',' + coords[0] + '" target="_blank" rel="noopener">Street View</a>' +
+        '</div></div>';
+    }
+    html += dbFieldHtml('Platforms', s.platforms);
+    html += dbFieldHtml('Opened', s.opened_year);
+    html += dbFieldHtml('Listed status', s.listed_status);
+    if (s.operators && s.operators.length) {
+      html += '<div class="db-field" data-anim-row><div class="db-label">Services</div><div class="db-chip-row" id="db-operator-chips">' +
+        s.operators.map(function (name) { return '<button type="button" class="filter-chip db-op-chip" data-op="' + escapeAttr(name) + '">' + name + '</button>'; }).join('') +
+        '</div></div>';
+    }
+    if (s.notable_features && s.notable_features.length) {
+      html += dbFieldHtml('Notable features', s.notable_features.join('; '));
+    }
+    if (s.wikipedia_url) {
+      html += '<a class="db-wiki-link" data-anim-row href="' + escapeAttr(s.wikipedia_url) + '" target="_blank" rel="noopener">Wikipedia →</a>';
+    }
+    return html || dbComingSoonHtml(s.name);
+  }
+  function wireStationDatabaseDetail() {
+    var chipsEl = document.getElementById('db-operator-chips');
+    if (!chipsEl) return;
+    Array.prototype.forEach.call(chipsEl.querySelectorAll('.db-op-chip'), function (btn) {
+      btn.addEventListener('click', function () { selectOperator(btn.dataset.op); });
+    });
+  }
+
+  function routeDetailSkeletonHtml() {
+    var r = routesContent[selection.id];
+    if (!r) return dbComingSoonHtml(selection.fallbackName || selection.id);
+    var html = '';
+    html += dbFieldHtml('Operator', r.operator);
+    html += dbFieldHtml('Type', r.type);
+    html += dbFieldHtml('Length', r.length_km != null ? (r.length_km + ' km') : null);
+    html += dbFieldHtml('Opened', r.opened_year);
+    html += dbFieldHtml('Operating since', r.operating_since);
+    if (r.stopping_stations && r.stopping_stations.length) {
+      html += '<div class="db-field" data-anim-row><div class="db-label">Stopping stations</div>' +
+        '<div class="sv-list" id="db-route-stations">' +
+        r.stopping_stations.map(function (crs, i) {
+          return '<div class="sv-item" data-crs="' + escapeAttr(crs) + '">' +
+            '<span class="sv-name">' + (i + 1) + '. ' + escapeAttr(stationNameForCrs(crs)) + '</span></div>';
+        }).join('') + '</div></div>';
+    }
+    if (r.wikipedia_url) {
+      html += '<a class="db-wiki-link" data-anim-row href="' + escapeAttr(r.wikipedia_url) + '" target="_blank" rel="noopener">Wikipedia →</a>';
+    }
+    return html || dbComingSoonHtml(r.name);
+  }
+  function wireRouteDetail() {
+    var listEl = document.getElementById('db-route-stations');
+    if (!listEl) return;
+    Array.prototype.forEach.call(listEl.querySelectorAll('.sv-item'), function (row) {
+      row.addEventListener('click', function () { flyToAndSelectStation(row.dataset.crs); });
+    });
+  }
+
+  function operatorDetailSkeletonHtml() {
+    var o = selection.code && operatorsContent[selection.code];
+    if (!o) return dbComingSoonHtml(selection.fallbackName || selection.code);
+    var html = '';
+    html += dbFieldHtml('Parent company', o.parent_company);
+    html += dbFieldHtml('Stations operated', o.stations_operated);
+    if (o.regions_served) {
+      var regions = (o.regions_served.main || []).concat(o.regions_served.other || []);
+      if (regions.length) html += dbFieldHtml('Regions served', regions.join(', '));
+    }
+    var current = (o.franchises || []).filter(function (f) { return !f.end; })[0];
+    if (current) html += dbFieldHtml('Franchise', 'Operating since ' + current.start);
+    if (o.franchises && o.franchises.length > 1) {
+      html += '<details class="db-field" data-anim-row><summary class="db-label">Franchise history</summary>' +
+        '<ul class="db-franchise-list">' + o.franchises.map(function (f) {
+          return '<li>' + escapeAttr(f.name) + ' (' + escapeAttr(f.start) + ' – ' + escapeAttr(f.end || 'present') + ')</li>';
+        }).join('') + '</ul></details>';
+    }
+    if (o.fleet_classes && o.fleet_classes.length) {
+      html += '<div class="db-field" data-anim-row><div class="db-label">Fleet classes</div><div class="db-chip-row">' +
+        o.fleet_classes.map(function (c) { return '<span class="filter-chip">' + escapeAttr(c.display) + '</span>'; }).join('') + '</div></div>';
+    }
+    if (o.wikipedia_url) {
+      html += '<a class="db-wiki-link" data-anim-row href="' + escapeAttr(o.wikipedia_url) + '" target="_blank" rel="noopener">Wikipedia →</a>';
+    }
+    return html || dbComingSoonHtml(o.name);
+  }
+  function wireOperatorDetail() {} // no interactive content yet — fleet-class chips are plain text (see Task 3 notes in the summary)
+
+  function databaseDefaultSkeletonHtml() {
+    var routeIds = Object.keys(routesContent);
+    var opCodes = Object.keys(operatorsContent);
+    var html = '<div class="db-browse-section" data-anim-row><div class="db-label">Routes</div>' +
+      (routeIds.length
+        ? routeIds.map(function (id) { return '<div class="sv-item db-browse-item" data-kind="route" data-id="' + escapeAttr(id) + '"><span class="sv-name">' + escapeAttr(routesContent[id].name) + '</span></div>'; }).join('')
+        : '<div class="sv-empty">No routes catalogued yet.</div>') + '</div>';
+    html += '<div class="db-browse-section" data-anim-row><div class="db-label">Operators</div>' +
+      (opCodes.length
+        ? opCodes.map(function (code) { return '<div class="sv-item db-browse-item" data-kind="operator" data-id="' + escapeAttr(code) + '"><span class="sv-name">' + escapeAttr(operatorsContent[code].name) + '</span></div>'; }).join('')
+        : '<div class="sv-empty">No operators catalogued yet.</div>') + '</div>';
+    return html;
+  }
+  function wireDatabaseDefault() {
+    Array.prototype.forEach.call(contentBlock.querySelectorAll('.db-browse-item'), function (row) {
+      row.addEventListener('click', function () {
+        if (row.dataset.kind === 'route') selectRoute(row.dataset.id);
+        else selectOperator(row.dataset.id);
+      });
+    });
+  }
+
+  function sidebarSkeletonHtml() {
+    if (selection.type === 'saved') return '<div class="sv-list" id="sv-list" data-anim-row>' + savedListRowsHtml() + '</div>';
+    if (selection.type === 'route') return routeDetailSkeletonHtml();
+    if (selection.type === 'operator') return operatorDetailSkeletonHtml();
+    if (selection.type === 'fromto') return fromToSkeletonHtml();
+    if (selectedStationCrs) return mode === 'database' ? stationDatabaseSkeletonHtml() : stationLiveSkeletonHtml();
+    return mode === 'database' ? databaseDefaultSkeletonHtml() : liveDefaultSkeletonHtml();
+  }
+
+  // Rebuilds #sb-content-block for the current state and re-wires whatever's
+  // inside it. Shared by the animated transition below and by the very
+  // first (unanimated) render on page load, and by background JSON arriving
+  // late (see loadJsonContent above).
   function rebuildSidebarContent() {
     contentBlock.innerHTML = sidebarSkeletonHtml();
     if (selection.type === 'saved') {
       wireSavedListRows();
+    } else if (selection.type === 'route') {
+      wireRouteDetail();
+    } else if (selection.type === 'operator') {
+      wireOperatorDetail();
+    } else if (mode === 'database' && selectedStationCrs) {
+      wireStationDatabaseDetail();
+    } else if (mode === 'database' && !selectedStationCrs) {
+      wireDatabaseDefault();
     } else {
       renderFilterRow('filter-row', renderNews);
       renderNews();
@@ -1243,16 +1506,28 @@
     sidebarEl.classList.remove('collapsed');
   }
 
-  function selectStation(name, crs) {
-    var mySeq = ++selectionSeq;
-    selection = { type: 'station', name: name, crs: crs };
-    renderSelectionChrome();
-    expandSidebarIfCollapsed();
-    animateSidebarTransition();
+  // Shared by selectStation() and setMode() (Task 4 — switching into Live
+  // with a station already selected needs a fresh board, same as tapping
+  // the station directly would have given you).
+  function loadDepartureBoard(crs, mySeq) {
     fetch('/api/map-departures?crs=' + encodeURIComponent(crs)).then(function (r) { return r.json(); }).then(function (rows) {
       if (mySeq !== selectionSeq) return; // a newer selection replaced this board already
       renderDepartureRows(rows);
     }).catch(function () { if (mySeq === selectionSeq) renderDepartureRows([]); });
+  }
+
+  // Sets the ONE shared "selected station" (Task 4) — both Live and Database
+  // rendering read selectedStationCrs/Name directly, so this single call is
+  // enough for either tab to show it, now or after a later tab switch.
+  function selectStation(name, crs) {
+    var mySeq = ++selectionSeq;
+    selectedStationCrs = crs;
+    selectedStationName = name;
+    selection = { type: 'none' };
+    renderSelectionChrome();
+    expandSidebarIfCollapsed();
+    animateSidebarTransition();
+    if (mode === 'live') loadDepartureBoard(crs, mySeq);
   }
 
   // from/to are plain {name, crs, lat, lon} objects (station-list.json shape)
@@ -1281,16 +1556,102 @@
 
   function clearSelection() {
     ++selectionSeq;
+    selectedStationCrs = null;
+    selectedStationName = null;
     selection = { type: 'none' };
     renderSelectionChrome();
     animateSidebarTransition();
   }
   document.getElementById('sb-clear-btn').addEventListener('click', clearSelection);
 
+  // ── Route/operator selection (Task 1) ─────────────────────────────────────
+  // identifier is either a real key into routes/operators-content.json (from
+  // the Database-default browse list, or a route's own id) or, for operator
+  // chips inside a station's Services list, a bare display name that may not
+  // resolve to any curated entry yet — selection.code stays null in that
+  // case and the detail view falls back to the "content coming soon" state
+  // (Task 1's graceful-missing-data requirement) rather than erroring.
+  function selectRoute(id) {
+    ++selectionSeq;
+    selection = { type: 'route', id: id, fallbackName: (routesContent[id] && routesContent[id].name) || id };
+    renderSelectionChrome();
+    expandSidebarIfCollapsed();
+    animateSidebarTransition();
+    drawRoutePolyline(id);
+  }
+  function selectOperator(identifier) {
+    ++selectionSeq;
+    var code = operatorsContent[identifier] ? identifier : (operatorNameToCode[identifier] || null);
+    selection = { type: 'operator', code: code, fallbackName: (code && operatorsContent[code].name) || identifier };
+    renderSelectionChrome();
+    expandSidebarIfCollapsed();
+    animateSidebarTransition();
+  }
+
+  // ── Route highlight polyline (Task 2) ─────────────────────────────────────
+  // stopping_stations is an ordered list of CRS codes — coordinates are
+  // resolved against station-list.json (the "naptan_stations… lat/lon" the
+  // schema's own _notes point at isn't a file in this repo; station-list.json
+  // is the closest equivalent already loaded client-side), NOT map-data.jsx's
+  // orphaned hand-traced geometry, which is intentionally left untouched.
+  function coordsForCrs(crs) {
+    var entry = getStationList().filter(function (s) { return s.crs === crs; })[0];
+    if (entry && entry.lat != null && entry.lon != null) return [entry.lon, entry.lat];
+    return null;
+  }
+  function stationNameForCrs(crs) {
+    var known = stationsContent[crs];
+    if (known && known.name) return known.name;
+    var entry = getStationList().filter(function (s) { return s.crs === crs; })[0];
+    return (entry && entry.name) || crs;
+  }
+  function flyToAndSelectStation(crs) {
+    var coords = coordsForCrs(crs);
+    if (coords) map.flyTo({ center: coords, zoom: 11, duration: 800 });
+    selectStation(stationNameForCrs(crs), crs);
+  }
+  var ROUTE_LAYER_ID = 'route-highlight-layer', ROUTE_SOURCE_ID = 'route-highlight';
+  function drawRoutePolyline(id) {
+    var r = routesContent[id];
+    if (!map || !map.isStyleLoaded() || !r || !r.stopping_stations || r.stopping_stations.length < 2) return;
+    var coords = r.stopping_stations.map(coordsForCrs).filter(function (c) { return c; });
+    if (coords.length < 2) return;
+    var geojson = { type: 'Feature', geometry: { type: 'LineString', coordinates: coords }, properties: {} };
+    if (!map.getSource(ROUTE_SOURCE_ID)) {
+      map.addSource(ROUTE_SOURCE_ID, { type: 'geojson', data: geojson });
+    } else {
+      map.getSource(ROUTE_SOURCE_ID).setData(geojson);
+    }
+    if (!map.getLayer(ROUTE_LAYER_ID)) {
+      map.addLayer({
+        id: ROUTE_LAYER_ID, type: 'line', source: ROUTE_SOURCE_ID,
+        layout: { 'line-cap': 'round', 'line-join': 'round', visibility: 'visible' },
+        paint: {
+          'line-color': '#F25CC1', // --m design token
+          // Zoom-interpolated so the highlight reads consistently at any
+          // zoom level instead of a fixed pixel width looking too thick
+          // zoomed out / too thin zoomed in.
+          'line-width': ['interpolate', ['linear'], ['zoom'], 5, 1.5, 10, 2.5, 15, 4],
+        },
+      });
+      map.on('click', ROUTE_LAYER_ID, function () { if (selection.type !== 'route' || selection.id !== id) selectRoute(id); });
+      map.on('mouseenter', ROUTE_LAYER_ID, function () { map.getCanvas().style.cursor = 'pointer'; });
+      map.on('mouseleave', ROUTE_LAYER_ID, function () { map.getCanvas().style.cursor = ''; });
+    } else {
+      map.setLayoutProperty(ROUTE_LAYER_ID, 'visibility', 'visible');
+    }
+    var bounds = coords.reduce(function (b, c) { return b.extend(c); }, new maplibregl.LngLatBounds(coords[0], coords[0]));
+    map.fitBounds(bounds, { padding: 60, duration: 800 });
+  }
+  function clearRoutePolyline() {
+    if (map && map.getLayer(ROUTE_LAYER_ID)) map.setLayoutProperty(ROUTE_LAYER_ID, 'visibility', 'none');
+  }
+
   // ── Header: mode switching (Live / Database) ─────────────────────────────
   var tabLive = document.getElementById('sb-tab-live');
   var tabDb = document.getElementById('sb-tab-database');
   function setMode(newMode) {
+    if (newMode === mode) return;
     mode = newMode;
     document.body.classList.toggle('mode-database', mode === 'database');
     tabLive.classList.toggle('live-on', mode === 'live');
@@ -1301,6 +1662,25 @@
     // competes with the bottom-anchored Database-mode legend/history stack —
     // no auto-collapse needed here any more (it used to, back when the
     // sidebar was a bottom sheet on tablet/mobile).
+
+    // Task 4 — cross-tab station sync: 'fromto'/'saved' only make sense in
+    // Live, 'route'/'operator' only make sense in Database. Switching to a
+    // mode where the current special view doesn't belong drops it, falling
+    // back to the shared selected station (if any) or that mode's default —
+    // never carrying an inapplicable view across, never forcing a selection
+    // that doesn't exist.
+    var liveOnly = selection.type === 'fromto' || selection.type === 'saved';
+    var dbOnly = selection.type === 'route' || selection.type === 'operator';
+    if ((mode === 'database' && liveOnly) || (mode === 'live' && dbOnly)) {
+      selection = { type: 'none' };
+    }
+
+    var mySeq = ++selectionSeq;
+    renderSelectionChrome();
+    animateSidebarTransition(); // re-render for the new mode, same fade as a fresh selection
+    if (mode === 'live' && selection.type === 'none' && selectedStationCrs) {
+      loadDepartureBoard(selectedStationCrs, mySeq);
+    }
   }
   tabLive.addEventListener('click', function () { setMode('live'); });
   tabDb.addEventListener('click', function () { setMode('database'); });
@@ -1683,17 +2063,17 @@
   });
 
   starBtn.addEventListener('click', function () {
-    if (selection.type !== 'station') return;
+    if (!selectedStationCrs) return;
     var list = getSavedRoutes();
-    var idx = list.findIndex(function (r) { return r.crs === selection.crs; });
+    var idx = list.findIndex(function (r) { return r.crs === selectedStationCrs; });
     if (idx !== -1) {
       list.splice(idx, 1);
     } else {
-      var feature = stationsData && stationsData.features.find(function (f) { return f.properties.crs === selection.crs; });
-      list.push({ name: selection.name, crs: selection.crs, toc: feature ? feature.properties.toc : '', addedAt: new Date().toISOString() });
+      var feature = stationsData && stationsData.features.find(function (f) { return f.properties.crs === selectedStationCrs; });
+      list.push({ name: selectedStationName, crs: selectedStationCrs, toc: feature ? feature.properties.toc : '', addedAt: new Date().toISOString() });
     }
     setSavedRoutes(list);
-    starBtn.classList.toggle('starred', isStarred(selection.crs));
+    starBtn.classList.toggle('starred', isStarred(selectedStationCrs));
   });
 
   // ── Cookie consent (compact vanilla banner) ──────────────────────────────
