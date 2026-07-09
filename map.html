@@ -229,6 +229,14 @@
   @media (min-width: 769px) {
     #control-cluster { left: var(--sidebar-edge); }
   }
+  /* Mobile/tablet: sidebar is now top-anchored (see #sidebar below) and caps
+     at 35vh, so this cluster sits below it instead of overlapping it — Jump
+     to first, zoom controls beneath (column-reverse flips the DOM order,
+     which is [.map-controls, #region-jump], without touching desktop's row
+     layout or the markup). */
+  @media (max-width: 768px) {
+    #control-cluster { top: calc(var(--nav-h) + 35vh + 10px); flex-direction: column-reverse; }
+  }
 
   /* ── Bottom hints ─────────────────────────────────────────────── */
   #bottom-hints { position: absolute; z-index: 30; display: flex; gap: 5px;
@@ -251,6 +259,24 @@
   #cookie-consent .cc-accept { background: var(--t); color: #07090C; font-weight: 600; }
   #cookie-consent .cc-reject { border: 0.5px solid var(--brh); color: var(--ink); }
 
+  /* ── Mobile floating search bar (tablet/mobile only) ─────────────────────
+     Independent of the top sidebar entirely — its own element, always
+     visible in Live mode regardless of whether the sidebar is collapsed.
+     Simpler cousin of the history panel's floating-card treatment: just a
+     search icon + input, no other controls. Hidden in Database mode since it
+     would otherwise fight the legend/history stack for the same bottom
+     strip (same convention #region-jump/#bottom-hints already use). ────── */
+  #mobile-search { display: none; position: absolute; left: 10px; right: 10px; bottom: 14px; z-index: 56;
+    background: var(--sf); border: 0.5px solid var(--brh); border-radius: 12px;
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    align-items: center; gap: 6px; padding: 0 6px 0 14px; }
+  #mobile-search > i { font-size: 15px; color: var(--ink); flex-shrink: 0; }
+  #mobile-search .sb-ac-wrap { flex: 1; min-width: 0; }
+  #mobile-search-input { width: 100%; background: transparent; border: none; color: var(--ink-primary); font-size: 14px; padding: 13px 4px; }
+  #mobile-search-input::placeholder { color: var(--ink); }
+  body.mode-database #mobile-search { display: none !important; }
+  @media (max-width: 768px) { #mobile-search { display: flex; } }
+
   /* ── Sidebar (desktop) / bottom sheet (tablet+mobile) ────────────────────
      Persistent, non-modal — the map stays interactive alongside it. Always
      rendered (never fully hidden): default state is the live-news feed with
@@ -264,7 +290,7 @@
     #sidebar { top: var(--nav-h); left: 0; bottom: 0; width: var(--sidebar-w); border-radius: 0 16px 16px 0; border-left: none; }
   }
   @media (max-width: 768px) {
-    #sidebar { left: 0; right: 0; bottom: 0; max-height: 33vh; border-radius: 16px 16px 0 0; border-bottom: none; }
+    #sidebar { top: var(--nav-h); left: 0; right: 0; max-height: 35vh; border-radius: 0 0 16px 16px; border-top: none; }
   }
 
   .sb-handle-row { display: none; align-items: center; justify-content: center; position: relative; padding: 8px 0 4px; flex-shrink: 0; }
@@ -539,6 +565,16 @@
   </div>
 </div>
 
+<!-- Tablet/mobile only — floating search bar, independent of the top
+     sidebar's own show/hide state (see #mobile-search in CSS). -->
+<div id="mobile-search">
+  <i class="ti ti-search"></i>
+  <div class="sb-ac-wrap">
+    <input id="mobile-search-input" type="text" placeholder="Search stations…" aria-label="Search stations" autocomplete="off" />
+    <div class="sb-ac-list dropup" id="sb-ac-mobile"></div>
+  </div>
+</div>
+
 <div id="sidebar">
   <div class="sb-handle-row">
     <div class="sb-handle"></div>
@@ -645,6 +681,60 @@
   var mode = 'live';
   var ormVisible = true;
   var currentStadiaKey = '';
+
+  // ── Station list (autocomplete) ───────────────────────────────────────────
+  // /station-list.json is the full UK station list — [{name, crs, lat, lon}],
+  // ~2,600 entries — separate from /data/stations.geojson's 53-station subset
+  // used for map markers. Loaded once up front and cached.
+  var stationList = [];
+  fetch('/station-list.json').then(function (r) {
+    if (!r.ok) throw new Error('station-list.json missing');
+    return r.json();
+  }).then(function (data) {
+    stationList = Array.isArray(data) ? data : [];
+  }).catch(function (e) {
+    console.warn('station-list.json unavailable — autocomplete falls back to loaded map markers/stub', e);
+  });
+
+  // Small hardcoded fallback so autocomplete is testable even before
+  // station-list.json AND stations.geojson have loaded (first paint).
+  var STATION_STUB = [
+    { name: 'London Paddington', crs: 'PAD', lat: 51.5154, lon: -0.1755 },
+    { name: 'London Kings Cross', crs: 'KGX', lat: 51.5308, lon: -0.1238 },
+    { name: 'Manchester Piccadilly', crs: 'MAN', lat: 53.4773, lon: -2.2309 },
+    { name: 'Birmingham New Street', crs: 'BHM', lat: 52.4778, lon: -1.8998 },
+    { name: 'Leeds', crs: 'LDS', lat: 53.7960, lon: -1.5488 },
+    { name: 'Edinburgh Waverley', crs: 'EDB', lat: 55.9522, lon: -3.1900 },
+    { name: 'Glasgow Central', crs: 'GLC', lat: 55.8586, lon: -4.2579 },
+    { name: 'Bristol Temple Meads', crs: 'BRI', lat: 51.4495, lon: -2.5813 },
+    { name: 'Liverpool Lime Street', crs: 'LIV', lat: 53.4075, lon: -2.9779 },
+    { name: 'Cardiff Central', crs: 'CDF', lat: 51.4761, lon: -3.1793 },
+  ];
+  function getStationList() {
+    if (stationList.length) return stationList;
+    if (stationsData) {
+      return stationsData.features.map(function (f) {
+        return { name: f.properties.name, crs: f.properties.crs, lat: f.geometry.coordinates[1], lon: f.geometry.coordinates[0] };
+      });
+    }
+    return STATION_STUB;
+  }
+  // Simple substring match, starts-with results ranked first — no fuzzy
+  // matching, per instruction.
+  function searchStations(query, limit) {
+    query = (query || '').trim().toLowerCase();
+    if (!query) return [];
+    var matches = getStationList().filter(function (s) {
+      return s.name && s.name.toLowerCase().indexOf(query) !== -1;
+    });
+    matches.sort(function (a, b) {
+      var aStarts = a.name.toLowerCase().indexOf(query) === 0 ? 0 : 1;
+      var bStarts = b.name.toLowerCase().indexOf(query) === 0 ? 0 : 1;
+      if (aStarts !== bStarts) return aStarts - bStarts;
+      return a.name.length - b.name.length;
+    });
+    return matches.slice(0, limit || 7);
+  }
 
   // Current sidebar selection. type: 'none' | 'station' | 'fromto'.
   // 'route' and 'network' types aren't wired yet — route/network click
@@ -1087,26 +1177,29 @@
     }).catch(function () { if (mySeq === selectionSeq) renderDepartureRows([]); });
   }
 
-  function selectFromTo(fromF, toF) {
+  // from/to are plain {name, crs, lat, lon} objects (station-list.json shape)
+  function selectFromTo(from, to) {
     var mySeq = ++selectionSeq;
     selection = {
       type: 'fromto',
-      fromCrs: fromF.properties.crs, fromName: fromF.properties.name,
-      toCrs: toF.properties.crs, toName: toF.properties.name,
+      fromCrs: from.crs, fromName: from.name,
+      toCrs: to.crs, toName: to.name,
     };
     renderSelectionChrome();
     expandSidebarIfCollapsed();
     animateSidebarTransition();
-    fetch('/api/map-departures?crs=' + encodeURIComponent(fromF.properties.crs) + '&to=' + encodeURIComponent(toF.properties.crs))
+    fetch('/api/map-departures?crs=' + encodeURIComponent(from.crs) + '&to=' + encodeURIComponent(to.crs))
       .then(function (r) { return r.json(); }).then(function (rows) {
         if (mySeq !== selectionSeq) return;
         renderDepartureRows(rows);
       }).catch(function () { if (mySeq === selectionSeq) renderDepartureRows([]); });
 
     hideBottomHints();
-    var bounds = new maplibregl.LngLatBounds(fromF.geometry.coordinates, fromF.geometry.coordinates);
-    bounds.extend(toF.geometry.coordinates);
-    map.fitBounds(bounds, { padding: 80, duration: 800 });
+    if (from.lat != null && from.lon != null && to.lat != null && to.lon != null) {
+      var bounds = new maplibregl.LngLatBounds([from.lon, from.lat], [from.lon, from.lat]);
+      bounds.extend([to.lon, to.lat]);
+      map.fitBounds(bounds, { padding: 80, duration: 800 });
+    }
   }
 
   function clearSelection() {
@@ -1127,14 +1220,10 @@
     tabLive.setAttribute('aria-pressed', mode === 'live');
     tabDb.classList.toggle('db-on', mode === 'database');
     tabDb.setAttribute('aria-pressed', mode === 'database');
-    // On tablet/mobile the bottom sheet and the Database-mode legend/history
-    // stack both want the bottom of the screen — collapse the sheet to just
-    // its handle+tabs strip so the mode toggle stays reachable without
-    // overlapping the legend bar. Desktop keeps the sidebar's live feed
-    // visible in both modes (only the departure board hides via CSS).
-    if (window.innerWidth <= 768) {
-      sidebarEl.classList.toggle('collapsed', mode === 'database');
-    }
+    // The sidebar is top-anchored on every breakpoint now, so it no longer
+    // competes with the bottom-anchored Database-mode legend/history stack —
+    // no auto-collapse needed here any more (it used to, back when the
+    // sidebar was a bottom sheet on tablet/mobile).
   }
   tabLive.addEventListener('click', function () { setMode('live'); });
   tabDb.addEventListener('click', function () { setMode('database'); });
@@ -1193,28 +1282,93 @@
     if (opening) setSearchMode(searchMode);
   });
 
-  function findStationFeature(q) {
-    q = q.trim().toLowerCase();
-    if (!q || !stationsData) return null;
-    return stationsData.features.find(function (f) { return f.properties.name.toLowerCase().indexOf(q) !== -1; });
+  // ── Autocomplete (shared by every search field — desktop + mobile) ───────
+  // Renders a dropdown of matches below (or above, via .dropup) inputEl as
+  // the user types. Selecting a suggestion (mousedown, so it fires before
+  // the input's blur hides the dropdown) fills the input and hands the full
+  // {name,crs,lat,lon} record to onPick. Typing after a pick invalidates it
+  // (onPick(null)) until the user picks again or presses Enter, which falls
+  // back to the top current match.
+  function wireAutocomplete(inputEl, dropdownEl, onPick) {
+    var currentMatches = [];
+    function closeDropdown() {
+      currentMatches = [];
+      dropdownEl.classList.remove('open');
+      dropdownEl.innerHTML = '';
+    }
+    function renderDropdown() {
+      if (!currentMatches.length) { closeDropdown(); return; }
+      dropdownEl.innerHTML = currentMatches.map(function (s, i) {
+        return '<button type="button" class="sb-ac-item" data-idx="' + i + '">' + s.name + '</button>';
+      }).join('');
+      dropdownEl.classList.add('open');
+      Array.prototype.forEach.call(dropdownEl.querySelectorAll('.sb-ac-item'), function (btn) {
+        btn.addEventListener('mousedown', function (e) {
+          e.preventDefault();
+          var picked = currentMatches[parseInt(btn.dataset.idx, 10)];
+          inputEl.value = picked.name;
+          closeDropdown();
+          onPick(picked);
+        });
+      });
+    }
+    inputEl.addEventListener('input', function () {
+      onPick(null);
+      currentMatches = searchStations(inputEl.value, 7);
+      renderDropdown();
+    });
+    inputEl.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') closeDropdown();
+    });
+    inputEl.addEventListener('blur', function () {
+      setTimeout(closeDropdown, 120); // delay lets the mousedown above register first
+    });
   }
 
+  var stationPick = null;
+  function submitStationPick(picked) {
+    hideBottomHints();
+    if (picked.lat != null && picked.lon != null) map.flyTo({ center: [picked.lon, picked.lat], zoom: 11, duration: 800 });
+    selectStation(picked.name, picked.crs);
+  }
+  wireAutocomplete(searchInput, document.getElementById('sb-ac-station'), function (picked) {
+    stationPick = picked;
+    if (picked) submitStationPick(picked);
+  });
   searchInput.addEventListener('keydown', function (e) {
     if (e.key !== 'Enter') return;
-    var match = findStationFeature(searchInput.value);
-    if (match) {
-      var coords = match.geometry.coordinates;
-      hideBottomHints();
-      map.flyTo({ center: coords, zoom: 11, duration: 800 });
-      selectStation(match.properties.name, match.properties.crs);
-    }
+    var picked = stationPick || searchStations(searchInput.value, 1)[0];
+    if (picked) submitStationPick(picked);
   });
 
+  // Mobile floating search bar — same station-pick behavior as the desktop
+  // station field, just its own input/dropdown/pick-state.
+  var mobileSearchInput = document.getElementById('mobile-search-input');
+  var mobileStationPick = null;
+  wireAutocomplete(mobileSearchInput, document.getElementById('sb-ac-mobile'), function (picked) {
+    mobileStationPick = picked;
+    if (picked) submitStationPick(picked);
+  });
+  mobileSearchInput.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter') return;
+    var picked = mobileStationPick || searchStations(mobileSearchInput.value, 1)[0];
+    if (picked) submitStationPick(picked);
+  });
+
+  var fromPick = null, toPick = null;
   function trySubmitFromTo() {
-    var fromMatch = findStationFeature(fromInput.value);
-    var toMatch = findStationFeature(toInput.value);
-    if (fromMatch && toMatch) selectFromTo(fromMatch, toMatch);
+    var f = fromPick || searchStations(fromInput.value, 1)[0];
+    var t = toPick || searchStations(toInput.value, 1)[0];
+    if (f && t) selectFromTo(f, t);
   }
+  wireAutocomplete(fromInput, document.getElementById('sb-ac-from'), function (picked) {
+    fromPick = picked;
+    if (picked && toPick) trySubmitFromTo();
+  });
+  wireAutocomplete(toInput, document.getElementById('sb-ac-to'), function (picked) {
+    toPick = picked;
+    if (picked && fromPick) trySubmitFromTo();
+  });
   fromInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') toInput.focus(); });
   toInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') trySubmitFromTo(); });
 
