@@ -98,7 +98,16 @@
     --color-accent-lime: #B8F266; --color-accent-lime-rgb: 184,242,102;
   }
   :root[data-theme="light"] {
-    --t: #0AABA0;
+    /* --t/--m/--a/--l are the short-form tokens the map's OWN CSS actually
+       uses (dep-status colors, star, urgent news icon, rebook CTA) — only
+       --t had a light-theme override before, so --m/--a/--l were silently
+       falling back to :root's saturated dark-mode values on a light
+       background, which is exactly why lime (and, less noticeably, magenta/
+       amber) read as washed out. All four now match departures.html's
+       canonical light-theme accent values exactly (also fixes --t, which
+       was a slightly different turquoise, #0AABA0, than the rest of the
+       site's #1A9E8F). */
+    --t: #1A9E8F; --m: #C4237A; --a: #B8860B; --l: #4A7C00;
     --ink: #444444; --ink-primary: #07090C; --bg: #f0f0f0; --sf: rgba(255,255,255,0.95);
     --br: rgba(0,0,0,0.06); --brh: rgba(0,0,0,0.12);
 
@@ -226,9 +235,16 @@
   /* region-jump (outer) is a plain, non-scrolling positioned card — it just
      holds the fade overlays. #rj-scroll (inner) is the actual horizontally-
      scrolling flex row. Splitting them is what keeps the fade pinned to the
-     edges instead of scrolling away with the chips (see the HTML comment). */
+     edges instead of scrolling away with the chips (see the HTML comment).
+     Padding used to live on #region-jump itself, wrapping the label AND the
+     fade — that inset the fade 12px from the box's true edge, so it read as
+     "floating" rather than flush with the rounded corner. Padding now lives
+     on the two children instead (the label's own left inset, #rj-scroll's
+     own right inset), so .scroll-fade spans edge-to-edge and its fade sits
+     flush against the true left/right edge of the pill, while the chip
+     content still gets breathing room via #rj-scroll's own padding. */
   #region-jump { position: absolute; top: calc(var(--nav-h) + 10px); left: 10px; z-index: 55;
-    display: flex; align-items: center; padding: 8px 12px; max-width: calc(100vw - 20px);
+    display: flex; align-items: center; padding: 8px 0; max-width: calc(100vw - 20px);
     background: var(--sf); border: 0.5px solid var(--brh); border-radius: 16px;
     backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
   /* flex:1 + min-width:0 is what actually lets #rj-scroll's overflow-x kick
@@ -236,9 +252,13 @@
      below its content's intrinsic width, so it would just keep growing the
      whole bar instead of scrolling. */
   #region-jump .scroll-fade { flex: 1; min-width: 0; }
-  #rj-scroll { display: flex; align-items: center; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+  /* Half the shared .scroll-fade width (16px) — scoped to just this bar so
+     the sidebar's filter-row fade, which wasn't part of this complaint,
+     stays as-is. */
+  #region-jump .scroll-fade::before, #region-jump .scroll-fade::after { width: 8px; }
+  #rj-scroll { display: flex; align-items: center; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 0 14px 0 0; }
   #rj-scroll::-webkit-scrollbar { display: none; }
-  #region-jump .rj-label { font-family: var(--font-body); font-size: 14px; font-weight: 500; color: var(--ink-mute); text-transform: uppercase; padding: 0 2px 0 2px; margin-right: 8px; flex-shrink: 0; }
+  #region-jump .rj-label { font-family: var(--font-body); font-size: 14px; font-weight: 500; color: var(--ink-mute); padding: 0 0 0 14px; margin-right: 14px; flex-shrink: 0; }
   body.mode-database #region-jump { display: none; }
 
   #control-cluster { position: absolute; top: calc(var(--nav-h) + 10px); left: 10px; z-index: 55; }
@@ -379,12 +399,19 @@
      uppercase mono column labels, alternating row background (var(--surface2),
      same token/value departures.html's .dep-table uses). */
   #sb-dep-board { display: none; border-bottom: 0.5px solid var(--br); padding: 12px 16px 14px; }
-  #sb-dep-board .db-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 6px; }
+  /* Station/route name used to repeat here as .db-station — already shown
+     right above in .sb-selection-title, so it was a plain duplicate. Removed
+     in favour of a refresh icon in the same spot (force-refetches the board
+     without re-triggering the selection/fade cycle — see
+     refreshDepartureBoard()). */
+  #sb-dep-board .db-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
   /* Unscoped (was #sb-dep-board .db-label) so Database-mode content below can
      reuse the exact same mono/uppercase/turquoise section-label style
      instead of duplicating it under a new class name. */
   .db-label { font-family: var(--font-mono); font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--t); }
-  #sb-dep-board .db-station { font-size: 12px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 260px; }
+  .db-refresh-btn { flex-shrink: 0; font-size: 13px; }
+  .db-refresh-btn.spinning i { display: inline-block; animation: db-refresh-spin 0.6s linear infinite; }
+  @keyframes db-refresh-spin { to { transform: rotate(360deg); } }
 
   /* ── Database-mode content (Task 3) ───────────────────────────────────────
      Reuses existing conventions throughout: .db-label above, .filter-chip
@@ -923,7 +950,10 @@
       railwayMain: 'rgba(154,164,178,0.65)', railwaySecondary: 'rgba(154,164,178,0.4)', railwayClosed: 'rgba(154,164,178,0.28)',
     },
     light: {
-      accent: '#0AABA0', stationFill: 'rgba(240,240,240,0.9)', stationHoverFill: 'rgba(10,171,160,0.15)', labelColor: '#444444', labelHalo: 'rgba(255,255,255,0.85)',
+      // accent/stationHoverFill matched to --t's fix above (#1A9E8F, the
+      // site-wide light-theme turquoise) — was a slightly different, one-off
+      // shade (#0AABA0) before.
+      accent: '#1A9E8F', stationFill: 'rgba(240,240,240,0.9)', stationHoverFill: 'rgba(26,158,143,0.15)', labelColor: '#444444', labelHalo: 'rgba(255,255,255,0.85)',
       railwayMain: 'rgba(68,68,68,0.6)', railwaySecondary: 'rgba(68,68,68,0.38)', railwayClosed: 'rgba(68,68,68,0.26)',
     },
   };
@@ -1340,9 +1370,10 @@
   // ── Live-mode content (unchanged behaviour — station board / from-to board
   // / the live news feed default — just split into named pieces so the
   // Database-mode branches below can sit alongside them cleanly). ─────────
-  function depBoardHtml(label, stationText) {
+  function depBoardHtml(label) {
     return '<div id="sb-dep-board" data-anim-row style="display:block;">' +
-      '<div class="db-head"><span class="db-label">' + label + '</span><span class="db-station">' + stationText + '</span></div>' +
+      '<div class="db-head"><span class="db-label">' + label + '</span>' +
+      '<button type="button" class="ghost-btn db-refresh-btn" id="sb-dep-refresh" aria-label="Refresh departures"><i class="ti ti-refresh"></i></button></div>' +
       '<div class="dep-cols"><span>Sched.</span><span>Destination</span><span>Plat.</span><span>Status</span></div>' +
       '<div id="sb-dep-rows"><div class="dep-empty">Loading departures…</div></div>' +
       '</div>';
@@ -1362,10 +1393,10 @@
       '</div>';
   }
   function stationLiveSkeletonHtml() {
-    return depBoardHtml('Departures', selectedStationName) + liveNewsBlockHtml();
+    return depBoardHtml('Departures') + liveNewsBlockHtml();
   }
   function fromToSkeletonHtml() {
-    return depBoardHtml('Next trains', selection.fromName + ' → ' + selection.toName) + liveNewsBlockHtml();
+    return depBoardHtml('Next trains') + liveNewsBlockHtml();
   }
   function liveDefaultSkeletonHtml() {
     return emptyDepBoardHtml() + liveNewsBlockHtml();
@@ -1527,6 +1558,7 @@
     } else if (mode === 'database' && !selectedStationCrs) {
       wireDatabaseDefault();
     } else {
+      wireDepartureBoardRefresh(); // no-ops if this cycle has no dep-board (plain live-default view)
       renderFilterRow('filter-row', renderNews);
       renderNews();
     }
@@ -1570,14 +1602,50 @@
     sidebarEl.classList.remove('collapsed');
   }
 
-  // Shared by selectStation() and setMode() (Task 4 — switching into Live
-  // with a station already selected needs a fresh board, same as tapping
-  // the station directly would have given you).
-  function loadDepartureBoard(crs, mySeq) {
-    fetch('/api/map-departures?crs=' + encodeURIComponent(crs)).then(function (r) { return r.json(); }).then(function (rows) {
+  function departuresUrl(crs, toCrs, bust) {
+    var url = '/api/map-departures?crs=' + encodeURIComponent(crs);
+    if (toCrs) url += '&to=' + encodeURIComponent(toCrs);
+    // Manual refresh (refreshDepartureBoard() below) needs to bypass
+    // api/map-departures.js's Cache-Control: s-maxage=30 — a cache-busting
+    // query param plus fetch's own no-store guarantees the request reaches
+    // the origin instead of a 30s-old edge-cached response.
+    if (bust) url += '&_=' + Date.now();
+    return url;
+  }
+
+  // Shared by selectStation()/selectFromTo() and setMode() (Task 4 —
+  // switching into Live with a station already selected needs a fresh
+  // board, same as tapping the station directly would have given you).
+  function loadDepartureBoard(crs, mySeq, toCrs) {
+    fetch(departuresUrl(crs, toCrs)).then(function (r) { return r.json(); }).then(function (rows) {
       if (mySeq !== selectionSeq) return; // a newer selection replaced this board already
       renderDepartureRows(rows);
     }).catch(function () { if (mySeq === selectionSeq) renderDepartureRows([]); });
+  }
+
+  // Refresh icon in the departure board's header — force-refetches the
+  // currently shown board without re-running the whole select/fade cycle.
+  // This calls the exact same endpoint every station/from-to selection
+  // already calls (just with a cache-buster), so there's no new backend
+  // surface and no conflict with the RTT-backed api/map-departures.js: the
+  // serverless function's own access-token cache is keyed on the refresh
+  // token, not the request, so an on-demand refresh here reuses it exactly
+  // like any other departures request would.
+  function refreshDepartureBoard() {
+    var crs = selection.type === 'fromto' ? selection.fromCrs : selectedStationCrs;
+    if (!crs) return;
+    var toCrs = selection.type === 'fromto' ? selection.toCrs : undefined;
+    var btn = document.getElementById('sb-dep-refresh');
+    if (btn) btn.classList.add('spinning');
+    fetch(departuresUrl(crs, toCrs, true), { cache: 'no-store' })
+      .then(function (r) { return r.json(); })
+      .then(function (rows) { renderDepartureRows(rows); })
+      .catch(function () { renderDepartureRows([]); })
+      .finally(function () { if (btn) btn.classList.remove('spinning'); });
+  }
+  function wireDepartureBoardRefresh() {
+    var btn = document.getElementById('sb-dep-refresh');
+    if (btn) btn.addEventListener('click', refreshDepartureBoard);
   }
 
   // Sets the ONE shared "selected station" (Task 4) — both Live and Database
@@ -1605,11 +1673,7 @@
     renderSelectionChrome();
     expandSidebarIfCollapsed();
     animateSidebarTransition();
-    fetch('/api/map-departures?crs=' + encodeURIComponent(from.crs) + '&to=' + encodeURIComponent(to.crs))
-      .then(function (r) { return r.json(); }).then(function (rows) {
-        if (mySeq !== selectionSeq) return;
-        renderDepartureRows(rows);
-      }).catch(function () { if (mySeq === selectionSeq) renderDepartureRows([]); });
+    loadDepartureBoard(from.crs, mySeq, to.crs);
 
     if (from.lat != null && from.lon != null && to.lat != null && to.lon != null) {
       var bounds = new maplibregl.LngLatBounds([from.lon, from.lat], [from.lon, from.lat]);
