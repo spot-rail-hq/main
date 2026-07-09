@@ -79,7 +79,10 @@
     --font-mono: 'JetBrains Mono', ui-monospace, monospace;
     --sidebar-w: 400px;
     --sidebar-gap: 10px;
-    --sidebar-edge: calc(var(--sidebar-w) + var(--sidebar-gap));
+    /* Sidebar now floats with its own left inset (--sidebar-gap) instead of
+       sitting flush against the viewport edge, so this is left-inset +
+       width + the gap before whatever sits beside it. */
+    --sidebar-edge: calc(var(--sidebar-gap) + var(--sidebar-w) + var(--sidebar-gap));
     --nav-h: 72px;
 
     /* Canonical site-wide tokens (same names/values as departures.html's
@@ -291,11 +294,20 @@
     backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
     display: flex; flex-direction: column; overflow: hidden; }
 
+  /* Floats with a gap on every side now (was flush against the viewport/nav
+     edges) — matches the "Sidbar sample" reference. top uses the same
+     calc(var(--nav-h) + var(--sidebar-gap)) formula #region-jump/
+     #control-cluster already use, so their top edges line up automatically;
+     --sidebar-edge (used by anything positioned "beside the sidebar") was
+     widened by one more --sidebar-gap to account for this box's own left
+     inset. Static position/behavior unchanged — spacing only. */
   @media (min-width: 769px) {
-    #sidebar { top: var(--nav-h); left: 0; bottom: 0; width: var(--sidebar-w); border-radius: 0 16px 16px 0; border-left: none; }
+    #sidebar { top: calc(var(--nav-h) + var(--sidebar-gap)); left: var(--sidebar-gap); bottom: var(--sidebar-gap);
+      width: var(--sidebar-w); border-radius: 16px; }
   }
   @media (max-width: 768px) {
-    #sidebar { top: var(--nav-h); left: 0; right: 0; max-height: 35vh; border-radius: 0 0 16px 16px; border-top: none; }
+    #sidebar { top: calc(var(--nav-h) + var(--sidebar-gap)); left: var(--sidebar-gap); right: var(--sidebar-gap);
+      max-height: 35vh; border-radius: 16px; }
   }
 
   .sb-handle-row { display: none; align-items: center; justify-content: center; position: relative; padding: 8px 0 4px; flex-shrink: 0; }
@@ -1306,7 +1318,41 @@
       e.preventDefault();
     }, { passive: false });
   }
+
+  // Click-and-drag (mouse) / swipe (touch) panning — a browser's native
+  // overflow-x:auto only gives you trackpad-swipe and scrollbar-drag for
+  // free; a plain click-and-hold drag with a mouse, which is what "drag the
+  // bar sideways" means to most people, needs to be built by hand. Pointer
+  // Events unify mouse/touch/pen into one implementation. A `moved` flag
+  // suppresses the click that would otherwise fire on whatever chip the
+  // pointer happens to land on when the drag ends, so dragging never
+  // accidentally selects a chip.
+  function enableDragToScroll(el) {
+    var dragging = false, moved = false, startX = 0, startScrollLeft = 0;
+    el.addEventListener('pointerdown', function (e) {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      dragging = true;
+      moved = false;
+      startX = e.clientX;
+      startScrollLeft = el.scrollLeft;
+      el.setPointerCapture(e.pointerId);
+    });
+    el.addEventListener('pointermove', function (e) {
+      if (!dragging) return;
+      var dx = e.clientX - startX;
+      if (Math.abs(dx) > 3) moved = true;
+      el.scrollLeft = startScrollLeft - dx;
+    });
+    function stopDrag() { dragging = false; }
+    el.addEventListener('pointerup', stopDrag);
+    el.addEventListener('pointercancel', stopDrag);
+    el.addEventListener('click', function (e) {
+      if (moved) { e.preventDefault(); e.stopPropagation(); }
+    }, true);
+  }
+
   enableWheelToHorizontalScroll(document.getElementById('region-jump'));
+  enableDragToScroll(document.getElementById('region-jump'));
 
   // ── Floating cluster stacking (region-jump below the sidebar, the zoom/
   // layers/location column below region-jump) ──────────────────────────────
@@ -1473,6 +1519,7 @@
       return '<button class="filter-chip' + (key === activeFilter ? ' active' : '') + '" data-filter="' + key + '">' + f + '</button>';
     }).join('');
     enableWheelToHorizontalScroll(el);
+    enableDragToScroll(el);
     var chips = el.querySelectorAll('.filter-chip');
     Array.prototype.forEach.call(chips, function (btn) {
       btn.addEventListener('click', function () {
