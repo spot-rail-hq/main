@@ -471,38 +471,56 @@
      not persistent nodes with toggled classes). */
   .sb-content-block { display: flex; flex-direction: column; }
 
-  /* ── Legend bar + history panel (Database mode) ──────────────────────────
-     Both float independently of the sidebar, bottom-center of the visible
-     map area. On desktop that's the viewport minus the sidebar's width; on
-     tablet/mobile the sidebar collapses to its handle+tabs strip in Database
-     mode (see setMode()) so this stack has the full width below it. ────── */
-  #legend-bar { display: none; position: absolute; left: 10px; right: 10px; bottom: 10px; z-index: 40;
-    background: var(--sf); border: 0.5px solid var(--brh); border-radius: 12px; padding: 6px 12px;
-    align-items: center; justify-content: center; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
-  body.mode-database #legend-bar { display: flex; }
-  .legend-items { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+  /* ── History panel (Database mode) ────────────────────────────────────────
+     Floats independently of the sidebar, bottom-center of the visible map
+     area (viewport minus the sidebar's width on desktop). The legend now
+     lives inside it (top-right of the head row) instead of as its own
+     separate bottom bar. Width is 50% of that visible map area on desktop;
+     on tablet/mobile it matches the Jump-to bar's edge-to-edge treatment
+     (same --sidebar-gap inset, not centered/capped). ───────────────────── */
+  #history-panel { display: none; position: absolute; z-index: 41; left: 50%; transform: translateX(-50%);
+    bottom: 54px; width: calc((100vw - var(--sidebar-edge)) / 2);
+    background: var(--sf); border: 0.5px solid var(--brh); border-radius: 16px;
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+  body.mode-database #history-panel { display: block; }
+  @media (min-width: 769px) { #history-panel { left: calc(50% + (var(--sidebar-edge) / 2)); } }
+  @media (max-width: 768px) {
+    #history-panel { bottom: 70px; left: var(--sidebar-gap); right: var(--sidebar-gap); width: auto; transform: none; }
+  }
+
+  .hp-head { display: flex; align-items: center; gap: 10px; padding: 10px 14px; }
+  #hp-toggle { flex-shrink: 0; }
+  #hp-toggle i { transition: transform 0.2s; }
+  #history-panel.collapsed #hp-toggle i { transform: rotate(-90deg); }
+  /* Matches the Live/Database pill label size (13.5px) per feedback that the
+     reference mockup's own size read a touch small. */
+  .hp-title { font-size: 13.5px; font-weight: 500; color: var(--ink-primary); }
+  .legend-items { display: flex; gap: 14px; flex-wrap: wrap; margin-left: auto; }
   .legend-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--ink); }
   .legend-line { width: 14px; height: 2px; }
   .legend-line.closed { background-image: repeating-linear-gradient(to right, rgba(64,224,208,0.4) 0 4px, transparent 4px 7px); }
 
-  #history-panel { display: none; position: absolute; z-index: 41; left: 50%; transform: translateX(-50%);
-    bottom: 54px; width: min(420px, calc(100vw - 20px));
-    background: var(--sf); border: 0.5px solid var(--brh); border-radius: 12px;
-    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
-  body.mode-database #history-panel { display: block; }
-  @media (min-width: 769px) { #history-panel { left: calc(50% + (var(--sidebar-edge) / 2)); } }
-  @media (max-width: 768px) { #history-panel { bottom: 70px; } }
-
-  .hp-head { display: flex; align-items: center; gap: 8px; padding: 8px 10px; }
-  #hp-toggle { flex-shrink: 0; }
-  #hp-toggle i { transition: transform 0.2s; }
-  #history-panel.collapsed #hp-toggle i { transform: rotate(-90deg); }
-  .hp-year { font-family: var(--font-mono); font-size: 13px; color: var(--t); }
-  .hp-era-chip { font-size: 12px; padding: 2px 8px; border-radius: 99px; background: rgba(64,224,208,0.1); color: var(--t); }
-  .hp-body { padding: 0 12px 10px; }
+  .hp-body { padding: 0 14px 14px; }
   #history-panel.collapsed .hp-body { display: none; }
-  #history-panel.collapsed .hp-head { padding-bottom: 8px; }
-  #year-slider { width: 100%; accent-color: var(--t); }
+  #history-panel.collapsed .hp-head { padding-bottom: 10px; }
+  .hp-era { display: block; font-family: var(--font-display); font-size: 20px; font-weight: 600;
+    letter-spacing: -0.5px; color: var(--t); margin-bottom: 10px; }
+
+  /* Custom track fill + thumb — a native <input type=range> has no
+     cross-browser way to show progress, so WebKit gets a JS-driven
+     background gradient (--fill, updated in updateYear()) and Firefox uses
+     its native ::-moz-range-progress pseudo-element instead. */
+  #year-slider { -webkit-appearance: none; appearance: none; width: 100%; height: 18px; background: transparent;
+    cursor: pointer; --fill: 100%; }
+  #year-slider::-webkit-slider-runnable-track { height: 3px; border-radius: 2px;
+    background: linear-gradient(to right, var(--t) var(--fill), var(--br) var(--fill)); }
+  #year-slider::-moz-range-track { height: 3px; border-radius: 2px; background: var(--br); }
+  #year-slider::-moz-range-progress { height: 3px; border-radius: 2px; background: var(--t); }
+  #year-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%;
+    background: var(--t); border: 3px solid var(--bg); box-shadow: 0 0 0 1px var(--t); margin-top: -6.5px; cursor: pointer; }
+  #year-slider::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%;
+    background: var(--t); border: 3px solid var(--bg); box-shadow: 0 0 0 1px var(--t); cursor: pointer; }
+
   .hp-snaps { display: flex; justify-content: space-between; margin-top: 4px; }
   .hp-snap { font-size: 12px; color: var(--ink); }
   .hp-context { font-size: 12px; color: var(--ink); margin-top: 6px; line-height: 1.5; }
@@ -668,22 +686,19 @@
   <div id="sb-attribution">© SpotRail HQ · Data: Network Rail, NRE</div>
 </div>
 
-<div id="legend-bar">
-  <div class="legend-items">
-    <span class="legend-item"><span class="legend-line" style="background:rgba(64,224,208,0.7);"></span>National Rail</span>
-    <span class="legend-item"><span class="legend-line" style="background:rgba(178,90,210,0.6);"></span>Metro/LRT</span>
-    <span class="legend-item"><span class="legend-line" style="background:rgba(245,184,75,0.6);"></span>Heritage</span>
-    <span class="legend-item"><span class="legend-line closed"></span>Closed</span>
-  </div>
-</div>
-
 <div id="history-panel">
   <div class="hp-head">
     <button class="ghost-btn" id="hp-toggle" aria-label="Expand or collapse history panel"><i class="ti ti-chevron-down"></i></button>
-    <span class="hp-year" id="hp-year">2025</span>
-    <span class="hp-era-chip" id="hp-era-chip">Today</span>
+    <span class="hp-title">History</span>
+    <div class="legend-items">
+      <span class="legend-item"><span class="legend-line" style="background:rgba(64,224,208,0.7);"></span>National Rail</span>
+      <span class="legend-item"><span class="legend-line" style="background:rgba(178,90,210,0.6);"></span>Metro/LRT</span>
+      <span class="legend-item"><span class="legend-line" style="background:rgba(245,184,75,0.6);"></span>Heritage</span>
+      <span class="legend-item"><span class="legend-line closed"></span>Closed</span>
+    </div>
   </div>
   <div class="hp-body">
+    <span class="hp-era" id="hp-era-chip">Today</span>
     <input type="range" id="year-slider" min="1825" max="2025" value="2025" step="1" aria-label="History year" />
     <div class="hp-snaps">
       <button class="hp-snap" data-year="1845">1845</button>
@@ -1703,13 +1718,14 @@
     historyPanel.classList.toggle('collapsed');
   });
   var yearSlider = document.getElementById('year-slider');
+  var YEAR_MIN = parseInt(yearSlider.min, 10), YEAR_MAX = parseInt(yearSlider.max, 10);
   function updateYear(year) {
     year = parseInt(year, 10);
-    document.getElementById('hp-year').textContent = year >= 2025 ? 'Today' : year;
     var snaps = [1845, 1880, 1923, 1965, 1994, 2025];
     var closest = snaps.reduce(function (a, b) { return Math.abs(b - year) < Math.abs(a - year) ? b : a; });
     document.getElementById('hp-era-chip').textContent = closest >= 2025 ? 'Today' : closest;
     document.getElementById('hp-context').textContent = ERA_INFO[closest] || '';
+    yearSlider.style.setProperty('--fill', ((year - YEAR_MIN) / (YEAR_MAX - YEAR_MIN) * 100) + '%');
     // TODO: swap in OpenHistoricalMap vector tiles for this year once an
     // OHM tile endpoint/key is available — currently UI-only.
   }
