@@ -243,9 +243,14 @@
      own right inset), so .scroll-fade spans edge-to-edge and its fade sits
      flush against the true left/right edge of the pill, while the chip
      content still gets breathing room via #rj-scroll's own padding. */
+  /* overflow:hidden (matches #sidebar's own rounded box, which doesn't have
+     this rough-edge problem) — without it, the fade's rectangular corners
+     aren't clipped to the pill's border-radius curve, so they poke past it
+     at the top-left/bottom-left, reading as a jagged edge instead of a
+     smooth rounded corner. */
   #region-jump { position: absolute; top: calc(var(--nav-h) + 10px); left: 10px; z-index: 55;
     display: flex; align-items: center; padding: 8px 0; max-width: calc(100vw - 20px);
-    background: var(--sf); border: 0.5px solid var(--brh); border-radius: 16px;
+    background: var(--sf); border: 0.5px solid var(--brh); border-radius: 16px; overflow: hidden;
     backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
   /* flex:1 + min-width:0 is what actually lets #rj-scroll's overflow-x kick
      in here — without min-width:0, a flex item defaults to not shrinking
@@ -254,11 +259,22 @@
   #region-jump .scroll-fade { flex: 1; min-width: 0; }
   /* Half the shared .scroll-fade width (16px) — scoped to just this bar so
      the sidebar's filter-row fade, which wasn't part of this complaint,
-     stays as-is. */
+     stays as-is. Each fade edge also starts hidden (opacity:0) and is only
+     switched on by wireScrollFade() in JS when there's actually something
+     to scroll to in that direction — at rest (scrollLeft 0) there's nothing
+     to the left of "All UK", so unconditionally showing the left fade there
+     was what made it look like a hard seam cutting into that chip, not a
+     positioning issue. */
   #region-jump .scroll-fade::before, #region-jump .scroll-fade::after { width: 8px; }
-  #rj-scroll { display: flex; align-items: center; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 0 14px 0 0; }
+  .scroll-fade::before { opacity: 0; transition: opacity 0.15s ease; }
+  .scroll-fade.show-fade-left::before { opacity: 1; }
+  .scroll-fade::after { opacity: 0; transition: opacity 0.15s ease; }
+  .scroll-fade.show-fade-right::after { opacity: 1; }
+  /* Left/right padding both raised from 14px to 21px (+50%) — same amount
+     added to each side, so the extra breathing room stays symmetric. */
+  #rj-scroll { display: flex; align-items: center; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 0 21px 0 0; }
   #rj-scroll::-webkit-scrollbar { display: none; }
-  #region-jump .rj-label { font-family: var(--font-body); font-size: 14px; font-weight: 500; color: var(--ink-mute); padding: 0 0 0 14px; margin-right: 14px; flex-shrink: 0; }
+  #region-jump .rj-label { font-family: var(--font-body); font-size: 14px; font-weight: 500; color: var(--ink-mute); padding: 0 0 0 21px; margin-right: 14px; flex-shrink: 0; }
   body.mode-database #region-jump { display: none; }
 
   #control-cluster { position: absolute; top: calc(var(--nav-h) + 10px); left: 10px; z-index: 55; }
@@ -1939,6 +1955,25 @@
   enableWheelToHorizontalScroll(document.getElementById('rj-scroll'));
   enableDragToScroll(document.getElementById('rj-scroll'));
 
+  // Shows each .scroll-fade edge only when there's actually more content to
+  // scroll to in that direction — fadeEl is the wrapper carrying the
+  // ::before/::after overlays, scrollEl is the element that actually
+  // scrolls inside it (they're two different elements — see the
+  // #region-jump/#rj-scroll split above). At rest (scrollLeft 0) there's
+  // nothing left of the first chip, so the left fade starts hidden instead
+  // of unconditionally cutting into it.
+  function wireScrollFade(fadeEl, scrollEl) {
+    function update() {
+      var maxScroll = scrollEl.scrollWidth - scrollEl.clientWidth;
+      fadeEl.classList.toggle('show-fade-left', scrollEl.scrollLeft > 2);
+      fadeEl.classList.toggle('show-fade-right', maxScroll > 2 && scrollEl.scrollLeft < maxScroll - 2);
+    }
+    scrollEl.addEventListener('scroll', update);
+    window.addEventListener('resize', update);
+    update();
+  }
+  wireScrollFade(document.querySelector('#region-jump .scroll-fade'), document.getElementById('rj-scroll'));
+
   // ── Floating cluster stacking (region-jump below the sidebar, the zoom/
   // layers/location column below region-jump) ──────────────────────────────
   // A fixed CSS top offset can't track the sidebar's height since it varies
@@ -2101,6 +2136,9 @@
     }).join('');
     enableWheelToHorizontalScroll(el);
     enableDragToScroll(el);
+    if (el.parentElement && el.parentElement.classList.contains('scroll-fade')) {
+      wireScrollFade(el.parentElement, el);
+    }
     var chips = el.querySelectorAll('.filter-chip');
     Array.prototype.forEach.call(chips, function (btn) {
       btn.addEventListener('click', function () {
