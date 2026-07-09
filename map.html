@@ -211,30 +211,36 @@
   .header-tab { display: flex; align-items: center; padding: 8px 14px; border-radius: 999px; font-size: 13.5px; font-weight: 500; color: var(--ink); }
   .header-tab.live-on, .header-tab.db-on { background: var(--t); color: #07090C; }
 
-  /* ── Map control cluster: "Jump to" bar above, zoom/layers/location column
-     below it (column-reverse flips the DOM order, which is
-     [.map-controls, #region-jump], without touching the markup). Desktop:
-     beside the sidebar. Tablet/mobile: right below the top-anchored sidebar's
-     35vh cap, with a gap. ─────────────────────────────────────────────── */
-  #control-cluster { position: absolute; top: calc(var(--nav-h) + 10px); left: 10px; z-index: 55;
-    display: flex; flex-direction: column-reverse; align-items: flex-start; gap: 10px; }
-  .map-controls { display: flex; flex-direction: column; gap: 3px; }
-  /* Same rounded-card radius as the sidebar (16px), and pills styled exactly
-     like the filter chips inside it — border-only by default, filled
-     turquoise for whichever region was last jumped to. */
-  #region-jump { display: flex; align-items: center; gap: 6px; padding: 8px 12px;
+  /* ── "Jump to" bar + zoom/layers/location cluster ────────────────────────
+     Independent floating siblings now (not nested — see the HTML comment).
+     top is set here as a sane default/fallback; positionFloatingClusters()
+     in JS overrides both with the *actual* measured position (region-jump
+     right below the sidebar's real rendered height — which varies with
+     content — and control-cluster right below region-jump's real height),
+     recomputed live via ResizeObserver. A fixed CSS offset can't track a
+     variable-height sidebar, which is why this used to drift out of place
+     whenever the sidebar was shorter than its 35vh max. ─────────────────── */
+  #region-jump { position: absolute; top: calc(var(--nav-h) + 10px); left: 10px; z-index: 55;
+    display: flex; align-items: center; gap: 6px; padding: 8px 12px;
     background: var(--sf); border: 0.5px solid var(--brh); border-radius: 16px;
     backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-    max-width: calc(100vw - 90px); overflow-x: auto; scrollbar-width: none; }
+    max-width: calc(100vw - 20px); overflow-x: auto; scrollbar-width: none; }
   #region-jump::-webkit-scrollbar { display: none; }
   #region-jump .rj-label { font-family: var(--font-body); font-size: 14px; font-weight: 500; color: var(--ink-mute); padding: 0 2px 0 2px; margin-right: 6px; flex-shrink: 0; }
   body.mode-database #region-jump { display: none; }
 
+  #control-cluster { position: absolute; top: calc(var(--nav-h) + 10px); left: 10px; z-index: 55; }
+  .map-controls { display: flex; flex-direction: column; gap: 3px; }
+
   @media (min-width: 769px) {
+    #region-jump { left: var(--sidebar-edge); max-width: calc(100vw - var(--sidebar-edge) - 20px); }
     #control-cluster { left: var(--sidebar-edge); }
   }
+  /* Tablet/mobile: region-jump spans edge-to-edge like the sidebar above it
+     (JS sets its top to sit right below the sidebar, with a gap); the icon
+     cluster stays a compact, inset-left column below *that*. */
   @media (max-width: 768px) {
-    #control-cluster { top: calc(var(--nav-h) + 35vh + 10px); }
+    #region-jump { left: 10px; right: 10px; max-width: none; }
   }
 
   /* ── Bottom hints ─────────────────────────────────────────────── */
@@ -348,7 +354,14 @@
   #sb-saved-toggle[aria-pressed="true"] i::before { content: "\f6a6"; }
   #sb-clear-btn { font-size: 18px; line-height: 1; padding: 2px 4px; }
 
-  #sb-body { flex: 1; min-height: 0; overflow-y: auto; }
+  /* overflow-x is explicit (not left as default "visible") on purpose: per
+     the CSS overflow spec, an element with overflow-y set but overflow-x left
+     as "visible" has its overflow-x computed as "auto" too — silently making
+     this element itself a second, competing horizontal scroll container that
+     can swallow the gesture before it ever reaches the nested .filter-row's
+     own overflow-x:auto. That's almost certainly why the filter chips
+     wouldn't scroll no matter what was tried on .filter-row itself. */
+  #sb-body { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; }
 
   /* Departure format matches departures.html's table exactly: mono time/platform,
      14px body cells, plain-colour status text (no pill background), 11px
@@ -536,21 +549,25 @@
 
 <div id="map" role="application" aria-label="Interactive UK railway map"></div>
 
+<!-- Sibling floating elements, not nested — their vertical stacking (region-jump
+     below the sidebar, control-cluster below region-jump) is computed in JS
+     from each other's actual rendered position, since the sidebar's height
+     varies with its content and a fixed CSS offset can't track that. -->
+<div id="region-jump">
+  <span class="rj-label">Jump to</span>
+  <button class="filter-chip active" data-lng="-2.5" data-lat="54.5" data-zoom="5.5">All UK</button>
+  <button class="filter-chip" data-lng="-0.1278" data-lat="51.5074" data-zoom="11">London</button>
+  <button class="filter-chip" data-lng="-1.9" data-lat="52.4778" data-zoom="11">Birmingham</button>
+  <button class="filter-chip" data-lng="-2.2307" data-lat="53.4775" data-zoom="11">Manchester</button>
+  <button class="filter-chip" data-lng="-4.2579" data-lat="55.8586" data-zoom="11">Glasgow</button>
+  <button class="filter-chip" data-lng="-3.1883" data-lat="55.9521" data-zoom="11">Edinburgh</button>
+</div>
 <div id="control-cluster">
   <div class="map-controls">
     <button class="icon-btn" id="zoom-in" aria-label="Zoom in"><i class="ti ti-plus"></i></button>
     <button class="icon-btn" id="zoom-out" aria-label="Zoom out"><i class="ti ti-minus"></i></button>
     <button class="icon-btn" id="layers-btn" aria-label="Toggle railway infrastructure overlay" aria-pressed="true"><i class="ti ti-layers-intersect"></i></button>
     <button class="icon-btn" id="my-location" aria-label="Find my location"><i class="ti ti-current-location"></i></button>
-  </div>
-  <div id="region-jump">
-    <span class="rj-label">Jump to</span>
-    <button class="filter-chip active" data-lng="-2.5" data-lat="54.5" data-zoom="5.5">All UK</button>
-    <button class="filter-chip" data-lng="-0.1278" data-lat="51.5074" data-zoom="11">London</button>
-    <button class="filter-chip" data-lng="-1.9" data-lat="52.4778" data-zoom="11">Birmingham</button>
-    <button class="filter-chip" data-lng="-2.2307" data-lat="53.4775" data-zoom="11">Manchester</button>
-    <button class="filter-chip" data-lng="-4.2579" data-lat="55.8586" data-zoom="11">Glasgow</button>
-    <button class="filter-chip" data-lng="-3.1883" data-lat="55.9521" data-zoom="11">Edinburgh</button>
   </div>
 </div>
 
@@ -1290,6 +1307,37 @@
     }, { passive: false });
   }
   enableWheelToHorizontalScroll(document.getElementById('region-jump'));
+
+  // ── Floating cluster stacking (region-jump below the sidebar, the zoom/
+  // layers/location column below region-jump) ──────────────────────────────
+  // A fixed CSS top offset can't track the sidebar's height since it varies
+  // with content (station selected vs the empty default state, collapsed vs
+  // expanded, etc.) — on mobile especially, where the sidebar is capped at
+  // 35vh but often renders much shorter. This measures actual rendered
+  // positions instead, live, via ResizeObserver, so the stack always sits
+  // flush regardless of how tall the sidebar currently is.
+  var regionJumpEl = document.getElementById('region-jump');
+  var controlClusterEl = document.getElementById('control-cluster');
+  function positionFloatingClusters() {
+    var mobile = window.innerWidth <= 768;
+    var jumpVisible = getComputedStyle(regionJumpEl).display !== 'none';
+    if (mobile && jumpVisible) {
+      regionJumpEl.style.top = (sidebarEl.getBoundingClientRect().bottom + 10) + 'px';
+    } else {
+      regionJumpEl.style.top = ''; // desktop, or hidden in Database mode — CSS default applies
+    }
+    if (jumpVisible) {
+      controlClusterEl.style.top = (regionJumpEl.getBoundingClientRect().bottom + 10) + 'px';
+    } else if (mobile) {
+      controlClusterEl.style.top = (sidebarEl.getBoundingClientRect().bottom + 10) + 'px';
+    } else {
+      controlClusterEl.style.top = ''; // desktop, region-jump hidden — CSS default applies
+    }
+  }
+  new ResizeObserver(positionFloatingClusters).observe(sidebarEl);
+  new ResizeObserver(positionFloatingClusters).observe(regionJumpEl);
+  window.addEventListener('resize', positionFloatingClusters);
+  positionFloatingClusters();
 
   // ── Bottom hints ──────────────────────────────────────────────────────────
   function hideBottomHints() { document.getElementById('bottom-hints').classList.add('hidden'); }
