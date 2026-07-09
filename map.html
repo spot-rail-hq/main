@@ -755,16 +755,32 @@
 <noscript>
   <div style="max-width:900px;margin:40px auto;padding:24px;line-height:1.6;color:#fff;">
     <h1>The British mainline network</h1>
-    <p>SpotRail HQ's interactive map shows live departures, disruption alerts and Britain's rail network via
-      OpenRailwayMap infrastructure overlays — mainlines, heritage lines and branch lines across Great Britain.
+    <p>SpotRail HQ's interactive map shows live departures, disruption alerts and Britain's rail network —
+      mainlines, heritage lines and branch lines across Great Britain.
       Enable JavaScript to use the interactive map.</p>
   </div>
 </noscript>
 
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="https://unpkg.com/pmtiles@4.4.1/dist/pmtiles.js"></script>
 <script>
 (function () {
   'use strict';
+
+  // ── Railway vector tiles (Prompt 3 — replaces the old OpenRailwayMap raster
+  // overlay) ─────────────────────────────────────────────────────────────
+  // PMTILES_URL is a placeholder pending the tile-generation + R2-hosting
+  // runbook (see PROMPT3-TILES-RUNBOOK.md) being run and the resulting file
+  // uploaded — swap in the real R2 public URL once that's done. Until then
+  // this 404s and addMapLayers()'s railway-vector guard below simply leaves
+  // the layer absent (logged once, not a crash) rather than breaking the map.
+  var PMTILES_URL = 'https://REPLACE-WITH-YOUR-R2-PUBLIC-URL/gb-railways.pmtiles';
+  var pmtilesProtocolRegistered = false;
+  function ensurePmtilesProtocol() {
+    if (pmtilesProtocolRegistered || typeof pmtiles === 'undefined') return;
+    maplibregl.addProtocol('pmtiles', new pmtiles.Protocol().tile);
+    pmtilesProtocolRegistered = true;
+  }
 
   var stationsData = null;   // parsed /data/stations.geojson, ids assigned
   var stationInteractionsWired = false;
@@ -892,9 +908,24 @@
     return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
   }
 
+  // railwayMain/railwaySecondary/railwayClosed are the vector railway layer's
+  // (Prompt 3) line colors — deliberately kept within the ink/grey family in
+  // both themes per instruction ("grey tone, NOT green" for dark; "adjusted
+  // grey/dark tone" for light), not the legend bar's turquoise/purple/amber
+  // scheme. That colorful legend (National Rail/Metro/Heritage/Closed) was
+  // aspirational under the old raster ORM tiles too — raster couldn't be
+  // recolored at all, so the legend never actually matched what rendered.
+  // Making it match now would mean introducing non-grey hues here, which
+  // Prompt 3 explicitly didn't ask for — left as a follow-up if wanted.
   var THEME_COLORS = {
-    dark: { accent: '#40E0D0', stationFill: 'rgba(7,9,12,0.9)', stationHoverFill: 'rgba(64,224,208,0.15)', labelColor: '#9AA4B2', labelHalo: 'rgba(7,9,12,0.8)' },
-    light: { accent: '#0AABA0', stationFill: 'rgba(240,240,240,0.9)', stationHoverFill: 'rgba(10,171,160,0.15)', labelColor: '#444444', labelHalo: 'rgba(255,255,255,0.85)' },
+    dark: {
+      accent: '#40E0D0', stationFill: 'rgba(7,9,12,0.9)', stationHoverFill: 'rgba(64,224,208,0.15)', labelColor: '#9AA4B2', labelHalo: 'rgba(7,9,12,0.8)',
+      railwayMain: 'rgba(154,164,178,0.65)', railwaySecondary: 'rgba(154,164,178,0.4)', railwayClosed: 'rgba(154,164,178,0.28)',
+    },
+    light: {
+      accent: '#0AABA0', stationFill: 'rgba(240,240,240,0.9)', stationHoverFill: 'rgba(10,171,160,0.15)', labelColor: '#444444', labelHalo: 'rgba(255,255,255,0.85)',
+      railwayMain: 'rgba(68,68,68,0.6)', railwaySecondary: 'rgba(68,68,68,0.38)', railwayClosed: 'rgba(68,68,68,0.26)',
+    },
   };
   function themeColors() { return THEME_COLORS[currentTheme()]; }
 
@@ -964,9 +995,13 @@
       style: buildMapStyle(currentTheme(), currentStadiaKey),
       center: initCenter,
       zoom: initZoom,
-      minZoom: 5,
       maxZoom: 18,
       attributionControl: false,
+      // No minZoom/maxBounds — GB-only is now real data filtering (the
+      // railway vector tiles are generated from a Great-Britain-only OSM
+      // extract, per Task 1's runbook), not a viewport crop. Panning/
+      // zooming out just shows Stadia's normal world basemap with no
+      // railway lines outside GB, which is expected and harmless.
     });
     // 'top-right' rather than a map corner the sidebar/bottom-sheet would
     // cover — the sidebar spans the full left edge on desktop and the full
@@ -981,10 +1016,12 @@
     map.on('load', addMapLayers);
   })();
 
-  // ── Map layers: OpenRailwayMap infrastructure overlay + stations ────────
-  // The railway network itself is rendered entirely by the ORM raster tiles
-  // below — no separate route line data. Re-run after every map.setStyle()
-  // (theme switch) since setStyle wipes all sources/layers from the old style.
+  // ── Map layers: railway vector overlay + stations ────────────────────────
+  // Prompt 3: the railway network is now rendered from a self-hosted PMTiles
+  // vector tileset (PMTILES_URL above) instead of OpenRailwayMap raster
+  // tiles — see PROMPT3-TILES-RUNBOOK.md for how that file is generated and
+  // hosted. Re-run after every map.setStyle() (theme switch) since setStyle
+  // wipes all sources/layers from the old style.
   // Sea/ocean name labels ("North Sea"/"Nordsee"/"Noordzee"...) come from the
   // Stadia style's water_name source-layer. Checked the raw style JSON:
   // water_name_ocean (point, class=ocean) is definitely sea/ocean names;
@@ -996,10 +1033,9 @@
   // outside GB) are not filtered out — the style's place_country/place_city/etc
   // layers carry no iso_a2 (or similar) property to filter on, and this could
   // not be confirmed against the live vector tiles (no Stadia API key or
-  // browser available in this environment to inspect actual tile data).
-  // Foreign railway lines from the OpenRailwayMap raster overlay also can't be
-  // filtered by country — that's a separate, accepted limitation until a
-  // vector rail tile source replaces the raster ORM overlay.
+  // browser available in this environment to inspect actual tile data). This
+  // is now independent of the railway layer itself (which IS real GB-only
+  // data, per Task 3) — it's specifically about Stadia's own basemap labels.
   var OCEAN_LABEL_LAYERS = ['water_name_ocean', 'water_name_line'];
   function hideOceanLabels() {
     OCEAN_LABEL_LAYERS.forEach(function (id) {
@@ -1007,6 +1043,19 @@
         try { map.setLayoutProperty(id, 'visibility', 'none'); } catch (e) {}
       }
     });
+  }
+
+  function railwayLineColorExpression(rc) {
+    // status/kind come from the tileset schema defined in the runbook —
+    // status: 'active' | 'disused' | 'abandoned' | 'construction'; kind:
+    // 'rail' | 'light_rail' | 'tram' | 'subway' | 'narrow_gauge' | 'monorail'
+    // | 'funicular'. Deliberately grey/ink-toned only (no hue variation) —
+    // see the THEME_COLORS comment above for why.
+    return ['case',
+      ['==', ['get', 'status'], 'active'],
+      ['match', ['get', 'kind'], 'rail', rc.railwayMain, rc.railwaySecondary],
+      rc.railwayClosed,
+    ];
   }
 
   function addMapLayers() {
@@ -1018,31 +1067,43 @@
     // style diffing occasionally decided these runtime-added (not part of
     // either style JSON) source/layer still matched across a theme toggle
     // and left it in place, so the addSource() call here threw "already
-    // exists" and aborted the rest of this function — which is why the ORM
-    // route overlay (and the landcover regrey below it, since it never got
+    // exists" and aborted the rest of this function — which is why the
+    // railway overlay (and the landcover regrey above it, since it never got
     // this far on the *next* toggle) would vanish after switching themes.
-    if (!map.getSource('orm-standard')) {
-      map.addSource('orm-standard', {
-        type: 'raster',
-        tiles: [
-          'https://a.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png',
-          'https://b.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png',
-          'https://c.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png',
-        ],
-        tileSize: 256,
-        maxzoom: 19,
-        minzoom: 2,
-        attribution: '© <a href="https://www.openrailwaymap.org">OpenRailwayMap</a> contributors',
+    // This is the ONE re-apply path for every runtime layer (Task 4) — no
+    // per-layer patches elsewhere; anything added at runtime gets its
+    // re-add/re-color logic here, in this function, only.
+    ensurePmtilesProtocol();
+    if (!map.getSource('railway-vector')) {
+      map.addSource('railway-vector', {
+        type: 'vector',
+        url: 'pmtiles://' + PMTILES_URL,
+        // ODbL requires attribution. This is straight OSM data (via a
+        // tilemaker extract, not OpenRailwayMap's tile service), so credit
+        // goes directly to OSM contributors — see the runbook for details.
+        attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors',
       });
     }
-    if (!map.getLayer('orm-standard-layer')) {
+    var rc = themeColors();
+    if (!map.getLayer('railway-lines')) {
       map.addLayer({
-        id: 'orm-standard-layer', type: 'raster', source: 'orm-standard',
-        layout: { visibility: ormVisible ? 'visible' : 'none' },
-        paint: { 'raster-opacity': 0.9 },
+        id: 'railway-lines', type: 'line', source: 'railway-vector', 'source-layer': 'railways',
+        layout: { visibility: ormVisible ? 'visible' : 'none', 'line-cap': 'round', 'line-join': 'round' },
+        paint: {
+          'line-color': railwayLineColorExpression(rc),
+          'line-width': ['interpolate', ['linear'], ['zoom'], 6, 0.5, 10, 1, 15, 2.2],
+          'line-dasharray': ['case', ['==', ['get', 'status'], 'active'], ['literal', [1, 0]], ['literal', [2, 2]]],
+        },
       });
     } else {
-      map.setLayoutProperty('orm-standard-layer', 'visibility', ormVisible ? 'visible' : 'none');
+      map.setLayoutProperty('railway-lines', 'visibility', ormVisible ? 'visible' : 'none');
+      // Paint properties are snapshotted at addLayer time — they don't
+      // auto-recompute from themeColors() just because the theme changed,
+      // unlike CSS custom properties. Re-applied explicitly every run so a
+      // rare path where this layer already exists without a style rebuild
+      // (shouldn't happen given diff:false, but cheap to guard) can't leave
+      // stale colors from the previous theme.
+      map.setPaintProperty('railway-lines', 'line-color', railwayLineColorExpression(rc));
     }
 
     if (stationsData) {
@@ -1055,10 +1116,13 @@
       }).catch(function (e) { console.error('Failed to load stations.geojson', e); });
     }
 
-    // Same setStyle-wipes-runtime-layers issue as orm-standard/stations above
-    // — redraw the route highlight (Task 2) if one is currently selected, so
-    // it survives a theme toggle instead of silently vanishing.
-    if (selection.type === 'route' && selection.id) drawRoutePolyline(selection.id);
+    // Same setStyle-wipes-runtime-layers issue as railway-vector/stations
+    // above — redraw the route highlight (Task 2) if one is currently
+    // selected, so it survives a theme toggle. Geometry-only re-apply (no
+    // camera fly) — this path also runs on the INITIAL page load
+    // (map.on('load', addMapLayers)), which shouldn't move the viewport
+    // out from under the user either.
+    if (selection.type === 'route' && selection.id) renderRoutePolylineGeometry(selection.id);
   }
 
   function stationsCirclePaint() {
@@ -1611,11 +1675,29 @@
     selectStation(stationNameForCrs(crs), crs);
   }
   var ROUTE_LAYER_ID = 'route-highlight-layer', ROUTE_SOURCE_ID = 'route-highlight';
-  function drawRoutePolyline(id) {
+  var routeHandlersWired = false; // click/hover are wired ONCE, ever — see comment below
+  var currentRouteId = null; // whichever route is currently drawn; read live by the click handler instead of a per-call closure
+
+  // Pure geometry — adds/updates the source+layer, no camera movement.
+  // Task 4 fix: this used to be inlined in drawRoutePolyline() below, which
+  // ALSO ran on every theme toggle (via addMapLayers()'s re-apply) because
+  // that's the only way the polyline survives setStyle(). Two real bugs came
+  // from conflating "redraw the geometry" with "this was a fresh user
+  // selection": (1) every theme toggle while a route was selected silently
+  // re-flew the camera to fit the route's bounds, since fitBounds() lived in
+  // the same function as the redraw; (2) the click/mouseenter/mouseleave
+  // listeners were registered inside the addLayer branch, which re-runs on
+  // every theme toggle too (the layer gets torn down each time) — so
+  // repeated toggles kept stacking duplicate click handlers, each closed
+  // over whatever route id happened to be current at add-time. Splitting
+  // geometry from camera-fly, and wiring the handlers exactly once using a
+  // live-read `currentRouteId` instead of a per-call closure, fixes both.
+  function renderRoutePolylineGeometry(id) {
     var r = routesContent[id];
-    if (!map || !map.isStyleLoaded() || !r || !r.stopping_stations || r.stopping_stations.length < 2) return;
+    if (!map || !map.isStyleLoaded() || !r || !r.stopping_stations || r.stopping_stations.length < 2) return null;
     var coords = r.stopping_stations.map(coordsForCrs).filter(function (c) { return c; });
-    if (coords.length < 2) return;
+    if (coords.length < 2) return null;
+    currentRouteId = id;
     var geojson = { type: 'Feature', geometry: { type: 'LineString', coordinates: coords }, properties: {} };
     if (!map.getSource(ROUTE_SOURCE_ID)) {
       map.addSource(ROUTE_SOURCE_ID, { type: 'geojson', data: geojson });
@@ -1634,16 +1716,38 @@
           'line-width': ['interpolate', ['linear'], ['zoom'], 5, 1.5, 10, 2.5, 15, 4],
         },
       });
-      map.on('click', ROUTE_LAYER_ID, function () { if (selection.type !== 'route' || selection.id !== id) selectRoute(id); });
-      map.on('mouseenter', ROUTE_LAYER_ID, function () { map.getCanvas().style.cursor = 'pointer'; });
-      map.on('mouseleave', ROUTE_LAYER_ID, function () { map.getCanvas().style.cursor = ''; });
     } else {
       map.setLayoutProperty(ROUTE_LAYER_ID, 'visibility', 'visible');
     }
+    if (!routeHandlersWired) {
+      // map.on(event, layerId, handler) listeners live on the Map instance,
+      // not the layer — they survive the layer itself being torn down and
+      // re-added by setStyle(), so registering them once here (guarded by
+      // routeHandlersWired, which is never reset) is correct and sufficient
+      // for the lifetime of the page.
+      map.on('click', ROUTE_LAYER_ID, function () {
+        if (currentRouteId && (selection.type !== 'route' || selection.id !== currentRouteId)) selectRoute(currentRouteId);
+      });
+      map.on('mouseenter', ROUTE_LAYER_ID, function () { map.getCanvas().style.cursor = 'pointer'; });
+      map.on('mouseleave', ROUTE_LAYER_ID, function () { map.getCanvas().style.cursor = ''; });
+      routeHandlersWired = true;
+    }
+    return coords;
+  }
+
+  // User-initiated selection — draws the geometry AND flies the camera to
+  // fit it. Called from selectRoute() (and, transitively, whenever the
+  // highlighted line itself is clicked). NOT called from the theme-toggle
+  // re-apply path — that calls renderRoutePolylineGeometry() directly so a
+  // restyle can never move the viewport.
+  function drawRoutePolyline(id) {
+    var coords = renderRoutePolylineGeometry(id);
+    if (!coords) return;
     var bounds = coords.reduce(function (b, c) { return b.extend(c); }, new maplibregl.LngLatBounds(coords[0], coords[0]));
     map.fitBounds(bounds, { padding: 60, duration: 800 });
   }
   function clearRoutePolyline() {
+    currentRouteId = null;
     if (map && map.getLayer(ROUTE_LAYER_ID)) map.setLayoutProperty(ROUTE_LAYER_ID, 'visibility', 'none');
   }
 
@@ -1690,9 +1794,9 @@
   document.getElementById('zoom-out').addEventListener('click', function () { map.zoomOut(); });
   var layersBtn = document.getElementById('layers-btn');
   layersBtn.addEventListener('click', function () {
-    if (!map || !map.getLayer('orm-standard-layer')) return;
+    if (!map || !map.getLayer('railway-lines')) return;
     ormVisible = !ormVisible;
-    map.setLayoutProperty('orm-standard-layer', 'visibility', ormVisible ? 'visible' : 'none');
+    map.setLayoutProperty('railway-lines', 'visibility', ormVisible ? 'visible' : 'none');
     layersBtn.setAttribute('aria-pressed', String(ormVisible));
   });
   document.getElementById('my-location').addEventListener('click', function () {
