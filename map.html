@@ -1134,7 +1134,20 @@
         layout: { visibility: ormVisible ? 'visible' : 'none', 'line-cap': 'round', 'line-join': 'round' },
         paint: {
           'line-color': railwayLineColorExpression(rc),
-          'line-width': ['interpolate', ['linear'], ['zoom'], 6, 0.5, 10, 1, 15, 2.2],
+          // Bugfix: was 6,0.5 / 10,1 / 15,2.2. Confirmed via `pmtiles tile` +
+          // manual MVT decode (not guesswork) that z9-z12 tiles over the
+          // Birmingham area DO contain real "railways" features (e.g. the
+          // Cross-City Line, 48 features in the z10 tile alone) — so the
+          // reported "invisible at metro zoom" wasn't missing data, and
+          // there's no minzoom/maxzoom/filter on this layer or its source
+          // restricting it either (both checked — none present; the pmtiles
+          // protocol auto-derives source minzoom/maxzoom 5-14 from the
+          // archive header, matching config.json). Sub-1px line widths are a
+          // known MapLibre/WebGL gotcha — on a high-DPI (Retina) display a
+          // 0.5-1px CSS width anti-aliases down to near-nothing, which fits
+          // "no lines at all" better than the ruled-out data/config theories.
+          // Widened the low/mid-zoom stops well clear of that threshold.
+          'line-width': ['interpolate', ['linear'], ['zoom'], 6, 1, 10, 1.6, 15, 2.4],
           'line-dasharray': ['case', ['==', ['get', 'status'], 'active'], ['literal', [1, 0]], ['literal', [2, 2]]],
         },
       });
@@ -1166,6 +1179,7 @@
     // (map.on('load', addMapLayers)), which shouldn't move the viewport
     // out from under the user either.
     if (selection.type === 'route' && selection.id) renderRoutePolylineGeometry(selection.id);
+    renderSelectedStationMarkers();
   }
 
   function stationsCirclePaint() {
@@ -1409,7 +1423,13 @@
     return depBoardHtml('Departures') + liveNewsBlockHtml();
   }
   function fromToSkeletonHtml() {
-    return depBoardHtml('Next trains') + liveNewsBlockHtml();
+    // Next-trains data above comes live from Darwin/Huxley2 and is
+    // independent of routes-content.json, so it still renders normally even
+    // when there's no curated route for this pair — this note is purely
+    // about curated-route coverage, not whether live services exist.
+    var noRouteNote = selection.directRouteId ? '' :
+      '<div class="dep-empty" data-anim-row>No direct route found between these stations.</div>';
+    return depBoardHtml('Next trains') + noRouteNote + liveNewsBlockHtml();
   }
   function liveDefaultSkeletonHtml() {
     return emptyDepBoardHtml() + liveNewsBlockHtml();
@@ -1673,6 +1693,26 @@
     expandSidebarIfCollapsed();
     animateSidebarTransition();
     if (mode === 'live') loadDepartureBoard(crs, mySeq);
+    var coords = coordsForCrs(crs);
+    setSelectedStationPoints(coords ? [{ lon: coords[0], lat: coords[1] }] : []);
+  }
+
+  // Does any curated route in routes-content.json cover this station pair
+  // directly (both CRS codes in the same route's stopping_stations)? A plain
+  // containment check — deliberately NOT multi-leg/interchange pathfinding
+  // across different routes, which is out of scope (planned separately as
+  // Phase 3 journey planning). routes-content.json is empty bar its _notes
+  // placeholder right now, so this always returns null until routes are
+  // actually curated — that's a content gap, not a bug.
+  function findDirectRoute(fromCrs, toCrs) {
+    var ids = Object.keys(routesContent);
+    for (var i = 0; i < ids.length; i++) {
+      var r = routesContent[ids[i]];
+      if (r && r.stopping_stations && r.stopping_stations.indexOf(fromCrs) !== -1 && r.stopping_stations.indexOf(toCrs) !== -1) {
+        return ids[i];
+      }
+    }
+    return null;
   }
 
   // from/to are plain {name, crs, lat, lon} objects (station-list.json shape)
@@ -1682,6 +1722,7 @@
       type: 'fromto',
       fromCrs: from.crs, fromName: from.name,
       toCrs: to.crs, toName: to.name,
+      directRouteId: findDirectRoute(from.crs, to.crs),
     };
     renderSelectionChrome();
     expandSidebarIfCollapsed();
@@ -1692,6 +1733,16 @@
       var bounds = new maplibregl.LngLatBounds([from.lon, from.lat], [from.lon, from.lat]);
       bounds.extend([to.lon, to.lat]);
       map.fitBounds(bounds, { padding: 80, duration: 800 });
+      // Bugfix: this from/to path used to fly the camera and stop there —
+      // no endpoint markers, no route polyline (that's a separate selection
+      // type — see selectRoute()/drawRoutePolyline() — never called from
+      // here). routes-content.json has no entries at all yet (still just its
+      // _notes placeholder), so there's no curated route to look up for this
+      // pair regardless; the graceful fallback is these two endpoint
+      // markers, which don't depend on any curated content existing.
+      setSelectedStationPoints([{ lon: from.lon, lat: from.lat }, { lon: to.lon, lat: to.lat }]);
+    } else {
+      setSelectedStationPoints([]);
     }
   }
 
@@ -1702,6 +1753,7 @@
     selection = { type: 'none' };
     renderSelectionChrome();
     animateSidebarTransition();
+    setSelectedStationPoints([]);
   }
   document.getElementById('sb-clear-btn').addEventListener('click', clearSelection);
 
@@ -1718,6 +1770,7 @@
     renderSelectionChrome();
     expandSidebarIfCollapsed();
     animateSidebarTransition();
+    setSelectedStationPoints([]); // this selection type draws its own polyline, not station-marker dots
     drawRoutePolyline(id);
   }
   function selectOperator(identifier) {
@@ -1727,6 +1780,7 @@
     renderSelectionChrome();
     expandSidebarIfCollapsed();
     animateSidebarTransition();
+    setSelectedStationPoints([]);
   }
 
   // ── Route highlight polyline (Task 2) ─────────────────────────────────────
@@ -1746,6 +1800,42 @@
     var entry = getStationList().filter(function (s) { return s.crs === crs; })[0];
     return (entry && entry.name) || crs;
   }
+
+  // ── Selected-station marker(s) — bugfix ───────────────────────────────────
+  // stations-circle (addStationsLayer, above) only draws the curated top-50
+  // /data/stations.geojson set — any station outside it (i.e. most of
+  // station-list.json, the full searchable list) never got a marker at all
+  // when selected, even though the camera still flew to the right place. This
+  // is a separate, always-on-top source/layer keyed to whatever is currently
+  // selected (one point for a single station, two for a from/to pair),
+  // resolved via coordsForCrs() (station-list.json, the FULL list) —
+  // independent of curated-content coverage, so "no database entry yet" no
+  // longer means "no marker either." Re-applied by addMapLayers() after every
+  // theme toggle, same pattern as the route highlight polyline below.
+  var SELECTED_STATIONS_SOURCE_ID = 'selected-stations', SELECTED_STATIONS_LAYER_ID = 'selected-stations-circle';
+  var selectedStationPoints = []; // [{lon, lat}]
+  function renderSelectedStationMarkers() {
+    if (!map || !map.isStyleLoaded()) return;
+    var gj = {
+      type: 'FeatureCollection',
+      features: selectedStationPoints.map(function (p) {
+        return { type: 'Feature', geometry: { type: 'Point', coordinates: [p.lon, p.lat] }, properties: {} };
+      }),
+    };
+    if (!map.getSource(SELECTED_STATIONS_SOURCE_ID)) {
+      map.addSource(SELECTED_STATIONS_SOURCE_ID, { type: 'geojson', data: gj });
+    } else {
+      map.getSource(SELECTED_STATIONS_SOURCE_ID).setData(gj);
+    }
+    if (!map.getLayer(SELECTED_STATIONS_LAYER_ID)) {
+      map.addLayer({ id: SELECTED_STATIONS_LAYER_ID, type: 'circle', source: SELECTED_STATIONS_SOURCE_ID, paint: stationsCirclePaint() });
+    }
+  }
+  function setSelectedStationPoints(points) {
+    selectedStationPoints = points || [];
+    renderSelectedStationMarkers();
+  }
+
   function flyToAndSelectStation(crs) {
     var coords = coordsForCrs(crs);
     if (coords) map.flyTo({ center: coords, zoom: 11, duration: 800 });
