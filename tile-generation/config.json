@@ -1,0 +1,21 @@
+{
+  "layers": {
+    "railways": {
+      "minzoom": 5,
+      "maxzoom": 14,
+      "simplify_below": 12,
+      "simplify_level": 0.0003
+    }
+  },
+  "settings": {
+    "minzoom": 5,
+    "maxzoom": 14,
+    "basezoom": 14,
+    "include_ids": false,
+    "combine_below": 14,
+    "name": "SpotRail HQ railways",
+    "version": "3.0",
+    "description": "GB railway lines for srhq.uk map",
+    "compress": "gzip"
+  }
+}

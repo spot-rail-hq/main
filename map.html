@@ -812,12 +812,9 @@
 
   // ── Railway vector tiles (Prompt 3 — replaces the old OpenRailwayMap raster
   // overlay) ─────────────────────────────────────────────────────────────
-  // PMTILES_URL is a placeholder pending the tile-generation + R2-hosting
-  // runbook (see PROMPT3-TILES-RUNBOOK.md) being run and the resulting file
-  // uploaded — swap in the real R2 public URL once that's done. Until then
-  // this 404s and addMapLayers()'s railway-vector guard below simply leaves
-  // the layer absent (logged once, not a crash) rather than breaking the map.
-  var PMTILES_URL = 'https://REPLACE-WITH-YOUR-R2-PUBLIC-URL/gb-railways.pmtiles';
+  // Served from R2's r2.dev testing subdomain — rate-limited, dev-only.
+  // Swap for a custom domain (e.g. tiles.srhq.uk) before production launch.
+  var PMTILES_URL = 'https://pub-f3c70a3d45aa443d81dab5db7f762d2a.r2.dev/gb-railways.pmtiles';
   var pmtilesProtocolRegistered = false;
   function ensurePmtilesProtocol() {
     if (pmtilesProtocolRegistered || typeof pmtiles === 'undefined') return;
