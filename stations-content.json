@@ -657,5 +657,579 @@
       "incomplete": true,
       "notes": "no railway=platform ways/relations found nearby — platform count unset; station node has no wheelchair=* tag; no route relations found stopping here — operators list unset; hint: OSM tags this station's Wikipedia page as \"Althorne railway station\" — consider setting wikipedia_title (not auto-applied)"
     }
+  },
+  "ALO": {
+    "platforms": 1,
+    "operators": [
+      "ScotRail"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:49:39.562Z",
+      "node_id": 3747563125,
+      "incomplete": true,
+      "notes": "station node has no wheelchair=* tag; hint: OSM tags this station's Wikipedia page as \"Alloa railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ALP": {
+    "platforms": 2,
+    "operators": [
+      "TransPennine Express",
+      "Northern"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:50:15.218Z",
+      "node_id": 21633674,
+      "incomplete": true,
+      "notes": "station node has no wheelchair=* tag; hint: OSM tags this station's Wikipedia page as \"Althorpe railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ALR": {
+    "operators": [
+      "Abellio Greater Anglia"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:51:19.324Z",
+      "node_id": 3308241319,
+      "incomplete": true,
+      "notes": "no railway=platform ways/relations found nearby — platform count unset; station node has no wheelchair=* tag; hint: OSM tags this station's Wikipedia page as \"Alresford railway station (Essex)\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ALT": {
+    "platforms": 2,
+    "operators": [
+      "Transport for Greater Manchester",
+      "Northern"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:52:34.964Z",
+      "node_id": 6334988573,
+      "incomplete": true,
+      "notes": "station node has no wheelchair=* tag; hint: OSM tags this station's Wikipedia page as \"Altrincham Interchange\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ALV": {
+    "platforms": 2,
+    "operators": [
+      "West Midlands Railway"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:53:35.291Z",
+      "node_id": 9290941286,
+      "incomplete": true,
+      "notes": "station node has no wheelchair=* tag; hint: OSM tags this station's Wikipedia page as \"Alvechurch railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ALW": {
+    "platforms": 2,
+    "wheelchair": "yes",
+    "operators": [
+      "Northern Trains",
+      "Northern"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:55:12.122Z",
+      "node_id": 4563657321,
+      "incomplete": false,
+      "notes": "hint: OSM tags this station's Wikipedia page as \"Allens West railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ALX": {
+    "platforms": 1,
+    "wheelchair": "yes",
+    "operators": [
+      "ScotRail"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:55:36.778Z",
+      "node_id": 7197528337,
+      "incomplete": false,
+      "notes": "hint: OSM tags this station's Wikipedia page as \"Alexandria railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "AMB": {
+    "platforms": 1,
+    "operators": [
+      "East Midlands Railway",
+      "CrossCountry",
+      "Cross Country"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:56:24.237Z",
+      "node_id": 2126330319,
+      "incomplete": true,
+      "notes": "station node has no wheelchair=* tag; hint: OSM tags this station's Wikipedia page as \"Ambergate railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "AMF": {
+    "operators": [
+      "Trafnidiaeth Cymru"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:57:23.739Z",
+      "node_id": 6923755690,
+      "incomplete": true,
+      "notes": "no railway=platform ways/relations found nearby — platform count unset; station node has no wheelchair=* tag; hint: OSM tags this station's Wikipedia page as \"Ammanford railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "AML": {
+    "platforms": 2,
+    "wheelchair": "yes",
+    "operators": [
+      "Great Western Railway",
+      "First Great Western",
+      "GTS Rail Operations"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:58:23.453Z",
+      "node_id": 7147473514,
+      "incomplete": false,
+      "notes": "hint: OSM tags this station's Wikipedia page as \"Acton Main Line railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "AMR": {
+    "platforms": 3,
+    "wheelchair": "yes",
+    "operators": [
+      "Chiltern Railways"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:58:58.653Z",
+      "node_id": 3501388948,
+      "incomplete": false,
+      "notes": "hint: OSM tags this station's Wikipedia page as \"Amersham station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "AMT": {
+    "platforms": 2,
+    "operators": [
+      "Great Western Railway"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T15:00:37.809Z",
+      "node_id": 35514903,
+      "incomplete": true,
+      "notes": "station node has no wheelchair=* tag; hint: OSM tags this station's Wikipedia page as \"Aldermaston railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "AMY": {
+    "wheelchair": "limited",
+    "operators": [
+      "Southern"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T15:01:33.453Z",
+      "node_id": 5870536785,
+      "incomplete": true,
+      "notes": "no railway=platform ways/relations found nearby — platform count unset; hint: OSM tags this station's Wikipedia page as \"Amberley railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ANC": {
+    "operators": [
+      "East Midlands Railway"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T15:02:04.449Z",
+      "node_id": 5520056018,
+      "incomplete": true,
+      "notes": "no railway=platform ways/relations found nearby — platform count unset; station node has no wheelchair=* tag; hint: OSM tags this station's Wikipedia page as \"Ancaster railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "AND": {
+    "platforms": 2,
+    "operators": [
+      "ScotRail"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T15:02:51.176Z",
+      "node_id": 28449298,
+      "incomplete": true,
+      "notes": "station node has no wheelchair=* tag; hint: OSM tags this station's Wikipedia page as \"Anderston railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ANF": {
+    "operators": [
+      "CrossCountry",
+      "Cross Country",
+      "South Western Railway"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T15:03:23.733Z",
+      "node_id": 1241413252,
+      "incomplete": true,
+      "notes": "no railway=platform ways/relations found nearby — platform count unset; station node has no wheelchair=* tag; hint: OSM tags this station's Wikipedia page as \"Ashurst New Forest railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ANG": {
+    "platforms": 2,
+    "wheelchair": "yes",
+    "operators": [
+      "Greater Thameslink Railway",
+      "Southern Railway",
+      "Southern"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T15:04:28.938Z",
+      "node_id": 31075499,
+      "incomplete": false,
+      "notes": "hint: OSM tags this station's Wikipedia page as \"Angmering railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ANN": {
+    "platforms": 2,
+    "wheelchair": "limited",
+    "operators": [
+      "ScotRail"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T15:05:48.084Z",
+      "node_id": 26747495,
+      "incomplete": false,
+      "notes": "hint: OSM tags this station's Wikipedia page as \"Annan railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ANS": {
+    "platforms": 2,
+    "wheelchair": "yes",
+    "operators": [
+      "Merseyrail"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T15:06:19.000Z",
+      "node_id": 30646002,
+      "incomplete": false,
+      "notes": "hint: OSM tags this station's Wikipedia page as \"Ainsdale railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ANZ": {
+    "platforms": 2,
+    "wheelchair": "limited",
+    "operators": [
+      "Greater Thameslink Railway",
+      "Transport for London",
+      "Thameslink",
+      "Southern"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T15:07:05.195Z",
+      "node_id": 6391499992,
+      "incomplete": false,
+      "notes": "hint: OSM tags this station's Wikipedia page as \"Anerley railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "AON": {
+    "platforms": 3,
+    "operators": [
+      "South Western Railway"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T15:07:59.326Z",
+      "node_id": 2755047275,
+      "incomplete": true,
+      "notes": "station node has no wheelchair=* tag; hint: OSM tags this station's Wikipedia page as \"Alton railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "APB": {
+    "platforms": 2,
+    "wheelchair": "limited",
+    "operators": [
+      "Arriva Rail North"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T15:09:03.656Z",
+      "node_id": 3713687531,
+      "incomplete": false,
+      "notes": "hint: OSM tags this station's Wikipedia page as \"Appley Bridge railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "APD": {
+    "operators": [
+      "Southern"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T15:10:01.136Z",
+      "node_id": 6745645274,
+      "incomplete": true,
+      "notes": "no railway=platform ways/relations found nearby — platform count unset; station node has no wheelchair=* tag; hint: OSM tags this station's Wikipedia page as \"Appledore railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "APF": {
+    "platforms": 2,
+    "operators": [
+      "First Great Western",
+      "Great Western Railway",
+      "CrossCountry",
+      "Cross Country"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T15:11:16.895Z",
+      "node_id": 9768084,
+      "incomplete": true,
+      "notes": "station node has no wheelchair=* tag; hint: OSM tags this station's Wikipedia page as \"Appleford railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "APG": {
+    "platforms": 2,
+    "operators": [
+      "West Midlands Trains"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T15:12:50.079Z",
+      "node_id": 27457437,
+      "incomplete": true,
+      "notes": "station node has no wheelchair=* tag; hint: OSM tags this station's Wikipedia page as \"Aspley Guise railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "APP": {
+    "platforms": 2,
+    "wheelchair": "limited",
+    "operators": [
+      "Northern"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T15:13:22.942Z",
+      "node_id": 1388665716,
+      "incomplete": false,
+      "notes": "hint: OSM tags this station's Wikipedia page as \"Appleby railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "APS": {
+    "platforms": 4,
+    "operators": [
+      "London Northwestern Railway",
+      "Avanti West Coast",
+      "Caledonian Sleeper",
+      "Lumo"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T15:14:24.453Z",
+      "node_id": 5520070965,
+      "incomplete": true,
+      "notes": "station node has no wheelchair=* tag; hint: OSM tags this station's Wikipedia page as \"Apsley railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ARD": {
+    "platforms": 2,
+    "operators": [
+      "ScotRail"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T15:17:54.300Z",
+      "node_id": 26482578,
+      "incomplete": true,
+      "notes": "station node has no wheelchair=* tag; hint: OSM tags this station's Wikipedia page as \"Ardgay railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ARG": {
+    "platforms": 2,
+    "wheelchair": "limited",
+    "operators": [
+      "West Coast Railways",
+      "ScotRail"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T15:18:35.453Z",
+      "node_id": 7197531030,
+      "incomplete": false,
+      "notes": "hint: OSM tags this station's Wikipedia page as \"Arisaig railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ARL": {
+    "platforms": 2,
+    "operators": [
+      "London North Eastern Railway",
+      "Virgin Trains East Coast",
+      "Great Northern",
+      "Grand Central",
+      "Thameslink",
+      "Lumo"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T15:19:16.187Z",
+      "node_id": 21264536,
+      "incomplete": true,
+      "notes": "station node has no wheelchair=* tag; hint: OSM tags this station's Wikipedia page as \"Arlesey railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ARM": {
+    "platforms": 2,
+    "operators": [
+      "ScotRail",
+      "Caledonian Sleeper"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T15:20:19.574Z",
+      "node_id": 7209346141,
+      "incomplete": true,
+      "notes": "station node has no wheelchair=* tag; hint: OSM tags this station's Wikipedia page as \"Armadale railway station (Scotland)\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ARN": {
+    "platforms": 2,
+    "operators": [
+      "Northern"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T15:21:11.991Z",
+      "node_id": 7172216103,
+      "incomplete": true,
+      "notes": "station node has no wheelchair=* tag; hint: OSM tags this station's Wikipedia page as \"Arnside railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ARR": {
+    "platforms": 2,
+    "operators": [
+      "Northern"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T15:22:11.914Z",
+      "node_id": 3711894538,
+      "incomplete": true,
+      "notes": "station node has no wheelchair=* tag; hint: OSM tags this station's Wikipedia page as \"Arram railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ART": {
+    "platforms": 2,
+    "wheelchair": "no",
+    "operators": [
+      "ScotRail",
+      "Caledonian Sleeper"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T15:22:35.796Z",
+      "node_id": 6753052777,
+      "incomplete": false,
+      "notes": "hint: OSM tags this station's Wikipedia page as \"Arrochar and Tarbet railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ARU": {
+    "platforms": 2,
+    "wheelchair": "yes",
+    "operators": [
+      "Southern"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T15:23:24.261Z",
+      "node_id": 5870535784,
+      "incomplete": false,
+      "notes": "hint: OSM tags this station's Wikipedia page as \"Arundel railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ASB": {
+    "wheelchair": "yes",
+    "operators": [
+      "ScotRail"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T15:23:57.688Z",
+      "node_id": 30615673,
+      "incomplete": true,
+      "notes": "no railway=platform ways/relations found nearby — platform count unset; hint: OSM tags this station's Wikipedia page as \"Ardrossan South Beach railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ASC": {
+    "platforms": 2,
+    "operators": [
+      "CrossCountry",
+      "Great Western Railway"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T15:24:37.718Z",
+      "node_id": 5520072621,
+      "incomplete": true,
+      "notes": "station node has no wheelchair=* tag; hint: OSM tags this station's Wikipedia page as \"Ashchurch for Tewkesbury railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ASD": {
+    "platforms": 2,
+    "wheelchair": "yes",
+    "operators": [
+      "CrossCountry",
+      "First Great Western",
+      "Great Western Railway"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T15:25:42.617Z",
+      "node_id": 11824533457,
+      "incomplete": false,
+      "notes": "hint: OSM tags this station's Wikipedia page as \"Ashley Down railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ASF": {
+    "platforms": 2,
+    "operators": [
+      "ScotRail"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T15:26:22.590Z",
+      "node_id": 7287514085,
+      "incomplete": true,
+      "notes": "station node has no wheelchair=* tag; hint: OSM tags this station's Wikipedia page as \"Ashfield railway station (Scotland)\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ASG": {
+    "platforms": 2,
+    "wheelchair": "yes",
+    "operators": [
+      "East Midlands Railway",
+      "London Northwestern Railway"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T15:27:00.461Z",
+      "node_id": 21183239,
+      "incomplete": false,
+      "notes": "hint: OSM tags this station's Wikipedia page as \"Alsager railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ASH": {
+    "platforms": 2,
+    "wheelchair": "yes",
+    "operators": [
+      "Great Western Railway",
+      "South Western Railway"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T15:27:46.466Z",
+      "node_id": 1651566953,
+      "incomplete": false,
+      "notes": "hint: OSM tags this station's Wikipedia page as \"Ash railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ASK": {
+    "wheelchair": "yes",
+    "operators": [
+      "Northern"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T15:28:38.477Z",
+      "node_id": 6080982976,
+      "incomplete": true,
+      "notes": "no railway=platform ways/relations found nearby — platform count unset; hint: OSM tags this station's Wikipedia page as \"Askam railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ASL": {
+    "platforms": 1,
+    "wheelchair": "yes",
+    "operators": [
+      "Northern"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T15:29:13.604Z",
+      "node_id": 12424571567,
+      "incomplete": false,
+      "notes": "hint: OSM tags this station's Wikipedia page as \"Ashington railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ASN": {
+    "platforms": 2,
+    "wheelchair": "yes",
+    "operators": [
+      "South Western Railway"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T15:29:47.482Z",
+      "node_id": 6023274488,
+      "incomplete": false,
+      "notes": "hint: OSM tags this station's Wikipedia page as \"Addlestone railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
   }
 }
