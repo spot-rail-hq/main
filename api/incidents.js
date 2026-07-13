@@ -35,9 +35,20 @@ function stripTags(str) {
   return str.replace(/<[^>]*>/g, '');
 }
 
+// Free-text fields (Summary, Description) are wrapped in CDATA on the real
+// feed. Without unwrapping first, stripTags' `<[^>]*>` greedily matches from
+// `<![CDATA[` to the final `]]>` as if it were one tag — since the text
+// inside rarely contains a literal `>` — and deletes the entire payload,
+// leaving an empty string. This was silently discarding every non-cleared
+// incident (Summary always came back '').
+function unwrapCdata(str) {
+  const m = str.trim().match(/^<!\[CDATA\[([\s\S]*?)\]\]>$/);
+  return m ? m[1] : str;
+}
+
 function cleanText(raw) {
   if (!raw) return '';
-  return decodeEntities(stripTags(raw)).replace(/\s+/g, ' ').trim();
+  return decodeEntities(stripTags(unwrapCdata(raw))).replace(/\s+/g, ' ').trim();
 }
 
 // Tag matching tolerates an optional namespace prefix (e.g. <ns2:PtIncident>)
@@ -103,33 +114,55 @@ function extractLink(block) {
   return cleanText(extractTag(linkBlocks[0], 'Uri'));
 }
 
+// TEMP DEBUG — remove once the empty-summary root cause is confirmed fixed
+// in production. Logs raw (pre-clean) field values for a sample of incidents
+// that get excluded, so a bad assumption in the parser is visible in Vercel
+// logs instead of guessed at.
+const DEBUG_SAMPLE_LIMIT = 5;
+
 function parseIncidents(xml) {
   const blocks = extractBlocks(xml, 'PtIncident');
   let clearedCount = 0;
+  let emptySummaryCount = 0;
+  let debugLogged = 0;
+  const incidents = [];
 
-  const incidents = blocks.map((block) => {
-    if (/^true$/i.test(extractTag(block, 'ClearedIncident').trim())) {
+  for (const block of blocks) {
+    const clearedRaw = extractTag(block, 'ClearedIncident');
+    if (/^true$/i.test(clearedRaw.trim())) {
       clearedCount += 1;
-      return null;
+      continue;
     }
-    const summary = cleanText(extractTag(block, 'Summary'));
-    if (!summary) return null;
 
-    const toc = extractOperatorName(block);
-    const link = extractLink(block);
+    const summaryRaw = extractTag(block, 'Summary');
+    const summary = cleanText(summaryRaw);
 
-    return {
+    if (!summary) {
+      emptySummaryCount += 1;
+      if (debugLogged < DEBUG_SAMPLE_LIMIT) {
+        debugLogged += 1;
+        console.log('incidents: DEBUG excluded (empty summary after cleaning) —', JSON.stringify({
+          incidentNumber: cleanText(extractTag(block, 'IncidentNumber')),
+          clearedRaw,
+          summaryTagFound: summaryRaw !== '',
+          summaryRawSnippet: summaryRaw.slice(0, 200),
+        }));
+      }
+      continue;
+    }
+
+    incidents.push({
       id: cleanText(extractTag(block, 'IncidentNumber')) || undefined,
       summary,
-      toc: toc || undefined,
+      toc: extractOperatorName(block) || undefined,
       severity: computeSeverity(extractTag(block, 'IncidentPriority'), extractTag(block, 'Planned')),
       timestamp: formatTimestamp(cleanText(extractTag(block, 'CreationTime'))),
       affectedCRS: [],
-      link: link || undefined,
-    };
-  }).filter(Boolean);
+      link: extractLink(block) || undefined,
+    });
+  }
 
-  return { incidents, totalCount: blocks.length, clearedCount };
+  return { incidents, totalCount: blocks.length, clearedCount, emptySummaryCount };
 }
 
 export default async function handler(req, res) {
@@ -176,6 +209,6 @@ export default async function handler(req, res) {
     return res.status(200).json([]);
   }
 
-  console.log(`incidents: ${result.incidents.length} active incident(s) (${result.totalCount} total, ${result.clearedCount} cleared)`);
+  console.log(`incidents: ${result.incidents.length} active incident(s) (${result.totalCount} total, ${result.clearedCount} cleared, ${result.emptySummaryCount} excluded: empty summary)`);
   return res.status(200).json(result.incidents);
 }
