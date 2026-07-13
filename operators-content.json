@@ -1,5 +1,5 @@
 {
-  "_notes": "Keyed by a short operator code (your own convention — GWR, AWC, etc). fleet_classes store the EXACT display label as it should appear (not a bare number + assumed 'Class ' prefix) — this covers cases like Manchester Metrolink's M5000 that don't follow the 'Class NN' pattern. 'id' is used to link through to that vehicle's entry on the database page; 'display' is shown verbatim, no reformatting. franchises is the full history; sidebar should show the current one as a simple 'Operating since {start}' line by default, with the full array available as an expandable detail. FIELD OWNERSHIP (see scripts/ for the population scripts): headline/parent_company/franchises are written by scripts/fetch-wikipedia-facts.mjs (Wikipedia, narrative/historical — Claude extracts, never invents; headline is a punchy 8-12 word sentence, not a paragraph; a franchise entry only appears if the article states its dates). schema_jsonld is written by scripts/build-schema-jsonld.mjs (template assembly from the fields above, no new facts, no API calls). stations_operated/regions_served/fleet_classes are manual/curated only — neither OSM nor Wikipedia reliably has these without real risk of being wrong, so they're deliberately not automated. name/wikipedia_title are manual/curated only. _wikipedia is provenance metadata written by the Wikipedia script (no _osm block here — OSM doesn't own any operator-level field in this design; the OSM-derived operator name lives on the station/route entries that reference it, via their own operator/operators fields).",
+  "_notes": "Keyed by a short operator code (your own convention — GWR, AWC, etc). 2026-07-13: seeded 28 new entries from api/incidents.js's TOC_REGION_TABLE, using that table's own 2-letter ATOC-style codes (VT, GR, XC, ...) as the key — name only, awaiting Wikipedia/manual enrichment like any other entry. KNOWN INCONSISTENCY, needs manual review: WMR (West Midlands Railway) predates that seed and uses a different, longer code; TOC_REGION_TABLE's own code for the same operator is WM. Left as two different conventions on purpose rather than silently renaming/merging WMR — do not add a WM entry without first deciding how to reconcile it with WMR. fleet_classes store the EXACT display label as it should appear (not a bare number + assumed 'Class ' prefix) — this covers cases like Manchester Metrolink's M5000 that don't follow the 'Class NN' pattern. 'id' is used to link through to that vehicle's entry on the database page; 'display' is shown verbatim, no reformatting. franchises is the full history; sidebar should show the current one as a simple 'Operating since {start}' line by default, with the full array available as an expandable detail. FIELD OWNERSHIP (see scripts/ for the population scripts): headline/parent_company/franchises are written by scripts/fetch-wikipedia-facts.mjs (Wikipedia, narrative/historical — Claude extracts, never invents; headline is a punchy 8-12 word sentence, not a paragraph; a franchise entry only appears if the article states its dates). schema_jsonld is written by scripts/build-schema-jsonld.mjs (template assembly from the fields above, no new facts, no API calls). stations_operated/regions_served/fleet_classes are manual/curated only — neither OSM nor Wikipedia reliably has these without real risk of being wrong, so they're deliberately not automated. name/wikipedia_title are manual/curated only. _wikipedia is provenance metadata written by the Wikipedia script (no _osm block here — OSM doesn't own any operator-level field in this design; the OSM-derived operator name lives on the station/route entries that reference it, via their own operator/operators fields).",
   "WMR": {
     "name": "West Midlands Railway",
     "wikipedia_title": "West Midlands Trains",
@@ -26,6 +26,538 @@
         "@type": "Organization",
         "name": "DfT Operator"
       }
+    }
+  },
+  "VT": {
+    "name": "Avanti West Coast",
+    "headline": "Avanti West Coast to be nationalised, routes joining GBR by October 2027",
+    "parent_company": "FirstGroup (70%) and Trenitalia (30%)",
+    "franchises": [
+      {
+        "name": "West Coast Partnership",
+        "start": "8 December 2019",
+        "end": null
+      }
+    ],
+    "wikipedia_title": "Avanti West Coast",
+    "_wikipedia": {
+      "fetched_at": "2026-07-13T18:45:45.592Z",
+      "title": "Avanti West Coast",
+      "url": "https://en.wikipedia.org/wiki/Avanti_West_Coast",
+      "license": "CC BY-SA 4.0"
+    }
+  },
+  "GR": {
+    "name": "LNER",
+    "headline": "LNER name spans a 1923 railway company and a 2018 operator",
+    "franchises": [
+      {
+        "name": "London and North Eastern Railway",
+        "start": "1923",
+        "end": "1947"
+      },
+      {
+        "name": "London North Eastern Railway",
+        "start": "2018",
+        "end": null
+      }
+    ],
+    "wikipedia_title": "LNER",
+    "_wikipedia": {
+      "fetched_at": "2026-07-13T18:45:50.228Z",
+      "title": "LNER",
+      "url": "https://en.wikipedia.org/wiki/LNER",
+      "license": "CC BY-SA 4.0"
+    }
+  },
+  "XC": {
+    "name": "CrossCountry",
+    "headline": "CrossCountry's Aberdeen-Penzance route, UK's longest, ended May 2025",
+    "parent_company": "Arriva UK Trains",
+    "franchises": [
+      {
+        "name": "CrossCountry",
+        "start": "2007-11-11",
+        "end": "2027-10-15"
+      }
+    ],
+    "wikipedia_title": "CrossCountry",
+    "_wikipedia": {
+      "fetched_at": "2026-07-13T18:45:55.378Z",
+      "title": "CrossCountry",
+      "url": "https://en.wikipedia.org/wiki/CrossCountry",
+      "license": "CC BY-SA 4.0"
+    }
+  },
+  "EM": {
+    "name": "East Midlands Railway",
+    "headline": "East Midlands Railway set to return to public ownership by 2026",
+    "parent_company": "Transport UK Group",
+    "franchises": [
+      {
+        "name": "East Midlands",
+        "start": "18 August 2019",
+        "end": null
+      }
+    ],
+    "wikipedia_title": "East Midlands Railway",
+    "_wikipedia": {
+      "fetched_at": "2026-07-13T18:46:02.737Z",
+      "title": "East Midlands Railway",
+      "url": "https://en.wikipedia.org/wiki/East_Midlands_Railway",
+      "license": "CC BY-SA 4.0"
+    }
+  },
+  "LN": {
+    "name": "London Northwestern Railway",
+    "headline": "West Midlands Trains takes over London Northwestern Railway on 1 February 2026",
+    "parent_company": "WM Trains Limited",
+    "franchises": [
+      {
+        "name": "West Midlands Trains",
+        "start": "1 February 2026",
+        "end": null
+      }
+    ],
+    "wikipedia_title": "West Midlands Trains",
+    "_wikipedia": {
+      "fetched_at": "2026-07-13T18:46:11.152Z",
+      "title": "West Midlands Trains",
+      "url": "https://en.wikipedia.org/wiki/West_Midlands_Trains",
+      "license": "CC BY-SA 4.0"
+    }
+  },
+  "GW": {
+    "name": "Great Western Railway",
+    "headline": "Only railway to keep its name through the 1921 Grouping merger",
+    "parent_company": "FirstGroup",
+    "franchises": [
+      {
+        "name": "Great Western Railway",
+        "start": "September 2015",
+        "end": null
+      }
+    ],
+    "wikipedia_title": "Great Western Railway",
+    "_wikipedia": {
+      "fetched_at": "2026-07-13T18:46:21.852Z",
+      "title": "Great Western Railway",
+      "url": "https://en.wikipedia.org/wiki/Great_Western_Railway",
+      "license": "CC BY-SA 4.0"
+    }
+  },
+  "SW": {
+    "name": "South Western Railway",
+    "headline": "State takes over South Western Railway from FirstGroup and MTR in May 2025",
+    "parent_company": "DfT Operator",
+    "franchises": [
+      {
+        "name": "South Western Railway (FirstGroup/MTR Corporation)",
+        "start": null,
+        "end": "2025-05-25"
+      },
+      {
+        "name": "South Western Railway (DfT Operator)",
+        "start": "2025-05-25",
+        "end": null
+      }
+    ],
+    "wikipedia_title": "South Western Railway",
+    "_wikipedia": {
+      "fetched_at": "2026-07-13T18:46:26.954Z",
+      "title": "South Western Railway",
+      "url": "https://en.wikipedia.org/wiki/South_Western_Railway",
+      "license": "CC BY-SA 4.0"
+    }
+  },
+  "SE": {
+    "name": "Southeastern"
+  },
+  "SN": {
+    "name": "Southern",
+    "headline": "Southern is a Govia Thameslink Railway brand for English train services",
+    "parent_company": "Govia Thameslink Railway",
+    "wikipedia_title": "Southern",
+    "_wikipedia": {
+      "fetched_at": "2026-07-13T18:46:37.630Z",
+      "title": "Southern",
+      "url": "https://en.wikipedia.org/wiki/Southern",
+      "license": "CC BY-SA 4.0"
+    }
+  },
+  "TL": {
+    "name": "Thameslink",
+    "headline": "Thameslink's £7 billion upgrade still hasn't hit 24 trains an hour",
+    "parent_company": "Govia",
+    "franchises": [
+      {
+        "name": "Thameslink (Govia subsidiary)",
+        "start": null,
+        "end": "1 April 2006"
+      },
+      {
+        "name": "First Capital Connect",
+        "start": "1 April 2006",
+        "end": "14 September 2014"
+      },
+      {
+        "name": "Govia Thameslink Railway",
+        "start": "14 September 2014",
+        "end": "31 May 2026"
+      },
+      {
+        "name": "Greater Thameslink Railway",
+        "start": "31 May 2026",
+        "end": null
+      }
+    ],
+    "wikipedia_title": "Thameslink",
+    "_wikipedia": {
+      "fetched_at": "2026-07-13T18:52:15.321Z",
+      "title": "Thameslink",
+      "url": "https://en.wikipedia.org/wiki/Thameslink",
+      "license": "CC BY-SA 4.0"
+    }
+  },
+  "GX": {
+    "name": "Gatwick Express",
+    "headline": "Gatwick Express becomes state-owned service under Greater Thameslink Railway from May 2026",
+    "franchises": [
+      {
+        "name": "National Express",
+        "start": "28 April 1996",
+        "end": "22 June 2008"
+      },
+      {
+        "name": "Govia (South Central franchise)",
+        "start": "20 September 2009",
+        "end": "25 July 2015"
+      },
+      {
+        "name": "Govia Thameslink Railway",
+        "start": "25 July 2015",
+        "end": "31 May 2026"
+      }
+    ],
+    "wikipedia_title": "Gatwick Express",
+    "_wikipedia": {
+      "fetched_at": "2026-07-13T18:52:27.306Z",
+      "title": "Gatwick Express",
+      "url": "https://en.wikipedia.org/wiki/Gatwick_Express",
+      "license": "CC BY-SA 4.0"
+    }
+  },
+  "GN": {
+    "name": "Great Northern"
+  },
+  "CC": {
+    "name": "c2c",
+    "headline": "State-owned DfT Operator takes over c2c services on 20 July 2025",
+    "parent_company": "DfT Operator",
+    "franchises": [
+      {
+        "name": "c2c",
+        "start": "20 July 2025",
+        "end": null
+      }
+    ],
+    "wikipedia_title": "C2c",
+    "_wikipedia": {
+      "fetched_at": "2026-07-13T18:44:02.657Z",
+      "title": "C2c",
+      "url": "https://en.wikipedia.org/wiki/C2c",
+      "license": "CC BY-SA 4.0"
+    }
+  },
+  "CH": {
+    "name": "Chiltern Railways",
+    "headline": "Chiltern Railways set to return to public ownership in 2026",
+    "parent_company": "Arriva UK Trains",
+    "franchises": [
+      {
+        "name": "Chiltern Railways franchise",
+        "start": "1996-07-21",
+        "end": "2026-09-20"
+      }
+    ],
+    "wikipedia_title": "Chiltern Railways",
+    "_wikipedia": {
+      "fetched_at": "2026-07-13T18:52:37.551Z",
+      "title": "Chiltern Railways",
+      "url": "https://en.wikipedia.org/wiki/Chiltern_Railways",
+      "license": "CC BY-SA 4.0"
+    }
+  },
+  "LE": {
+    "name": "Greater Anglia",
+    "headline": "State-owned Greater Anglia took over East Anglian rail services on 12 October 2025",
+    "parent_company": "DfT Operator",
+    "franchises": [
+      {
+        "name": "Greater Anglia",
+        "start": "12 October 2025",
+        "end": null
+      }
+    ],
+    "wikipedia_title": "Greater Anglia",
+    "_wikipedia": {
+      "fetched_at": "2026-07-13T18:47:26.760Z",
+      "title": "Greater Anglia",
+      "url": "https://en.wikipedia.org/wiki/Greater_Anglia",
+      "license": "CC BY-SA 4.0"
+    }
+  },
+  "NT": {
+    "name": "Northern",
+    "headline": "First UK rail franchise stripped for poor performance since 2003",
+    "parent_company": "DfT Operator",
+    "franchises": [
+      {
+        "name": "Arriva Rail North",
+        "start": "April 2016",
+        "end": "29 February 2020"
+      },
+      {
+        "name": "Northern",
+        "start": "1 March 2020",
+        "end": null
+      }
+    ],
+    "wikipedia_title": "Northern Trains",
+    "_wikipedia": {
+      "fetched_at": "2026-07-13T19:43:09.917Z",
+      "title": "Northern Trains",
+      "url": "https://en.wikipedia.org/wiki/Northern_Trains",
+      "license": "CC BY-SA 4.0"
+    }
+  },
+  "TP": {
+    "name": "TransPennine Express",
+    "headline": "State-run TransPennine Express posts just 47.7% on-time performance in 2023-24",
+    "parent_company": "DfT Operator",
+    "franchises": [
+      {
+        "name": "TransPennine Express",
+        "start": "May 2023",
+        "end": null
+      }
+    ],
+    "wikipedia_title": "TransPennine Express",
+    "_wikipedia": {
+      "fetched_at": "2026-07-13T18:47:33.690Z",
+      "title": "TransPennine Express",
+      "url": "https://en.wikipedia.org/wiki/TransPennine_Express",
+      "license": "CC BY-SA 4.0"
+    }
+  },
+  "ME": {
+    "name": "Merseyrail",
+    "headline": "Merseyrail carried 29.9 million passengers across its 76-mile network in 2024/2025",
+    "parent_company": "Joint venture between Serco and Transport UK Group",
+    "franchises": [
+      {
+        "name": "Merseyrail Electrics (MTL)",
+        "start": "1997-01-19",
+        "end": "2001-04-27"
+      },
+      {
+        "name": "Arriva Trains Merseyside",
+        "start": "2001-04-27",
+        "end": "2003-07-20"
+      },
+      {
+        "name": "Merseyrail Electrics 2002 Limited",
+        "start": "2003-07-20",
+        "end": null
+      }
+    ],
+    "wikipedia_title": "Merseyrail",
+    "_wikipedia": {
+      "fetched_at": "2026-07-13T19:40:44.177Z",
+      "title": "Merseyrail",
+      "url": "https://en.wikipedia.org/wiki/Merseyrail",
+      "license": "CC BY-SA 4.0"
+    }
+  },
+  "SR": {
+    "name": "ScotRail",
+    "headline": "ScotRail returns to state ownership after Abellio's franchise ends",
+    "parent_company": "Scottish Rail Holdings",
+    "franchises": [
+      {
+        "name": "Abellio ScotRail",
+        "start": 2015,
+        "end": 2022
+      },
+      {
+        "name": "ScotRail Trains Limited",
+        "start": 2022,
+        "end": null
+      }
+    ],
+    "wikipedia_title": "ScotRail",
+    "_wikipedia": {
+      "fetched_at": "2026-07-13T18:47:50.079Z",
+      "title": "ScotRail",
+      "url": "https://en.wikipedia.org/wiki/ScotRail",
+      "license": "CC BY-SA 4.0"
+    }
+  },
+  "CS": {
+    "name": "Caledonian Sleeper",
+    "headline": "Scotland's sleeper train now run by state-owned Scottish Rail Holdings",
+    "parent_company": "Scottish Rail Holdings",
+    "franchises": [
+      {
+        "name": "ScotRail franchise (operated by National Express)",
+        "start": "31 March 1997",
+        "end": "17 October 2004"
+      },
+      {
+        "name": "ScotRail franchise (operated by FirstGroup)",
+        "start": "17 October 2004",
+        "end": "31 March 2015"
+      },
+      {
+        "name": "Caledonian Sleeper franchise (operated by Serco)",
+        "start": "31 March 2015",
+        "end": "June 2023"
+      },
+      {
+        "name": "Scottish Rail Holdings (state ownership)",
+        "start": "25 June 2023",
+        "end": null
+      }
+    ],
+    "wikipedia_title": "Caledonian Sleeper",
+    "_wikipedia": {
+      "fetched_at": "2026-07-13T18:47:57.175Z",
+      "title": "Caledonian Sleeper",
+      "url": "https://en.wikipedia.org/wiki/Caledonian_Sleeper",
+      "license": "CC BY-SA 4.0"
+    }
+  },
+  "GC": {
+    "name": "Grand Central",
+    "headline": "Grand Central runs open-access rail services linking London with Sunderland and Bradford",
+    "wikipedia_title": "Grand Central",
+    "_wikipedia": {
+      "fetched_at": "2026-07-13T18:48:01.389Z",
+      "title": "Grand Central",
+      "url": "https://en.wikipedia.org/wiki/Grand_Central",
+      "license": "CC BY-SA 4.0"
+    }
+  },
+  "HT": {
+    "name": "Hull Trains",
+    "headline": "Open-access Hull Trains secures track access rights until December 2032",
+    "parent_company": "FirstGroup",
+    "wikipedia_title": "Hull Trains",
+    "_wikipedia": {
+      "fetched_at": "2026-07-13T18:48:08.019Z",
+      "title": "Hull Trains",
+      "url": "https://en.wikipedia.org/wiki/Hull_Trains",
+      "license": "CC BY-SA 4.0"
+    }
+  },
+  "LD": {
+    "name": "Lumo",
+    "headline": "Open-access operator Lumo began London to Edinburgh services in October 2021",
+    "parent_company": "FirstGroup",
+    "wikipedia_title": "Lumo (train operating company)",
+    "_wikipedia": {
+      "fetched_at": "2026-07-13T19:43:20.146Z",
+      "title": "Lumo (train operating company)",
+      "url": "https://en.wikipedia.org/wiki/Lumo_(train_operating_company)",
+      "license": "CC BY-SA 4.0"
+    }
+  },
+  "HX": {
+    "name": "Heathrow Express",
+    "headline": "Heathrow Express has carried over 100 million passengers since its 1998 launch",
+    "parent_company": "Heathrow Airport Holdings",
+    "franchises": [
+      {
+        "name": "Heathrow Express operating contract",
+        "start": "2018",
+        "end": "2028"
+      }
+    ],
+    "wikipedia_title": "Heathrow Express",
+    "_wikipedia": {
+      "fetched_at": "2026-07-13T18:48:21.124Z",
+      "title": "Heathrow Express",
+      "url": "https://en.wikipedia.org/wiki/Heathrow_Express",
+      "license": "CC BY-SA 4.0"
+    }
+  },
+  "XR": {
+    "name": "Elizabeth line",
+    "headline": "Elizabeth line now carries one-seventh of all UK rail trips",
+    "parent_company": "Transport for London (TfL)",
+    "franchises": [
+      {
+        "name": "MTR Corporation (MTR Elizabeth line / TfL Rail)",
+        "start": "2014",
+        "end": "2025"
+      },
+      {
+        "name": "GTS Rail Operations",
+        "start": "2025",
+        "end": null
+      }
+    ],
+    "wikipedia_title": "Elizabeth line",
+    "_wikipedia": {
+      "fetched_at": "2026-07-13T18:43:45.880Z",
+      "title": "Elizabeth line",
+      "url": "https://en.wikipedia.org/wiki/Elizabeth_line",
+      "license": "CC BY-SA 4.0"
+    }
+  },
+  "AW": {
+    "name": "Transport for Wales",
+    "headline": "Welsh Government seized control of Wales & Borders rail franchise in 2021",
+    "parent_company": "Welsh Government",
+    "franchises": [
+      {
+        "name": "Wales & Borders railway franchise (KeolisAmey Wales)",
+        "start": "2018",
+        "end": "7 February 2021"
+      },
+      {
+        "name": "Wales & Borders railway franchise (Transport for Wales Rail Limited)",
+        "start": "7 February 2021",
+        "end": null
+      }
+    ],
+    "wikipedia_title": "Transport for Wales",
+    "_wikipedia": {
+      "fetched_at": "2026-07-13T18:48:29.107Z",
+      "title": "Transport for Wales",
+      "url": "https://en.wikipedia.org/wiki/Transport_for_Wales",
+      "license": "CC BY-SA 4.0"
+    }
+  },
+  "IL": {
+    "name": "Island Line",
+    "wikipedia_title": "Island Line",
+    "_wikipedia": {
+      "fetched_at": "2026-07-13T18:43:49.893Z",
+      "title": "Island Line",
+      "url": "https://en.wikipedia.org/wiki/Island_Line",
+      "license": "CC BY-SA 4.0"
+    }
+  },
+  "WR": {
+    "name": "West Coast Railway Company",
+    "headline": "First private firm licensed as UK train operator, later hit by total network ban",
+    "wikipedia_title": "West Coast Railways",
+    "_wikipedia": {
+      "fetched_at": "2026-07-13T18:43:57.417Z",
+      "title": "West Coast Railways",
+      "url": "https://en.wikipedia.org/wiki/West_Coast_Railways",
+      "license": "CC BY-SA 4.0"
     }
   }
 }

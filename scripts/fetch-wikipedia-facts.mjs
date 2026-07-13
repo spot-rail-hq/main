@@ -11,16 +11,27 @@
  *
  * There is no live production dependency on this script, Wikipedia, or the
  * Claude API — it only ever writes static JSON that the app reads at
- * request time. Requires wikipedia_title to already be set (by hand) on
- * the entries you want enriched — see Task 3 in the delivery notes: a
- * missing/wrong title is a curation gap, not something this script guesses
- * at via search.
+ * request time.
+ *
+ * wikipedia_title: originally required to already be set by hand on every
+ * entry (a missing title just meant "skip, curation gap"). As of 2026-07-13
+ * this script will now ALSO resolve it itself when missing — see
+ * resolveWikipediaTitle() below — but only when it can *verify* a real,
+ * matching Wikipedia page exists (direct page lookup, or an exact-
+ * normalized full-text search match); anything looser is left alone and
+ * flagged for manual review, same discipline as fetch-osm-facts.mjs's
+ * "ambiguous → flag, don't guess" handling of OSM route relations. An
+ * already-set wikipedia_title (however it got there) is always respected
+ * as-is and never re-resolved.
  *
  * ─── FIELD OWNERSHIP (read this before editing another script) ───────────
  * This script is the ONLY writer for:
  *   stations-content.json  →  headline, opened_year, notable_features
  *   routes-content.json    →  headline, opened_year, operating_since
  *   operators-content.json →  headline, parent_company, franchises
+ *   all three               →  wikipedia_title (ONLY when auto-resolved
+ *                               with confidence — see above; a human-set
+ *                               title is untouched, never overwritten)
  * headline replaced the old full-paragraph "synopsis" field — same
  * extraction discipline (grounded in the fetched article, never invented),
  * just an 8–12 word punchy sentence instead of a paragraph, matching the
@@ -31,8 +42,8 @@
  * (not writes) the fields both this script and fetch-osm-facts.mjs produce.
  * It never writes: platforms, wheelchair, operators (stations), length_km,
  * stopping_stations, type, operator (routes), stations_operated,
- * regions_served, fleet_classes (operators), wikipedia_title, name, photo,
- * location, listed_status, or any existence/status field — those belong to
+ * regions_served, fleet_classes (operators), name, photo, location,
+ * listed_status, or any existence/status field — those belong to
  * scripts/fetch-osm-facts.mjs (structured/physical), manual curation, or
  * the separate NaPTAN re-import pipeline. See that script's header for its
  * owned-fields list.
@@ -59,13 +70,22 @@ const FILES = {
 
 // ─── Jobs to run this pass — edit this, then re-run ──────────────────────
 // Every key here must already exist (or be about to be created) in the
-// matching -content.json file, with a wikipedia_title set — see Task 3:
-// if wikipedia_title is missing, this script skips the entry and leaves
-// the existing "content coming soon" fallback in place, it does not guess.
+// matching -content.json file, with at least a `name`. wikipedia_title is
+// no longer required up front — if missing, resolveWikipediaTitle() tries
+// to confidently resolve one first; if it can't, the entry is left as-is
+// (existing "content coming soon" fallback) and reported under "needs your
+// manual review" at the end of the run, it is never guessed at.
 const JOBS = {
-  stations: ['BHM', 'SOL'],
-  routes: ['CROSSCITY-BROMSGROVE-LICHFIELD'],
-  operators: ['WMR'],
+  stations: [],
+  routes: [],
+  // Title-resolution validation test (2026-07-13): none of these 4 have a
+  // wikipedia_title set yet — picked to cover the tricky cases: XR/IL/WR
+  // are plain names that should resolve on the first direct-lookup
+  // candidate; CC ("c2c") is a short, easily-confusable name that's a real
+  // shot at triggering the search fallback or an ambiguous flag.
+  // Re-testing the disambiguation-page fix: SE/NT/GN/LD all previously
+  // resolved to Wikipedia disambiguation pages under their bare name.
+  operators: ['SE', 'NT', 'GN', 'LD'],
 };
 
 const WIKI_API = 'https://en.wikipedia.org/w/api.php';
@@ -74,14 +94,89 @@ const CLAUDE_MODEL = process.env.CLAUDE_MODEL || 'claude-sonnet-5';
 const USER_AGENT = 'SpotRailHQ-content-script/1.0 (+https://srhq.uk; static JSON build step, not a live API dependency)';
 
 async function fetchWikipediaText(title) {
-  const url = `${WIKI_API}?action=query&prop=extracts|info&explaintext=1&redirects=1&inprop=url&titles=${encodeURIComponent(title)}&format=json`;
+  // pageprops added 2026-07-13, alongside the disambiguation check in
+  // resolveWikipediaTitle() below — confirmed live that a short/generic
+  // operator name (e.g. "Northern", "Great Northern", "Lumo") can redirect
+  // straight to Wikipedia's disambiguation page for that word, which
+  // fetchWikipediaText will happily "find" (it's a real, non-missing page)
+  // without pageprops ever being asked to say so.
+  const url = `${WIKI_API}?action=query&prop=extracts|info|pageprops&explaintext=1&redirects=1&inprop=url&ppprop=disambiguation&titles=${encodeURIComponent(title)}&format=json`;
   const res = await fetch(url, { headers: { 'User-Agent': USER_AGENT } });
   if (!res.ok) throw new Error(`Wikipedia API HTTP ${res.status}`);
   const data = await res.json();
   const pages = data.query && data.query.pages;
   const page = pages && Object.values(pages)[0];
   if (!page || page.missing !== undefined) return null;
-  return { title: page.title, url: page.fullurl, text: page.extract || '' };
+  const isDisambiguation = !!(page.pageprops && 'disambiguation' in page.pageprops);
+  return { title: page.title, url: page.fullurl, text: page.extract || '', isDisambiguation };
+}
+
+// ─── wikipedia_title resolution (2026-07-13) ──────────────────────────────
+// Same normalization approach as fetch-osm-facts.mjs's normalizeStationName
+// (strip parentheticals/"railway station"/punctuation, lowercase) — kept as
+// its own copy here rather than a shared import since the two scripts are
+// each meant to be run standalone with no cross-file dependency.
+function normalizeTitle(s) {
+  return (s || '')
+    .toLowerCase()
+    .replace(/\(.*?\)/g, '')
+    .replace(/\brail(?:way)? station\b/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+const TITLE_CANDIDATE_PATTERNS = {
+  stations: (name) => [`${name} railway station`, `${name} station`, name],
+  routes: (name) => [name, `${name} (railway)`, `${name} (line)`],
+  // Bare name first (correct for most: "Avanti West Coast", "LNER", ...),
+  // "(train operating company)" as a fallback for short/generic names that
+  // collide with a Wikipedia disambiguation page — confirmed live for
+  // "Northern", "Great Northern", "Lumo" (all disambiguation pages under
+  // the bare name; Lumo's disambiguation page even lists "Lumo (train
+  // operating company)" as the real target).
+  operators: (name) => [name, `${name} (train operating company)`],
+};
+
+// Two-pass resolution, cheapest/most-reliable first:
+//  1. Direct page lookup per candidate title — Wikipedia's own redirect
+//     handling (fetchWikipediaText already sets redirects=1) means this
+//     also catches near-miss capitalization/phrasing for free. A hit here
+//     is as trustworthy as a human having typed the title themselves,
+//     UNLESS it's a disambiguation page (e.g. bare "Northern") — that's not
+//     a resolution at all, so it's skipped in favor of the next candidate
+//     rather than accepted.
+//  2. Full-text search, but ONLY auto-accepted if the top hit's normalized
+//     title exactly matches the entity's normalized name — anything looser
+//     (a different-but-similar station, a disambiguation page, etc.) is a
+//     genuine ambiguity, not a confident resolution, so it's flagged for
+//     manual review instead of guessed at.
+async function resolveWikipediaTitle(kind, name) {
+  const candidates = TITLE_CANDIDATE_PATTERNS[kind](name);
+  const normalizedName = normalizeTitle(name);
+
+  for (const candidate of candidates) {
+    const page = await fetchWikipediaText(candidate);
+    await sleep(300);
+    if (page && !page.isDisambiguation) return { title: page.title, method: `direct:"${candidate}"` };
+  }
+
+  const searchUrl = `${WIKI_API}?action=query&list=search&srsearch=${encodeURIComponent(candidates[0])}&format=json&srlimit=5`;
+  const res = await fetch(searchUrl, { headers: { 'User-Agent': USER_AGENT } });
+  if (!res.ok) return { ambiguous: true, notes: `Wikipedia search HTTP ${res.status}` };
+  const data = await res.json();
+  const results = (data.query && data.query.search) || [];
+  if (!results.length) {
+    return { ambiguous: true, notes: `No Wikipedia page found for "${name}" — tried: ${candidates.join(', ')}` };
+  }
+  const strongMatch = results.find((r) => normalizeTitle(r.title) === normalizedName);
+  if (strongMatch) {
+    const page = await fetchWikipediaText(strongMatch.title);
+    if (page && !page.isDisambiguation) return { title: page.title, method: 'search-exact' };
+  }
+  return {
+    ambiguous: true,
+    notes: `No confident Wikipedia title match for "${name}" — top search results: ${results.map((r) => r.title).join(', ')}`,
+  };
 }
 
 // headline: one punchy news-style sentence, 8–12 words — same brief given
@@ -131,8 +226,15 @@ async function callClaude(prompt) {
       'content-type': 'application/json',
     },
     body: JSON.stringify({
+      // 2026-07-13: was 1024 — claude-sonnet-5 uses extended thinking by
+      // default, drawn from the same max_tokens budget as the actual answer.
+      // Confirmed live (Thameslink/Gatwick Express/Chiltern Railways all
+      // failed a 24-operator run): thinking alone sometimes used the entire
+      // 1024-token budget before any text block was emitted, leaving nothing
+      // for callClaude's caller to parse. 4096 leaves comfortable headroom
+      // for both, for an output this small (a few extracted fields).
       model: CLAUDE_MODEL,
-      max_tokens: 1024,
+      max_tokens: 4096,
       messages: [{ role: 'user', content: prompt }],
     }),
   });
@@ -165,29 +267,59 @@ function mergeWikipediaFields(entry, extracted) {
   return out;
 }
 
-async function processEntry(kind, key, content) {
+async function processEntry(kind, key, content, report) {
   const entry = content[key];
-  const title = entry && entry.wikipedia_title;
+  let title = entry && entry.wikipedia_title;
+  let resolvedTitle = null; // only set when THIS run auto-resolved it, for the report/log line below
+
   if (!title) {
-    console.log(`  ${key}: no wikipedia_title set — skipped (Task 3 fallback: leave existing "content coming soon" state as-is)`);
-    return;
+    const resolution = await resolveWikipediaTitle(kind, (entry && entry.name) || key);
+    if (resolution.ambiguous) {
+      console.log(`  ${key}: no wikipedia_title set, and couldn't confidently resolve one — ${resolution.notes}`);
+      report.push({ key, status: 'needs-review', notes: resolution.notes });
+      return;
+    }
+    title = resolution.title;
+    resolvedTitle = { title, method: resolution.method };
   }
+
   const page = await fetchWikipediaText(title);
   if (!page || !page.text) {
     console.log(`  ${key}: wikipedia_title "${title}" did not resolve to a page — skipped, no error thrown`);
+    report.push({ key, status: 'title-not-found', notes: `"${title}" did not resolve to a page` });
     return;
   }
   const name = (entry && entry.name) || key;
   const prompt = buildPrompt(kind, name, page.text);
   const extracted = await callClaude(prompt);
+  const gotNothing = Object.values(extracted).every((v) => v == null || (Array.isArray(v) && v.length === 0));
+
+  // A page that yields NOTHING right after an auto-resolved title is a real
+  // signal, not just a sparse article — confirmed live: "Southeastern" (bare
+  // name) direct-lookup-redirected to Wikipedia's "Points of the compass"
+  // (a generic geography article, not the train operator), and the tell was
+  // exactly this — zero extractable facts. A human-set wikipedia_title
+  // yielding nothing is just a sparse source page and is trusted as-is; an
+  // auto-resolved one yielding nothing is treated as unverified and flagged
+  // instead of silently persisting a possibly-wrong title/URL.
+  if (resolvedTitle && gotNothing) {
+    const notes = `Auto-resolved wikipedia_title "${resolvedTitle.title}" (via ${resolvedTitle.method}) produced zero extractable facts — likely resolved to the wrong page (e.g. a generic/disambiguation article). Not persisted; needs a human to set the correct wikipedia_title.`;
+    console.log(`  ${key}: ${notes}`);
+    report.push({ key, status: 'needs-review', notes });
+    return;
+  }
+
   content[key] = mergeWikipediaFields(entry, extracted);
+  if (resolvedTitle) content[key].wikipedia_title = resolvedTitle.title; // only field this script writes outside mergeWikipediaFields's schema — see header comment
   content[key]._wikipedia = {
     fetched_at: new Date().toISOString(),
     title: page.title,
     url: page.url,
     license: 'CC BY-SA 4.0',
   };
-  console.log(`  ${key}: extracted ${Object.keys(extracted).filter((k) => extracted[k] != null && !(Array.isArray(extracted[k]) && !extracted[k].length)).join(', ') || '(nothing — article had none of the requested facts)'}`);
+  const extractedFields = Object.keys(extracted).filter((k) => extracted[k] != null && !(Array.isArray(extracted[k]) && !extracted[k].length)).join(', ') || '(nothing — article had none of the requested facts)';
+  console.log(`  ${key}: extracted ${extractedFields}${resolvedTitle ? ` (wikipedia_title auto-resolved via ${resolvedTitle.method}: "${resolvedTitle.title}")` : ''}`);
+  report.push({ key, status: 'ok', resolvedTitle: resolvedTitle ? resolvedTitle.title : null });
 }
 
 function sleep(ms) {
@@ -195,19 +327,28 @@ function sleep(ms) {
 }
 
 async function main() {
+  const needsReview = [];
   for (const kind of ['stations', 'routes', 'operators']) {
     const filePath = FILES[kind];
     const content = loadJson(filePath);
     console.log(`\n── ${kind} ──`);
+    const report = [];
     for (const key of JOBS[kind]) {
       try {
-        await processEntry(kind, key, content);
+        await processEntry(kind, key, content, report);
       } catch (err) {
         console.error(`  ${key}: FAILED — ${err.message} (left untouched, no partial write)`);
+        report.push({ key, status: 'failed', notes: err.message });
       }
+      saveJson(filePath, content); // incremental save — see fetch-osm-facts.mjs's main() for why this matters on a long run
       await sleep(500); // light pacing — Wikipedia + Claude both have their own rate limits
     }
-    saveJson(filePath, content);
+    needsReview.push(...report.filter((r) => r.status !== 'ok').map((r) => ({ kind, ...r })));
+  }
+
+  if (needsReview.length) {
+    console.log('\n=== Needs your manual review (title could not be confidently auto-resolved) ===');
+    for (const r of needsReview) console.log(`${r.kind}/${r.key} [${r.status}]: ${r.notes}`);
   }
 }
 
