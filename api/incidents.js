@@ -11,8 +11,9 @@
  *   operators: [],   // every affected operator's display name (or ref if
  *                     // name absent) — `toc` above is just operators[0],
  *                     // kept for backwards compatibility with existing UI
- *   regions: [],      // subset of ['north','midlands','south','wcml','ecml',
- *                     // 'gwr','heritage'] — see computeRegions() below
+ *   regions: [],      // subset of ['north','midlands','south','scotland',
+ *                     // 'wales','wcml','ecml','gwr','heritage'] — see
+ *                     // computeRegions() below
  *   routesAffected,   // free-text Affects.RoutesAffected, if present
  * }, ...]
  */
@@ -148,37 +149,48 @@ function extractRoutesAffected(block) {
 }
 
 // ─── TOC → region lookup (Task: geographic filter chips) ──────────────────
-// Region categories are the map page's existing, fixed filter-chip set:
-// north / midlands / south / wcml / ecml / gwr / heritage. These don't map
-// cleanly onto how TOCs actually serve the network (a chip mixes broad
-// geography with three specific named main lines), so most operators carry
-// more than one tag, and — flagged explicitly, not silently guessed — some
-// legitimate operators have NO matching tag because the chip set has no
-// bucket for them:
-//   - ScotRail / Caledonian Sleeper: Scotland has no chip of its own.
-//     Caledonian Sleeper gets 'wcml' since it explicitly runs that route
-//     overnight to London; ScotRail gets nothing.
-//   - Transport for Wales: Wales has no chip of its own. Cross-border Marches
-//     Line services (Birmingham/Manchester–Wales) justify a light 'midlands'
-//     tag, but the core Wales network isn't represented by any chip.
-//   - Heritage: the Knowledgebase Incidents feed covers National Rail TOCs,
-//     not standalone heritage railways (they don't report incidents to NRE).
-//     The one plausible match is West Coast Railway Company (charter/steam
-//     operator, e.g. the Jacobite, which does run on the mainline network).
-//     Expect this chip to stay empty or near-empty in real data.
+// Region categories are the map page's filter-chip set: north / midlands /
+// south / scotland / wales / wcml / ecml / gwr / heritage. scotland/wales
+// were added after the first pass flagged that ScotRail and Transport for
+// Wales had nowhere honest to go (ScotRail got no tag at all; TfW got a
+// stretch-fit 'midlands' tag for its England-border services only) — see
+// git history for that flagged state if useful context. With real chips now
+// available: ScotRail is tagged 'scotland' outright. Transport for Wales is
+// tagged 'wales' (replacing the midlands stretch-fit, per instruction —
+// its genuine Marches-line crossover into Shrewsbury/Crewe/Manchester is
+// real but secondary to its core network, so it's not carrying a midlands
+// tag alongside). A handful of other operators with well-known, unambiguous
+// Scotland or Wales service also picked up the matching tag in this pass
+// (Avanti West Coast, LNER, CrossCountry, TransPennine Express and Lumo all
+// terminate in Glasgow/Edinburgh/Aberdeen; Caledonian Sleeper's whole
+// purpose is overnight London–Scotland so it keeps 'wcml' too; GWR's South
+// Wales main line to Cardiff/Swansea is equally well-established). This is
+// not an exhaustive re-audit of every operator's full network — only these
+// clear, uncontroversial cases were added; anything more marginal was left
+// alone rather than guessed at.
+//
+// The chip set still mixes broad geography with three named main lines, so
+// most operators carry more than one tag. One category remains genuinely
+// under-served: Heritage. The Knowledgebase Incidents feed covers National
+// Rail TOCs, not standalone heritage railways (they don't report incidents
+// to NRE) — the one plausible match is West Coast Railway Company
+// (charter/steam operator, e.g. the Jacobite, which does run on the
+// mainline network). Expect this chip to stay empty or near-empty in real
+// data; that's a feed-coverage limit, not a mapping bug.
+//
 // Matched by display NAME first (normalized, case/whitespace-insensitive —
 // this is what the parser already prefers from the feed), with the 2-char
 // ATOC/TOC code as a secondary fallback. Code accuracy for the less common
 // operators below is not independently verified against a live sample —
 // spot-check against real incident data if a code-only match ever misfires.
 const TOC_REGION_TABLE = [
-  { code: 'VT', names: ['Avanti West Coast'], regions: ['wcml', 'north', 'midlands', 'south'] },
-  { code: 'GR', names: ['LNER', 'London North Eastern Railway'], regions: ['ecml', 'north', 'south'] },
-  { code: 'XC', names: ['CrossCountry', 'Cross Country', 'Arriva CrossCountry'], regions: ['north', 'midlands', 'south'] },
+  { code: 'VT', names: ['Avanti West Coast'], regions: ['wcml', 'north', 'midlands', 'south', 'scotland'] },
+  { code: 'GR', names: ['LNER', 'London North Eastern Railway'], regions: ['ecml', 'north', 'south', 'scotland'] },
+  { code: 'XC', names: ['CrossCountry', 'Cross Country', 'Arriva CrossCountry'], regions: ['north', 'midlands', 'south', 'scotland'] },
   { code: 'EM', names: ['East Midlands Railway'], regions: ['midlands', 'south'] },
   { code: 'WM', names: ['West Midlands Railway'], regions: ['midlands'] },
   { code: 'LN', names: ['London Northwestern Railway'], regions: ['midlands', 'wcml', 'south'] },
-  { code: 'GW', names: ['Great Western Railway', 'GWR'], regions: ['gwr', 'south'] },
+  { code: 'GW', names: ['Great Western Railway', 'GWR'], regions: ['gwr', 'south', 'wales'] },
   { code: 'SW', names: ['South Western Railway'], regions: ['south'] },
   { code: 'SE', names: ['Southeastern'], regions: ['south'] },
   { code: 'SN', names: ['Southern'], regions: ['south'] },
@@ -189,16 +201,16 @@ const TOC_REGION_TABLE = [
   { code: 'CH', names: ['Chiltern Railways'], regions: ['south', 'midlands'] },
   { code: 'LE', names: ['Greater Anglia'], regions: ['south'] },
   { code: 'NT', names: ['Northern'], regions: ['north'] },
-  { code: 'TP', names: ['TransPennine Express'], regions: ['north', 'ecml'] },
+  { code: 'TP', names: ['TransPennine Express'], regions: ['north', 'ecml', 'scotland'] },
   { code: 'ME', names: ['Merseyrail'], regions: ['north'] },
-  { code: 'SR', names: ['ScotRail'], regions: [] }, // flagged above — no Scotland chip
-  { code: 'CS', names: ['Caledonian Sleeper'], regions: ['wcml'] },
+  { code: 'SR', names: ['ScotRail'], regions: ['scotland'] },
+  { code: 'CS', names: ['Caledonian Sleeper'], regions: ['wcml', 'scotland'] },
   { code: 'GC', names: ['Grand Central'], regions: ['ecml', 'north'] },
   { code: 'HT', names: ['Hull Trains'], regions: ['ecml', 'north'] },
-  { code: 'LD', names: ['Lumo'], regions: ['ecml', 'north'] },
+  { code: 'LD', names: ['Lumo'], regions: ['ecml', 'north', 'scotland'] },
   { code: 'HX', names: ['Heathrow Express'], regions: ['south', 'gwr'] },
   { code: 'XR', names: ['Elizabeth line'], regions: ['south'] },
-  { code: 'AW', names: ['Transport for Wales', 'Trafnidiaeth Cymru'], regions: ['midlands'] }, // flagged above — no Wales chip
+  { code: 'AW', names: ['Transport for Wales', 'Trafnidiaeth Cymru'], regions: ['wales'] },
   { code: 'IL', names: ['Island Line'], regions: ['south'] },
   { code: 'WR', names: ['West Coast Railway Company'], regions: ['heritage'] },
 ];

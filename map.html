@@ -501,8 +501,11 @@
     background: rgba(64,224,208,0.14); border-color: var(--brh); color: var(--t); }
   .filter-chip-entity.active { background: rgba(64,224,208,0.22); border-color: var(--t); }
   .filter-chip-entity .fc-entity-label { max-width: 140px; overflow: hidden; text-overflow: ellipsis; }
+  /* 18px hit target (was 14px) — a bigger tap target is inherently more
+     forgiving of the incidental jitter enableDragToScroll's pointer-tracking
+     has to tolerate (see its comment), on top of that fix itself. */
   .fc-entity-clear { display: inline-flex; align-items: center; justify-content: center;
-    width: 14px; height: 14px; border-radius: 50%; font-size: 11px; line-height: 1; flex-shrink: 0; }
+    width: 18px; height: 18px; border-radius: 50%; font-size: 11px; line-height: 1; flex-shrink: 0; }
   .fc-entity-clear:hover { background: rgba(64,224,208,0.25); }
 
   /* Edge-fade hint for horizontally-scrollable rows — deliberately built as
@@ -2109,8 +2112,24 @@
   // past a small threshold, i.e. once it's a real drag — a genuine click
   // never triggers capture (or anything else here) at all, so it reaches
   // the chip's own listener completely undisturbed.
+  // Root-caused two separate-looking bug reports back to this single
+  // function: the entity filter chip's "x" not clearing, and #region-jump's
+  // buttons not responding to tap on touch devices. Math.abs(dx) > 3 used to
+  // gate drag-vs-tap here — 3px is well within normal touch-contact jitter
+  // (a finger's contact point commonly shifts several px between touchstart
+  // and touchend even for an intended, stationary tap; a trackpad/mouse
+  // click has some jitter too, just less). Any tap that crossed that
+  // threshold set moved=true, which the CAPTURE-phase click listener below
+  // (registered on this same scrolling container, an ancestor of every chip
+  // and every chip's children) then used to swallow the click — via
+  // stopPropagation() during capture, i.e. before the event ever reached the
+  // tapped element's own listener. Smaller targets are hit hardest: the
+  // Jump To buttons and, worse, the 14px entity-chip clear button, both live
+  // inside this exact scrolling container. Threshold now scales with input
+  // precision (touch/pen get more slack than mouse) instead of one
+  // one-size-fits-none value.
   function enableDragToScroll(el) {
-    var down = false, dragging = false, moved = false, startX = 0, startScrollLeft = 0, pointerId = null;
+    var down = false, dragging = false, moved = false, startX = 0, startScrollLeft = 0, pointerId = null, threshold = 5;
     el.addEventListener('pointerdown', function (e) {
       if (e.pointerType === 'mouse' && e.button !== 0) return;
       down = true;
@@ -2119,11 +2138,12 @@
       startX = e.clientX;
       startScrollLeft = el.scrollLeft;
       pointerId = e.pointerId;
+      threshold = e.pointerType === 'mouse' ? 5 : 10;
     });
     el.addEventListener('pointermove', function (e) {
       if (!down) return;
       var dx = e.clientX - startX;
-      if (!dragging && Math.abs(dx) > 3) {
+      if (!dragging && Math.abs(dx) > threshold) {
         dragging = true;
         moved = true;
         try { el.setPointerCapture(pointerId); } catch (err) {}
@@ -2316,7 +2336,7 @@
   });
 
   // ── Filters (client-side categories over incidents) ──────────────────────
-  var FILTERS = ['All', 'Urgent', 'North', 'Midlands', 'South', 'WCML', 'ECML', 'GWR', 'Heritage'];
+  var FILTERS = ['All', 'Urgent', 'North', 'Midlands', 'South', 'Scotland', 'Wales', 'WCML', 'ECML', 'GWR', 'Heritage'];
   var ENTITY_FILTER_KEY = 'entity';
 
   function normalizeOpName(str) {
