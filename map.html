@@ -1584,6 +1584,15 @@
           return '<div class="sv-item" data-crs="' + escapeAttr(crs) + '">' +
             '<span class="sv-name">' + (i + 1) + '. ' + escapeAttr(stationNameForCrs(crs)) + '</span></div>';
         }).join('') + '</div></div>';
+    } else if (r._osm && !r._osm.relation_id) {
+      // scripts/fetch-osm-facts.mjs ran and found no clean OSM route relation
+      // to curate stopping_stations from (see its _osm.notes for why) — Task
+      // 3's interim fallback: say so plainly rather than showing an empty/
+      // broken card. Real multi-leg journey routing across interchanges is
+      // planned separately as a future Phase 3 initiative; this is not that.
+      html += '<div class="db-field" data-anim-row><div class="db-label">Stopping stations</div>' +
+        '<div class="db-value">No direct train transport currently mapped for this route. ' +
+        'Multi-leg journey routing is planned for a future update.</div></div>';
     }
     html += dbWikipediaAttributionHtml(r);
     return html || dbComingSoonHtml(r.name);
