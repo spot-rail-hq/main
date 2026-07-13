@@ -496,17 +496,12 @@
   /* Entity filter chip (selected station/route) — sits left of "All",
      permanently turquoise-tinted (not just on .active) so it reads as
      distinct from the plain region chips even when it isn't the active
-     filter, per the "visually highlighted/distinct" requirement. */
-  .filter-chip-entity { display: inline-flex; align-items: center; gap: 6px; font-weight: 600;
-    background: rgba(64,224,208,0.14); border-color: var(--brh); color: var(--t); }
+     filter, per the "visually highlighted/distinct" requirement. No
+     dedicated clear ("x") — redundant with the sidebar's own station/route
+     header clear button, which already deselects the entity entirely. */
+  .filter-chip-entity { font-weight: 600; max-width: 160px; overflow: hidden;
+    text-overflow: ellipsis; background: rgba(64,224,208,0.14); border-color: var(--brh); color: var(--t); }
   .filter-chip-entity.active { background: rgba(64,224,208,0.22); border-color: var(--t); }
-  .filter-chip-entity .fc-entity-label { max-width: 140px; overflow: hidden; text-overflow: ellipsis; }
-  /* 18px hit target (was 14px) — a bigger tap target is inherently more
-     forgiving of the incidental jitter enableDragToScroll's pointer-tracking
-     has to tolerate (see its comment), on top of that fix itself. */
-  .fc-entity-clear { display: inline-flex; align-items: center; justify-content: center;
-    width: 18px; height: 18px; border-radius: 50%; font-size: 11px; line-height: 1; flex-shrink: 0; }
-  .fc-entity-clear:hover { background: rgba(64,224,208,0.25); }
 
   /* Edge-fade hint for horizontally-scrollable rows — deliberately built as
      pointer-events:none overlay pseudo-elements, NOT mask-image, since
@@ -529,10 +524,7 @@
   .news-item.urgent .news-title { color: var(--ink-primary); }
   .news-item:not(.urgent) .news-title { color: #ccc; }
   :root[data-theme="light"] .news-item:not(.urgent) .news-title { color: #333333; }
-  /* Same 12px/color convention as .news-meta below — time+date is now its
-     own line above the operator/link line, not squeezed onto one row. */
-  .news-meta-time { font-size: 12px; color: var(--ink); margin-top: 3px; }
-  .news-meta { font-size: 12px; color: var(--ink); margin-top: 2px; display: flex; gap: 8px; align-items: center; }
+  .news-meta { font-size: 12px; color: var(--ink); margin-top: 3px; display: flex; gap: 8px; align-items: center; }
   .news-link { color: var(--t); }
   .news-link:hover { text-decoration: underline; }
   .news-chevron { font-size: 13px; color: var(--ink); margin-top: 2px; flex-shrink: 0; }
@@ -2429,10 +2421,13 @@
     // was the active filter — fall back to "All" rather than leaving the
     // news list silently stuck on a filter with no corresponding chip.
     if (!entityCtx && activeFilter === ENTITY_FILTER_KEY) activeFilter = 'all';
+    // No dedicated clear ("x") on this chip — redundant with the sidebar's
+    // own station/route header clear button, which already deselects the
+    // entity entirely; the guard just above already falls back to "All"
+    // the moment that happens, so nothing here needs its own clear control.
     var entityChipHtml = entityCtx ?
       ('<button class="filter-chip filter-chip-entity' + (activeFilter === ENTITY_FILTER_KEY ? ' active' : '') + '" data-filter="' + ENTITY_FILTER_KEY + '">' +
-        '<span class="fc-entity-label">' + escapeAttr(entityCtx.label) + '</span>' +
-        '<span class="fc-entity-clear" data-role="clear-entity" aria-label="Clear ' + escapeAttr(entityCtx.label) + ' filter">&times;</span>' +
+        escapeAttr(entityCtx.label) +
         '</button>') : '';
     el.innerHTML = entityChipHtml + FILTERS.map(function (f) {
       var key = f.toLowerCase();
@@ -2455,15 +2450,6 @@
         onSelect();
       });
     });
-    var clearBtn = el.querySelector('.fc-entity-clear');
-    if (clearBtn) {
-      clearBtn.addEventListener('click', function (e) {
-        e.stopPropagation(); // don't also trigger the parent chip's own click handler above
-        activeFilter = 'all';
-        Array.prototype.forEach.call(chips, function (b) { b.classList.toggle('active', b.dataset.filter === 'all'); });
-        onSelect();
-      });
-    }
   }
 
   function escapeAttr(str) {
@@ -2495,15 +2481,13 @@
       // incident carries an InfoLink (api/incidents.js now populates this
       // from the real Knowledgebase Incidents feed).
       var linkHtml = n.link ? '<a class="news-link" href="' + escapeAttr(n.link) + '" target="_blank" rel="noopener">Source →</a>' : '';
-      // Two meta lines instead of one: n.timestamp is now "HH:MM · D MMM"
-      // (api/incidents.js formats both together), since this list routinely
-      // spans engineering notices months out, not just today — a bare HH:MM
-      // was ambiguous about which day an item referred to.
+      // Back to one meta line (two made the list read too sparse) —
+      // n.timestamp is "HH:MM · D MMM YYYY" (api/incidents.js), so the year
+      // is still visible even on this single line for items dated far out.
       return '<div class="news-item' + (urgent ? ' urgent' : '') + '" data-anim-row>' +
         '<i class="ti ti-alert-triangle news-icon"></i>' +
         '<div><div class="news-title">' + n.summary + '</div>' +
-        '<div class="news-meta-time">' + (n.timestamp || '') + '</div>' +
-        '<div class="news-meta"><span>' + (n.region || n.toc || '') + '</span>' + linkHtml + '</div></div>' +
+        '<div class="news-meta"><span>' + (n.timestamp || '') + ' · ' + (n.region || n.toc || '') + '</span>' + linkHtml + '</div></div>' +
         '<i class="ti ti-chevron-right news-chevron"></i></div>';
     }).join('');
   }

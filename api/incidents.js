@@ -8,7 +8,7 @@
  * GET /api/incidents
  * Returns: [{
  *   id, summary, toc, severity, affectedCRS: [], link,
- *   timestamp,        // "HH:MM · D MMM" (Europe/London), e.g. "14:32 · 13 Jul"
+ *   timestamp,        // "HH:MM · D MMM YYYY" (Europe/London), e.g. "14:32 · 13 Jul 2026"
  *   operators: [],   // every affected operator's display name (or ref if
  *                     // name absent) — `toc` above is just operators[0],
  *                     // kept for backwards compatibility with existing UI
@@ -155,7 +155,7 @@ function formatTimestamp(iso) {
     hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Europe/London',
   }).format(d);
   const date = new Intl.DateTimeFormat('en-GB', {
-    day: 'numeric', month: 'short', timeZone: 'Europe/London',
+    day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Europe/London',
   }).format(d);
   return time + ' · ' + date;
 }
