@@ -87,5 +87,550 @@
         "longitude": -1.78839054222
       }
     }
+  },
+  "AAP": {
+    "platforms": 4,
+    "wheelchair": "no",
+    "operators": [
+      "London North Eastern Railway",
+      "Great Northern",
+      "Virgin Trains East Coast",
+      "Thameslink",
+      "Grand Central",
+      "Lumo"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:02:56.453Z",
+      "node_id": 7851898375,
+      "incomplete": false,
+      "notes": "hint: OSM tags this station's Wikipedia page as \"Alexandra Palace railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ABA": {
+    "platforms": 2,
+    "wheelchair": "yes",
+    "operators": [
+      "Trafnidiaeth Cymru"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:04:15.423Z",
+      "node_id": 122362926,
+      "incomplete": false,
+      "notes": "hint: OSM tags this station's Wikipedia page as \"Aberdare railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ABC": {
+    "platforms": 1,
+    "operators": [
+      "ScotRail"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:05:37.902Z",
+      "node_id": 25254705,
+      "incomplete": true,
+      "notes": "station node has no wheelchair=* tag; hint: OSM tags this station's Wikipedia page as \"Altnabreac railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ABD": {
+    "platforms": 6,
+    "wheelchair": "yes",
+    "operators": [
+      "ScotRail",
+      "London North Eastern Railway",
+      "Caledonian Sleeper"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:06:13.773Z",
+      "node_id": 7149963979,
+      "incomplete": false,
+      "notes": "hint: OSM tags this station's Wikipedia page as \"Aberdeen railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ABE": {
+    "platforms": 2,
+    "wheelchair": "yes",
+    "operators": [
+      "Trafnidiaeth Cymru"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:06:56.173Z",
+      "node_id": 90455818,
+      "incomplete": false,
+      "notes": "hint: OSM tags this station's Wikipedia page as \"Aber railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ABW": {
+    "platforms": 4,
+    "wheelchair": "yes",
+    "operators": [
+      "South Eastern",
+      "Southeastern",
+      "GTS Rail Operations",
+      "Thameslink"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:08:21.832Z",
+      "node_id": 5871218017,
+      "incomplete": false,
+      "notes": "hint: OSM tags this station's Wikipedia page as \"Abbey Wood railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ABY": {
+    "platforms": 2,
+    "wheelchair": "no",
+    "operators": [
+      "Northern",
+      "Transpennine Express",
+      "Northern Rail",
+      "North TransPennine"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:09:12.472Z",
+      "node_id": 6331418874,
+      "incomplete": false,
+      "notes": "hint: OSM tags this station's Wikipedia page as \"Ashburys railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ACB": {
+    "platforms": 3,
+    "operators": [
+      "London Midland",
+      "Caledonian Sleeper",
+      "Avanti West Coast",
+      "London Northwestern Railway",
+      "Lumo"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:10:13.234Z",
+      "node_id": 10287644,
+      "incomplete": true,
+      "notes": "station node has no wheelchair=* tag; hint: OSM tags this station's Wikipedia page as \"Acton Bridge railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ACC": {
+    "platforms": 2,
+    "wheelchair": "yes",
+    "operators": [
+      "Transport for London"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:10:57.437Z",
+      "node_id": 2266399032,
+      "incomplete": false,
+      "notes": "hint: OSM tags this station's Wikipedia page as \"Acton Central railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ACK": {
+    "platforms": 2,
+    "operators": [
+      "London North Eastern Railway",
+      "Transpennine Express",
+      "CrossCountry",
+      "Northern",
+      "Lumo"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:14:14.916Z",
+      "node_id": 5520053927,
+      "incomplete": true,
+      "notes": "station node has no wheelchair=* tag; hint: OSM tags this station's Wikipedia page as \"Acklington railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ACL": {
+    "platforms": 2,
+    "_osm": {
+      "fetched_at": "2026-07-13T14:14:39.030Z",
+      "node_id": 253006518,
+      "incomplete": true,
+      "notes": "station node has no wheelchair=* tag; no route relations found stopping here — operators list unset; hint: OSM tags this station's Wikipedia page as \"Acle railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ACN": {
+    "platforms": 2,
+    "wheelchair": "no",
+    "operators": [
+      "ScotRail"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:15:27.558Z",
+      "node_id": 26486454,
+      "incomplete": false,
+      "notes": "hint: OSM tags this station's Wikipedia page as \"Achnasheen railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ACR": {
+    "platforms": 2,
+    "operators": [
+      "Arriva Trains North",
+      "Arriva Rail North"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:16:04.053Z",
+      "node_id": 3715250477,
+      "incomplete": true,
+      "notes": "station node has no wheelchair=* tag; hint: OSM tags this station's Wikipedia page as \"Accrington railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ACT": {
+    "platforms": 3,
+    "wheelchair": "yes",
+    "operators": [
+      "South Western Railway"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:17:32.895Z",
+      "node_id": 7158680303,
+      "incomplete": false,
+      "notes": "hint: OSM tags this station's Wikipedia page as \"Ascot railway station (Berkshire)\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ACY": {
+    "wheelchair": "yes",
+    "operators": [
+      "Trafnidiaeth Cymru"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:18:10.050Z",
+      "node_id": 122123719,
+      "incomplete": true,
+      "notes": "no railway=platform ways/relations found nearby — platform count unset; hint: OSM tags this station's Wikipedia page as \"Abercynon railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ADC": {
+    "operators": [
+      "CrossCountry",
+      "Northern Rail",
+      "Avanti West Coast",
+      "Cross Country"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:19:30.789Z",
+      "node_id": 6408750145,
+      "incomplete": true,
+      "notes": "no railway=platform ways/relations found nearby — platform count unset; station node has no wheelchair=* tag; hint: OSM tags this station's Wikipedia page as \"Adlington railway station (Cheshire)\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ADK": {
+    "platforms": 2,
+    "operators": [
+      "CrossCountry",
+      "Northern",
+      "TransPennine Express",
+      "Transpennine Express",
+      "Northern Rail",
+      "Avanti West Coast",
+      "Arriva Trains North",
+      "North TransPennine",
+      "East Midlands",
+      "Cross Country",
+      "Arriva Rail North",
+      "Transport for Wales",
+      "Trafnidiaeth Cymru",
+      "Northern Trains"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:21:57.071Z",
+      "node_id": 673959,
+      "incomplete": true,
+      "notes": "station node has no wheelchair=* tag; hint: OSM tags this station's Wikipedia page as \"Ardwick railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ADL": {
+    "operators": [
+      "Transpennine Express",
+      "Arriva Trains North",
+      "Arriva Rail North"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:22:16.647Z",
+      "node_id": 5392834870,
+      "incomplete": true,
+      "notes": "no railway=platform ways/relations found nearby — platform count unset; station node has no wheelchair=* tag; hint: OSM tags this station's Wikipedia page as \"Adlington railway station (Lancashire)\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ADM": {
+    "operators": [
+      "Southeastern"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:23:00.387Z",
+      "node_id": 6689773480,
+      "incomplete": true,
+      "notes": "no railway=platform ways/relations found nearby — platform count unset; station node has no wheelchair=* tag; hint: OSM tags this station's Wikipedia page as \"Adisham railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ADN": {
+    "operators": [
+      "ScotRail"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:24:57.732Z",
+      "node_id": 30615839,
+      "incomplete": true,
+      "notes": "no railway=platform ways/relations found nearby — platform count unset; station node has no wheelchair=* tag; hint: OSM tags this station's Wikipedia page as \"Ardrossan Town railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ADR": {
+    "platforms": 3,
+    "wheelchair": "limited",
+    "operators": [
+      "ScotRail",
+      "Caledonian Sleeper"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:25:27.626Z",
+      "node_id": 4293914995,
+      "incomplete": false,
+      "notes": "hint: OSM tags this station's Wikipedia page as \"Airdrie railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ADS": {
+    "platforms": 1,
+    "wheelchair": "yes",
+    "operators": [
+      "ScotRail"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:26:36.642Z",
+      "node_id": 30615844,
+      "incomplete": false,
+      "notes": "hint: OSM tags this station's Wikipedia page as \"Ardrossan Harbour railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ADV": {
+    "platforms": 2,
+    "wheelchair": "yes",
+    "operators": [
+      "South Western Railway"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:27:32.226Z",
+      "node_id": 6011146543,
+      "incomplete": false,
+      "notes": "hint: OSM tags this station's Wikipedia page as \"Andover railway station (England)\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ADW": {
+    "platforms": 2,
+    "operators": [
+      "ScotRail"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:28:17.506Z",
+      "node_id": 30745503,
+      "incomplete": true,
+      "notes": "station node has no wheelchair=* tag; hint: OSM tags this station's Wikipedia page as \"Addiewell railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "AFK": {
+    "platforms": 6,
+    "wheelchair": "yes",
+    "operators": [
+      "Eurostar International Ltd",
+      "Southern",
+      "Southeastern"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:29:17.204Z",
+      "node_id": 7998566986,
+      "incomplete": false,
+      "notes": "hint: OSM tags this station's Wikipedia page as \"Ashford International railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "AFV": {
+    "platforms": 1,
+    "wheelchair": "yes",
+    "_osm": {
+      "fetched_at": "2026-07-13T14:32:34.365Z",
+      "node_id": 50166218,
+      "incomplete": true,
+      "notes": "no route relations found stopping here — operators list unset; hint: OSM tags this station's Wikipedia page as \"Ansdell and Fairhaven railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "AGL": {
+    "platforms": 2,
+    "wheelchair": "limited",
+    "operators": [
+      "Avanti West Coast",
+      "Trafnidiaeth Cymru",
+      "Transport for Wales"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:33:56.658Z",
+      "node_id": 206134283,
+      "incomplete": false,
+      "notes": "hint: OSM tags this station's Wikipedia page as \"Abergele & Pensarn railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "AGS": {
+    "platforms": 2,
+    "wheelchair": "no",
+    "operators": [
+      "ScotRail"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:35:06.750Z",
+      "node_id": 28449296,
+      "incomplete": false,
+      "notes": "hint: OSM tags this station's Wikipedia page as \"Argyle Street railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "AGT": {
+    "operators": [
+      "Greater Thameslink Railway",
+      "Southern Railway",
+      "Southern"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:36:00.106Z",
+      "node_id": 25331153,
+      "incomplete": true,
+      "notes": "no railway=platform ways/relations found nearby — platform count unset; station node has no wheelchair=* tag; hint: OSM tags this station's Wikipedia page as \"Aldrington railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "AGV": {
+    "platforms": 3,
+    "wheelchair": "yes",
+    "operators": [
+      "Trafnidiaeth Cymru"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:36:30.780Z",
+      "node_id": 7154271435,
+      "incomplete": false,
+      "notes": "hint: OSM tags this station's Wikipedia page as \"Abergavenny railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "AHD": {
+    "platforms": 2,
+    "operators": [
+      "Southern",
+      "South Western Railway"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:36:48.945Z",
+      "node_id": 3815631286,
+      "incomplete": true,
+      "notes": "station node has no wheelchair=* tag; hint: OSM tags this station's Wikipedia page as \"Ashtead railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "AHN": {
+    "platforms": 2,
+    "operators": [
+      "Transpennine Express",
+      "Arriva Rail North"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:37:21.064Z",
+      "node_id": 910940825,
+      "incomplete": true,
+      "notes": "station node has no wheelchair=* tag; hint: OSM tags this station's Wikipedia page as \"Ashton-under-Lyne railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "AHS": {
+    "operators": [
+      "Southern"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:38:31.165Z",
+      "node_id": 17775828,
+      "incomplete": true,
+      "notes": "no railway=platform ways/relations found nearby — platform count unset; station node has no wheelchair=* tag; hint: OSM tags this station's Wikipedia page as \"Ashurst railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "AHT": {
+    "platforms": 3,
+    "wheelchair": "yes",
+    "operators": [
+      "South Western Railway"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:39:36.887Z",
+      "node_id": 5967525974,
+      "incomplete": false,
+      "notes": "hint: OSM tags this station's Wikipedia page as \"Aldershot railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "AIG": {
+    "platforms": 2,
+    "wheelchair": "no",
+    "operators": [
+      "Merseyrail"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:41:15.644Z",
+      "node_id": 27208512,
+      "incomplete": false,
+      "notes": "hint: OSM tags this station's Wikipedia page as \"Aigburth railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "AIN": {
+    "platforms": 2,
+    "wheelchair": "yes",
+    "operators": [
+      "Merseyrail"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:41:46.363Z",
+      "node_id": 30644154,
+      "incomplete": false,
+      "notes": "hint: OSM tags this station's Wikipedia page as \"Aintree railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "AIR": {
+    "platforms": 2,
+    "operators": [
+      "ScotRail"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:42:07.254Z",
+      "node_id": 30562471,
+      "incomplete": true,
+      "notes": "station node has no wheelchair=* tag; hint: OSM tags this station's Wikipedia page as \"Airbles railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ALB": {
+    "platforms": 2,
+    "operators": [
+      "Trafnidiaeth Cymru",
+      "West Midlands Railway",
+      "Transport for Wales"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:42:48.312Z",
+      "node_id": 3711941416,
+      "incomplete": true,
+      "notes": "station node has no wheelchair=* tag; hint: OSM tags this station's Wikipedia page as \"Albrighton railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ALD": {
+    "platforms": 2,
+    "wheelchair": "yes",
+    "operators": [
+      "Avanti West Coast",
+      "Cross Country",
+      "CrossCountry",
+      "Trafnidiaeth Cymru",
+      "Northern Trains"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:44:25.666Z",
+      "node_id": 3754534929,
+      "incomplete": false,
+      "notes": "hint: OSM tags this station's Wikipedia page as \"Alderley Edge railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ALK": {
+    "platforms": 2,
+    "operators": [
+      "East Midlands",
+      "East Midlands Railway"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:45:55.618Z",
+      "node_id": 3170037835,
+      "incomplete": true,
+      "notes": "station node has no wheelchair=* tag; hint: OSM tags this station's Wikipedia page as \"Aslockton railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
   }
 }

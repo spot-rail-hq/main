@@ -69,14 +69,14 @@ const nameToCrs = new Map(stationList.map((s) => [normalizeStationName(s.name), 
 // name + bbox to search for (bbox keeps the public Overpass server from
 // timing out on an unscoped whole-planet regex search, and narrows false
 // matches). `slug` is this route's key in routes-content.json.
+// Validation batch (2026-07-13): first 100 CRS codes in station-list.json,
+// alphabetical, excluding BHM/SOL (already populated) — sizing real-world
+// Overpass timing/error rate against the public instance before committing
+// to all ~2,637 stations. Routes intentionally left empty this pass; the two
+// test routes are already populated from the earlier validation run.
 const JOBS = {
-  stations: ['BHM', 'SOL'],
-  routes: [
-    { slug: 'CROSSCITY-BROMSGROVE-LICHFIELD', relationId: 167785 },
-    // Deliberately no clean match expected — demonstrates the "no relation
-    // found, flag for manual curation" path required by Task 1.
-    { slug: 'SOL-MANCHESTER-DEMO', name: 'Solihull to Manchester Piccadilly Direct', bbox: [52.2, -2.3, 53.6, -1.6] },
-  ],
+  stations: ["AAP", "AAT", "ABA", "ABC", "ABD", "ABE", "ABH", "ABW", "ABX", "ABY", "ACB", "ACC", "ACG", "ACH", "ACK", "ACL", "ACN", "ACR", "ACT", "ACY", "ADC", "ADD", "ADK", "ADL", "ADM", "ADN", "ADR", "ADS", "ADV", "ADW", "AFK", "AFS", "AFV", "AGL", "AGR", "AGS", "AGT", "AGV", "AHD", "AHN", "AHS", "AHT", "AHV", "AIG", "AIN", "AIR", "ALB", "ALD", "ALF", "ALK", "ALM", "ALN", "ALO", "ALP", "ALR", "ALT", "ALV", "ALW", "ALX", "AMB", "AMF", "AML", "AMR", "AMT", "AMY", "ANC", "AND", "ANF", "ANG", "ANL", "ANN", "ANS", "ANZ", "AON", "APB", "APD", "APF", "APG", "APN", "APP", "APS", "APY", "ARB", "ARD", "ARG", "ARL", "ARM", "ARN", "ARR", "ART", "ARU", "ASB", "ASC", "ASD", "ASF", "ASG", "ASH", "ASK", "ASL", "ASN"],
+  routes: [],
 };
 
 const OVERPASS_URL = 'https://overpass-api.de/api/interpreter';
@@ -309,26 +309,43 @@ async function main() {
   const routesContent = loadJson(ROUTES_PATH);
   const report = { stations: [], routes: [] };
 
+  // Save after EVERY station/route, not once at the very end — validated
+  // against a real bulk run (2026-07-13, 100-station batch): the public
+  // Overpass instance rate-limits hard enough that some entry eventually
+  // exhausts overpassQuery()'s retry budget and throws, and with a single
+  // save-at-the-end this silently discarded every station already fetched
+  // (7 successful stations lost to one 8th-station failure in that run).
+  // Each per-station catch below turns that into a soft failure — logged
+  // and flagged in the report, not a reason to abort remaining stations.
   for (const crs of JOBS.stations) {
-    const { result, incomplete, notes, node_id } = await enrichStation(crs);
-    if (result) {
-      stationsContent[crs] = mergeOsmFields(stationsContent[crs], result);
-      stationsContent[crs]._osm = { fetched_at: new Date().toISOString(), node_id: node_id || null, incomplete: !!incomplete, notes: notes || null };
+    try {
+      const { result, incomplete, notes, node_id } = await enrichStation(crs);
+      if (result) {
+        stationsContent[crs] = mergeOsmFields(stationsContent[crs], result);
+        stationsContent[crs]._osm = { fetched_at: new Date().toISOString(), node_id: node_id || null, incomplete: !!incomplete, notes: notes || null };
+      }
+      report.stations.push({ crs, incomplete, notes });
+    } catch (err) {
+      console.error(`  ${crs}: FAILED — ${err.message} (left untouched, continuing to next station)`);
+      report.stations.push({ crs, incomplete: true, notes: `FAILED: ${err.message}` });
     }
-    report.stations.push({ crs, incomplete, notes });
+    saveJson(STATIONS_PATH, stationsContent);
     await sleep(1200);
   }
 
   for (const job of JOBS.routes) {
-    const { slug, result, incomplete, notes, relation_id } = await enrichRoute(job);
-    routesContent[slug] = mergeOsmFields(routesContent[slug], result);
-    routesContent[slug]._osm = { fetched_at: new Date().toISOString(), relation_id: relation_id || null, incomplete: !!incomplete, notes: notes || null };
-    report.routes.push({ slug, incomplete, notes });
+    try {
+      const { slug, result, incomplete, notes, relation_id } = await enrichRoute(job);
+      routesContent[slug] = mergeOsmFields(routesContent[slug], result);
+      routesContent[slug]._osm = { fetched_at: new Date().toISOString(), relation_id: relation_id || null, incomplete: !!incomplete, notes: notes || null };
+      report.routes.push({ slug, incomplete, notes });
+    } catch (err) {
+      console.error(`  ${job.slug}: FAILED — ${err.message} (left untouched, continuing to next route)`);
+      report.routes.push({ slug: job.slug, incomplete: true, notes: `FAILED: ${err.message}` });
+    }
+    saveJson(ROUTES_PATH, routesContent);
     await sleep(1200);
   }
-
-  saveJson(STATIONS_PATH, stationsContent);
-  saveJson(ROUTES_PATH, routesContent);
 
   console.log('\n=== Summary (needs-your-judgment flagged with ⚑) ===');
   for (const s of report.stations) console.log(`station ${s.crs}: ${s.incomplete ? '⚑ ' + s.notes : 'OK'}`);
