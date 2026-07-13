@@ -529,7 +529,10 @@
   .news-item.urgent .news-title { color: var(--ink-primary); }
   .news-item:not(.urgent) .news-title { color: #ccc; }
   :root[data-theme="light"] .news-item:not(.urgent) .news-title { color: #333333; }
-  .news-meta { font-size: 12px; color: var(--ink); margin-top: 3px; display: flex; gap: 8px; align-items: center; }
+  /* Same 12px/color convention as .news-meta below — time+date is now its
+     own line above the operator/link line, not squeezed onto one row. */
+  .news-meta-time { font-size: 12px; color: var(--ink); margin-top: 3px; }
+  .news-meta { font-size: 12px; color: var(--ink); margin-top: 2px; display: flex; gap: 8px; align-items: center; }
   .news-link { color: var(--t); }
   .news-link:hover { text-decoration: underline; }
   .news-chevron { font-size: 13px; color: var(--ink); margin-top: 2px; flex-shrink: 0; }
@@ -2492,10 +2495,15 @@
       // incident carries an InfoLink (api/incidents.js now populates this
       // from the real Knowledgebase Incidents feed).
       var linkHtml = n.link ? '<a class="news-link" href="' + escapeAttr(n.link) + '" target="_blank" rel="noopener">Source →</a>' : '';
+      // Two meta lines instead of one: n.timestamp is now "HH:MM · D MMM"
+      // (api/incidents.js formats both together), since this list routinely
+      // spans engineering notices months out, not just today — a bare HH:MM
+      // was ambiguous about which day an item referred to.
       return '<div class="news-item' + (urgent ? ' urgent' : '') + '" data-anim-row>' +
         '<i class="ti ti-alert-triangle news-icon"></i>' +
         '<div><div class="news-title">' + n.summary + '</div>' +
-        '<div class="news-meta"><span>' + (n.timestamp || '') + ' · ' + (n.region || n.toc || '') + '</span>' + linkHtml + '</div></div>' +
+        '<div class="news-meta-time">' + (n.timestamp || '') + '</div>' +
+        '<div class="news-meta"><span>' + (n.region || n.toc || '') + '</span>' + linkHtml + '</div></div>' +
         '<i class="ti ti-chevron-right news-chevron"></i></div>';
     }).join('');
   }

@@ -7,7 +7,8 @@
  *
  * GET /api/incidents
  * Returns: [{
- *   id, summary, toc, severity, timestamp, affectedCRS: [], link,
+ *   id, summary, toc, severity, affectedCRS: [], link,
+ *   timestamp,        // "HH:MM · D MMM" (Europe/London), e.g. "14:32 · 13 Jul"
  *   operators: [],   // every affected operator's display name (or ref if
  *                     // name absent) — `toc` above is just operators[0],
  *                     // kept for backwards compatibility with existing UI
@@ -16,6 +17,9 @@
  *                     // computeRegions() below
  *   routesAffected,   // free-text Affects.RoutesAffected, if present
  * }, ...]
+ *
+ * severity>=2 ("Urgent"): Planned===false AND not long-range-future-dated
+ * (ValidityPeriod's end more than ~2 days out) — see computeSeverity().
  */
 
 const INCIDENTS_URL = 'https://api1.raildata.org.uk/1010-knowlegebase-incidents-xml-feed1_0/incidents.xml';
@@ -75,30 +79,85 @@ function extractBlocks(xml, tag) {
 
 // ─── Incidents-specific mapping ────────────────────────────────────────────
 
-// IncidentPriority's scale isn't documented in RSPS5050 (the Integer field has
-// no description). The presence of a sibling `P0Summary` field strongly implies
-// 0 is the highest-severity class (standard P0/P1/P2 incident-priority
-// convention), so lower numbers are treated as more urgent here. Unplanned
-// disruptions without a usable priority are treated as urgent by default.
-// Verify this against real incidents after deploy — see deployment notes.
-function computeSeverity(priorityRaw, plannedRaw) {
+// PtIncident > ValidityPeriod[] (RSPS5050 §10.2.3.3, structure defined in
+// §11.2.18 "Half Open Timestamp Range Structure") — a MANDATORY, repeatable
+// field carrying each period's StartTime (mandatory) / EndTime (optional;
+// per spec, an omitted EndTime means the period is open-ended, "until
+// further notice"). This is the real, structured validity-period field the
+// schema provides — confirmed present in RSPS5050 P-03-00 Rev A before
+// writing any of the date logic below, so no free-text fallback against
+// Summary was needed for this feed.
+function extractValidityPeriods(block) {
+  return extractBlocks(block, 'ValidityPeriod').map((vp) => ({
+    startTime: cleanText(extractTag(vp, 'StartTime')),
+    endTime: cleanText(extractTag(vp, 'EndTime')),
+  }));
+}
+
+// The latest EndTime across all of an incident's ValidityPeriod entries
+// (there can be more than one — Mult=Y). Returns null if every period is
+// open-ended (no EndTime given anywhere), which is treated as "no known
+// far-future end" rather than as long-range — an open-ended live fault
+// ("until further notice") is a different thing from a dated closure
+// months out, and shouldn't be penalized the same way.
+function latestValidityEnd(validityPeriods) {
+  let latest = null;
+  validityPeriods.forEach((vp) => {
+    if (!vp.endTime) return;
+    const d = new Date(vp.endTime);
+    if (isNaN(d.getTime())) return;
+    if (!latest || d.getTime() > latest.getTime()) latest = d;
+  });
+  return latest;
+}
+
+const URGENT_MAX_FUTURE_MS = 2 * 24 * 60 * 60 * 1000; // ~2 days, per the "~1-2 days" instruction
+
+// True when this incident's validity period is known to still run more than
+// ~2 days from now — i.e. it's a long-scheduled closure/engineering project,
+// not something that just started or is wrapping up imminently. This is
+// what actually excludes an entry like "Station improvement work... from
+// Monday 11 May to Sunday 11 October" from Urgent — Planned alone doesn't
+// reliably do that (real data shows Planned===false, or the tag absent,
+// even for some multi-month engineering notices).
+function isLongRangeFutureDated(validityPeriods, now) {
+  const end = latestValidityEnd(validityPeriods);
+  if (!end) return false;
+  return (end.getTime() - now.getTime()) > URGENT_MAX_FUTURE_MS;
+}
+
+// Urgent (severity>=2) now means: NOT a long-range-future-dated closure, AND
+// Planned===false. IncidentPriority is kept as a first-class signal (it's
+// what the schema names for exactly this) in case it's ever populated, but
+// in ~900 live incidents checked in production it never was — every one
+// fell through to this fallback, which is why the fallback's own logic is
+// what actually matters here, not the priority branch above it.
+function computeSeverity(priorityRaw, plannedRaw, validityPeriods, now) {
   const priority = priorityRaw !== '' && !isNaN(Number(priorityRaw)) ? Number(priorityRaw) : null;
   if (priority !== null) {
     if (priority <= 0) return 3;
     if (priority === 1) return 2;
     return 1;
   }
-  const planned = /^true$/i.test(plannedRaw.trim());
-  return planned ? 1 : 2;
+  const planned = /^true$/i.test((plannedRaw || '').trim());
+  const longRangeFuture = isLongRangeFutureDated(validityPeriods, now);
+  return (!planned && !longRangeFuture) ? 2 : 1;
 }
 
+// Now includes the date (not just time) — the Live Updates list routinely
+// spans engineering notices months out, not just today, so a bare HH:MM was
+// ambiguous about which day an item actually refers to.
 function formatTimestamp(iso) {
   if (!iso) return '';
   const d = new Date(iso);
   if (isNaN(d.getTime())) return '';
-  return new Intl.DateTimeFormat('en-GB', {
+  const time = new Intl.DateTimeFormat('en-GB', {
     hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Europe/London',
   }).format(d);
+  const date = new Intl.DateTimeFormat('en-GB', {
+    day: 'numeric', month: 'short', timeZone: 'Europe/London',
+  }).format(d);
+  return time + ' · ' + date;
 }
 
 // Affects > Operators > AffectedOperator[] — first operator's brand name
@@ -262,10 +321,11 @@ function computeRegions(operatorNames, routesAffectedText) {
   return Array.from(regions);
 }
 
-function parseIncidents(xml) {
+function parseIncidents(xml, now) {
   const blocks = extractBlocks(xml, 'PtIncident');
   let clearedCount = 0;
   let emptySummaryCount = 0;
+  let noValidityEndCount = 0; // how many active incidents had no parseable ValidityPeriod EndTime at all
   const incidents = [];
 
   for (const block of blocks) {
@@ -283,12 +343,14 @@ function parseIncidents(xml) {
 
     const operators = extractAllOperators(block);
     const routesAffected = extractRoutesAffected(block);
+    const validityPeriods = extractValidityPeriods(block);
+    if (!latestValidityEnd(validityPeriods)) noValidityEndCount += 1;
 
     incidents.push({
       id: cleanText(extractTag(block, 'IncidentNumber')) || undefined,
       summary,
       toc: extractOperatorName(block) || undefined,
-      severity: computeSeverity(extractTag(block, 'IncidentPriority'), extractTag(block, 'Planned')),
+      severity: computeSeverity(extractTag(block, 'IncidentPriority'), extractTag(block, 'Planned'), validityPeriods, now),
       timestamp: formatTimestamp(cleanText(extractTag(block, 'CreationTime'))),
       affectedCRS: [],
       link: extractLink(block) || undefined,
@@ -298,7 +360,7 @@ function parseIncidents(xml) {
     });
   }
 
-  return { incidents, totalCount: blocks.length, clearedCount, emptySummaryCount };
+  return { incidents, totalCount: blocks.length, clearedCount, emptySummaryCount, noValidityEndCount };
 }
 
 export default async function handler(req, res) {
@@ -339,12 +401,13 @@ export default async function handler(req, res) {
 
   let result;
   try {
-    result = parseIncidents(xml);
+    result = parseIncidents(xml, new Date());
   } catch (err) {
     console.error('incidents: parse failed —', err && err.message);
     return res.status(200).json([]);
   }
 
-  console.log(`incidents: ${result.incidents.length} active incident(s) (${result.totalCount} total, ${result.clearedCount} cleared, ${result.emptySummaryCount} excluded: empty summary)`);
+  const urgentCount = result.incidents.filter((n) => n.severity >= 2).length;
+  console.log(`incidents: ${result.incidents.length} active incident(s) (${result.totalCount} total, ${result.clearedCount} cleared, ${result.emptySummaryCount} excluded: empty summary) — ${urgentCount} urgent, ${result.noValidityEndCount} with no ValidityPeriod end date (open-ended)`);
   return res.status(200).json(result.incidents);
 }
