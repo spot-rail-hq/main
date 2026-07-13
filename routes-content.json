@@ -1,5 +1,5 @@
 {
-  "_notes": "Keyed by a route slug (your own convention — endpoint CRS codes joined, or a descriptive slug like CROSSCITY-BROMSGROVE-LICHFIELD when a route has more than two meaningful endpoints/branches). stopping_stations is an ordered array of CRS codes, each linkable to the corresponding stations-content.json entry. FIELD OWNERSHIP (see scripts/ for the two population scripts): length_km/stopping_stations/type/operator are written by scripts/fetch-osm-facts.mjs (OpenStreetMap public_transport route relations, structured/physical — deterministic, no AI; if no clean relation exists this is flagged in _osm.notes rather than guessed). synopsis/opened_year/operating_since are written by scripts/fetch-wikipedia-facts.mjs (Wikipedia, narrative/historical — Claude extracts, never invents). name/wikipedia_title are manual/curated only. _osm/_wikipedia are provenance metadata written by their respective scripts.",
+  "_notes": "Keyed by a route slug (your own convention — endpoint CRS codes joined, or a descriptive slug like CROSSCITY-BROMSGROVE-LICHFIELD when a route has more than two meaningful endpoints/branches). stopping_stations is an ordered array of CRS codes, each linkable to the corresponding stations-content.json entry. FIELD OWNERSHIP (see scripts/ for the population scripts): length_km/stopping_stations/type/operator are written by scripts/fetch-osm-facts.mjs (OpenStreetMap public_transport route relations, structured/physical — deterministic, no AI; if no clean relation exists this is flagged in _osm.notes rather than guessed). headline/opened_year/operating_since are written by scripts/fetch-wikipedia-facts.mjs (Wikipedia, narrative/historical — Claude extracts, never invents; headline is a punchy 8-12 word sentence, not a paragraph). schema_jsonld is written by scripts/build-schema-jsonld.mjs (template assembly from the fields above, no new facts, no API calls). name/wikipedia_title are manual/curated only. _osm/_wikipedia are provenance metadata written by their respective scripts.",
   "CROSSCITY-BROMSGROVE-LICHFIELD": {
     "name": "Cross-City Line",
     "wikipedia_title": "Cross-City Line",
@@ -36,13 +36,27 @@
       "LIC",
       "LTV"
     ],
-    "synopsis": "The Cross-City Line is a suburban rail line in the West Midlands, running between Redditch/Bromsgrove and Lichfield via Birmingham New Street, operated by West Midlands Railway.",
+    "headline": "The West Midlands' cross-city commuter line, running since 1978.",
     "opened_year": "1978",
     "_wikipedia": {
       "fetched_at": "2026-07-13T07:14:44.815Z",
       "title": "Cross-City Line",
       "url": "https://en.wikipedia.org/wiki/Cross-City_Line",
       "license": "CC BY-SA 4.0"
+    },
+    "schema_jsonld": {
+      "@context": "https://schema.org",
+      "@type": "Route",
+      "name": "Cross-City Line",
+      "distance": {
+        "@type": "QuantitativeValue",
+        "value": 51.4,
+        "unitCode": "KMT"
+      },
+      "provider": {
+        "@type": "Organization",
+        "name": "West Midlands Railway"
+      }
     }
   },
   "SOL-MANCHESTER-DEMO": {
@@ -52,6 +66,11 @@
       "relation_id": null,
       "incomplete": true,
       "notes": "No OSM public_transport route relation found matching \"Solihull to Manchester Piccadilly Direct\" in the given bbox. This is a genuine content gap, not a bug — stopping_stations/length_km need manual curation for this route (or a wider/corrected bbox + retry)."
+    },
+    "schema_jsonld": {
+      "@context": "https://schema.org",
+      "@type": "Route",
+      "name": "Solihull to Manchester Piccadilly"
     }
   }
 }

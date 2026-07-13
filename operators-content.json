@@ -1,9 +1,9 @@
 {
-  "_notes": "Keyed by a short operator code (your own convention — GWR, AWC, etc). fleet_classes store the EXACT display label as it should appear (not a bare number + assumed 'Class ' prefix) — this covers cases like Manchester Metrolink's M5000 that don't follow the 'Class NN' pattern. 'id' is used to link through to that vehicle's entry on the database page; 'display' is shown verbatim, no reformatting. franchises is the full history; sidebar should show the current one as a simple 'Operating since {start}' line by default, with the full array available as an expandable detail. FIELD OWNERSHIP (see scripts/ for the two population scripts): synopsis/parent_company/franchises are written by scripts/fetch-wikipedia-facts.mjs (Wikipedia, narrative/historical — Claude extracts, never invents; a franchise entry only appears if the article states its dates). stations_operated/regions_served/fleet_classes are manual/curated only — neither OSM nor a Wikipedia synopsis reliably has these without real risk of being wrong, so they're deliberately not automated. name/wikipedia_title are manual/curated only. _wikipedia is provenance metadata written by the Wikipedia script (no _osm block here — OSM doesn't own any operator-level field in this design; the OSM-derived operator name lives on the station/route entries that reference it, via their own operator/operators fields).",
+  "_notes": "Keyed by a short operator code (your own convention — GWR, AWC, etc). fleet_classes store the EXACT display label as it should appear (not a bare number + assumed 'Class ' prefix) — this covers cases like Manchester Metrolink's M5000 that don't follow the 'Class NN' pattern. 'id' is used to link through to that vehicle's entry on the database page; 'display' is shown verbatim, no reformatting. franchises is the full history; sidebar should show the current one as a simple 'Operating since {start}' line by default, with the full array available as an expandable detail. FIELD OWNERSHIP (see scripts/ for the population scripts): headline/parent_company/franchises are written by scripts/fetch-wikipedia-facts.mjs (Wikipedia, narrative/historical — Claude extracts, never invents; headline is a punchy 8-12 word sentence, not a paragraph; a franchise entry only appears if the article states its dates). schema_jsonld is written by scripts/build-schema-jsonld.mjs (template assembly from the fields above, no new facts, no API calls). stations_operated/regions_served/fleet_classes are manual/curated only — neither OSM nor Wikipedia reliably has these without real risk of being wrong, so they're deliberately not automated. name/wikipedia_title are manual/curated only. _wikipedia is provenance metadata written by the Wikipedia script (no _osm block here — OSM doesn't own any operator-level field in this design; the OSM-derived operator name lives on the station/route entries that reference it, via their own operator/operators fields).",
   "WMR": {
     "name": "West Midlands Railway",
     "wikipedia_title": "West Midlands Trains",
-    "synopsis": "WM Trains Limited, trading as West Midlands Trains, is a state-owned British train operating company running commuter and local services in the West Midlands and on the West Coast Main Line, under the West Midlands Railway and London Northwestern Railway brands.",
+    "headline": "West Midlands Trains, renationalised under public ownership in 2026.",
     "parent_company": "DfT Operator",
     "franchises": [
       {
@@ -17,6 +17,15 @@
       "title": "West Midlands Trains",
       "url": "https://en.wikipedia.org/wiki/West_Midlands_Trains",
       "license": "CC BY-SA 4.0"
+    },
+    "schema_jsonld": {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "West Midlands Railway",
+      "parentOrganization": {
+        "@type": "Organization",
+        "name": "DfT Operator"
+      }
     }
   }
 }

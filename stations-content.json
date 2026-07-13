@@ -1,5 +1,5 @@
 {
-  "_notes": "Keyed by CRS code (matches naptan_stations.crs). Lat/lon/tiploc already live in Postgres — don't duplicate here. Google Map / Street View links are NOT stored; construct at render time from naptan_stations lat/lon (see map.html). Any field can be null/empty until curated — sidebar should hide empty fields, not show placeholders. FIELD OWNERSHIP (see scripts/ for the two population scripts): platforms/wheelchair/operators are written by scripts/fetch-osm-facts.mjs (OpenStreetMap, structured/physical — deterministic, no AI). synopsis/opened_year/notable_features are written by scripts/fetch-wikipedia-facts.mjs (Wikipedia, narrative/historical — Claude extracts, never invents). name/wikipedia_title/photo/location/listed_status are manual/curated only — neither script writes them; wikipedia_title in particular must be set by a human before the Wikipedia script will touch an entry (see Task 3 — no guessing at runtime). Existence/open-closed status is owned by the separate, pre-existing NaPTAN re-import pipeline. _osm/_wikipedia are provenance metadata (fetched_at, source id/title, license) written by their respective scripts — render wikipedia_url from wikipedia_title, don't store it.",
+  "_notes": "Keyed by CRS code (matches naptan_stations.crs). Lat/lon/tiploc already live in Postgres — don't duplicate here. Google Map / Street View links are NOT stored; construct at render time from naptan_stations lat/lon (see map.html). Any field can be null/empty until curated — sidebar should hide empty fields, not show placeholders. FIELD OWNERSHIP (see scripts/ for the population scripts): platforms/wheelchair/operators are written by scripts/fetch-osm-facts.mjs (OpenStreetMap, structured/physical — deterministic, no AI). headline/opened_year/notable_features are written by scripts/fetch-wikipedia-facts.mjs (Wikipedia, narrative/historical — Claude extracts, never invents; headline is a punchy 8-12 word sentence, not a paragraph — matches the locomotive spotlight's headline field). schema_jsonld is written by scripts/build-schema-jsonld.mjs (template assembly from the fields above, no new facts, no API calls — see that script's header). name/wikipedia_title/photo/location/listed_status are manual/curated only — neither script writes them; wikipedia_title in particular must be set by a human before the Wikipedia script will touch an entry (see Task 3 — no guessing at runtime). Existence/open-closed status is owned by the separate, pre-existing NaPTAN re-import pipeline. _osm/_wikipedia are provenance metadata (fetched_at, source id/title, license) written by their respective scripts — render wikipedia_url from wikipedia_title, don't store it.",
   "BHM": {
     "name": "Birmingham New Street",
     "wikipedia_title": "Birmingham New Street railway station",
@@ -22,7 +22,7 @@
       "Midland Metro Limited (WMCA)",
       "Transport for Wales"
     ],
-    "synopsis": "Birmingham New Street is the largest and busiest of Birmingham's three main railway stations, and the busiest railway station outside London, serving as a hub for Avanti West Coast, West Midlands Trains and CrossCountry services.",
+    "headline": "Britain's busiest station outside London, rebuilt three times since 1854.",
     "opened_year": "1854",
     "notable_features": [
       "Busiest railway station outside London (36.6 million passenger entries/exits, 2024–25)",
@@ -35,6 +35,17 @@
       "title": "Birmingham New Street railway station",
       "url": "https://en.wikipedia.org/wiki/Birmingham_New_Street_railway_station",
       "license": "CC BY-SA 4.0"
+    },
+    "schema_jsonld": {
+      "@context": "https://schema.org",
+      "@type": "TrainStation",
+      "name": "Birmingham New Street",
+      "identifier": "BHM",
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 52.47781838678,
+        "longitude": -1.900205346
+      }
     }
   },
   "SOL": {
@@ -53,7 +64,7 @@
       "Cross Country",
       "West Midlands Railway"
     ],
-    "synopsis": "Solihull railway station serves the market town of Solihull in the West Midlands, with services from West Midlands Trains and Chiltern Railways.",
+    "headline": "Solihull's Victorian station, rebuilt in the 1930s, now fully accessible.",
     "opened_year": "1852",
     "notable_features": [
       "Original station rebuilt slightly south of its original site in the early 1930s when the line was quadrupled",
@@ -64,6 +75,17 @@
       "title": "Solihull railway station",
       "url": "https://en.wikipedia.org/wiki/Solihull_railway_station",
       "license": "CC BY-SA 4.0"
+    },
+    "schema_jsonld": {
+      "@context": "https://schema.org",
+      "@type": "TrainStation",
+      "name": "Solihull",
+      "identifier": "SOL",
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 52.41439070084,
+        "longitude": -1.78839054222
+      }
     }
   }
 }

@@ -18,9 +18,17 @@
  *
  * ─── FIELD OWNERSHIP (read this before editing another script) ───────────
  * This script is the ONLY writer for:
- *   stations-content.json  →  synopsis, opened_year, notable_features
- *   routes-content.json    →  synopsis, opened_year, operating_since
- *   operators-content.json →  synopsis, parent_company, franchises
+ *   stations-content.json  →  headline, opened_year, notable_features
+ *   routes-content.json    →  headline, opened_year, operating_since
+ *   operators-content.json →  headline, parent_company, franchises
+ * headline replaced the old full-paragraph "synopsis" field — same
+ * extraction discipline (grounded in the fetched article, never invented),
+ * just an 8–12 word punchy sentence instead of a paragraph, matching the
+ * style/length of the existing locomotive spotlight's `headline` field
+ * (see api/spotlight.js's prompt). Shorter output = fewer tokens per
+ * entity too. schema_jsonld is a separate field owned by
+ * scripts/build-schema-jsonld.mjs — see that script's header — which reads
+ * (not writes) the fields both this script and fetch-osm-facts.mjs produce.
  * It never writes: platforms, wheelchair, operators (stations), length_km,
  * stopping_stations, type, operator (routes), stations_operated,
  * regions_served, fleet_classes (operators), wikipedia_title, name, photo,
@@ -76,15 +84,22 @@ async function fetchWikipediaText(title) {
   return { title: page.title, url: page.fullurl, text: page.extract || '' };
 }
 
+// headline: one punchy news-style sentence, 8–12 words — same brief given
+// to api/spotlight.js's locomotive headlines, for a consistent voice across
+// the site. Still extraction, not invention: it must be grounded in a fact
+// the article actually states, just compressed to headline length instead
+// of a full paragraph.
+const HEADLINE_SPEC = 'headline (a punchy ONE-SENTENCE headline, 8-12 words, news-headline style and tone — e.g. "Britain\'s busiest station outside London, rebuilt three times since 1854" — grounded in a specific fact the article states, not a generic description)';
+
 const EXTRACTION_SCHEMAS = {
   stations: {
-    fields: 'synopsis (1-2 sentence plain-text summary of the station itself), opened_year (the year the CURRENT/notable station building or service first opened — a string, e.g. "1854" or "1967 (rebuilt)"), notable_features (array of short phrase strings — architectural, historical, or record-holding facts, e.g. "Britain\'s busiest station outside London")',
+    fields: `${HEADLINE_SPEC}, opened_year (the year the CURRENT/notable station building or service first opened — a string, e.g. "1854" or "1967 (rebuilt)"), notable_features (array of short phrase strings — architectural, historical, or record-holding facts, e.g. "Britain\'s busiest station outside London")`,
   },
   routes: {
-    fields: 'synopsis (1-2 sentence plain-text summary of the route/line itself), opened_year (year the line first opened, string), operating_since (year the CURRENT operator/franchise began running it, string — distinct from opened_year, which is about the line\'s original construction)',
+    fields: `${HEADLINE_SPEC}, opened_year (year the line first opened, string), operating_since (year the CURRENT operator/franchise began running it, string — distinct from opened_year, which is about the line\'s original construction)`,
   },
   operators: {
-    fields: 'synopsis (1-2 sentence plain-text summary of the company), parent_company (string, the ultimate/immediate parent company name, or null if independent/not stated), franchises (array of {name, start, end} — end is null for the current/ongoing franchise; only include entries the article actually states dates for)',
+    fields: `${HEADLINE_SPEC}, parent_company (string, the ultimate/immediate parent company name, or null if independent/not stated), franchises (array of {name, start, end} — end is null for the current/ongoing franchise; only include entries the article actually states dates for)`,
   },
 };
 

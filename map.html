@@ -448,7 +448,12 @@
   .db-empty { padding: 16px; }
   .db-empty .db-label { margin-bottom: 8px; }
   .db-empty p { font-size: 13px; color: var(--ink); line-height: 1.5; }
-  .db-synopsis { padding: 10px 16px; font-size: 13px; color: var(--ink); line-height: 1.6; }
+  /* Punchy one-line headline (Wikipedia-sourced, 8-12 words) — bolder and
+     more prominent than .db-value, but kept within the sidebar's existing
+     13-14px scale rather than borrowing index.html's much larger
+     .spot-headline display size, which is sized for full landing-page
+     cards, not this compact panel. */
+  .db-headline { padding: 10px 16px 4px; font-size: 14px; font-weight: 600; color: var(--ink-primary); line-height: 1.4; }
   .db-franchise-list { padding: 6px 16px 10px; font-size: 13px; color: var(--ink); line-height: 1.8; list-style: none; }
   .db-hint { padding: 24px 20px; font-size: 13px; color: var(--ink); text-align: center; line-height: 1.6; }
   .dep-cols { display: flex; align-items: center; gap: 10px; padding: 6px 0 4px; font-family: var(--font-mono);
@@ -1450,10 +1455,11 @@
       '<p>No database entry yet — content coming soon.</p></div>';
   }
 
-  // synopsis is narrative content from scripts/fetch-wikipedia-facts.mjs —
-  // see that script's header for the OSM/Wikipedia field-ownership split.
-  function dbSynopsisHtml(synopsis) {
-    return synopsis ? '<p class="db-synopsis" data-anim-row>' + escapeAttr(synopsis) + '</p>' : '';
+  // headline is a punchy 8-12 word sentence from scripts/fetch-wikipedia-
+  // facts.mjs (replaced an earlier full-paragraph "synopsis" field) — see
+  // that script's header for the OSM/Wikipedia field-ownership split.
+  function dbHeadlineHtml(headline) {
+    return headline ? '<p class="db-headline" data-anim-row>' + escapeAttr(headline) + '</p>' : '';
   }
   // CC BY-SA requires attribution alongside the content it covers — distinct
   // from the map layer's own OSM/ODbL attribution (AttributionControl,
@@ -1465,6 +1471,41 @@
     var wiki = entry && entry._wikipedia;
     if (!wiki || !wiki.url) return '';
     return '<a class="db-wiki-link" data-anim-row href="' + escapeAttr(wiki.url) + '" target="_blank" rel="noopener">Source: Wikipedia — ' + escapeAttr(wiki.title || '') + ' (CC BY-SA) →</a>';
+  }
+
+  // ── schema.org JSON-LD injection ──────────────────────────────────────────
+  // schema_jsonld is precomputed by scripts/build-schema-jsonld.mjs — this
+  // just puts that object, verbatim, into a <script type="application/
+  // ld+json"> tag in <head> for whichever entity's detail view is currently
+  // showing (called from rebuildSidebarContent() below, the one place that
+  // already knows which of those three views — if any — is on screen).
+  // Reuses a single tag id, replacing/removing it each call, so switching
+  // selections or clearing one never leaves stale/duplicate tags behind.
+  //
+  // COVERAGE CAVEAT (investigated for this task, not solved by it): this
+  // only helps crawlers that execute JavaScript and re-inspect the DOM
+  // after it runs — Googlebot does, but not every crawler/AI answer engine
+  // does this reliably, and none of them see this tag in the page's initial
+  // HTML response (map.html ships with an empty <head> for this purpose;
+  // the tag only exists after a user/crawler actually selects an entity in
+  // a running page). A crawler that only fetches raw HTML, or that renders
+  // JS but never simulates the click/search interactions needed to reach a
+  // given station/route/operator, will never see that entity's JSON-LD at
+  // all. Full coverage would need either static per-entity pages or
+  // server-side rendering that bakes the relevant JSON-LD into the initial
+  // HTML response for a given URL — a genuinely bigger architecture change
+  // (the site currently has no per-entity URLs/routing at all), flagged
+  // here as a candidate future task rather than attempted in this one.
+  var SCHEMA_JSONLD_ID = 'db-schema-jsonld';
+  function injectSchemaJsonLd(jsonld) {
+    var existing = document.getElementById(SCHEMA_JSONLD_ID);
+    if (existing) existing.remove();
+    if (!jsonld) return;
+    var tag = document.createElement('script');
+    tag.type = 'application/ld+json';
+    tag.id = SCHEMA_JSONLD_ID;
+    tag.textContent = JSON.stringify(jsonld);
+    document.head.appendChild(tag);
   }
 
   // wheelchair is the raw OSM wheelchair=* tag value — mapped to plain
@@ -1483,7 +1524,7 @@
       html += '<div class="db-photo" data-anim-row><img src="' + escapeAttr(s.photo.url) + '" alt="' + escapeAttr(s.name || '') + '" loading="lazy" />' +
         (s.photo.attribution ? '<div class="db-photo-credit">' + s.photo.attribution + '</div>' : '') + '</div>';
     }
-    html += dbSynopsisHtml(s.synopsis);
+    html += dbHeadlineHtml(s.headline);
     html += dbFieldHtml('Location', s.location);
     // Google Map / Street View aren't stored — constructed at render time
     // from lat/lon, per stations-content.json's own _notes.
@@ -1521,7 +1562,7 @@
     var r = routesContent[selection.id];
     if (!r) return dbComingSoonHtml(selection.fallbackName || selection.id);
     var html = '';
-    html += dbSynopsisHtml(r.synopsis);
+    html += dbHeadlineHtml(r.headline);
     html += dbFieldHtml('Operator', r.operator);
     html += dbFieldHtml('Type', r.type);
     html += dbFieldHtml('Length', r.length_km != null ? (r.length_km + ' km') : null);
@@ -1550,7 +1591,7 @@
     var o = selection.code && operatorsContent[selection.code];
     if (!o) return dbComingSoonHtml(selection.fallbackName || selection.code);
     var html = '';
-    html += dbSynopsisHtml(o.synopsis);
+    html += dbHeadlineHtml(o.headline);
     html += dbFieldHtml('Parent company', o.parent_company);
     html += dbFieldHtml('Stations operated', o.stations_operated);
     if (o.regions_served) {
@@ -1605,18 +1646,27 @@
     contentBlock.innerHTML = sidebarSkeletonHtml();
     if (selection.type === 'saved') {
       wireSavedListRows();
+      injectSchemaJsonLd(null);
     } else if (selection.type === 'route') {
       wireRouteDetail();
+      var routeEntry = routesContent[selection.id];
+      injectSchemaJsonLd(routeEntry && routeEntry.schema_jsonld);
     } else if (selection.type === 'operator') {
       wireOperatorDetail();
+      var operatorEntry = selection.code && operatorsContent[selection.code];
+      injectSchemaJsonLd(operatorEntry && operatorEntry.schema_jsonld);
     } else if (mode === 'database' && selectedStationCrs) {
       wireStationDatabaseDetail();
+      var stationEntry = stationsContent[selectedStationCrs.toUpperCase()];
+      injectSchemaJsonLd(stationEntry && stationEntry.schema_jsonld);
     } else if (mode === 'database' && !selectedStationCrs) {
       wireDatabaseDefault();
+      injectSchemaJsonLd(null);
     } else {
       wireDepartureBoardRefresh(); // no-ops if this cycle has no dep-board (plain live-default view)
       renderFilterRow('filter-row', renderNews);
       renderNews();
+      injectSchemaJsonLd(null); // departure board / from-to / live-default views describe no single entity
     }
   }
 
