@@ -2,28 +2,180 @@
  * api/incidents.js  —  Vercel Serverless Function
  * ─────────────────────────────────────────────────────────────────
  * Feeds the "Live news" urgent/disruption items on the map page.
- * Intended source: National Rail Knowledgebase incidents endpoint.
- *
- * TODO: wire up a real DARWIN_TOKEN and the Knowledgebase incidents
- * fetch/parse once credentials are provisioned. Until then this stub
- * returns an empty array so the frontend renders its empty state
- * instead of erroring.
+ * Source: Rail Delivery Group / Rail Data Marketplace "Knowledgebase
+ * Incidents" feed (RSPS5050 §10, schema v5.0) — returns XML, not JSON.
  *
  * GET /api/incidents
- * Returns: [{ id, summary, region, toc, severity, timestamp, affectedCRS: [] }, ...]
+ * Returns: [{ id, summary, toc, severity, timestamp, affectedCRS: [], link }, ...]
  */
+
+const INCIDENTS_URL = 'https://api1.raildata.org.uk/1010-knowlegebase-incidents-xml-feed1_0/incidents.xml';
+const FETCH_TIMEOUT_MS = 8000;
+
+// ─── Lightweight XML helpers (mirrors api/news.js's regex-based approach —
+// this project has no npm dependencies, so no XML library is pulled in) ────
+
+function decodeEntities(str) {
+  return str
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#0?39;/g, "'")
+    .replace(/&apos;/g, "'")
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(parseInt(dec, 10)))
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
+}
+
+// Strips any raw markup that survives entity-decoding — the incident text is
+// free-form editorial content from an external feed, and the frontend drops
+// n.summary into innerHTML unescaped, so this is the only sanitisation point.
+function stripTags(str) {
+  return str.replace(/<[^>]*>/g, '');
+}
+
+function cleanText(raw) {
+  if (!raw) return '';
+  return decodeEntities(stripTags(raw)).replace(/\s+/g, ' ').trim();
+}
+
+// Tag matching tolerates an optional namespace prefix (e.g. <ns2:PtIncident>)
+// since it's unconfirmed whether the live feed namespaces its elements.
+function extractTag(block, tag) {
+  const re = new RegExp(`<(?:[\\w-]+:)?${tag}(?:\\s[^>]*)?>([\\s\\S]*?)<\\/(?:[\\w-]+:)?${tag}>`, 'i');
+  const m = block.match(re);
+  return m ? m[1] : '';
+}
+
+function extractBlocks(xml, tag) {
+  const re = new RegExp(`<(?:[\\w-]+:)?${tag}(?:\\s[^>]*)?>[\\s\\S]*?<\\/(?:[\\w-]+:)?${tag}>`, 'gi');
+  return xml.match(re) || [];
+}
+
+// ─── Incidents-specific mapping ────────────────────────────────────────────
+
+// IncidentPriority's scale isn't documented in RSPS5050 (the Integer field has
+// no description). The presence of a sibling `P0Summary` field strongly implies
+// 0 is the highest-severity class (standard P0/P1/P2 incident-priority
+// convention), so lower numbers are treated as more urgent here. Unplanned
+// disruptions without a usable priority are treated as urgent by default.
+// Verify this against real incidents after deploy — see deployment notes.
+function computeSeverity(priorityRaw, plannedRaw) {
+  const priority = priorityRaw !== '' && !isNaN(Number(priorityRaw)) ? Number(priorityRaw) : null;
+  if (priority !== null) {
+    if (priority <= 0) return 3;
+    if (priority === 1) return 2;
+    return 1;
+  }
+  const planned = /^true$/i.test(plannedRaw.trim());
+  return planned ? 1 : 2;
+}
+
+function formatTimestamp(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '';
+  return new Intl.DateTimeFormat('en-GB', {
+    hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Europe/London',
+  }).format(d);
+}
+
+// Affects > Operators > AffectedOperator[] — first operator's brand name
+// stands in for the frontend's `toc` field (there is no per-incident region
+// field in this schema, only free-text RoutesAffected and TOC codes).
+function extractOperatorName(block) {
+  const affects = extractTag(block, 'Affects');
+  if (!affects) return '';
+  const operators = extractTag(affects, 'Operators');
+  if (!operators) return '';
+  const opBlocks = extractBlocks(operators, 'AffectedOperator');
+  if (!opBlocks.length) return '';
+  const name = cleanText(extractTag(opBlocks[0], 'OperatorName'));
+  return name || cleanText(extractTag(opBlocks[0], 'OperatorRef'));
+}
+
+function extractLink(block) {
+  const infoLinks = extractTag(block, 'InfoLinks');
+  if (!infoLinks) return '';
+  const linkBlocks = extractBlocks(infoLinks, 'InfoLink');
+  if (!linkBlocks.length) return '';
+  return cleanText(extractTag(linkBlocks[0], 'Uri'));
+}
+
+function parseIncidents(xml) {
+  const blocks = extractBlocks(xml, 'PtIncident');
+  let clearedCount = 0;
+
+  const incidents = blocks.map((block) => {
+    if (/^true$/i.test(extractTag(block, 'ClearedIncident').trim())) {
+      clearedCount += 1;
+      return null;
+    }
+    const summary = cleanText(extractTag(block, 'Summary'));
+    if (!summary) return null;
+
+    const toc = extractOperatorName(block);
+    const link = extractLink(block);
+
+    return {
+      id: cleanText(extractTag(block, 'IncidentNumber')) || undefined,
+      summary,
+      toc: toc || undefined,
+      severity: computeSeverity(extractTag(block, 'IncidentPriority'), extractTag(block, 'Planned')),
+      timestamp: formatTimestamp(cleanText(extractTag(block, 'CreationTime'))),
+      affectedCRS: [],
+      link: link || undefined,
+    };
+  }).filter(Boolean);
+
+  return { incidents, totalCount: blocks.length, clearedCount };
+}
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Cache-Control', 's-maxage=30');
 
-  const darwinToken = process.env.DARWIN_TOKEN;
-  if (!darwinToken) {
+  const apiKey = process.env.KNOWLEDGEBASE_API_KEY;
+  if (!apiKey) {
+    console.error('incidents: KNOWLEDGEBASE_API_KEY is not set');
     return res.status(200).json([]);
   }
 
-  // TODO: fetch + parse the National Rail Knowledgebase incidents feed
-  // using darwinToken, then map to { id, summary, region, toc, severity,
-  // timestamp, affectedCRS } and return below.
-  return res.status(200).json([]);
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  let xml;
+  try {
+    const upstream = await fetch(INCIDENTS_URL, {
+      signal: controller.signal,
+      // Confirmed quirk (per Rail Data Marketplace product reviews): the
+      // upstream rejects requests without an explicit empty User-Agent.
+      headers: { 'x-apikey': apiKey, 'User-Agent': '' },
+    });
+    if (!upstream.ok) {
+      throw new Error(`HTTP ${upstream.status}`);
+    }
+    xml = await upstream.text();
+  } catch (err) {
+    console.error('incidents: fetch failed —', err && err.message);
+    return res.status(200).json([]);
+  } finally {
+    clearTimeout(timer);
+  }
+
+  if (!/<(?:[\w-]+:)?Incidents\b/i.test(xml)) {
+    console.error('incidents: response is not recognisable Incidents XML (possible auth/upstream error). First 300 chars:', xml.slice(0, 300));
+    return res.status(200).json([]);
+  }
+
+  let result;
+  try {
+    result = parseIncidents(xml);
+  } catch (err) {
+    console.error('incidents: parse failed —', err && err.message);
+    return res.status(200).json([]);
+  }
+
+  console.log(`incidents: ${result.incidents.length} active incident(s) (${result.totalCount} total, ${result.clearedCount} cleared)`);
+  return res.status(200).json(result.incidents);
 }
