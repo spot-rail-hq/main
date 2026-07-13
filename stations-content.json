@@ -632,5 +632,30 @@
       "incomplete": true,
       "notes": "station node has no wheelchair=* tag; hint: OSM tags this station's Wikipedia page as \"Aslockton railway station\" — consider setting wikipedia_title (not auto-applied)"
     }
+  },
+  "ALM": {
+    "platforms": 2,
+    "wheelchair": "yes",
+    "operators": [
+      "London North Eastern Railway",
+      "Transpennine Express",
+      "CrossCountry",
+      "Northern",
+      "Lumo"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-13T14:46:36.723Z",
+      "node_id": 20913787,
+      "incomplete": false,
+      "notes": "hint: OSM tags this station's Wikipedia page as \"Alnmouth railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "ALN": {
+    "_osm": {
+      "fetched_at": "2026-07-13T14:47:47.170Z",
+      "node_id": 7209302509,
+      "incomplete": true,
+      "notes": "no railway=platform ways/relations found nearby — platform count unset; station node has no wheelchair=* tag; no route relations found stopping here — operators list unset; hint: OSM tags this station's Wikipedia page as \"Althorne railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
   }
 }
