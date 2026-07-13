@@ -448,6 +448,7 @@
   .db-empty { padding: 16px; }
   .db-empty .db-label { margin-bottom: 8px; }
   .db-empty p { font-size: 13px; color: var(--ink); line-height: 1.5; }
+  .db-synopsis { padding: 10px 16px; font-size: 13px; color: var(--ink); line-height: 1.6; }
   .db-franchise-list { padding: 6px 16px 10px; font-size: 13px; color: var(--ink); line-height: 1.8; list-style: none; }
   .db-hint { padding: 24px 20px; font-size: 13px; color: var(--ink); text-align: center; line-height: 1.6; }
   .dep-cols { display: flex; align-items: center; gap: 10px; padding: 6px 0 4px; font-family: var(--font-mono);
@@ -1449,6 +1450,30 @@
       '<p>No database entry yet — content coming soon.</p></div>';
   }
 
+  // synopsis is narrative content from scripts/fetch-wikipedia-facts.mjs —
+  // see that script's header for the OSM/Wikipedia field-ownership split.
+  function dbSynopsisHtml(synopsis) {
+    return synopsis ? '<p class="db-synopsis" data-anim-row>' + escapeAttr(synopsis) + '</p>' : '';
+  }
+  // CC BY-SA requires attribution alongside the content it covers — distinct
+  // from the map layer's own OSM/ODbL attribution (AttributionControl,
+  // top-right of the map). Gated on entry._wikipedia (only ever set by
+  // fetch-wikipedia-facts.mjs after it actually pulled content), not on
+  // wikipedia_title alone, which can be set by a curator before any fetch
+  // has run — that shouldn't imply Wikipedia content is showing yet.
+  function dbWikipediaAttributionHtml(entry) {
+    var wiki = entry && entry._wikipedia;
+    if (!wiki || !wiki.url) return '';
+    return '<a class="db-wiki-link" data-anim-row href="' + escapeAttr(wiki.url) + '" target="_blank" rel="noopener">Source: Wikipedia — ' + escapeAttr(wiki.title || '') + ' (CC BY-SA) →</a>';
+  }
+
+  // wheelchair is the raw OSM wheelchair=* tag value — mapped to plain
+  // wording rather than shown verbatim, per CLAUDE.md's "no jargon" rule.
+  var WHEELCHAIR_LABELS = { yes: 'Step-free access', limited: 'Limited step-free access', no: 'Not step-free' };
+  function wheelchairLabel(v) {
+    return v ? (WHEELCHAIR_LABELS[v] || null) : null;
+  }
+
   function stationDatabaseSkeletonHtml() {
     var crs = (selectedStationCrs || '').toUpperCase();
     var s = stationsContent[crs];
@@ -1458,6 +1483,7 @@
       html += '<div class="db-photo" data-anim-row><img src="' + escapeAttr(s.photo.url) + '" alt="' + escapeAttr(s.name || '') + '" loading="lazy" />' +
         (s.photo.attribution ? '<div class="db-photo-credit">' + s.photo.attribution + '</div>' : '') + '</div>';
     }
+    html += dbSynopsisHtml(s.synopsis);
     html += dbFieldHtml('Location', s.location);
     // Google Map / Street View aren't stored — constructed at render time
     // from lat/lon, per stations-content.json's own _notes.
@@ -1469,6 +1495,7 @@
         '</div></div>';
     }
     html += dbFieldHtml('Platforms', s.platforms);
+    html += dbFieldHtml('Accessibility', wheelchairLabel(s.wheelchair));
     html += dbFieldHtml('Opened', s.opened_year);
     html += dbFieldHtml('Listed status', s.listed_status);
     if (s.operators && s.operators.length) {
@@ -1479,9 +1506,7 @@
     if (s.notable_features && s.notable_features.length) {
       html += dbFieldHtml('Notable features', s.notable_features.join('; '));
     }
-    if (s.wikipedia_url) {
-      html += '<a class="db-wiki-link" data-anim-row href="' + escapeAttr(s.wikipedia_url) + '" target="_blank" rel="noopener">Wikipedia →</a>';
-    }
+    html += dbWikipediaAttributionHtml(s);
     return html || dbComingSoonHtml(s.name);
   }
   function wireStationDatabaseDetail() {
@@ -1496,6 +1521,7 @@
     var r = routesContent[selection.id];
     if (!r) return dbComingSoonHtml(selection.fallbackName || selection.id);
     var html = '';
+    html += dbSynopsisHtml(r.synopsis);
     html += dbFieldHtml('Operator', r.operator);
     html += dbFieldHtml('Type', r.type);
     html += dbFieldHtml('Length', r.length_km != null ? (r.length_km + ' km') : null);
@@ -1509,9 +1535,7 @@
             '<span class="sv-name">' + (i + 1) + '. ' + escapeAttr(stationNameForCrs(crs)) + '</span></div>';
         }).join('') + '</div></div>';
     }
-    if (r.wikipedia_url) {
-      html += '<a class="db-wiki-link" data-anim-row href="' + escapeAttr(r.wikipedia_url) + '" target="_blank" rel="noopener">Wikipedia →</a>';
-    }
+    html += dbWikipediaAttributionHtml(r);
     return html || dbComingSoonHtml(r.name);
   }
   function wireRouteDetail() {
@@ -1526,6 +1550,7 @@
     var o = selection.code && operatorsContent[selection.code];
     if (!o) return dbComingSoonHtml(selection.fallbackName || selection.code);
     var html = '';
+    html += dbSynopsisHtml(o.synopsis);
     html += dbFieldHtml('Parent company', o.parent_company);
     html += dbFieldHtml('Stations operated', o.stations_operated);
     if (o.regions_served) {
@@ -1544,9 +1569,7 @@
       html += '<div class="db-field" data-anim-row><div class="db-label">Fleet classes</div><div class="db-chip-row">' +
         o.fleet_classes.map(function (c) { return '<span class="filter-chip">' + escapeAttr(c.display) + '</span>'; }).join('') + '</div></div>';
     }
-    if (o.wikipedia_url) {
-      html += '<a class="db-wiki-link" data-anim-row href="' + escapeAttr(o.wikipedia_url) + '" target="_blank" rel="noopener">Wikipedia →</a>';
-    }
+    html += dbWikipediaAttributionHtml(o);
     return html || dbComingSoonHtml(o.name);
   }
   function wireOperatorDetail() {} // no interactive content yet — fleet-class chips are plain text (see Task 3 notes in the summary)

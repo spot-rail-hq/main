@@ -1,3 +1,22 @@
 {
-  "_notes": "Keyed by a short operator code (your own convention — GWR, AWC, etc). fleet_classes store the EXACT display label as it should appear (not a bare number + assumed 'Class ' prefix) — this covers cases like Manchester Metrolink's M5000 that don't follow the 'Class NN' pattern. 'id' is used to link through to that vehicle's entry on the database page; 'display' is shown verbatim, no reformatting. franchises is the full history; sidebar should show the current one as a simple 'Operating since {start}' line by default, with the full array available as an expandable detail."
+  "_notes": "Keyed by a short operator code (your own convention — GWR, AWC, etc). fleet_classes store the EXACT display label as it should appear (not a bare number + assumed 'Class ' prefix) — this covers cases like Manchester Metrolink's M5000 that don't follow the 'Class NN' pattern. 'id' is used to link through to that vehicle's entry on the database page; 'display' is shown verbatim, no reformatting. franchises is the full history; sidebar should show the current one as a simple 'Operating since {start}' line by default, with the full array available as an expandable detail. FIELD OWNERSHIP (see scripts/ for the two population scripts): synopsis/parent_company/franchises are written by scripts/fetch-wikipedia-facts.mjs (Wikipedia, narrative/historical — Claude extracts, never invents; a franchise entry only appears if the article states its dates). stations_operated/regions_served/fleet_classes are manual/curated only — neither OSM nor a Wikipedia synopsis reliably has these without real risk of being wrong, so they're deliberately not automated. name/wikipedia_title are manual/curated only. _wikipedia is provenance metadata written by the Wikipedia script (no _osm block here — OSM doesn't own any operator-level field in this design; the OSM-derived operator name lives on the station/route entries that reference it, via their own operator/operators fields).",
+  "WMR": {
+    "name": "West Midlands Railway",
+    "wikipedia_title": "West Midlands Trains",
+    "synopsis": "WM Trains Limited, trading as West Midlands Trains, is a state-owned British train operating company running commuter and local services in the West Midlands and on the West Coast Main Line, under the West Midlands Railway and London Northwestern Railway brands.",
+    "parent_company": "DfT Operator",
+    "franchises": [
+      {
+        "name": "West Midlands Trains (DfT Operator, public ownership)",
+        "start": "1 February 2026",
+        "end": null
+      }
+    ],
+    "_wikipedia": {
+      "fetched_at": "2026-07-13T07:14:44.815Z",
+      "title": "West Midlands Trains",
+      "url": "https://en.wikipedia.org/wiki/West_Midlands_Trains",
+      "license": "CC BY-SA 4.0"
+    }
+  }
 }

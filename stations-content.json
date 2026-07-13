@@ -1,3 +1,69 @@
 {
-  "_notes": "Keyed by CRS code (matches naptan_stations.crs). Lat/lon/tiploc already live in Postgres — don't duplicate here. Google Map / Street View links are NOT stored; construct at render time from naptan_stations lat/lon using: https://www.google.com/maps/search/?api=1&query={lat},{lon} and https://www.google.com/maps/@?api=1&map_action=pano&viewpoint={lat},{lon}. Any field can be null/empty until curated — sidebar should hide empty fields, not show placeholders."
+  "_notes": "Keyed by CRS code (matches naptan_stations.crs). Lat/lon/tiploc already live in Postgres — don't duplicate here. Google Map / Street View links are NOT stored; construct at render time from naptan_stations lat/lon (see map.html). Any field can be null/empty until curated — sidebar should hide empty fields, not show placeholders. FIELD OWNERSHIP (see scripts/ for the two population scripts): platforms/wheelchair/operators are written by scripts/fetch-osm-facts.mjs (OpenStreetMap, structured/physical — deterministic, no AI). synopsis/opened_year/notable_features are written by scripts/fetch-wikipedia-facts.mjs (Wikipedia, narrative/historical — Claude extracts, never invents). name/wikipedia_title/photo/location/listed_status are manual/curated only — neither script writes them; wikipedia_title in particular must be set by a human before the Wikipedia script will touch an entry (see Task 3 — no guessing at runtime). Existence/open-closed status is owned by the separate, pre-existing NaPTAN re-import pipeline. _osm/_wikipedia are provenance metadata (fetched_at, source id/title, license) written by their respective scripts — render wikipedia_url from wikipedia_title, don't store it.",
+  "BHM": {
+    "name": "Birmingham New Street",
+    "wikipedia_title": "Birmingham New Street railway station",
+    "platforms": 12,
+    "wheelchair": "yes",
+    "_osm": {
+      "fetched_at": "2026-07-13T07:08:19.669Z",
+      "node_id": 6765532062,
+      "incomplete": false,
+      "notes": "hint: OSM tags this station's Wikipedia page as \"Birmingham New Street railway station\" — consider setting wikipedia_title (not auto-applied)"
+    },
+    "operators": [
+      "CrossCountry",
+      "West Midlands Railway",
+      "London Northwestern Railway",
+      "Trafnidiaeth Cymru",
+      "Avanti West Coast",
+      "Arriva CrossCountry",
+      "Cross Country",
+      "Midland Metro Limited (WMCA)",
+      "Transport for Wales"
+    ],
+    "synopsis": "Birmingham New Street is the largest and busiest of Birmingham's three main railway stations, and the busiest railway station outside London, serving as a hub for Avanti West Coast, West Midlands Trains and CrossCountry services.",
+    "opened_year": "1854",
+    "notable_features": [
+      "Busiest railway station outside London (36.6 million passenger entries/exits, 2024–25)",
+      "Had the world's largest single-span arched roof when built in 1854",
+      "Completely rebuilt 1964–1967 as part of West Coast Main Line electrification",
+      "£550m Gateway Plus redevelopment completed 2015"
+    ],
+    "_wikipedia": {
+      "fetched_at": "2026-07-13T07:14:44.815Z",
+      "title": "Birmingham New Street railway station",
+      "url": "https://en.wikipedia.org/wiki/Birmingham_New_Street_railway_station",
+      "license": "CC BY-SA 4.0"
+    }
+  },
+  "SOL": {
+    "name": "Solihull",
+    "wikipedia_title": "Solihull railway station",
+    "platforms": 2,
+    "_osm": {
+      "fetched_at": "2026-07-13T07:09:02.296Z",
+      "node_id": 20984161,
+      "incomplete": true,
+      "notes": "station node has no wheelchair=* tag; hint: OSM tags this station's Wikipedia page as \"Solihull railway station\" — consider setting wikipedia_title (not auto-applied)"
+    },
+    "operators": [
+      "Chiltern Railways",
+      "London Midland",
+      "Cross Country",
+      "West Midlands Railway"
+    ],
+    "synopsis": "Solihull railway station serves the market town of Solihull in the West Midlands, with services from West Midlands Trains and Chiltern Railways.",
+    "opened_year": "1852",
+    "notable_features": [
+      "Original station rebuilt slightly south of its original site in the early 1930s when the line was quadrupled",
+      "Fully accessible for disabled passengers via lift and subway"
+    ],
+    "_wikipedia": {
+      "fetched_at": "2026-07-13T07:14:44.815Z",
+      "title": "Solihull railway station",
+      "url": "https://en.wikipedia.org/wiki/Solihull_railway_station",
+      "license": "CC BY-SA 4.0"
+    }
+  }
 }
