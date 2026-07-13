@@ -6,7 +6,15 @@
  * Incidents" feed (RSPS5050 §10, schema v5.0) — returns XML, not JSON.
  *
  * GET /api/incidents
- * Returns: [{ id, summary, toc, severity, timestamp, affectedCRS: [], link }, ...]
+ * Returns: [{
+ *   id, summary, toc, severity, timestamp, affectedCRS: [], link,
+ *   operators: [],   // every affected operator's display name (or ref if
+ *                     // name absent) — `toc` above is just operators[0],
+ *                     // kept for backwards compatibility with existing UI
+ *   regions: [],      // subset of ['north','midlands','south','wcml','ecml',
+ *                     // 'gwr','heritage'] — see computeRegions() below
+ *   routesAffected,   // free-text Affects.RoutesAffected, if present
+ * }, ...]
  */
 
 const INCIDENTS_URL = 'https://api1.raildata.org.uk/1010-knowlegebase-incidents-xml-feed1_0/incidents.xml';
@@ -114,17 +122,138 @@ function extractLink(block) {
   return cleanText(extractTag(linkBlocks[0], 'Uri'));
 }
 
-// TEMP DEBUG — remove once the empty-summary root cause is confirmed fixed
-// in production. Logs raw (pre-clean) field values for a sample of incidents
-// that get excluded, so a bad assumption in the parser is visible in Vercel
-// logs instead of guessed at.
-const DEBUG_SAMPLE_LIMIT = 5;
+// Affects > Operators > AffectedOperator[] — every affected operator's
+// display name (falling back to its 2-char ref if the name is absent), for
+// region-tagging (below) and for the map page's station/route entity filter
+// to cross-reference against stations-content.json / routes-content.json.
+function extractAllOperators(block) {
+  const affects = extractTag(block, 'Affects');
+  if (!affects) return [];
+  const operators = extractTag(affects, 'Operators');
+  if (!operators) return [];
+  return extractBlocks(operators, 'AffectedOperator').map((opBlock) => {
+    const name = cleanText(extractTag(opBlock, 'OperatorName'));
+    return name || cleanText(extractTag(opBlock, 'OperatorRef'));
+  }).filter(Boolean);
+}
+
+// Affects > RoutesAffected — free text, e.g. "ScotRail between Milngavie /
+// Helensburgh Central and Edinburgh". Used as a fallback signal when TOC
+// mapping alone doesn't produce a region, and by the map page's route-entity
+// filter as a secondary match against a route's name/stations.
+function extractRoutesAffected(block) {
+  const affects = extractTag(block, 'Affects');
+  if (!affects) return '';
+  return cleanText(extractTag(affects, 'RoutesAffected'));
+}
+
+// ─── TOC → region lookup (Task: geographic filter chips) ──────────────────
+// Region categories are the map page's existing, fixed filter-chip set:
+// north / midlands / south / wcml / ecml / gwr / heritage. These don't map
+// cleanly onto how TOCs actually serve the network (a chip mixes broad
+// geography with three specific named main lines), so most operators carry
+// more than one tag, and — flagged explicitly, not silently guessed — some
+// legitimate operators have NO matching tag because the chip set has no
+// bucket for them:
+//   - ScotRail / Caledonian Sleeper: Scotland has no chip of its own.
+//     Caledonian Sleeper gets 'wcml' since it explicitly runs that route
+//     overnight to London; ScotRail gets nothing.
+//   - Transport for Wales: Wales has no chip of its own. Cross-border Marches
+//     Line services (Birmingham/Manchester–Wales) justify a light 'midlands'
+//     tag, but the core Wales network isn't represented by any chip.
+//   - Heritage: the Knowledgebase Incidents feed covers National Rail TOCs,
+//     not standalone heritage railways (they don't report incidents to NRE).
+//     The one plausible match is West Coast Railway Company (charter/steam
+//     operator, e.g. the Jacobite, which does run on the mainline network).
+//     Expect this chip to stay empty or near-empty in real data.
+// Matched by display NAME first (normalized, case/whitespace-insensitive —
+// this is what the parser already prefers from the feed), with the 2-char
+// ATOC/TOC code as a secondary fallback. Code accuracy for the less common
+// operators below is not independently verified against a live sample —
+// spot-check against real incident data if a code-only match ever misfires.
+const TOC_REGION_TABLE = [
+  { code: 'VT', names: ['Avanti West Coast'], regions: ['wcml', 'north', 'midlands', 'south'] },
+  { code: 'GR', names: ['LNER', 'London North Eastern Railway'], regions: ['ecml', 'north', 'south'] },
+  { code: 'XC', names: ['CrossCountry', 'Cross Country', 'Arriva CrossCountry'], regions: ['north', 'midlands', 'south'] },
+  { code: 'EM', names: ['East Midlands Railway'], regions: ['midlands', 'south'] },
+  { code: 'WM', names: ['West Midlands Railway'], regions: ['midlands'] },
+  { code: 'LN', names: ['London Northwestern Railway'], regions: ['midlands', 'wcml', 'south'] },
+  { code: 'GW', names: ['Great Western Railway', 'GWR'], regions: ['gwr', 'south'] },
+  { code: 'SW', names: ['South Western Railway'], regions: ['south'] },
+  { code: 'SE', names: ['Southeastern'], regions: ['south'] },
+  { code: 'SN', names: ['Southern'], regions: ['south'] },
+  { code: 'TL', names: ['Thameslink'], regions: ['south'] },
+  { code: 'GX', names: ['Gatwick Express'], regions: ['south'] },
+  { code: 'GN', names: ['Great Northern'], regions: ['south', 'ecml'] },
+  { code: 'CC', names: ['c2c'], regions: ['south'] },
+  { code: 'CH', names: ['Chiltern Railways'], regions: ['south', 'midlands'] },
+  { code: 'LE', names: ['Greater Anglia'], regions: ['south'] },
+  { code: 'NT', names: ['Northern'], regions: ['north'] },
+  { code: 'TP', names: ['TransPennine Express'], regions: ['north', 'ecml'] },
+  { code: 'ME', names: ['Merseyrail'], regions: ['north'] },
+  { code: 'SR', names: ['ScotRail'], regions: [] }, // flagged above — no Scotland chip
+  { code: 'CS', names: ['Caledonian Sleeper'], regions: ['wcml'] },
+  { code: 'GC', names: ['Grand Central'], regions: ['ecml', 'north'] },
+  { code: 'HT', names: ['Hull Trains'], regions: ['ecml', 'north'] },
+  { code: 'LD', names: ['Lumo'], regions: ['ecml', 'north'] },
+  { code: 'HX', names: ['Heathrow Express'], regions: ['south', 'gwr'] },
+  { code: 'XR', names: ['Elizabeth line'], regions: ['south'] },
+  { code: 'AW', names: ['Transport for Wales', 'Trafnidiaeth Cymru'], regions: ['midlands'] }, // flagged above — no Wales chip
+  { code: 'IL', names: ['Island Line'], regions: ['south'] },
+  { code: 'WR', names: ['West Coast Railway Company'], regions: ['heritage'] },
+];
+
+function normalizeOperatorKey(str) {
+  return (str || '').toLowerCase().trim().replace(/\s+/g, ' ');
+}
+
+const REGIONS_BY_NAME = new Map();
+const REGIONS_BY_CODE = new Map();
+TOC_REGION_TABLE.forEach((entry) => {
+  entry.names.forEach((name) => REGIONS_BY_NAME.set(normalizeOperatorKey(name), entry.regions));
+  if (entry.code) REGIONS_BY_CODE.set(entry.code.toUpperCase(), entry.regions);
+});
+
+// Fallback only — fires when TOC mapping produces nothing for this incident.
+// Deliberately scoped to the three NAMED CORRIDORS the filter chips actually
+// represent (WCML/ECML/GWR), not a general place-name gazetteer for
+// north/midlands/south — that would be a much larger, much less reliable
+// guess than what was asked for.
+const CORRIDOR_KEYWORDS = [
+  { regions: ['wcml'], keywords: ['west coast main line', 'west coast mainline'] },
+  { regions: ['ecml'], keywords: ['east coast main line', 'east coast mainline'] },
+  { regions: ['gwr'], keywords: ['great western main line', 'great western mainline', 'great western route'] },
+];
+
+function computeRegions(operatorNames, routesAffectedText) {
+  const regions = new Set();
+  operatorNames.forEach((raw) => {
+    const key = normalizeOperatorKey(raw);
+    const byName = REGIONS_BY_NAME.get(key);
+    if (byName) {
+      byName.forEach((r) => regions.add(r));
+      return;
+    }
+    const byCode = REGIONS_BY_CODE.get((raw || '').toUpperCase());
+    if (byCode) byCode.forEach((r) => regions.add(r));
+  });
+
+  if (regions.size === 0 && routesAffectedText) {
+    const text = routesAffectedText.toLowerCase();
+    CORRIDOR_KEYWORDS.forEach((entry) => {
+      if (entry.keywords.some((kw) => text.indexOf(kw) !== -1)) {
+        entry.regions.forEach((r) => regions.add(r));
+      }
+    });
+  }
+
+  return Array.from(regions);
+}
 
 function parseIncidents(xml) {
   const blocks = extractBlocks(xml, 'PtIncident');
   let clearedCount = 0;
   let emptySummaryCount = 0;
-  let debugLogged = 0;
   const incidents = [];
 
   for (const block of blocks) {
@@ -134,22 +263,14 @@ function parseIncidents(xml) {
       continue;
     }
 
-    const summaryRaw = extractTag(block, 'Summary');
-    const summary = cleanText(summaryRaw);
-
+    const summary = cleanText(extractTag(block, 'Summary'));
     if (!summary) {
       emptySummaryCount += 1;
-      if (debugLogged < DEBUG_SAMPLE_LIMIT) {
-        debugLogged += 1;
-        console.log('incidents: DEBUG excluded (empty summary after cleaning) —', JSON.stringify({
-          incidentNumber: cleanText(extractTag(block, 'IncidentNumber')),
-          clearedRaw,
-          summaryTagFound: summaryRaw !== '',
-          summaryRawSnippet: summaryRaw.slice(0, 200),
-        }));
-      }
       continue;
     }
+
+    const operators = extractAllOperators(block);
+    const routesAffected = extractRoutesAffected(block);
 
     incidents.push({
       id: cleanText(extractTag(block, 'IncidentNumber')) || undefined,
@@ -159,6 +280,9 @@ function parseIncidents(xml) {
       timestamp: formatTimestamp(cleanText(extractTag(block, 'CreationTime'))),
       affectedCRS: [],
       link: extractLink(block) || undefined,
+      operators,
+      regions: computeRegions(operators, routesAffected),
+      routesAffected: routesAffected || undefined,
     });
   }
 

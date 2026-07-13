@@ -493,6 +493,17 @@
   .filter-row::-webkit-scrollbar { display: none; }
   .filter-chip { font-size: 13px; padding: 6px 13px; border-radius: 99px; border: 0.5px solid var(--br); color: var(--ink); white-space: nowrap; flex-shrink: 0; }
   .filter-chip.active { background: rgba(64,224,208,0.1); border-color: var(--t); color: var(--t); }
+  /* Entity filter chip (selected station/route) — sits left of "All",
+     permanently turquoise-tinted (not just on .active) so it reads as
+     distinct from the plain region chips even when it isn't the active
+     filter, per the "visually highlighted/distinct" requirement. */
+  .filter-chip-entity { display: inline-flex; align-items: center; gap: 6px; font-weight: 600;
+    background: rgba(64,224,208,0.14); border-color: var(--brh); color: var(--t); }
+  .filter-chip-entity.active { background: rgba(64,224,208,0.22); border-color: var(--t); }
+  .filter-chip-entity .fc-entity-label { max-width: 140px; overflow: hidden; text-overflow: ellipsis; }
+  .fc-entity-clear { display: inline-flex; align-items: center; justify-content: center;
+    width: 14px; height: 14px; border-radius: 50%; font-size: 11px; line-height: 1; flex-shrink: 0; }
+  .fc-entity-clear:hover { background: rgba(64,224,208,0.25); }
 
   /* Edge-fade hint for horizontally-scrollable rows — deliberately built as
      pointer-events:none overlay pseudo-elements, NOT mask-image, since
@@ -2306,9 +2317,101 @@
 
   // ── Filters (client-side categories over incidents) ──────────────────────
   var FILTERS = ['All', 'Urgent', 'North', 'Midlands', 'South', 'WCML', 'ECML', 'GWR', 'Heritage'];
+  var ENTITY_FILTER_KEY = 'entity';
+
+  function normalizeOpName(str) {
+    return (str || '').toLowerCase().trim().replace(/\s+/g, ' ');
+  }
+
+  // Two operator display names are treated as the same operator if they're
+  // equal after normalizing, or one contains the other (handles the raw OSM
+  // data in stations-content.json carrying multiple aliases for the same
+  // TOC, e.g. BHM lists "CrossCountry", "Cross Country" AND "Arriva
+  // CrossCountry" as three separate strings for what the incidents feed
+  // reports as a single operator name). This is approximate, not exact —
+  // flagged in the PR summary, not silently assumed to be perfect.
+  function operatorNamesMatch(a, b) {
+    var na = normalizeOpName(a), nb = normalizeOpName(b);
+    if (!na || !nb) return false;
+    return na === nb || na.indexOf(nb) !== -1 || nb.indexOf(na) !== -1;
+  }
+
+  // Resolves the currently-selected station/route into { label, operators,
+  // routeKeywords } for the entity filter chip (Task: incident filtering by
+  // selected station/route), or null when nothing relevant is selected.
+  // Mirrors sidebarSkeletonHtml()'s own selection precedence (route >
+  // fromto > selectedStationCrs) so the chip always matches whatever the
+  // sidebar is actually showing.
+  function getSelectedEntityContext() {
+    if (selection.type === 'route') {
+      var r = routesContent[selection.id];
+      var routeLabel = (r && r.name) || selection.fallbackName || selection.id;
+      return {
+        label: routeLabel,
+        operators: (r && r.operator) ? [r.operator] : [],
+        routeKeywords: [routeLabel],
+      };
+    }
+    if (selection.type === 'fromto') {
+      var ops = [];
+      if (selection.directRouteId) {
+        var route = routesContent[selection.directRouteId];
+        if (route && route.operator) ops.push(route.operator);
+      }
+      [selection.fromCrs, selection.toCrs].forEach(function (crs) {
+        var s = stationsContent[crs] || stationsContent[(crs || '').toUpperCase()];
+        if (s && s.operators) ops = ops.concat(s.operators);
+      });
+      return {
+        label: selection.fromCrs + '-' + selection.toCrs,
+        operators: ops,
+        routeKeywords: [selection.fromName, selection.toName].filter(Boolean),
+      };
+    }
+    if (selectedStationCrs) {
+      var st = stationsContent[selectedStationCrs.toUpperCase()];
+      return {
+        label: selectedStationName || selectedStationCrs,
+        operators: (st && st.operators) || [],
+        routeKeywords: [],
+      };
+    }
+    return null;
+  }
+
+  // Primary signal: incident.operators (from api/incidents.js) intersected
+  // against the selected entity's known operators. Secondary/fallback
+  // signal, only checked when the primary finds nothing: the entity's
+  // name(s) as a substring of the incident's free-text routesAffected —
+  // useful for a curated route whose name (e.g. "Cross-City Line") might
+  // show up in the incident text even if operator matching misses it.
+  function incidentMatchesEntity(n, ctx) {
+    if (!ctx) return false;
+    var incidentOps = n.operators || [];
+    var ctxOps = ctx.operators || [];
+    if (ctxOps.some(function (co) { return incidentOps.some(function (io) { return operatorNamesMatch(co, io); }); })) {
+      return true;
+    }
+    if (ctx.routeKeywords && ctx.routeKeywords.length && n.routesAffected) {
+      var text = n.routesAffected.toLowerCase();
+      return ctx.routeKeywords.some(function (kw) { return kw && text.indexOf(kw.toLowerCase()) !== -1; });
+    }
+    return false;
+  }
+
   function renderFilterRow(containerId, onSelect) {
     var el = document.getElementById(containerId);
-    el.innerHTML = FILTERS.map(function (f) {
+    var entityCtx = getSelectedEntityContext();
+    // The chip this points at just disappeared (selection cleared) while it
+    // was the active filter — fall back to "All" rather than leaving the
+    // news list silently stuck on a filter with no corresponding chip.
+    if (!entityCtx && activeFilter === ENTITY_FILTER_KEY) activeFilter = 'all';
+    var entityChipHtml = entityCtx ?
+      ('<button class="filter-chip filter-chip-entity' + (activeFilter === ENTITY_FILTER_KEY ? ' active' : '') + '" data-filter="' + ENTITY_FILTER_KEY + '">' +
+        '<span class="fc-entity-label">' + escapeAttr(entityCtx.label) + '</span>' +
+        '<span class="fc-entity-clear" data-role="clear-entity" aria-label="Clear ' + escapeAttr(entityCtx.label) + ' filter">&times;</span>' +
+        '</button>') : '';
+    el.innerHTML = entityChipHtml + FILTERS.map(function (f) {
       var key = f.toLowerCase();
       return '<button class="filter-chip' + (key === activeFilter ? ' active' : '') + '" data-filter="' + key + '">' + f + '</button>';
     }).join('');
@@ -2329,6 +2432,15 @@
         onSelect();
       });
     });
+    var clearBtn = el.querySelector('.fc-entity-clear');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', function (e) {
+        e.stopPropagation(); // don't also trigger the parent chip's own click handler above
+        activeFilter = 'all';
+        Array.prototype.forEach.call(chips, function (b) { b.classList.toggle('active', b.dataset.filter === 'all'); });
+        onSelect();
+      });
+    }
   }
 
   function escapeAttr(str) {
@@ -2340,9 +2452,16 @@
   // and a visible per-item timestamp (n.timestamp — was already being
   // rendered, just less prominently).
   function newsItemsHtml() {
+    var entityCtx = activeFilter === ENTITY_FILTER_KEY ? getSelectedEntityContext() : null;
     var filtered = incidents.filter(function (n) {
       if (activeFilter === 'all') return true;
       if (activeFilter === 'urgent') return n.severity >= 2;
+      if (activeFilter === ENTITY_FILTER_KEY) return incidentMatchesEntity(n, entityCtx);
+      // n.regions (api/incidents.js's TOC→region tagging) is the real
+      // mechanism; n.region/n.line are legacy fields the live feed never
+      // actually populates, kept only so this predicate degrades gracefully
+      // if a future data source starts sending them directly.
+      if ((n.regions || []).indexOf(activeFilter) !== -1) return true;
       return (n.region || '').toLowerCase() === activeFilter || (n.line || '').toLowerCase() === activeFilter;
     });
     if (!filtered.length) return '<div class="news-empty" data-anim-row>No live disruptions right now.</div>';
@@ -2350,9 +2469,8 @@
     return sorted.map(function (n) {
       var urgent = n.severity >= 2;
       // Links out to the original source article when the underlying
-      // news/incident record carries one (api/incidents.js is currently a
-      // stub with no `link` field — this renders inert until that's wired up
-      // with a real feed; not adding a new fetch here per instruction).
+      // incident carries an InfoLink (api/incidents.js now populates this
+      // from the real Knowledgebase Incidents feed).
       var linkHtml = n.link ? '<a class="news-link" href="' + escapeAttr(n.link) + '" target="_blank" rel="noopener">Source →</a>' : '';
       return '<div class="news-item' + (urgent ? ' urgent' : '') + '" data-anim-row>' +
         '<i class="ti ti-alert-triangle news-icon"></i>' +
@@ -2363,7 +2481,13 @@
   }
 
   function renderNews() {
-    document.getElementById('news-items').innerHTML = newsItemsHtml();
+    // pollIncidents() below calls this unconditionally on a 60s interval —
+    // this view (the live news block) isn't present for every sidebar
+    // selection type (e.g. a curated route/operator detail view), so this
+    // guard prevents a stale interval tick from throwing on a null element.
+    var newsItemsEl = document.getElementById('news-items');
+    if (!newsItemsEl) return;
+    newsItemsEl.innerHTML = newsItemsHtml();
     var urgentCount = incidents.filter(function (n) { return n.severity >= 2; }).length;
     document.getElementById('rebook-cta').classList.toggle('show', urgentCount > 0);
     document.getElementById('sb-count').textContent = Math.min(incidents.length, 5) + ' of ' + incidents.length;
