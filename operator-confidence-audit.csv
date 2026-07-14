@@ -1,0 +1,47 @@
+operator,total_stations,confirmed_by_own_tag,proximity_only,proximity_only_pct,flag
+Northern,474,412,62,13.1,
+ScotRail,363,359,4,1.1,
+Great Western Railway,275,191,84,30.5,
+Trafnidiaeth Cymru,269,0,269,100.0,SUSPICIOUS (near-100%)
+CrossCountry,237,0,237,100.0,SUSPICIOUS (near-100%)
+Southern,212,154,58,27.4,
+Southeastern,196,164,32,16.3,
+TransPennine Express,194,19,175,90.2,worth-a-look
+South Western Railway,190,179,11,5.8,
+Lumo,172,0,172,100.0,SUSPICIOUS (near-100%)
+Thameslink,168,107,61,36.3,
+Caledonian Sleeper,166,0,166,100.0,SUSPICIOUS (near-100%)
+East Midlands Railway,164,81,83,50.6,
+Transport for London,137,1,136,99.3,SUSPICIOUS (near-100%)
+Avanti West Coast,135,16,119,88.1,worth-a-look
+West Midlands Railway,120,108,12,10.0,
+LNER,116,0,116,100.0,SUSPICIOUS (near-100%)
+Greater Anglia,110,88,22,20.0,
+Transport for Wales,88,50,38,43.2,
+London Northwestern Railway,79,27,52,65.8,
+Merseyrail,69,67,2,2.9,
+Great Northern,59,46,13,22.0,
+Chiltern Railways,58,34,24,41.4,
+Grand Central,41,0,41,100.0,SUSPICIOUS (near-100%)
+North TransPennine,35,0,35,100.0,SUSPICIOUS (near-100%)
+Gatwick Express,31,1,30,96.8,SUSPICIOUS (near-100%)
+c2c,27,25,2,7.4,
+London Midland,25,0,25,100.0,SUSPICIOUS (near-100%)
+Stansted Express,24,0,24,100.0,SUSPICIOUS (near-100%)
+Eurostar International Ltd,23,0,23,100.0,SUSPICIOUS (near-100%)
+Govia Thameslink Railway,22,1,21,95.5,SUSPICIOUS (near-100%)
+Network Rail,14,0,14,100.0,SUSPICIOUS (near-100%)
+West Midlands Trains,12,11,1,8.3,
+West Coast Railways,11,0,11,100.0,SUSPICIOUS (near-100%)
+Nexus,9,4,5,55.6,
+Island Line,8,8,0,0.0,
+Thameslink Railway,8,5,3,37.5,
+Midland Metro Limited (WMCA),7,0,7,100.0,SUSPICIOUS (near-100%)
+Transport for Greater Manchester,7,0,7,100.0,SUSPICIOUS (near-100%)
+Tramlink Nottingham,3,0,3,100.0,SUSPICIOUS (near-100%)
+South Yorkshire Future Trams,3,0,3,100.0,SUSPICIOUS (near-100%)
+Festiniog Railway Company,2,0,2,100.0,SUSPICIOUS (near-100%)
+Merseyside Tramway Preservation Society,1,0,1,100.0,SUSPICIOUS (near-100%)
+National Express,1,0,1,100.0,SUSPICIOUS (near-100%)
+Ravenglass & Eskdale Railway,1,0,1,100.0,SUSPICIOUS (near-100%)
+Mid-Norfolk Railway,1,0,1,100.0,SUSPICIOUS (near-100%)

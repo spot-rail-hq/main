@@ -1,5 +1,5 @@
 {
-  "_notes": "Keyed by a short operator code (your own convention — GWR, AWC, etc). 2026-07-13: seeded 28 new entries from api/incidents.js's TOC_REGION_TABLE, using that table's own 2-letter ATOC-style codes (VT, GR, XC, ...) as the key — name only, awaiting Wikipedia/manual enrichment like any other entry. KNOWN INCONSISTENCY, needs manual review: WMR (West Midlands Railway) predates that seed and uses a different, longer code; TOC_REGION_TABLE's own code for the same operator is WM. Left as two different conventions on purpose rather than silently renaming/merging WMR — do not add a WM entry without first deciding how to reconcile it with WMR. fleet_classes store the EXACT display label as it should appear (not a bare number + assumed 'Class ' prefix) — this covers cases like Manchester Metrolink's M5000 that don't follow the 'Class NN' pattern. 'id' is used to link through to that vehicle's entry on the database page; 'display' is shown verbatim, no reformatting. franchises is the full history; sidebar should show the current one as a simple 'Operating since {start}' line by default, with the full array available as an expandable detail. FIELD OWNERSHIP (see scripts/ for the population scripts): headline/parent_company/franchises are written by scripts/fetch-wikipedia-facts.mjs (Wikipedia, narrative/historical — Claude extracts, never invents; headline is a punchy 8-12 word sentence, not a paragraph; a franchise entry only appears if the article states its dates). schema_jsonld is written by scripts/build-schema-jsonld.mjs (template assembly from the fields above, no new facts, no API calls). stations_operated/regions_served/fleet_classes are manual/curated only — neither OSM nor Wikipedia reliably has these without real risk of being wrong, so they're deliberately not automated. name/wikipedia_title are manual/curated only. _wikipedia is provenance metadata written by the Wikipedia script (no _osm block here — OSM doesn't own any operator-level field in this design; the OSM-derived operator name lives on the station/route entries that reference it, via their own operator/operators fields).",
+  "_notes": "Keyed by a short operator code (your own convention — GWR, AWC, etc). 2026-07-13: seeded 28 new entries from api/incidents.js's TOC_REGION_TABLE, using that table's own 2-letter ATOC-style codes (VT, GR, XC, ...) as the key — name only, awaiting Wikipedia/manual enrichment like any other entry. RESOLVED: WMR (West Midlands Railway) predates that seed and keeps its own, longer code on purpose — TOC_REGION_TABLE's WM is a real-world ATOC operator code required for matching the live Darwin incident feed in api/incidents.js, not an arbitrary internal choice, so it is NOT changed to WMR for internal consistency; do not add a WM entry here. 2026-07-13 canonicalization pass (see chat): `aliases` (array of strings) is a new manual/curated field — OSM-tagged naming variants (spelling, casing, historical franchise/legal names) that should be treated as the same operator as this entry's `name`; also added to matching stations-content.json entries' `operators` arrays, replacing the variant string with the canonical `name`. `legal_entity` (string) is a separate new manual/curated field for a DIFFERENT real entity behind a brand (e.g. the group company operating it) — deliberately NOT folded into `aliases`/station data, since equating a legal entity with its brand would be wrong, not just imprecise. SE (Southeastern)'s wikipedia_title remains unset/pending — bare \"Southeastern\" doesn't auto-resolve to the right Wikipedia page (redirects to a disambiguation-adjacent geography article) and needs a human to set the correct title; not guessed at. fleet_classes store the EXACT display label as it should appear (not a bare number + assumed 'Class ' prefix) — this covers cases like Manchester Metrolink's M5000 that don't follow the 'Class NN' pattern. 'id' is used to link through to that vehicle's entry on the database page; 'display' is shown verbatim, no reformatting. franchises is the full history; sidebar should show the current one as a simple 'Operating since {start}' line by default, with the full array available as an expandable detail. FIELD OWNERSHIP (see scripts/ for the population scripts): headline/parent_company/franchises are written by scripts/fetch-wikipedia-facts.mjs (Wikipedia, narrative/historical — Claude extracts, never invents; headline is a punchy 8-12 word sentence, not a paragraph; a franchise entry only appears if the article states its dates). schema_jsonld is written by scripts/build-schema-jsonld.mjs (template assembly from the fields above, no new facts, no API calls). stations_operated/regions_served/fleet_classes are manual/curated only — neither OSM nor Wikipedia reliably has these without real risk of being wrong, so they're deliberately not automated. name/wikipedia_title are manual/curated only. _wikipedia is provenance metadata written by the Wikipedia script (no _osm block here — OSM doesn't own any operator-level field in this design; the OSM-derived operator name lives on the station/route entries that reference it, via their own operator/operators fields). 2026-07-13 follow-up: `sub_brands` (array of strings, on LE/Greater Anglia so far) is a named service brand under this operator that intentionally does NOT get its own operators-content.json entry and is NOT folded into `aliases`/station data — distinct from both a naming variant (aliases) and a different legal entity (legal_entity). `welsh_name` (string, on AW/Transport for Wales so far) is the official bilingual Welsh-language name — kept as its own field rather than merged into `aliases` because it's a live, still-used official name, not a deprecated/historical variant; station-content.json's \"Trafnidiaeth Cymru\" tags are deliberately left as-is, not replaced with \"Transport for Wales\".",
   "WMR": {
     "name": "West Midlands Railway",
     "wikipedia_title": "West Midlands Trains",
@@ -26,7 +26,8 @@
         "@type": "Organization",
         "name": "DfT Operator"
       }
-    }
+    },
+    "legal_entity": "West Midlands Trains (parent legal entity; also covers the London Northwestern Railway brand — not folded in as a simple alias)"
   },
   "VT": {
     "name": "Avanti West Coast",
@@ -68,7 +69,11 @@
       "title": "LNER",
       "url": "https://en.wikipedia.org/wiki/LNER",
       "license": "CC BY-SA 4.0"
-    }
+    },
+    "aliases": [
+      "London North Eastern Railway",
+      "Virgin Trains East Coast"
+    ]
   },
   "XC": {
     "name": "CrossCountry",
@@ -87,7 +92,11 @@
       "title": "CrossCountry",
       "url": "https://en.wikipedia.org/wiki/CrossCountry",
       "license": "CC BY-SA 4.0"
-    }
+    },
+    "aliases": [
+      "Cross Country",
+      "Arriva CrossCountry"
+    ]
   },
   "EM": {
     "name": "East Midlands Railway",
@@ -106,7 +115,10 @@
       "title": "East Midlands Railway",
       "url": "https://en.wikipedia.org/wiki/East_Midlands_Railway",
       "license": "CC BY-SA 4.0"
-    }
+    },
+    "aliases": [
+      "East Midlands"
+    ]
   },
   "LN": {
     "name": "London Northwestern Railway",
@@ -144,7 +156,12 @@
       "title": "Great Western Railway",
       "url": "https://en.wikipedia.org/wiki/Great_Western_Railway",
       "license": "CC BY-SA 4.0"
-    }
+    },
+    "aliases": [
+      "GWR",
+      "First Great Western",
+      "Great Western Railways"
+    ]
   },
   "SW": {
     "name": "South Western Railway",
@@ -171,7 +188,11 @@
     }
   },
   "SE": {
-    "name": "Southeastern"
+    "name": "Southeastern",
+    "aliases": [
+      "South Eastern",
+      "Southeastern Railway"
+    ]
   },
   "SN": {
     "name": "Southern",
@@ -305,7 +326,13 @@
       "title": "Greater Anglia",
       "url": "https://en.wikipedia.org/wiki/Greater_Anglia",
       "license": "CC BY-SA 4.0"
-    }
+    },
+    "aliases": [
+      "Abellio Greater Anglia"
+    ],
+    "sub_brands": [
+      "Stansted Express"
+    ]
   },
   "NT": {
     "name": "Northern",
@@ -329,7 +356,13 @@
       "title": "Northern Trains",
       "url": "https://en.wikipedia.org/wiki/Northern_Trains",
       "license": "CC BY-SA 4.0"
-    }
+    },
+    "aliases": [
+      "Northern Rail",
+      "Northern Trains",
+      "Arriva Trains North",
+      "Arriva Rail North"
+    ]
   },
   "TP": {
     "name": "TransPennine Express",
@@ -348,7 +381,10 @@
       "title": "TransPennine Express",
       "url": "https://en.wikipedia.org/wiki/TransPennine_Express",
       "license": "CC BY-SA 4.0"
-    }
+    },
+    "aliases": [
+      "Transpennine Express"
+    ]
   },
   "ME": {
     "name": "Merseyrail",
@@ -470,7 +506,11 @@
       "title": "Lumo (train operating company)",
       "url": "https://en.wikipedia.org/wiki/Lumo_(train_operating_company)",
       "license": "CC BY-SA 4.0"
-    }
+    },
+    "aliases": [
+      "GTS Rail Operations"
+    ],
+    "legal_entity": "GTS Rail Operations (legal operating company behind the Lumo brand, not a separate rebrand)"
   },
   "HX": {
     "name": "Heathrow Express",
@@ -537,7 +577,8 @@
       "title": "Transport for Wales",
       "url": "https://en.wikipedia.org/wiki/Transport_for_Wales",
       "license": "CC BY-SA 4.0"
-    }
+    },
+    "welsh_name": "Trafnidiaeth Cymru"
   },
   "IL": {
     "name": "Island Line",
@@ -547,10 +588,13 @@
       "title": "Island Line",
       "url": "https://en.wikipedia.org/wiki/Island_Line",
       "license": "CC BY-SA 4.0"
-    }
+    },
+    "aliases": [
+      "Island Line Trains"
+    ]
   },
   "WR": {
-    "name": "West Coast Railway Company",
+    "name": "West Coast Railways",
     "headline": "First private firm licensed as UK train operator, later hit by total network ban",
     "wikipedia_title": "West Coast Railways",
     "_wikipedia": {
@@ -559,5 +603,11 @@
       "url": "https://en.wikipedia.org/wiki/West_Coast_Railways",
       "license": "CC BY-SA 4.0"
     }
+  },
+  "ES": {
+    "name": "Eurostar",
+    "aliases": [
+      "Eurostar International Ltd"
+    ]
   }
 }
