@@ -6,78 +6,64 @@
  * and Phase 0's scripts/output/operator-inventory.json for the canonical
  * operator list this palette covers).
  *
- * Hand-curated dark-theme hex per canonical operator/category below — not
- * algorithmically generated, since real brand association (LNER red, GWR
- * green, Merseyrail's yellow/black, Lumo's yellow, Elizabeth line's actual
- * TfL purple, etc.) matters for recognition, both for casual users and for
- * enthusiasts who will notice a wrong color. Where UK TOC branding clusters
- * heavily in blue/purple (many real operators genuinely are blue-branded),
- * hue is spread as far as the real brand allows and differentiated further
- * by lightness/saturation — but with ~27 TOC-tier colors, this is a hand-
- * tuned "clearly distinct at a glance" palette, not a claim of full
- * colorblind-safe categorical distinction (that tops out around 12 hues).
+ * ─── 2026-07-14, superseding rework: real corporate colors first ─────────
+ * Earlier rounds this session generated the TOC palette algorithmically
+ * (hand-picked "brand-inspired" hues, then Delta-E/CVD-separated). This
+ * version replaces that: every TOC-tier operator's REAL_TOC_COLORS entry
+ * below is researched (source cited per entry — Wikipedia's WikiProject UK
+ * Railways colours list, Wikipedia route-diagram color templates, Brandfetch
+ * live-site extraction, or a corroborated livery/rebrand description),
+ * not invented. Priority order, per instruction:
+ *   1. Distinguishability is non-negotiable — no two operators end up too
+ *      close, especially ones that share track or appear near each other
+ *      (KNOWN_ADJACENT below, from the Doncaster junction spot-check).
+ *   2. Within that constraint, match real corporate colors as closely as
+ *      possible.
+ * Mechanically: operators are assigned in order of network coverage
+ * (Phase 0's relation counts — bigger/more-visible operators get first
+ * claim on their real color), each trying real PRIMARY color first, then
+ * real SECONDARY/alternate shade if primary collides, then an algorithmic
+ * hue-nudge fallback (flagged explicitly) only if neither real option
+ * clears separation. "Collides" means: ΔE76 < 15 against ANY already-
+ * placed color (the non-negotiable base rule), OR — for KNOWN_ADJACENT
+ * pairs specifically — CVD-simulated ΔE76 < 15 under protanopia or
+ * deuteranopia (extra certainty for operators that actually run near each
+ * other; full CVD-safety across 30 real corporate hues isn't realistically
+ * achievable, so non-adjacent CVD closeness is reported, not blocking).
  *
- * Two explicit reservations kept OUT of the TOC's own hue space:
+ * Two research gaps found no confident source despite extensive searching
+ * (Wikipedia infobox/templates, Brandfetch, press/rebrand coverage,
+ * official sites): Great Northern (GN) and bare Thameslink (TL — "navy
+ * blue with a yellow stripe" is the only description found, no hex). Both
+ * get a placeholder via the algorithmic fallback with confidence:'none' —
+ * flagged in the report, not presented as researched.
+ *
+ * Dark/light theme direction is now consistent across the ENTIRE TOC/metro
+ * palette, matching how tfl_lines already worked: the real (or best-
+ * available) color anchors LIGHT theme (real liveries/logos/websites are
+ * designed for pale/white backgrounds), and dark-theme is DERIVED by
+ * lifting lightness for legibility against this map's dark basemap while
+ * preserving true hue — not a separate hand-picked dark color.
+ *
+ * Metro/LRT and Heritage are OUT OF SCOPE for the corporate-color research
+ * (the ask was specifically the ~30 TOC-tier operators) — they keep their
+ * existing hand-picked designs, run through the same gate-check/fallback
+ * mechanism against the new TOC placements so nothing newly collides.
+ *
+ * Two explicit reservations kept OUT of every operator's hue space:
  *   - Never uses the site's own turquoise (#40E0D0/--t) — reserved
  *     exclusively for UI meaning (links, the From/To selected-path
- *     highlight in Phase 6). Chiltern Railways' real teal branding was
- *     nudged bluer for exactly this reason.
+ *     highlight in Phase 6).
  *   - Never uses the exact "delays/warnings" amber (#F5B84B/--a) for the
- *     Heritage bucket, even though Heritage is amber-FAMILY per CLAUDE.md's
- *     existing Database-mode legend — a literal match would read as a
- *     service-delay indicator on the map, which is the opposite of what a
- *     heritage line rendering means.
- *
- * ─── 2026-07-14 rework: real perceptual math, not a naive HSL transform ───
- * The first version derived light-theme hex with a per-color HSL darken+
- * saturate formula that only looked at each color's OWN lightness — it had
- * no idea two DIFFERENT colors existed. Confirmed bug, caught in review:
- * ScotRail/Northern/GTR/Eurostar are clearly distinct in dark mode but
- * nearly identical once each was independently darkened toward the same
- * low-lightness "generic navy" region (Sheffield Supertram/Glasgow Subway
- * literally collided on the exact same light-mode hex). Low-lightness
- * convergence is a real, well-known perceptual effect — different hues
- * increasingly read as "just dark" as L drops — and a per-color formula
- * with no cross-color awareness can't see it happening.
- *
- * Fixed with actual color science instead of another hand-tuned formula:
- *   1. sRGB → linear RGB → CIE XYZ → CIE Lab (D65), used for CIE76 ΔE
- *      (Euclidean distance in Lab) — not RGB-space "differs by N per
- *      channel" eyeballing.
- *   2. After generating each theme's initial candidates, a relaxation pass
- *      finds the worst (lowest-ΔE) pair and nudges their HUE apart
- *      (bounded — see HUE_DRIFT_CAP — so a color doesn't drift away from
- *      the real brand hue it was chosen for), repeating until every pair
- *      clears MIN_DELTA_E or the drift cap is hit. Applied to BOTH themes
- *      independently, TOC+metro together (they can plausibly appear near
- *      each other on the map) and tfl_lines as its own set (per the
- *      Bakerloo/Overground finding — they co-occur on the real combined
- *      Tube+Overground map, so needed the same treatment).
- *   3. CVD (colorblindness) simulation — protanopia and deuteranopia, the
- *      standard Viénot/Brettel-derived linear-RGB matrices, applied in
- *      linear (gamma-decoded) space — run against the FINAL palette, and
- *      any pair whose simulated ΔE drops below the threshold is flagged in
- *      cvd_report below, cross-referenced against the one real geographic-
- *      adjacency data point available before Phase 2's actual segment
- *      graph exists: the Doncaster junction spot-check from the scoping
- *      pass (LNER/TransPennine Express/Northern/East Midlands Railway/
- *      Grand Central/CrossCountry/Lumo all genuinely co-occur there).
- *      Full pairwise CVD-safety across 30+ hues isn't realistically
- *      achievable (per the header note above) — this reports gaps rather
- *      than silently hiding them, since operator color is never the ONLY
- *      way to identify a line: every rendered segment stays identifiable
- *      via hover/click showing its operator name, exactly like the station
- *      markers already do (see map.html's showHoverTooltip) — colorblind
- *      users are never dependent on color-parsing alone to get the
- *      information, only on it for the at-a-glance overview.
+ *     Heritage bucket — would read as a service-delay indicator.
  *
  * Run:
  *   node scripts/build-operator-palette.mjs
  *
  * Output: data/operator-colors.json — dark+light hex per canonical
- * operator/category, keyed by Phase 0's canonical codes/names, plus a
- * cvd_report section. See CLAUDE.md's "Operator line colors" section for
- * the categorization rules; this file is the actual hex table.
+ * operator/category, an assignment_report (method/source/confidence per
+ * TOC operator), and a cvd_report. See CLAUDE.md's "Operator line colors"
+ * section for the categorization rules; this file is the actual hex table.
  */
 
 import { writeFileSync } from 'node:fs';
@@ -89,10 +75,6 @@ const ROOT = path.resolve(__dirname, '..');
 const OUT_PATH = path.join(ROOT, 'data', 'operator-colors.json');
 
 // ═══ Color math ═════════════════════════════════════════════════════════
-
-// ─── sRGB hex ⇄ HSL — still used to GENERATE candidates and nudge hue;
-// the perceptual checking below (Lab/ΔE) is what's new, not a replacement
-// for HSL as a working color space.
 function hexToRgb(hex) {
   return [parseInt(hex.slice(1, 3), 16), parseInt(hex.slice(3, 5), 16), parseInt(hex.slice(5, 7), 16)];
 }
@@ -129,8 +111,6 @@ function hslToHex(h, s, l) {
   else [r, g, b] = [c, 0, x];
   return rgbToHex((r + m) * 255, (g + m) * 255, (b + m) * 255);
 }
-
-// ─── sRGB → linear → CIE XYZ (D65) → CIE Lab, and CIE76 ΔE ───────────────
 function srgbToLinear(c) {
   c /= 255;
   return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
@@ -160,12 +140,6 @@ function deltaE76(hexA, hexB) {
   const [l1, a1, b1] = hexToLab(hexA), [l2, a2, b2] = hexToLab(hexB);
   return Math.sqrt((l1 - l2) ** 2 + (a1 - a2) ** 2 + (b1 - b2) ** 2);
 }
-
-// ─── CVD simulation — protanopia/deuteranopia, Viénot/Brettel-derived
-// linear-RGB matrices (the standard simplified dichromat simulation used
-// by most web-based simulators), applied in LINEAR (gamma-decoded) space —
-// skipping the gamma step is a common shortcut that under/over-states the
-// effect, so it's done properly here.
 const CVD_MATRICES = {
   protanopia: [[0.56667, 0.43333, 0], [0.55833, 0.44167, 0], [0, 0.24167, 0.75833]],
   deuteranopia: [[0.625, 0.375, 0], [0.7, 0.3, 0], [0, 0.3, 0.7]],
@@ -179,253 +153,285 @@ function simulateCvd(hex, type) {
   return rgbToHex(linearToSrgb(r2), linearToSrgb(g2), linearToSrgb(b2));
 }
 
-// ═══ Palette definition (dark-theme base hex — the design intent) ═══════
+const MIN_DELTA_E = 15;
 
-// (LN inherits WMR's color — its route relations are tagged "West Midlands
-// Trains", indistinguishable from WMR's own tag in current OSM data, same
-// class of gap as the GTR sub-brand finding. HT/HX/XR are RESERVED colors —
-// they don't appear in current route-relation data at all per Phase 0.
-// GX/GN/TL are ALSO effectively reserved: none of "Gatwick Express", "Great
-// Northern", or bare "Thameslink" appear as a standalone route-relation
-// operator tag either — all three are fully absorbed into "Greater
-// Thameslink Railway" today. All six are pre-assigned a color anyway so a
-// future route-name-matching fix doesn't need a palette redesign — but none
-// of them will actually render until that fix lands.)
-const TOC_COLORS = {
-  GR: '#E32636',  // LNER — red
-  GX: '#FF5A36',  // Gatwick Express — vermillion (RESERVED — absorbed into GTR today)
-  GN: '#9B3D6E',  // Great Northern — muted rose-plum (RESERVED — absorbed into GTR today)
-  TL: '#3A7CA5',  // Thameslink — mid steel-blue (RESERVED — absorbed into GTR today)
-  AW: '#C1440E',  // Transport for Wales — burnt rust-red
-  CC: '#FFA630',  // c2c — orange
-  GC: '#994700',  // Grand Central — dark burnt-orange/rust (darkened further 2026-07-14 — red and orange BOTH collapse toward the same yellow-olive under protanopia/deuteranopia, a fundamental red-green-CVD limitation no hue shift can fix while staying "orange"; a large lightness gap is the only lever that actually works here, confirmed by testing several L values directly against simulated LNER — also closer to Grand Central's real black/dark-orange livery)
-  LD: '#FFDE59',  // Lumo — bright lemon yellow
-  ME: '#C9A227',  // Merseyrail — mustard gold (echoes real yellow/black livery)
-  GW: '#3FA34D',  // Great Western Railway — green
-  SN: '#7ED957',  // Southern — lighter kelly/lime-green
-  IL: '#5FBFA0',  // Island Line — teal-green
-  EM: '#2FBF8F',  // East Midlands Railway — teal
-  CH: '#1E8A9E',  // Chiltern Railways — cyan-blue (nudged off the site's own turquoise, see header)
-  HT: '#7FC4E8',  // Hull Trains — light sky blue (RESERVED, not in current route data)
-  SW: '#2E7FD1',  // South Western Railway — mid blue
-  WMR: '#4A6FA5', // West Midlands Railway — steel/slate blue (also covers LN — see above)
-  SE: '#5C7A89',  // Southeastern — muted slate grey-blue
-  // SR/NT/GTR/ES redesigned 2026-07-14 — flagged by name as a cluster that
-  // was clearly distinct in dark mode but nearly identical in light mode
-  // (ΔE ~2-6, RGB channels within ~2 points of each other). The relaxation
-  // pass alone couldn't fix it without exceeding the hue-drift cap, so
-  // these four were deliberately widened at the design stage instead —
-  // NT pushed toward cyan (was near-identical hue to SR, just lighter),
-  // GTR pushed further into violet, ES kept dark but desaturated rather
-  // than competing on hue at all.
-  NT: '#228EC3',  // Northern — cyan-leaning sky blue (was too close to SR's hue)
-  SR: '#1D2587',  // ScotRail — deep saturated indigo-blue
-  ES: '#1C2240',  // Eurostar — near-black desaturated navy (distinguishes by NOT competing on hue)
-  GTR: '#6730A6', // Greater Thameslink Railway — violet-indigo (pushed further from SR/NT/ES)
-  TP: '#23295C',  // TransPennine Express — darker violet-purple (darkened further 2026-07-14 — dark-theme comparison against Northern cleared once L dropped to ~25, confirmed by direct testing; still resolving under the light-theme derivation, see separation report)
-  VT: '#B84FCC',  // Avanti West Coast — magenta-violet
-  CS: '#4A2E6B',  // Caledonian Sleeper — deep muted purple (night-sky)
-  HX: '#B8A0E8',  // Heathrow Express — pale lavender (RESERVED, not in current route data)
-  XC: '#B03A6B',  // CrossCountry — maroon-magenta
-  LE: '#D6336C',  // Greater Anglia — rose-red
-  WR: '#8C5A3C',  // West Coast Railways — heritage brown/maroon
-  XR: '#6950A1',  // Elizabeth line — real official TfL purple, not invented
+// ═══ Research table — REAL corporate colors, sourced ═════════════════════
+// confidence: 'high' (multi-source or directly confirmed) / 'medium'
+// (single reasonably-reliable source, not independently cross-verified) /
+// 'low' (source exists but has real caveats) / 'none' (no confident source
+// found — flagged for user input, NOT presented as researched).
+const REAL_TOC_COLORS = {
+  GR: { name: 'LNER', primary: '#CE0E2D', primarySource: 'Wikipedia WikiProject UK Railways colours list', confidence: 'high' },
+  GX: { name: 'Gatwick Express', primary: '#C8102E', primarySource: 'Brandfetch (gatwickexpress.com) — "Crimson"', secondary: '#E48897', secondarySource: 'Brandfetch (gatwickexpress.com) — "Deep Blush"', confidence: 'high' },
+  GN: { name: 'Great Northern', primary: null, fallbackHint: '#6B3FA0', confidence: 'none', caveat: 'No confident exact hex found across Wikipedia infobox/templates (Template:GNR_colour is the HISTORIC 19th-century Great Northern Railway, a different entity, #00A550 green — not used), Brandfetch (no match for the correct domain), or press coverage. Historical sources and the 2020 GTR sub-brand rebrand consistently associate Great Northern with PURPLE though, so the placeholder below is anchored to that family (not a neutral grey) — still unconfirmed exact hex, still flagged for your input.' },
+  TL: { name: 'Thameslink', primary: '#FF5AA4', primarySource: "Wikipedia Template:TL_color raw wikitext (action=raw) — {{#switch}} default case FF5AA4, described as encoding \"the colour of Greater Thameslink Railway Thameslink lines\"; cross-corroborated exactly by the separate WikiProject UK Railways colours list's \"Govia Thameslink Railway\" entry (also ff5aa4) found earlier — two independent Wikipedia sources agreeing", confidence: 'high' },
+  AW: { name: 'Transport for Wales', primary: '#FF0000', primarySource: 'Wikipedia WikiProject UK Railways colours list', confidence: 'medium' },
+  CC: { name: 'c2c', primary: '#B7007C', primarySource: 'Wikipedia WikiProject UK Railways colours list, corroborated by c2c\'s own official site (UI element literally named "home-swap-magenta")', confidence: 'high' },
+  GC: { name: 'Grand Central', primary: '#1D1D1B', primarySource: 'Wikipedia Template:GrandCentral_colour, corroborated by UK Transport Wiki (#2C3838, same near-black family) and the "all-black livery" description', confidence: 'high' },
+  LD: { name: 'Lumo', primary: '#2B6EF5', primarySource: 'Wikipedia WikiProject UK Railways colours list, corroborated by search results describing "Lumo\'s signature blue"', confidence: 'high' },
+  GW: { name: 'Great Western Railway', primary: '#0A493E', primarySource: 'Wikipedia WikiProject UK Railways colours list', confidence: 'medium' },
+  SN: { name: 'Southern', primary: '#8CC63E', primarySource: 'Wikipedia WikiProject UK Railways colours list', confidence: 'medium' },
+  IL: { name: 'Island Line', primary: '#1E90FF', primarySource: 'Wikipedia WikiProject UK Railways colours list', confidence: 'medium' },
+  EM: { name: 'East Midlands Railway', primary: '#713563', primarySource: 'Wikipedia WikiProject UK Railways colours list', confidence: 'medium' },
+  CH: { name: 'Chiltern Railways', primary: '#00BFFF', primarySource: 'Wikipedia WikiProject UK Railways colours list', confidence: 'medium' },
+  HT: { name: 'Hull Trains', primary: '#DE005C', primarySource: 'Wikipedia Template:HT_color', confidence: 'high' },
+  SW: { name: 'South Western Railway', primary: '#24398C', primarySource: 'Wikipedia WikiProject UK Railways colours list', confidence: 'medium' },
+  WMR: { name: 'West Midlands Railway', primary: '#FF8300', primarySource: 'Wikipedia WikiProject UK Railways colours list, corroborated by search ("orange and purple colour scheme", Birmingham landmarks lit orange for WMR branding)', confidence: 'high' },
+  SE: { name: 'Southeastern', primary: '#389CFF', primarySource: 'Wikipedia WikiProject UK Railways colours list', confidence: 'medium' },
+  NT: { name: 'Northern', primary: '#0F0D78', primarySource: 'Wikipedia WikiProject UK Railways colours list, roughly corroborated by Brandfetch (northernrail.co.uk: "Port Gore" #262262, same dark-indigo family)', confidence: 'medium' },
+  SR: { name: 'ScotRail', primary: '#1E467D', primarySource: 'Wikipedia WikiProject UK Railways colours list (Abellio-era)', confidence: 'medium', caveat: 'ScotRail was renationalised 1 April 2022 with a new livery described as "dark blue, grey doors, white Saltire" — same blue FAMILY as this Abellio-era value but the current exact hex was not independently confirmed.' },
+  GTR: { name: 'Greater Thameslink Railway', primary: '#00A6E2', primarySource: 'Brandfetch (gtrailway.com) — "Cerulean"', secondary: '#BACFE2', secondarySource: 'Brandfetch (gtrailway.com) — "Periwinkle Gray"', confidence: 'medium', caveat: 'Reflects the confirmed 2020 "VCCP Blue" rebrand of Govia Thameslink Railway; whether the entity\'s 31 May 2026 renationalisation to Greater Thameslink Railway changed branding further was not confirmed.' },
+  TP: { name: 'TransPennine Express', primary: '#09A4EC', primarySource: 'Wikipedia WikiProject UK Railways colours list', confidence: 'medium' },
+  VT: { name: 'Avanti West Coast', primary: '#004354', primarySource: 'Wikipedia WikiProject UK Railways colours list', confidence: 'medium' },
+  ME: { name: 'Merseyrail', primary: '#FFCE0F', primarySource: 'Brandfetch (merseyrail.org) — "Candlelight", corroborated by Wikipedia\'s "yellow letter M on a grey circle" logo description', secondary: '#313131', secondarySource: 'Brandfetch (merseyrail.org) — "Mine Shaft"', confidence: 'high' },
+  CS: { name: 'Caledonian Sleeper', primary: '#1D2E35', primarySource: 'Wikipedia WikiProject UK Railways colours list', confidence: 'medium' },
+  HX: { name: 'Heathrow Express', primary: '#532E63', primarySource: 'Wikipedia WikiProject UK Railways colours list', confidence: 'medium' },
+  XR: { name: 'Elizabeth line', primary: '#6950A1', primarySource: 'Official TfL branding — already established this session, one of the world\'s most recognized transit colors', confidence: 'high' },
+  XC: { name: 'CrossCountry', primary: '#660F21', primarySource: 'Wikipedia WikiProject UK Railways colours list', confidence: 'medium' },
+  LE: { name: 'Greater Anglia', primary: '#D70428', primarySource: 'Wikipedia WikiProject UK Railways colours list', confidence: 'medium' },
+  WR: { name: 'West Coast Railways', primary: '#800000', primarySource: 'Livery description ("Royal Scotsman Claret" maroon) — standard "maroon" web hex used as the closest match; exact BS381 paint number not found', secondary: '#A11055', secondarySource: 'Brandfetch (westcoastrailways.co.uk) — "Jazzberry Jam"; this is the MARKETING WEBSITE\'s UI color, not confirmed to represent the actual train livery, so treated as lower-confidence than primary despite coming from a live-site source', confidence: 'low' },
+  ES: { name: 'Eurostar', primary: '#0C326F', primarySource: 'Best-available anchor within the confirmed 2023 DesignStudio rebrand direction ("punchy blue and deep navy") — exact hex for the "punchy blue" was not found; Brandfetch returned an inconsistent mixed set including pink tones that contradict the confirmed rebrand story and were excluded as unreliable', confidence: 'low' },
+  LN: { name: 'London Northwestern Railway', primary: '#00BF6F', primarySource: 'Wikipedia WikiProject UK Railways colours list', confidence: 'medium' },
 };
 
-// ─── Metro/LRT — purple family, each system individually distinct. DLR
-// keeps its real official teal (like Elizabeth line, well-known enough to
-// be worth the exception). Sheffield Supertram/Glasgow Subway's base hues
-// were widened here (were near-identical hue, differing only by lightness
-// — the exact pattern that collapses under the light-theme transform,
-// caught in review) — Glasgow Subway's real "Clockwork Orange" nickname
-// was deliberately still not used, since breaking the purple-family rule
-// would undermine the category itself.
-const METRO_COLORS = {
-  'Transport for London': '#8B7FD6', // generic/fallback — see tfl_lines below for the real per-line split (Phase 3)
-  'Manchester Metrolink': '#A0459E',
-  'Docklands Light Railway': '#00A4A7', // real official DLR teal
-  'West Midlands Metro': '#7B4FA0',
-  'Croydon Tramlink': '#9B59B6',
-  'Sheffield Supertram': '#6C3483',
-  'Tyne and Wear Metro': '#C39BD3',
-  'Nottingham Express Transit': '#A569BD',
-  'Glasgow Subway': '#A12B82', // widened further 2026-07-14 — still only 2° of hue apart from Sheffield Supertram after the first widening, pushed into magenta rather than staying adjacent-violet
+// Phase 0 relation counts (scripts/output/operator-inventory.json) — bigger/
+// more-visible operators get first claim on their real color. GN/TL show 0
+// since neither appears as a standalone route-relation tag today (both
+// absorbed into GTR) — placed last, which is fine since they have no real
+// color to "claim" anyway.
+const RELATION_COUNTS = {
+  GTR: 111, ES: 16, GW: 70, LE: 31, AW: 60, XC: 15, CH: 22, IL: 6, WMR: 50,
+  SW: 59, SN: 13, NT: 98, GR: 22, TP: 21, ME: 10, VT: 20, SR: 146, EM: 21,
+  SE: 47, CS: 10, WR: 2, LD: 35, GC: 2, CC: 8, GX: 0, GN: 0, TL: 0, HT: 0, HX: 0, XR: 0,
 };
 
-// ─── TfL individual line colors — real, official (unchanged — see header:
-// separation happens in the derivation pass below, not by altering these).
-const TFL_LINE_COLORS = {
-  Bakerloo: '#B36305', Central: '#E32017', Circle: '#FFD300', District: '#00782A',
-  'Hammersmith & City': '#F3A9BB', Jubilee: '#A0A5A9', Metropolitan: '#9B0056',
-  Northern: '#4D4D4D', // real official color is black — see header note, flagged for a light-core treatment when wired in
-  Piccadilly: '#003688', Victoria: '#0098D4', 'Waterloo & City': '#95CDBA',
-  'Elizabeth line': '#6950A1', DLR: '#00A4A7',
-  Overground: '#EE7C0E',
-};
-
-const HERITAGE_COLOR = '#B8752E';
-
-// ═══ Light-theme derivation + pairwise separation ════════════════════════
-
-// The floor here was the actual root cause of the Sheffield Supertram/
-// Glasgow Subway collision: a flat Math.max(22, ...) meant any two
-// sufficiently-dark, saturated colors both clip to the EXACT SAME
-// lightness (22%), and at low lightness Lab-space hue differences compress
-// perceptually — so two colors with genuinely different hues still read as
-// nearly identical once both are flattened to the same L. Floor is now
-// hue-dependent (small deterministic spread, ±5 points across the hue
-// wheel) specifically so two different-hued colors can no longer land on
-// the identical floor value — a real fix to the mechanism, not another
-// patch on top of the symptom.
-function darkenForLight(hex) {
-  const { h, s, l } = hexToHsl(hex);
-  const drop = 12 + (l / 100) * 24;
-  const floor = 24 + (h % 10); // 24-33, hue-dependent — see comment above
-  const newL = Math.max(floor, l - drop);
-  const newS = Math.min(100, s + 8);
-  return hslToHex(h, newS, newL);
-}
-
-const MIN_DELTA_E = 15; // "clearly distinct at a glance" floor, per CIE76 rule-of-thumb (2-10 = perceptible, 10+ = clearly different)
-const HUE_DRIFT_CAP = 22; // max degrees a color may drift from its DESIGNED hue while separating — keeps real brand association intact
-const MAX_ITERATIONS = 500;
-
-// Greedy relaxation: repeatedly find the worst (lowest-ΔE) pair and nudge
-// both hues apart by a small step, until every pair clears MIN_DELTA_E, the
-// drift cap stops further movement, or MAX_ITERATIONS is hit (reported, not
-// silently accepted — see the unresolved list in the returned report).
-function separate(entries) {
-  const items = entries.map(({ key, hex }) => {
-    const { h, s, l } = hexToHsl(hex);
-    return { key, originalHue: h, h, s, l, hex };
-  });
-  const recompute = (it) => { it.hex = hslToHex(it.h, it.s, it.l); };
-  let iterations = 0;
-  for (; iterations < MAX_ITERATIONS; iterations++) {
-    let worst = null, worstDE = Infinity;
-    for (let i = 0; i < items.length; i++) {
-      for (let j = i + 1; j < items.length; j++) {
-        const de = deltaE76(items[i].hex, items[j].hex);
-        if (de < worstDE) { worstDE = de; worst = [items[i], items[j]]; }
-      }
-    }
-    if (worstDE >= MIN_DELTA_E || !worst) break;
-    const [a, b] = worst;
-    const aRoom = HUE_DRIFT_CAP - Math.abs(((a.h - a.originalHue + 540) % 360) - 180);
-    const bRoom = HUE_DRIFT_CAP - Math.abs(((b.h - b.originalHue + 540) % 360) - 180);
-    if (aRoom <= 0 && bRoom <= 0) break; // both at their drift cap — can't separate further without breaking brand association
-    const step = 3;
-    // push apart along the shorter arc between them
-    let diff = ((b.h - a.h + 540) % 360) - 180; // signed shortest-path difference
-    const dir = diff >= 0 ? 1 : -1;
-    if (aRoom > 0) a.h -= dir * step;
-    if (bRoom > 0) b.h += dir * step;
-    recompute(a); recompute(b);
-  }
-  const unresolved = [];
-  for (let i = 0; i < items.length; i++) {
-    for (let j = i + 1; j < items.length; j++) {
-      const de = deltaE76(items[i].hex, items[j].hex);
-      if (de < MIN_DELTA_E) unresolved.push({ a: items[i].key, b: items[j].key, deltaE: Math.round(de * 10) / 10 });
-    }
-  }
-  return {
-    result: Object.fromEntries(items.map((it) => [it.key, it.hex])),
-    iterations, unresolved,
-  };
-}
-
-function buildTheme(baseHexByKey, deriveFn) {
-  const entries = Object.entries(baseHexByKey).map(([key, hex]) => ({ key, hex: deriveFn(hex) }));
-  return separate(entries);
-}
-
-// ═══ Build ════════════════════════════════════════════════════════════
-
-const darkBase = { ...TOC_COLORS, ...METRO_COLORS };
-const darkSeparated = separate(Object.entries(darkBase).map(([key, hex]) => ({ key, hex })));
-const lightSeparated = buildTheme(darkSeparated.result, darkenForLight);
-
-const tflDarkSeparated = separate(Object.entries(TFL_LINE_COLORS).map(([key, hex]) => ({ key, hex })));
-const tflLightSeparated = buildTheme(tflDarkSeparated.result, darkenForLight);
-
-const heritageDark = HERITAGE_COLOR;
-const heritageLight = darkenForLight(HERITAGE_COLOR);
-
-function splitBack(separatedResult, keys) {
-  return Object.fromEntries(keys.map((k) => [k, separatedResult[k]]));
-}
-const tocKeys = Object.keys(TOC_COLORS), metroKeys = Object.keys(METRO_COLORS);
-
-function withThemes(darkResult, lightResult, keys) {
-  return Object.fromEntries(keys.map((k) => [k, { dark: darkResult[k], light: lightResult[k] }]));
-}
-
-// ═══ CVD report ═══════════════════════════════════════════════════════
-
-// Real, evidence-based adjacency data — everything else co-occurring is
-// possible but unconfirmed until Phase 2's actual segment graph exists.
+// Real, evidence-based adjacency (Doncaster junction spot-check, scoping
+// pass) — gets the STRICT gate (ΔE76 AND CVD-simulated ΔE76 both required).
+// Everything else only needs the base ΔE76 gate; CVD is still checked and
+// reported for all pairs, just not blocking for non-adjacent ones.
 const KNOWN_ADJACENT = new Set(
   ['GR', 'TP', 'NT', 'EM', 'GC', 'XC', 'LD'].flatMap((a, i, arr) =>
     arr.slice(i + 1).map((b) => [a, b].sort().join('+'))
   )
 );
 
+function passesGates(candidateHex, key, placed) {
+  for (const [otherKey, otherHex] of Object.entries(placed)) {
+    const de = deltaE76(candidateHex, otherHex);
+    if (de < MIN_DELTA_E) return { ok: false, reason: `ΔE76 ${de.toFixed(1)} vs ${otherKey}` };
+    if (KNOWN_ADJACENT.has([key, otherKey].sort().join('+'))) {
+      for (const type of ['protanopia', 'deuteranopia']) {
+        const cvdDe = deltaE76(simulateCvd(candidateHex, type), simulateCvd(otherHex, type));
+        if (cvdDe < MIN_DELTA_E) return { ok: false, reason: `CVD(${type}) ΔE76 ${cvdDe.toFixed(1)} vs known-adjacent ${otherKey}` };
+      }
+    }
+  }
+  return { ok: true };
+}
+
+// Fallback: search outward in hue from a base color (secondary if it
+// exists, else primary, else a neutral placeholder for GN/TL) until a
+// candidate clears passesGates. No brand to protect here — this only runs
+// when both real options failed (or didn't exist), so the priority is
+// finding ANY working color, not staying close to a hue that already
+// didn't work.
+function findFallbackHue(baseHex, key, placed, maxDrift = 60) {
+  const { h: baseHue, s, l } = hexToHsl(baseHex);
+  for (let step = 0; step <= maxDrift; step += 2) {
+    for (const dir of step === 0 ? [1] : [1, -1]) {
+      const candidateHex = hslToHex(baseHue + dir * step, Math.max(s, 55), l);
+      if (passesGates(candidateHex, key, placed).ok) return { hex: candidateHex, drift: dir * step };
+    }
+  }
+  return { hex: baseHex, drift: null }; // exhausted search — extremely unlikely across 30 colors / 360°
+}
+
+// ═══ Sequential real-color-first assignment (TOC) ════════════════════════
+
+const tocOrder = Object.keys(REAL_TOC_COLORS).sort((a, b) => (RELATION_COUNTS[b] || 0) - (RELATION_COUNTS[a] || 0));
+const placedLight = {};
+const assignmentReport = [];
+
+for (const key of tocOrder) {
+  const entry = REAL_TOC_COLORS[key];
+  let chosen = null, method = null, notes = [];
+
+  if (entry.primary) {
+    const gate = passesGates(entry.primary, key, placedLight);
+    if (gate.ok) { chosen = entry.primary; method = 'primary'; }
+    else notes.push(`primary rejected (${gate.reason})`);
+  }
+  if (!chosen && entry.secondary) {
+    const gate = passesGates(entry.secondary, key, placedLight);
+    if (gate.ok) { chosen = entry.secondary; method = 'secondary'; }
+    else notes.push(`secondary rejected (${gate.reason})`);
+  }
+  if (!chosen) {
+    // fallbackHint lets a no-research entry anchor its placeholder to a
+    // known color FAMILY (e.g. GN/Great Northern → purple, per historical
+    // sources and the 2020 GTR sub-brand rebrand) instead of a neutral
+    // grey — still an unconfirmed placeholder, just not off-brand.
+    const base = entry.secondary || entry.primary || entry.fallbackHint || '#8A8A8A';
+    const fallback = findFallbackHue(base, key, placedLight);
+    chosen = fallback.hex;
+    method = entry.primary ? 'algorithmic_fallback' : 'algorithmic_fallback_no_research';
+    const baseLabel = entry.secondary ? 'secondary' : (entry.primary ? 'primary' : (entry.fallbackHint ? 'family-hint placeholder (no research available)' : 'neutral placeholder (no research available)'));
+    notes.push(`hue-drifted ${fallback.drift}° from ${baseLabel}`);
+  }
+
+  placedLight[key] = chosen;
+  assignmentReport.push({
+    code: key, name: entry.name, confidence: entry.confidence,
+    primary: entry.primary || null, primarySource: entry.primarySource || null,
+    secondary: entry.secondary || null, secondarySource: entry.secondarySource || null,
+    caveat: entry.caveat || null,
+    method, chosen, notes: notes.join('; ') || null,
+  });
+}
+
+// ─── Metro/LRT — out of scope for corporate research, keeps its existing
+// hand-picked design intent, but still gate-checked/nudged against the new
+// TOC placements (and each other) so nothing newly collides.
+const METRO_BASE = {
+  'Transport for London': '#8B7FD6',
+  'Manchester Metrolink': '#A0459E',
+  'Docklands Light Railway': '#00A4A7',
+  'West Midlands Metro': '#7B4FA0',
+  'Croydon Tramlink': '#9B59B6',
+  'Sheffield Supertram': '#6C3483',
+  'Tyne and Wear Metro': '#C39BD3',
+  'Nottingham Express Transit': '#A569BD',
+  'Glasgow Subway': '#A12B82',
+};
+function toVividLightTheme(hex) {
+  const { h, s, l } = hexToHsl(hex);
+  return hslToHex(h, Math.min(100, Math.max(s, 72)), 38 + (l / 100) * 16);
+}
+for (const [key, baseHex] of Object.entries(METRO_BASE)) {
+  const candidate = toVividLightTheme(baseHex);
+  const gate = passesGates(candidate, key, placedLight);
+  placedLight[key] = gate.ok ? candidate : findFallbackHue(candidate, key, placedLight).hex;
+}
+
+const HERITAGE_COLOR = '#B8752E';
+const heritageLight = toVividLightTheme(HERITAGE_COLOR);
+
+// ═══ Dark theme — derived from light (lift lightness, preserve hue) ══════
+// Same direction as tfl_lines already used: the (real or best-available)
+// color anchors LIGHT theme; dark is a lift for legibility against #07090C.
+function toDarkThemeFromLight(hex) {
+  const { h, s, l } = hexToHsl(hex);
+  // TOC/metro light-theme values sit in a vivid mid-lightness band already
+  // (~38-54), unlike tfl_lines' official colors which can be very dark
+  // (Northern's true black) or very light (Circle's yellow) — so the lift
+  // here is gentler, just enough to read clearly on the dark basemap.
+  const lift = 6 + ((100 - l) / 100) * 14;
+  const newL = Math.min(72, l + lift);
+  return hslToHex(h, Math.min(100, s + 5), newL);
+}
+// Dark theme is DERIVED per-key from its own light-theme value, but that
+// derivation was found to skip the known-adjacent CVD gate entirely (a
+// real bug caught by the CVD report below flagging Lumo vs TransPennine
+// Express in dark mode despite both having cleared light-theme assignment
+// cleanly) — lifting lightness independently, with no cross-color
+// awareness, can reintroduce exactly the kind of collision the light-theme
+// gate was built to prevent. Fixed by running dark theme through the same
+// incremental gate-check-and-nudge process, same priority order (bigger
+// operators first), preferring to keep the direct lift (preserves the
+// light-theme's real hue most faithfully) and only hue-drifting when a
+// known-adjacent CVD collision actually appears in dark theme specifically.
+const darkByKey = {};
+for (const key of [...tocOrder, ...Object.keys(METRO_BASE)]) {
+  const direct = toDarkThemeFromLight(placedLight[key]);
+  const gate = passesGates(direct, key, darkByKey);
+  darkByKey[key] = gate.ok ? direct : findFallbackHue(direct, key, darkByKey).hex;
+}
+const heritageDark = toDarkThemeFromLight(heritageLight);
+
+// ═══ TfL individual line colors — unchanged from the prior round (already
+// real-corporate-anchored, light=official/unmodified, dark=lift) ═════════
+const TFL_LINE_COLORS = {
+  Bakerloo: '#B36305', Central: '#E32017', Circle: '#FFD300', District: '#00782A',
+  'Hammersmith & City': '#F3A9BB', Jubilee: '#A0A5A9', Metropolitan: '#9B0056',
+  Northern: '#000000',
+  Piccadilly: '#003688', Victoria: '#0098D4', 'Waterloo & City': '#95CDBA',
+  'Elizabeth line': '#6950A1', DLR: '#00A4A7',
+  Overground: '#EE7C0E',
+};
+function toDarkThemeFromOfficial(hex) {
+  const { h, s, l } = hexToHsl(hex);
+  const lift = 10 + ((100 - l) / 100) * 30;
+  return hslToHex(h, Math.min(100, s + 5), Math.min(78, l + lift));
+}
+const tflDarkByKey = {};
+for (const [key, hex] of Object.entries(TFL_LINE_COLORS)) tflDarkByKey[key] = toDarkThemeFromOfficial(hex);
+const tflLightCloseCheck = [];
+{
+  const keys = Object.keys(TFL_LINE_COLORS);
+  for (let i = 0; i < keys.length; i++) for (let j = i + 1; j < keys.length; j++) {
+    const de = deltaE76(TFL_LINE_COLORS[keys[i]], TFL_LINE_COLORS[keys[j]]);
+    if (de < MIN_DELTA_E) tflLightCloseCheck.push({ a: keys[i], b: keys[j], deltaE: Math.round(de * 10) / 10 });
+  }
+}
+
+// ═══ CVD report (informational for non-adjacent pairs, was blocking for
+// known-adjacent ones during assignment above) ════════════════════════════
 function cvdCheck(hexByKey, themeLabel) {
   const keys = Object.keys(hexByKey);
   const flagged = [];
   for (const type of ['protanopia', 'deuteranopia']) {
-    for (let i = 0; i < keys.length; i++) {
-      for (let j = i + 1; j < keys.length; j++) {
-        const [ka, kb] = [keys[i], keys[j]];
-        const simA = simulateCvd(hexByKey[ka], type), simB = simulateCvd(hexByKey[kb], type);
-        const de = deltaE76(simA, simB);
-        if (de < MIN_DELTA_E) {
-          flagged.push({
-            theme: themeLabel, cvd_type: type, a: ka, b: kb,
-            deltaE_simulated: Math.round(de * 10) / 10,
-            known_adjacent: KNOWN_ADJACENT.has([ka, kb].sort().join('+')),
-          });
-        }
+    for (let i = 0; i < keys.length; i++) for (let j = i + 1; j < keys.length; j++) {
+      const [ka, kb] = [keys[i], keys[j]];
+      const de = deltaE76(simulateCvd(hexByKey[ka], type), simulateCvd(hexByKey[kb], type));
+      if (de < MIN_DELTA_E) {
+        flagged.push({ theme: themeLabel, cvd_type: type, a: ka, b: kb, deltaE_simulated: Math.round(de * 10) / 10, known_adjacent: KNOWN_ADJACENT.has([ka, kb].sort().join('+')) });
       }
     }
   }
   return flagged;
 }
+const cvdFlags = [...cvdCheck(placedLight, 'light'), ...cvdCheck(darkByKey, 'dark')]
+  .sort((a, b) => (b.known_adjacent - a.known_adjacent) || (a.deltaE_simulated - b.deltaE_simulated));
 
-const finalDarkTocMetro = darkSeparated.result;
-const finalLightTocMetro = lightSeparated.result;
-
-const cvdFlags = [
-  ...cvdCheck(finalDarkTocMetro, 'dark'),
-  ...cvdCheck(finalLightTocMetro, 'light'),
-].sort((a, b) => (b.known_adjacent - a.known_adjacent) || (a.deltaE_simulated - b.deltaE_simulated));
+// ═══ Assemble output ══════════════════════════════════════════════════
+const tocKeys = Object.keys(REAL_TOC_COLORS), metroKeys = Object.keys(METRO_BASE);
+function withThemes(keys) {
+  return Object.fromEntries(keys.map((k) => [k, { dark: darkByKey[k], light: placedLight[k] }]));
+}
 
 const palette = {
   generated_at: new Date().toISOString(),
-  _notes: 'Dark theme hex are hand-curated (see script header). Light theme hex are DERIVED via darken+saturate THEN a pairwise CIE76 ΔE separation pass (min ΔE ' + MIN_DELTA_E + ', max ' + HUE_DRIFT_CAP + '° hue drift from the designed hue) — fixes the 2026-07-14 finding that a per-color-only transform let unrelated colors converge. toc/metro keyed by Phase 0 canonical code/name. tfl_lines is a reference table, not yet wired into rendering — see Phase 3. cvd_report flags pairs that stay too close under simulated protanopia/deuteranopia — operator identity is never conveyed by color alone regardless (every segment is identifiable via hover/click), so these are prioritization signals for palette tuning, not correctness bugs.',
-  toc: withThemes(finalDarkTocMetro, finalLightTocMetro, tocKeys),
-  metro: withThemes(finalDarkTocMetro, finalLightTocMetro, metroKeys),
-  tfl_lines: withThemes(tflDarkSeparated.result, tflLightSeparated.result, Object.keys(TFL_LINE_COLORS)),
+  _notes: 'SUPERSEDES the earlier algorithmically-generated TOC palette. toc hex are now REAL corporate colors (see assignment_report for source/confidence per operator) — primary tried first, secondary/alternate brand shade if primary collides, algorithmic hue-nudge fallback (flagged) only if neither real option clears separation. Light theme is the anchor (real liveries/websites are designed for pale backgrounds); dark theme is derived by lifting lightness, preserving true hue. metro/heritage are out of scope for corporate research (not TOCs) and keep their prior hand-picked design, gate-checked against the new toc placements. tfl_lines unchanged from the prior round.',
+  toc: withThemes(tocKeys),
+  metro: withThemes(metroKeys),
+  tfl_lines: Object.fromEntries(Object.keys(TFL_LINE_COLORS).map((k) => [k, { dark: tflDarkByKey[k], light: TFL_LINE_COLORS[k] }])),
   heritage: { dark: heritageDark, light: heritageLight },
+  assignment_report: assignmentReport,
   cvd_report: {
     min_delta_e_threshold: MIN_DELTA_E,
     total_flagged_pairs: cvdFlags.length,
     known_adjacent_flagged: cvdFlags.filter((f) => f.known_adjacent).length,
     pairs: cvdFlags,
   },
-  separation_report: {
-    dark_iterations: darkSeparated.iterations, dark_unresolved: darkSeparated.unresolved,
-    light_iterations: lightSeparated.iterations, light_unresolved: lightSeparated.unresolved,
-    tfl_dark_iterations: tflDarkSeparated.iterations, tfl_dark_unresolved: tflDarkSeparated.unresolved,
-    tfl_light_iterations: tflLightSeparated.iterations, tfl_light_unresolved: tflLightSeparated.unresolved,
-  },
+  tfl_light_close_check: tflLightCloseCheck,
 };
 
 writeFileSync(OUT_PATH, JSON.stringify(palette, null, 2) + '\n');
-console.log(`Wrote ${tocKeys.length} TOC + ${metroKeys.length} Metro/LRT + ${Object.keys(TFL_LINE_COLORS).length} TfL-line-reference + 1 Heritage color to ${OUT_PATH}`);
-console.log(`\nSeparation: dark ${darkSeparated.iterations} iterations (${darkSeparated.unresolved.length} unresolved), light ${lightSeparated.iterations} iterations (${lightSeparated.unresolved.length} unresolved)`);
-if (darkSeparated.unresolved.length) console.log('  dark unresolved:', darkSeparated.unresolved);
-if (lightSeparated.unresolved.length) console.log('  light unresolved:', lightSeparated.unresolved);
-console.log(`\nCVD report: ${cvdFlags.length} flagged pairs (${cvdFlags.filter((f) => f.known_adjacent).length} involve a known-adjacent operator)`);
-cvdFlags.filter((f) => f.known_adjacent).forEach((f) => console.log(`  [PRIORITY] ${f.theme}/${f.cvd_type}: ${f.a} vs ${f.b} — simulated ΔE ${f.deltaE_simulated}`));
+
+console.log(`Wrote ${tocKeys.length} TOC + ${metroKeys.length} Metro/LRT + ${Object.keys(TFL_LINE_COLORS).length} TfL-line-reference + 1 Heritage color to ${OUT_PATH}\n`);
+console.log('=== TOC assignment report ===');
+for (const r of assignmentReport) {
+  console.log(`  ${r.code.padEnd(4)} ${r.name.padEnd(26)} [${r.confidence.padEnd(6)}] ${r.method.padEnd(28)} ${r.chosen}${r.notes ? '  — ' + r.notes : ''}`);
+}
+const noneConfidence = assignmentReport.filter((r) => r.confidence === 'none');
+if (noneConfidence.length) {
+  console.log('\n=== FLAGGED — no confident real color found ===');
+  noneConfidence.forEach((r) => console.log(`  ${r.code} ${r.name}: ${r.caveat}`));
+}
+const fallbacks = assignmentReport.filter((r) => r.method.startsWith('algorithmic_fallback'));
+if (fallbacks.length) {
+  console.log('\n=== Required algorithmic fallback (real color(s) collided or unavailable) ===');
+  fallbacks.forEach((r) => console.log(`  ${r.code} ${r.name}: ${r.notes}`));
+}
+console.log(`\nCVD report: ${cvdFlags.length} flagged pairs (${cvdFlags.filter((f) => f.known_adjacent).length} known-adjacent — these were BLOCKING during assignment, so should be 0)`);
+cvdFlags.filter((f) => f.known_adjacent).forEach((f) => console.log(`  [UNEXPECTED] ${f.theme}/${f.cvd_type}: ${f.a} vs ${f.b} — ΔE ${f.deltaE_simulated}`));
