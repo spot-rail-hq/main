@@ -129,6 +129,41 @@ Include top 50 UK stations to start. Markers: 8px circle, turquoise stroke, dark
 - National Rail (turquoise) · Metro/LRT (purple) · Heritage (amber) · Closed (dashed)
 - History button right-aligned → expands year slider above legend
 
+## Operator line colors
+The map's rail-line rendering colors each physical track segment by which
+train operator(s) run over it (citylines.co-style — parallel offset lines
+where track is shared), extending this legend's category structure rather
+than replacing it. The actual hex table lives in `data/operator-colors.json`
+(dark + light per canonical operator/category) — this section is the rules,
+not the values, so other parts of the site can reference operator colors
+consistently without duplicating the table.
+- **Categories**: `toc` (real train operating companies — one bold, mutually
+  distinguishable hue each) · `metro` (light rail/tram/subway systems —
+  purple family, kept visually distinct from TOCs so the category reads at
+  a glance, matching the legend's "Metro/LRT (purple)") · `heritage`
+  (preserved lines — one shared amber-family color; never the literal
+  `--a` "delays/warnings" amber, to avoid reading as a service alert) ·
+  `tfl_lines` (reference only, not yet wired into rendering — London
+  Underground/DLR/Overground's real official per-line colors, kept ready
+  for whenever route-name-based line-splitting is confirmed working).
+- **Never uses `--t` (turquoise)** for any operator/category color — reserved
+  exclusively for UI meaning (links, the From/To selected-path highlight).
+- Canonicalization (which raw OSM operator/brand tag maps to which
+  category/color) is a *separate, broader* mapping than
+  operators-content.json's own `aliases` — that field is scoped to station-
+  data provenance precision, so it deliberately leaves things like
+  `legal_entity`/`welsh_name` strings unfolded; a line-color map needs one
+  consistent color per real service regardless of which legal/bilingual
+  name a given relation happens to carry. See
+  `scripts/build-operator-inventory.mjs` for the full mapping and its
+  reasoning, including the "Greater Thameslink Railway" finding (most of
+  that network is now tagged at the parent-company level in OSM, not by
+  individual sub-brand — Southern/Thameslink/Great Northern/Gatwick Express
+  share one color pending a route-name-based way to split them back out).
+- Rebuild: `node scripts/build-operator-inventory.mjs` (needs local
+  Overpass, see the OSM runbook) then `node scripts/build-operator-palette.mjs`
+  — folds into the same refresh cadence as the station/operator content.
+
 ## What NOT to do
 - Never show jargon to users: no STANOX, CRS codes (internal only), headcodes
 - Never hardcode hex colours — use the CSS vars defined in :root

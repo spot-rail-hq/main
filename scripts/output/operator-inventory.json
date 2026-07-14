@@ -1,0 +1,471 @@
+{
+  "generated_at": "2026-07-14T16:46:44.520Z",
+  "total_relations": 1211,
+  "total_raw_strings": 76,
+  "bucket_relation_counts": {
+    "toc": 895,
+    "metro": 207,
+    "heritage": 11,
+    "excluded": 98,
+    "unrecognized": 0
+  },
+  "unrecognized": [],
+  "mapping": {
+    "Greater Thameslink Railway": {
+      "count": 104,
+      "bucket": "toc",
+      "canonical": "Greater Thameslink Railway",
+      "code": "GTR"
+    },
+    "Transport for Greater Manchester": {
+      "count": 22,
+      "bucket": "metro",
+      "canonical": "Manchester Metrolink",
+      "code": null
+    },
+    "Transport for London": {
+      "count": 137,
+      "bucket": "metro",
+      "canonical": "Transport for London",
+      "code": null
+    },
+    "Eurostar International Ltd": {
+      "count": 16,
+      "bucket": "toc",
+      "canonical": "ES",
+      "code": "ES"
+    },
+    "First Great Western": {
+      "count": 12,
+      "bucket": "toc",
+      "canonical": "GW",
+      "code": "GW"
+    },
+    "Great Western Railway": {
+      "count": 53,
+      "bucket": "toc",
+      "canonical": "GW",
+      "code": "GW"
+    },
+    "Network Rail": {
+      "count": 3,
+      "bucket": "excluded",
+      "canonical": null,
+      "code": null
+    },
+    "Abellio Greater Anglia": {
+      "count": 6,
+      "bucket": "toc",
+      "canonical": "LE",
+      "code": "LE"
+    },
+    "Thameslink Railway": {
+      "count": 2,
+      "bucket": "toc",
+      "canonical": "Greater Thameslink Railway",
+      "code": "GTR"
+    },
+    "Tram Operations Ltd": {
+      "count": 10,
+      "bucket": "metro",
+      "canonical": "Croydon Tramlink",
+      "code": null
+    },
+    "(none)": {
+      "count": 84,
+      "bucket": "excluded",
+      "canonical": null,
+      "code": null
+    },
+    "Festiniog Railway Company": {
+      "count": 1,
+      "bucket": "heritage",
+      "canonical": "Heritage",
+      "code": null
+    },
+    "West Somerset Railway Plc": {
+      "count": 1,
+      "bucket": "heritage",
+      "canonical": "Heritage",
+      "code": null
+    },
+    "Mid-Norfolk Railway": {
+      "count": 1,
+      "bucket": "heritage",
+      "canonical": "Heritage",
+      "code": null
+    },
+    "Trafnidiaeth Cymru": {
+      "count": 52,
+      "bucket": "toc",
+      "canonical": "AW",
+      "code": "AW"
+    },
+    "CrossCountry": {
+      "count": 7,
+      "bucket": "toc",
+      "canonical": "XC",
+      "code": "XC"
+    },
+    "South Yorkshire Future Trams": {
+      "count": 8,
+      "bucket": "metro",
+      "canonical": "Sheffield Supertram",
+      "code": null
+    },
+    "Chiltern Railways": {
+      "count": 22,
+      "bucket": "toc",
+      "canonical": "CH",
+      "code": "CH"
+    },
+    "Island Line Trains": {
+      "count": 6,
+      "bucket": "toc",
+      "canonical": "IL",
+      "code": "IL"
+    },
+    "West Midlands Trains": {
+      "count": 50,
+      "bucket": "toc",
+      "canonical": "WMR",
+      "code": "WMR"
+    },
+    "London Midland": {
+      "count": 3,
+      "bucket": "excluded",
+      "canonical": null,
+      "code": null
+    },
+    "South Western Railway": {
+      "count": 59,
+      "bucket": "toc",
+      "canonical": "SW",
+      "code": "SW"
+    },
+    "Tramlink Nottingham": {
+      "count": 4,
+      "bucket": "metro",
+      "canonical": "Nottingham Express Transit",
+      "code": null
+    },
+    "Southern": {
+      "count": 13,
+      "bucket": "toc",
+      "canonical": "SN",
+      "code": "SN"
+    },
+    "Nexus": {
+      "count": 4,
+      "bucket": "metro",
+      "canonical": "Tyne and Wear Metro",
+      "code": null
+    },
+    "Southern Railway": {
+      "count": 3,
+      "bucket": "toc",
+      "canonical": "Greater Thameslink Railway",
+      "code": "GTR"
+    },
+    "National Express": {
+      "count": 1,
+      "bucket": "excluded",
+      "canonical": null,
+      "code": null
+    },
+    "Glasgow Subway": {
+      "count": 2,
+      "bucket": "metro",
+      "canonical": "Glasgow Subway",
+      "code": null
+    },
+    "Northern": {
+      "count": 52,
+      "bucket": "toc",
+      "canonical": "NT",
+      "code": "NT"
+    },
+    "London North Eastern Railway": {
+      "count": 21,
+      "bucket": "toc",
+      "canonical": "GR",
+      "code": "GR"
+    },
+    "TransPennine Express": {
+      "count": 2,
+      "bucket": "toc",
+      "canonical": "TP",
+      "code": "TP"
+    },
+    "Great Western Railways": {
+      "count": 4,
+      "bucket": "toc",
+      "canonical": "GW",
+      "code": "GW"
+    },
+    "Northern Rail": {
+      "count": 14,
+      "bucket": "toc",
+      "canonical": "NT",
+      "code": "NT"
+    },
+    "Northern Trains": {
+      "count": 20,
+      "bucket": "toc",
+      "canonical": "NT",
+      "code": "NT"
+    },
+    "Merseyrail": {
+      "count": 10,
+      "bucket": "toc",
+      "canonical": "ME",
+      "code": "ME"
+    },
+    "Avanti West Coast": {
+      "count": 20,
+      "bucket": "toc",
+      "canonical": "VT",
+      "code": "VT"
+    },
+    "ScotRail": {
+      "count": 146,
+      "bucket": "toc",
+      "canonical": "SR",
+      "code": "SR"
+    },
+    "East Midlands Railway": {
+      "count": 19,
+      "bucket": "toc",
+      "canonical": "EM",
+      "code": "EM"
+    },
+    "Southeastern": {
+      "count": 41,
+      "bucket": "toc",
+      "canonical": "SE",
+      "code": "SE"
+    },
+    "South Eastern": {
+      "count": 2,
+      "bucket": "toc",
+      "canonical": "SE",
+      "code": "SE"
+    },
+    "TVR": {
+      "count": 1,
+      "bucket": "excluded",
+      "canonical": null,
+      "code": null
+    },
+    "Gwili Railway Co. Ltd": {
+      "count": 1,
+      "bucket": "heritage",
+      "canonical": "Heritage",
+      "code": null
+    },
+    "Barrow Hill Roundhouse Railway Museum": {
+      "count": 1,
+      "bucket": "heritage",
+      "canonical": "Heritage",
+      "code": null
+    },
+    "Transport for Wales": {
+      "count": 8,
+      "bucket": "toc",
+      "canonical": "AW",
+      "code": "AW"
+    },
+    "Transpennine Express": {
+      "count": 19,
+      "bucket": "toc",
+      "canonical": "TP",
+      "code": "TP"
+    },
+    "M-Shed": {
+      "count": 1,
+      "bucket": "excluded",
+      "canonical": null,
+      "code": null
+    },
+    "Caledonian Sleeper": {
+      "count": 10,
+      "bucket": "toc",
+      "canonical": "CS",
+      "code": "CS"
+    },
+    "West Coast Railways": {
+      "count": 2,
+      "bucket": "toc",
+      "canonical": "WR",
+      "code": "WR"
+    },
+    "Southeastern Railway": {
+      "count": 3,
+      "bucket": "toc",
+      "canonical": "SE",
+      "code": "SE"
+    },
+    "Southeastern Railways": {
+      "count": 1,
+      "bucket": "toc",
+      "canonical": "SE",
+      "code": "SE"
+    },
+    "GTS Rail Operations": {
+      "count": 24,
+      "bucket": "toc",
+      "canonical": "LD",
+      "code": "LD"
+    },
+    "Brighton & Hove City Council": {
+      "count": 1,
+      "bucket": "excluded",
+      "canonical": null,
+      "code": null
+    },
+    "Virgin Trains East Coast": {
+      "count": 1,
+      "bucket": "toc",
+      "canonical": "GR",
+      "code": "GR"
+    },
+    "Arriva Trains North": {
+      "count": 5,
+      "bucket": "toc",
+      "canonical": "NT",
+      "code": "NT"
+    },
+    "Arriva CrossCountry": {
+      "count": 2,
+      "bucket": "toc",
+      "canonical": "XC",
+      "code": "XC"
+    },
+    "Arriva Rail North": {
+      "count": 7,
+      "bucket": "toc",
+      "canonical": "NT",
+      "code": "NT"
+    },
+    "KeolisAmey Docklands Ltd": {
+      "count": 12,
+      "bucket": "metro",
+      "canonical": "Docklands Light Railway",
+      "code": null
+    },
+    "British Postal Museum": {
+      "count": 1,
+      "bucket": "excluded",
+      "canonical": null,
+      "code": null
+    },
+    "Grand Central": {
+      "count": 2,
+      "bucket": "toc",
+      "canonical": "GC",
+      "code": "GC"
+    },
+    "Midland and Great Northern Joint Railway": {
+      "count": 1,
+      "bucket": "excluded",
+      "canonical": null,
+      "code": null
+    },
+    "Merseyside Tramway Preservation Society": {
+      "count": 1,
+      "bucket": "heritage",
+      "canonical": "Heritage",
+      "code": null
+    },
+    "North TransPennine": {
+      "count": 1,
+      "bucket": "excluded",
+      "canonical": null,
+      "code": null
+    },
+    "Greater Anglia": {
+      "count": 25,
+      "bucket": "toc",
+      "canonical": "LE",
+      "code": "LE"
+    },
+    "East Midlands": {
+      "count": 2,
+      "bucket": "toc",
+      "canonical": "EM",
+      "code": "EM"
+    },
+    "Cross Country": {
+      "count": 6,
+      "bucket": "toc",
+      "canonical": "XC",
+      "code": "XC"
+    },
+    "c2c": {
+      "count": 8,
+      "bucket": "toc",
+      "canonical": "CC",
+      "code": "CC"
+    },
+    "Scottish Railway Preservation Society": {
+      "count": 1,
+      "bucket": "heritage",
+      "canonical": "Heritage",
+      "code": null
+    },
+    "Ravenglass & Eskdale Railway": {
+      "count": 2,
+      "bucket": "heritage",
+      "canonical": "Heritage",
+      "code": null
+    },
+    "Almond Valley Heritage Centre": {
+      "count": 1,
+      "bucket": "heritage",
+      "canonical": "Heritage",
+      "code": null
+    },
+    "Brechin Railway Preservation Society": {
+      "count": 1,
+      "bucket": "heritage",
+      "canonical": "Heritage",
+      "code": null
+    },
+    "Southampton & Dorchester Railway": {
+      "count": 1,
+      "bucket": "excluded",
+      "canonical": null,
+      "code": null
+    },
+    "GWR": {
+      "count": 1,
+      "bucket": "toc",
+      "canonical": "GW",
+      "code": "GW"
+    },
+    "Govia Thameslink Railway": {
+      "count": 2,
+      "bucket": "toc",
+      "canonical": "Greater Thameslink Railway",
+      "code": "GTR"
+    },
+    "TfGM": {
+      "count": 1,
+      "bucket": "metro",
+      "canonical": "Manchester Metrolink",
+      "code": null
+    },
+    "Midland Metro Limited (WMCA)": {
+      "count": 7,
+      "bucket": "metro",
+      "canonical": "West Midlands Metro",
+      "code": null
+    },
+    "Lumo": {
+      "count": 11,
+      "bucket": "toc",
+      "canonical": "LD",
+      "code": "LD"
+    }
+  }
+}

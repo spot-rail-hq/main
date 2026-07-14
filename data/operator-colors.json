@@ -1,0 +1,3432 @@
+{
+  "generated_at": "2026-07-14T18:26:54.556Z",
+  "_notes": "Dark theme hex are hand-curated (see script header). Light theme hex are DERIVED via darken+saturate THEN a pairwise CIE76 ΔE separation pass (min ΔE 15, max 22° hue drift from the designed hue) — fixes the 2026-07-14 finding that a per-color-only transform let unrelated colors converge. toc/metro keyed by Phase 0 canonical code/name. tfl_lines is a reference table, not yet wired into rendering — see Phase 3. cvd_report flags pairs that stay too close under simulated protanopia/deuteranopia — operator identity is never conveyed by color alone regardless (every segment is identifiable via hover/click), so these are prioritization signals for palette tuning, not correctness bugs.",
+  "toc": {
+    "GR": {
+      "dark": "#E32636",
+      "light": "#890B16"
+    },
+    "GX": {
+      "dark": "#FF5A36",
+      "light": "#AE1F00"
+    },
+    "GN": {
+      "dark": "#9B3D57",
+      "light": "#6A2236"
+    },
+    "TL": {
+      "dark": "#3A7CA5",
+      "light": "#1E6B69"
+    },
+    "AW": {
+      "dark": "#C1440E",
+      "light": "#9F3305"
+    },
+    "CC": {
+      "dark": "#FFA630",
+      "light": "#A96000"
+    },
+    "GC": {
+      "dark": "#994700",
+      "light": "#A24B00"
+    },
+    "LD": {
+      "dark": "#FFDE59",
+      "light": "#C8A000"
+    },
+    "ME": {
+      "dark": "#C9A227",
+      "light": "#846912"
+    },
+    "GW": {
+      "dark": "#3FA34D",
+      "light": "#277E34"
+    },
+    "SN": {
+      "dark": "#7ED957",
+      "light": "#3D9119"
+    },
+    "IL": {
+      "dark": "#5FBFA0",
+      "light": "#267660"
+    },
+    "EM": {
+      "dark": "#2FBF8F",
+      "light": "#136747"
+    },
+    "CH": {
+      "dark": "#1E909E",
+      "light": "#138979"
+    },
+    "HT": {
+      "dark": "#7FC4E8",
+      "light": "#1884BC"
+    },
+    "SW": {
+      "dark": "#2E7FD1",
+      "light": "#136872"
+    },
+    "WMR": {
+      "dark": "#4A6AA5",
+      "light": "#2D637B"
+    },
+    "SE": {
+      "dark": "#5C7A89",
+      "light": "#3F4C6F"
+    },
+    "NT": {
+      "dark": "#229EC3",
+      "light": "#0F7E7B"
+    },
+    "SR": {
+      "dark": "#1D2587",
+      "light": "#151D82"
+    },
+    "ES": {
+      "dark": "#1C2440",
+      "light": "#295473"
+    },
+    "GTR": {
+      "dark": "#6730A6",
+      "light": "#4E1E85"
+    },
+    "TP": {
+      "dark": "#23295C",
+      "light": "#21386C"
+    },
+    "VT": {
+      "dark": "#B84FCC",
+      "light": "#691C7D"
+    },
+    "CS": {
+      "dark": "#4D2E6B",
+      "light": "#57215C"
+    },
+    "HX": {
+      "dark": "#ADA0E8",
+      "light": "#4225C8"
+    },
+    "XC": {
+      "dark": "#B03A48",
+      "light": "#6D1C26"
+    },
+    "LE": {
+      "dark": "#D6336C",
+      "light": "#931541"
+    },
+    "WR": {
+      "dark": "#8C5A3C",
+      "light": "#643B23"
+    },
+    "XR": {
+      "dark": "#5057A1",
+      "light": "#2B2D68"
+    }
+  },
+  "metro": {
+    "Transport for London": {
+      "dark": "#8B7FD6",
+      "light": "#38289E"
+    },
+    "Manchester Metrolink": {
+      "dark": "#A04583",
+      "light": "#7D2C5B"
+    },
+    "Docklands Light Railway": {
+      "dark": "#00A7A2",
+      "light": "#00A49F"
+    },
+    "West Midlands Metro": {
+      "dark": "#734FA0",
+      "light": "#482D6F"
+    },
+    "Croydon Tramlink": {
+      "dark": "#A059B6",
+      "light": "#5B2870"
+    },
+    "Sheffield Supertram": {
+      "dark": "#803483",
+      "light": "#7A2779"
+    },
+    "Tyne and Wear Metro": {
+      "dark": "#CB9BD3",
+      "light": "#913A9F"
+    },
+    "Nottingham Express Transit": {
+      "dark": "#BD69B3",
+      "light": "#772B6A"
+    },
+    "Glasgow Subway": {
+      "dark": "#A12B64",
+      "light": "#6A163E"
+    }
+  },
+  "tfl_lines": {
+    "Bakerloo": {
+      "dark": "#B36305",
+      "light": "#875000"
+    },
+    "Central": {
+      "dark": "#E32017",
+      "light": "#810C07"
+    },
+    "Circle": {
+      "dark": "#FFD300",
+      "light": "#AC8E00"
+    },
+    "District": {
+      "dark": "#00782A",
+      "light": "#00802D"
+    },
+    "Hammersmith & City": {
+      "dark": "#F3A9BB",
+      "light": "#E71548"
+    },
+    "Jubilee": {
+      "dark": "#A0A5A9",
+      "light": "#52606B"
+    },
+    "Metropolitan": {
+      "dark": "#9B0056",
+      "light": "#9D0057"
+    },
+    "Northern": {
+      "dark": "#4D4D4D",
+      "light": "#423838"
+    },
+    "Piccadilly": {
+      "dark": "#003688",
+      "light": "#003D9A"
+    },
+    "Victoria": {
+      "dark": "#0098D4",
+      "light": "#00719E"
+    },
+    "Waterloo & City": {
+      "dark": "#95CDBA",
+      "light": "#3A9677"
+    },
+    "Elizabeth line": {
+      "dark": "#6950A1",
+      "light": "#463075"
+    },
+    "DLR": {
+      "dark": "#00A4A7",
+      "light": "#007E80"
+    },
+    "Overground": {
+      "dark": "#EE7C0E",
+      "light": "#A84C03"
+    }
+  },
+  "heritage": {
+    "dark": "#B8752E",
+    "light": "#6B4114"
+  },
+  "cvd_report": {
+    "min_delta_e_threshold": 15,
+    "total_flagged_pairs": 369,
+    "known_adjacent_flagged": 5,
+    "pairs": [
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "GC",
+        "b": "XC",
+        "deltaE_simulated": 9.1,
+        "known_adjacent": true
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "GR",
+        "b": "GC",
+        "deltaE_simulated": 11,
+        "known_adjacent": true
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "GC",
+        "b": "XC",
+        "deltaE_simulated": 11.4,
+        "known_adjacent": true
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "GR",
+        "b": "GC",
+        "deltaE_simulated": 12.3,
+        "known_adjacent": true
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "NT",
+        "b": "TP",
+        "deltaE_simulated": 14.9,
+        "known_adjacent": true
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "GTR",
+        "b": "XR",
+        "deltaE_simulated": 0.4,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "TL",
+        "b": "CH",
+        "deltaE_simulated": 1.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "TL",
+        "b": "WMR",
+        "deltaE_simulated": 1.8,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "SW",
+        "b": "ES",
+        "deltaE_simulated": 1.9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "TL",
+        "b": "Croydon Tramlink",
+        "deltaE_simulated": 2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "TP",
+        "b": "XR",
+        "deltaE_simulated": 2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "SW",
+        "b": "WMR",
+        "deltaE_simulated": 2.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "WMR",
+        "b": "XR",
+        "deltaE_simulated": 2.3,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "GN",
+        "b": "WR",
+        "deltaE_simulated": 2.4,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "TL",
+        "b": "WMR",
+        "deltaE_simulated": 2.5,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "CH",
+        "b": "WMR",
+        "deltaE_simulated": 2.5,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "SE",
+        "b": "West Midlands Metro",
+        "deltaE_simulated": 2.5,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "WMR",
+        "b": "GTR",
+        "deltaE_simulated": 2.6,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "TL",
+        "b": "VT",
+        "deltaE_simulated": 2.6,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "EM",
+        "b": "CS",
+        "deltaE_simulated": 2.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "SW",
+        "b": "WMR",
+        "deltaE_simulated": 2.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "GN",
+        "b": "Glasgow Subway",
+        "deltaE_simulated": 2.9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "AW",
+        "b": "GC",
+        "deltaE_simulated": 2.9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "GN",
+        "b": "Glasgow Subway",
+        "deltaE_simulated": 2.9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "WMR",
+        "b": "XR",
+        "deltaE_simulated": 3,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "GN",
+        "b": "WR",
+        "deltaE_simulated": 3,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "ME",
+        "b": "LE",
+        "deltaE_simulated": 3,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "WMR",
+        "b": "GTR",
+        "deltaE_simulated": 3.1,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "AW",
+        "b": "GC",
+        "deltaE_simulated": 3.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "WMR",
+        "b": "NT",
+        "deltaE_simulated": 3.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "SW",
+        "b": "SE",
+        "deltaE_simulated": 3.3,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "XC",
+        "b": "WR",
+        "deltaE_simulated": 3.3,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "GN",
+        "b": "Glasgow Subway",
+        "deltaE_simulated": 3.6,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "SE",
+        "b": "West Midlands Metro",
+        "deltaE_simulated": 3.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "SE",
+        "b": "West Midlands Metro",
+        "deltaE_simulated": 3.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "CC",
+        "b": "GC",
+        "deltaE_simulated": 3.8,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "ME",
+        "b": "LE",
+        "deltaE_simulated": 3.9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "CC",
+        "b": "GC",
+        "deltaE_simulated": 3.9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "ES",
+        "b": "West Midlands Metro",
+        "deltaE_simulated": 3.9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "VT",
+        "b": "Croydon Tramlink",
+        "deltaE_simulated": 3.9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "GN",
+        "b": "Glasgow Subway",
+        "deltaE_simulated": 4,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "WMR",
+        "b": "ES",
+        "deltaE_simulated": 4,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "VT",
+        "b": "Croydon Tramlink",
+        "deltaE_simulated": 4.1,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "GW",
+        "b": "Manchester Metrolink",
+        "deltaE_simulated": 4.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "TL",
+        "b": "GTR",
+        "deltaE_simulated": 4.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "CH",
+        "b": "Docklands Light Railway",
+        "deltaE_simulated": 4.3,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "TL",
+        "b": "GTR",
+        "deltaE_simulated": 4.4,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "SW",
+        "b": "ES",
+        "deltaE_simulated": 4.4,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "SW",
+        "b": "West Midlands Metro",
+        "deltaE_simulated": 4.4,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "TL",
+        "b": "SE",
+        "deltaE_simulated": 4.4,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "CH",
+        "b": "NT",
+        "deltaE_simulated": 4.4,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "IL",
+        "b": "EM",
+        "deltaE_simulated": 4.6,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "TL",
+        "b": "XR",
+        "deltaE_simulated": 4.6,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "CH",
+        "b": "XR",
+        "deltaE_simulated": 4.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "TL",
+        "b": "XR",
+        "deltaE_simulated": 4.8,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "GW",
+        "b": "Manchester Metrolink",
+        "deltaE_simulated": 4.8,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "WMR",
+        "b": "ES",
+        "deltaE_simulated": 4.8,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "GW",
+        "b": "CS",
+        "deltaE_simulated": 4.8,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "TL",
+        "b": "SE",
+        "deltaE_simulated": 4.9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "SW",
+        "b": "GTR",
+        "deltaE_simulated": 4.9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "TL",
+        "b": "WMR",
+        "deltaE_simulated": 5,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "TL",
+        "b": "Docklands Light Railway",
+        "deltaE_simulated": 5.1,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "SN",
+        "b": "Nottingham Express Transit",
+        "deltaE_simulated": 5.1,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "ES",
+        "b": "GTR",
+        "deltaE_simulated": 5.1,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "SW",
+        "b": "NT",
+        "deltaE_simulated": 5.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "WR",
+        "b": "Glasgow Subway",
+        "deltaE_simulated": 5.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "CH",
+        "b": "West Midlands Metro",
+        "deltaE_simulated": 5.3,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "NT",
+        "b": "VT",
+        "deltaE_simulated": 5.3,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "GN",
+        "b": "WR",
+        "deltaE_simulated": 5.4,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "CH",
+        "b": "VT",
+        "deltaE_simulated": 5.4,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "IL",
+        "b": "SE",
+        "deltaE_simulated": 5.4,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "NT",
+        "b": "GTR",
+        "deltaE_simulated": 5.4,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "CH",
+        "b": "NT",
+        "deltaE_simulated": 5.5,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "WMR",
+        "b": "SE",
+        "deltaE_simulated": 5.5,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "IL",
+        "b": "Sheffield Supertram",
+        "deltaE_simulated": 5.6,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "TP",
+        "b": "XR",
+        "deltaE_simulated": 5.6,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "TL",
+        "b": "CH",
+        "deltaE_simulated": 5.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "WMR",
+        "b": "Docklands Light Railway",
+        "deltaE_simulated": 5.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "WR",
+        "b": "Glasgow Subway",
+        "deltaE_simulated": 5.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "GN",
+        "b": "WR",
+        "deltaE_simulated": 5.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "IL",
+        "b": "West Midlands Metro",
+        "deltaE_simulated": 5.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "Docklands Light Railway",
+        "b": "West Midlands Metro",
+        "deltaE_simulated": 5.8,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "VT",
+        "b": "Croydon Tramlink",
+        "deltaE_simulated": 5.9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "GW",
+        "b": "Sheffield Supertram",
+        "deltaE_simulated": 5.9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "TL",
+        "b": "SW",
+        "deltaE_simulated": 6,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "ME",
+        "b": "LE",
+        "deltaE_simulated": 6.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "WMR",
+        "b": "West Midlands Metro",
+        "deltaE_simulated": 6.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "SE",
+        "b": "ES",
+        "deltaE_simulated": 6.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "SE",
+        "b": "Croydon Tramlink",
+        "deltaE_simulated": 6.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "TL",
+        "b": "ES",
+        "deltaE_simulated": 6.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "EM",
+        "b": "Croydon Tramlink",
+        "deltaE_simulated": 6.3,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "CH",
+        "b": "WMR",
+        "deltaE_simulated": 6.3,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "XC",
+        "b": "WR",
+        "deltaE_simulated": 6.3,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "WMR",
+        "b": "NT",
+        "deltaE_simulated": 6.4,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "TL",
+        "b": "West Midlands Metro",
+        "deltaE_simulated": 6.6,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "ES",
+        "b": "XR",
+        "deltaE_simulated": 6.6,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "TL",
+        "b": "NT",
+        "deltaE_simulated": 6.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "SW",
+        "b": "NT",
+        "deltaE_simulated": 6.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "Sheffield Supertram",
+        "b": "Nottingham Express Transit",
+        "deltaE_simulated": 6.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "CH",
+        "b": "Docklands Light Railway",
+        "deltaE_simulated": 6.8,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "AW",
+        "b": "CC",
+        "deltaE_simulated": 6.8,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "SE",
+        "b": "VT",
+        "deltaE_simulated": 6.8,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "AW",
+        "b": "CC",
+        "deltaE_simulated": 6.8,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "HT",
+        "b": "HX",
+        "deltaE_simulated": 6.9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "NT",
+        "b": "ES",
+        "deltaE_simulated": 6.9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "TL",
+        "b": "NT",
+        "deltaE_simulated": 7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "CH",
+        "b": "GTR",
+        "deltaE_simulated": 7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "SE",
+        "b": "GTR",
+        "deltaE_simulated": 7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "VT",
+        "b": "Croydon Tramlink",
+        "deltaE_simulated": 7.1,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "EM",
+        "b": "West Midlands Metro",
+        "deltaE_simulated": 7.1,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "CH",
+        "b": "WMR",
+        "deltaE_simulated": 7.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "GX",
+        "b": "AW",
+        "deltaE_simulated": 7.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "TL",
+        "b": "SW",
+        "deltaE_simulated": 7.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "IL",
+        "b": "CS",
+        "deltaE_simulated": 7.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "TL",
+        "b": "CH",
+        "deltaE_simulated": 7.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "SE",
+        "b": "Sheffield Supertram",
+        "deltaE_simulated": 7.3,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "IL",
+        "b": "Croydon Tramlink",
+        "deltaE_simulated": 7.3,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "IL",
+        "b": "EM",
+        "deltaE_simulated": 7.4,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "Sheffield Supertram",
+        "b": "Nottingham Express Transit",
+        "deltaE_simulated": 7.4,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "GTR",
+        "b": "XR",
+        "deltaE_simulated": 7.5,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "GX",
+        "b": "GC",
+        "deltaE_simulated": 7.5,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "IL",
+        "b": "EM",
+        "deltaE_simulated": 7.5,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "SN",
+        "b": "Nottingham Express Transit",
+        "deltaE_simulated": 7.6,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "IL",
+        "b": "VT",
+        "deltaE_simulated": 7.6,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "SE",
+        "b": "NT",
+        "deltaE_simulated": 7.6,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "GTR",
+        "b": "TP",
+        "deltaE_simulated": 7.6,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "XR",
+        "b": "Docklands Light Railway",
+        "deltaE_simulated": 7.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "ES",
+        "b": "GTR",
+        "deltaE_simulated": 7.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "IL",
+        "b": "EM",
+        "deltaE_simulated": 7.8,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "IL",
+        "b": "Croydon Tramlink",
+        "deltaE_simulated": 7.9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "CS",
+        "b": "Croydon Tramlink",
+        "deltaE_simulated": 7.9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "TL",
+        "b": "CH",
+        "deltaE_simulated": 8,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "GX",
+        "b": "CC",
+        "deltaE_simulated": 8.1,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "GW",
+        "b": "Nottingham Express Transit",
+        "deltaE_simulated": 8.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "SN",
+        "b": "Manchester Metrolink",
+        "deltaE_simulated": 8.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "SW",
+        "b": "VT",
+        "deltaE_simulated": 8.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "GX",
+        "b": "AW",
+        "deltaE_simulated": 8.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "EM",
+        "b": "West Midlands Metro",
+        "deltaE_simulated": 8.3,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "SW",
+        "b": "XR",
+        "deltaE_simulated": 8.3,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "TL",
+        "b": "IL",
+        "deltaE_simulated": 8.4,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "IL",
+        "b": "VT",
+        "deltaE_simulated": 8.5,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "TL",
+        "b": "West Midlands Metro",
+        "deltaE_simulated": 8.5,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "GTR",
+        "b": "XR",
+        "deltaE_simulated": 8.5,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "CS",
+        "b": "Croydon Tramlink",
+        "deltaE_simulated": 8.5,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "GW",
+        "b": "Croydon Tramlink",
+        "deltaE_simulated": 8.5,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "NT",
+        "b": "Croydon Tramlink",
+        "deltaE_simulated": 8.6,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "GN",
+        "b": "XC",
+        "deltaE_simulated": 8.6,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "TL",
+        "b": "IL",
+        "deltaE_simulated": 8.6,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "GX",
+        "b": "CC",
+        "deltaE_simulated": 8.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "SN",
+        "b": "Sheffield Supertram",
+        "deltaE_simulated": 8.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "IL",
+        "b": "Croydon Tramlink",
+        "deltaE_simulated": 8.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "IL",
+        "b": "Nottingham Express Transit",
+        "deltaE_simulated": 8.8,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "WMR",
+        "b": "GTR",
+        "deltaE_simulated": 8.8,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "TL",
+        "b": "WMR",
+        "deltaE_simulated": 8.8,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "EM",
+        "b": "SE",
+        "deltaE_simulated": 8.8,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "CH",
+        "b": "SW",
+        "deltaE_simulated": 8.8,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "SW",
+        "b": "Croydon Tramlink",
+        "deltaE_simulated": 8.9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "ES",
+        "b": "TP",
+        "deltaE_simulated": 8.9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "GTR",
+        "b": "West Midlands Metro",
+        "deltaE_simulated": 8.9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "GN",
+        "b": "XC",
+        "deltaE_simulated": 9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "IL",
+        "b": "CH",
+        "deltaE_simulated": 9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "CH",
+        "b": "Croydon Tramlink",
+        "deltaE_simulated": 9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "WMR",
+        "b": "SE",
+        "deltaE_simulated": 9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "GR",
+        "b": "AW",
+        "deltaE_simulated": 9.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "WR",
+        "b": "Glasgow Subway",
+        "deltaE_simulated": 9.3,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "CH",
+        "b": "Tyne and Wear Metro",
+        "deltaE_simulated": 9.3,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "WMR",
+        "b": "VT",
+        "deltaE_simulated": 9.3,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "WR",
+        "b": "Glasgow Subway",
+        "deltaE_simulated": 9.3,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "EM",
+        "b": "Croydon Tramlink",
+        "deltaE_simulated": 9.3,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "West Midlands Metro",
+        "b": "Croydon Tramlink",
+        "deltaE_simulated": 9.4,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "CH",
+        "b": "SE",
+        "deltaE_simulated": 9.4,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "CH",
+        "b": "GTR",
+        "deltaE_simulated": 9.5,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "Manchester Metrolink",
+        "b": "Glasgow Subway",
+        "deltaE_simulated": 9.5,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "GW",
+        "b": "Glasgow Subway",
+        "deltaE_simulated": 9.6,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "GW",
+        "b": "VT",
+        "deltaE_simulated": 9.6,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "CH",
+        "b": "XR",
+        "deltaE_simulated": 9.8,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "Manchester Metrolink",
+        "b": "Glasgow Subway",
+        "deltaE_simulated": 9.8,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "EM",
+        "b": "SE",
+        "deltaE_simulated": 9.9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "GX",
+        "b": "GC",
+        "deltaE_simulated": 9.9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "VT",
+        "b": "CS",
+        "deltaE_simulated": 9.9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "EM",
+        "b": "VT",
+        "deltaE_simulated": 10,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "HT",
+        "b": "Transport for London",
+        "deltaE_simulated": 10,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "SE",
+        "b": "ES",
+        "deltaE_simulated": 10,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "ES",
+        "b": "XR",
+        "deltaE_simulated": 10.1,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "SW",
+        "b": "TP",
+        "deltaE_simulated": 10.1,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "Manchester Metrolink",
+        "b": "Nottingham Express Transit",
+        "deltaE_simulated": 10.1,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "TL",
+        "b": "NT",
+        "deltaE_simulated": 10.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "WMR",
+        "b": "GTR",
+        "deltaE_simulated": 10.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "CH",
+        "b": "ES",
+        "deltaE_simulated": 10.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "SW",
+        "b": "SE",
+        "deltaE_simulated": 10.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "Manchester Metrolink",
+        "b": "Nottingham Express Transit",
+        "deltaE_simulated": 10.3,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "GR",
+        "b": "AW",
+        "deltaE_simulated": 10.3,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "GR",
+        "b": "GX",
+        "deltaE_simulated": 10.5,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "TL",
+        "b": "CS",
+        "deltaE_simulated": 10.5,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "VT",
+        "b": "West Midlands Metro",
+        "deltaE_simulated": 10.5,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "IL",
+        "b": "VT",
+        "deltaE_simulated": 10.5,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "WMR",
+        "b": "XR",
+        "deltaE_simulated": 10.5,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "HT",
+        "b": "Transport for London",
+        "deltaE_simulated": 10.6,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "Tyne and Wear Metro",
+        "b": "Nottingham Express Transit",
+        "deltaE_simulated": 10.6,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "GR",
+        "b": "ME",
+        "deltaE_simulated": 10.6,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "GN",
+        "b": "SN",
+        "deltaE_simulated": 10.6,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "WMR",
+        "b": "Croydon Tramlink",
+        "deltaE_simulated": 10.6,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "GTR",
+        "b": "XR",
+        "deltaE_simulated": 10.6,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "TL",
+        "b": "West Midlands Metro",
+        "deltaE_simulated": 10.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "VT",
+        "b": "HX",
+        "deltaE_simulated": 10.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "XC",
+        "b": "LE",
+        "deltaE_simulated": 10.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "SN",
+        "b": "Manchester Metrolink",
+        "deltaE_simulated": 10.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "GR",
+        "b": "AW",
+        "deltaE_simulated": 10.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "SN",
+        "b": "Glasgow Subway",
+        "deltaE_simulated": 10.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "NT",
+        "b": "West Midlands Metro",
+        "deltaE_simulated": 10.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "SR",
+        "b": "Transport for London",
+        "deltaE_simulated": 10.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "ES",
+        "b": "TP",
+        "deltaE_simulated": 10.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "SE",
+        "b": "NT",
+        "deltaE_simulated": 10.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "GX",
+        "b": "CC",
+        "deltaE_simulated": 10.8,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "CH",
+        "b": "GTR",
+        "deltaE_simulated": 10.8,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "IL",
+        "b": "CH",
+        "deltaE_simulated": 10.8,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "WMR",
+        "b": "NT",
+        "deltaE_simulated": 10.9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "EM",
+        "b": "Croydon Tramlink",
+        "deltaE_simulated": 10.9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "EM",
+        "b": "Sheffield Supertram",
+        "deltaE_simulated": 10.9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "CH",
+        "b": "Sheffield Supertram",
+        "deltaE_simulated": 10.9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "NT",
+        "b": "ES",
+        "deltaE_simulated": 10.9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "TL",
+        "b": "XR",
+        "deltaE_simulated": 10.9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "GR",
+        "b": "GX",
+        "deltaE_simulated": 11,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "EM",
+        "b": "Transport for London",
+        "deltaE_simulated": 11,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "TL",
+        "b": "ES",
+        "deltaE_simulated": 11,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "Sheffield Supertram",
+        "b": "Tyne and Wear Metro",
+        "deltaE_simulated": 11,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "SE",
+        "b": "West Midlands Metro",
+        "deltaE_simulated": 11.1,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "GTR",
+        "b": "Docklands Light Railway",
+        "deltaE_simulated": 11.1,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "Transport for London",
+        "b": "Docklands Light Railway",
+        "deltaE_simulated": 11.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "TL",
+        "b": "GTR",
+        "deltaE_simulated": 11.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "IL",
+        "b": "Nottingham Express Transit",
+        "deltaE_simulated": 11.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "WMR",
+        "b": "West Midlands Metro",
+        "deltaE_simulated": 11.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "Tyne and Wear Metro",
+        "b": "Nottingham Express Transit",
+        "deltaE_simulated": 11.3,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "SW",
+        "b": "GTR",
+        "deltaE_simulated": 11.3,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "GN",
+        "b": "Manchester Metrolink",
+        "deltaE_simulated": 11.3,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "SE",
+        "b": "Croydon Tramlink",
+        "deltaE_simulated": 11.4,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "EM",
+        "b": "Nottingham Express Transit",
+        "deltaE_simulated": 11.4,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "CH",
+        "b": "SE",
+        "deltaE_simulated": 11.4,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "GTR",
+        "b": "West Midlands Metro",
+        "deltaE_simulated": 11.4,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "VT",
+        "b": "CS",
+        "deltaE_simulated": 11.4,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "CS",
+        "b": "Sheffield Supertram",
+        "deltaE_simulated": 11.4,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "GX",
+        "b": "CC",
+        "deltaE_simulated": 11.4,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "SN",
+        "b": "Manchester Metrolink",
+        "deltaE_simulated": 11.4,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "GR",
+        "b": "AW",
+        "deltaE_simulated": 11.5,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "IL",
+        "b": "Transport for London",
+        "deltaE_simulated": 11.5,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "XC",
+        "b": "LE",
+        "deltaE_simulated": 11.5,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "GW",
+        "b": "Sheffield Supertram",
+        "deltaE_simulated": 11.5,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "IL",
+        "b": "GTR",
+        "deltaE_simulated": 11.5,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "XC",
+        "b": "Glasgow Subway",
+        "deltaE_simulated": 11.5,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "GTR",
+        "b": "West Midlands Metro",
+        "deltaE_simulated": 11.6,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "CH",
+        "b": "SW",
+        "deltaE_simulated": 11.6,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "West Midlands Metro",
+        "b": "Croydon Tramlink",
+        "deltaE_simulated": 11.6,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "EM",
+        "b": "Nottingham Express Transit",
+        "deltaE_simulated": 11.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "XC",
+        "b": "WR",
+        "deltaE_simulated": 11.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "XC",
+        "b": "LE",
+        "deltaE_simulated": 11.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "XR",
+        "b": "West Midlands Metro",
+        "deltaE_simulated": 11.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "ES",
+        "b": "West Midlands Metro",
+        "deltaE_simulated": 11.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "GW",
+        "b": "SN",
+        "deltaE_simulated": 11.8,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "CH",
+        "b": "WMR",
+        "deltaE_simulated": 11.8,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "CH",
+        "b": "West Midlands Metro",
+        "deltaE_simulated": 11.8,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "WMR",
+        "b": "West Midlands Metro",
+        "deltaE_simulated": 11.9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "VT",
+        "b": "Tyne and Wear Metro",
+        "deltaE_simulated": 11.9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "Sheffield Supertram",
+        "b": "Tyne and Wear Metro",
+        "deltaE_simulated": 11.9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "VT",
+        "b": "Sheffield Supertram",
+        "deltaE_simulated": 11.9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "NT",
+        "b": "Transport for London",
+        "deltaE_simulated": 12,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "NT",
+        "b": "Docklands Light Railway",
+        "deltaE_simulated": 12,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "VT",
+        "b": "Sheffield Supertram",
+        "deltaE_simulated": 12,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "GW",
+        "b": "SN",
+        "deltaE_simulated": 12,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "TL",
+        "b": "Docklands Light Railway",
+        "deltaE_simulated": 12.1,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "GW",
+        "b": "Glasgow Subway",
+        "deltaE_simulated": 12.1,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "EM",
+        "b": "SE",
+        "deltaE_simulated": 12.1,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "IL",
+        "b": "West Midlands Metro",
+        "deltaE_simulated": 12.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "IL",
+        "b": "Croydon Tramlink",
+        "deltaE_simulated": 12.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "GN",
+        "b": "Manchester Metrolink",
+        "deltaE_simulated": 12.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "GR",
+        "b": "LE",
+        "deltaE_simulated": 12.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "SW",
+        "b": "West Midlands Metro",
+        "deltaE_simulated": 12.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "SW",
+        "b": "NT",
+        "deltaE_simulated": 12.3,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "CH",
+        "b": "Docklands Light Railway",
+        "deltaE_simulated": 12.3,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "TL",
+        "b": "EM",
+        "deltaE_simulated": 12.3,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "ES",
+        "b": "TP",
+        "deltaE_simulated": 12.4,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "IL",
+        "b": "NT",
+        "deltaE_simulated": 12.4,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "ES",
+        "b": "VT",
+        "deltaE_simulated": 12.4,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "ES",
+        "b": "Croydon Tramlink",
+        "deltaE_simulated": 12.4,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "Docklands Light Railway",
+        "b": "Tyne and Wear Metro",
+        "deltaE_simulated": 12.4,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "NT",
+        "b": "GTR",
+        "deltaE_simulated": 12.5,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "ES",
+        "b": "TP",
+        "deltaE_simulated": 12.5,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "SR",
+        "b": "Transport for London",
+        "deltaE_simulated": 12.5,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "XC",
+        "b": "Glasgow Subway",
+        "deltaE_simulated": 12.6,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "WMR",
+        "b": "TP",
+        "deltaE_simulated": 12.6,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "SE",
+        "b": "Docklands Light Railway",
+        "deltaE_simulated": 12.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "Docklands Light Railway",
+        "b": "Croydon Tramlink",
+        "deltaE_simulated": 12.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "SN",
+        "b": "WR",
+        "deltaE_simulated": 12.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "LE",
+        "b": "WR",
+        "deltaE_simulated": 12.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "Croydon Tramlink",
+        "b": "Sheffield Supertram",
+        "deltaE_simulated": 12.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "NT",
+        "b": "Docklands Light Railway",
+        "deltaE_simulated": 12.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "CS",
+        "b": "Sheffield Supertram",
+        "deltaE_simulated": 12.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "NT",
+        "b": "XR",
+        "deltaE_simulated": 12.8,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "TL",
+        "b": "NT",
+        "deltaE_simulated": 12.8,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "NT",
+        "b": "Docklands Light Railway",
+        "deltaE_simulated": 12.8,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "TL",
+        "b": "EM",
+        "deltaE_simulated": 12.8,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "TP",
+        "b": "West Midlands Metro",
+        "deltaE_simulated": 12.8,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "SE",
+        "b": "Croydon Tramlink",
+        "deltaE_simulated": 12.8,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "GN",
+        "b": "GW",
+        "deltaE_simulated": 12.9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "HT",
+        "b": "Transport for London",
+        "deltaE_simulated": 12.9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "IL",
+        "b": "WMR",
+        "deltaE_simulated": 13,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "EM",
+        "b": "CS",
+        "deltaE_simulated": 13,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "CH",
+        "b": "NT",
+        "deltaE_simulated": 13.1,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "EM",
+        "b": "VT",
+        "deltaE_simulated": 13.1,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "NT",
+        "b": "West Midlands Metro",
+        "deltaE_simulated": 13.1,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "CC",
+        "b": "LD",
+        "deltaE_simulated": 13.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "ME",
+        "b": "LE",
+        "deltaE_simulated": 13.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "CH",
+        "b": "NT",
+        "deltaE_simulated": 13.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "ME",
+        "b": "XC",
+        "deltaE_simulated": 13.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "EM",
+        "b": "Sheffield Supertram",
+        "deltaE_simulated": 13.3,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "IL",
+        "b": "SE",
+        "deltaE_simulated": 13.3,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "IL",
+        "b": "SE",
+        "deltaE_simulated": 13.3,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "GW",
+        "b": "EM",
+        "deltaE_simulated": 13.3,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "HT",
+        "b": "HX",
+        "deltaE_simulated": 13.3,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "EM",
+        "b": "GTR",
+        "deltaE_simulated": 13.4,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "VT",
+        "b": "Nottingham Express Transit",
+        "deltaE_simulated": 13.4,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "CS",
+        "b": "Nottingham Express Transit",
+        "deltaE_simulated": 13.4,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "SE",
+        "b": "XR",
+        "deltaE_simulated": 13.4,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "WR",
+        "b": "Manchester Metrolink",
+        "deltaE_simulated": 13.4,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "TL",
+        "b": "Sheffield Supertram",
+        "deltaE_simulated": 13.5,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "EM",
+        "b": "VT",
+        "deltaE_simulated": 13.5,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "NT",
+        "b": "XR",
+        "deltaE_simulated": 13.5,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "XC",
+        "b": "LE",
+        "deltaE_simulated": 13.5,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "CH",
+        "b": "Docklands Light Railway",
+        "deltaE_simulated": 13.6,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "GR",
+        "b": "ME",
+        "deltaE_simulated": 13.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "IL",
+        "b": "Tyne and Wear Metro",
+        "deltaE_simulated": 13.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "GTR",
+        "b": "West Midlands Metro",
+        "deltaE_simulated": 13.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "SE",
+        "b": "GTR",
+        "deltaE_simulated": 13.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "IL",
+        "b": "NT",
+        "deltaE_simulated": 13.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "WMR",
+        "b": "Docklands Light Railway",
+        "deltaE_simulated": 13.8,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "SE",
+        "b": "GTR",
+        "deltaE_simulated": 13.8,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "GTR",
+        "b": "TP",
+        "deltaE_simulated": 13.8,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "CH",
+        "b": "Transport for London",
+        "deltaE_simulated": 13.9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "CC",
+        "b": "LD",
+        "deltaE_simulated": 13.9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "XR",
+        "b": "West Midlands Metro",
+        "deltaE_simulated": 14,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "IL",
+        "b": "HX",
+        "deltaE_simulated": 14,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "SN",
+        "b": "LE",
+        "deltaE_simulated": 14,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "SE",
+        "b": "CS",
+        "deltaE_simulated": 14,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "NT",
+        "b": "Tyne and Wear Metro",
+        "deltaE_simulated": 14,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "GR",
+        "b": "CC",
+        "deltaE_simulated": 14,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "GW",
+        "b": "Nottingham Express Transit",
+        "deltaE_simulated": 14,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "XR",
+        "b": "West Midlands Metro",
+        "deltaE_simulated": 14,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "GR",
+        "b": "LE",
+        "deltaE_simulated": 14.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "SN",
+        "b": "CS",
+        "deltaE_simulated": 14.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "ME",
+        "b": "XC",
+        "deltaE_simulated": 14.3,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "HX",
+        "b": "Transport for London",
+        "deltaE_simulated": 14.3,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "Manchester Metrolink",
+        "b": "Nottingham Express Transit",
+        "deltaE_simulated": 14.3,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "IL",
+        "b": "Tyne and Wear Metro",
+        "deltaE_simulated": 14.3,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "VT",
+        "b": "West Midlands Metro",
+        "deltaE_simulated": 14.3,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "SW",
+        "b": "XR",
+        "deltaE_simulated": 14.4,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "VT",
+        "b": "Tyne and Wear Metro",
+        "deltaE_simulated": 14.4,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "Croydon Tramlink",
+        "b": "Sheffield Supertram",
+        "deltaE_simulated": 14.5,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "HX",
+        "b": "Transport for London",
+        "deltaE_simulated": 14.6,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "GR",
+        "b": "ME",
+        "deltaE_simulated": 14.6,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "IL",
+        "b": "SW",
+        "deltaE_simulated": 14.6,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "WMR",
+        "b": "XR",
+        "deltaE_simulated": 14.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "TL",
+        "b": "TP",
+        "deltaE_simulated": 14.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "Manchester Metrolink",
+        "b": "Nottingham Express Transit",
+        "deltaE_simulated": 14.8,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "SE",
+        "b": "CS",
+        "deltaE_simulated": 14.8,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "GC",
+        "b": "ME",
+        "deltaE_simulated": 14.8,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "IL",
+        "b": "ES",
+        "deltaE_simulated": 14.8,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "CS",
+        "b": "Nottingham Express Transit",
+        "deltaE_simulated": 14.9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "GR",
+        "b": "CC",
+        "deltaE_simulated": 15,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "CC",
+        "b": "LD",
+        "deltaE_simulated": 15,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "CH",
+        "b": "West Midlands Metro",
+        "deltaE_simulated": 15,
+        "known_adjacent": false
+      }
+    ]
+  },
+  "separation_report": {
+    "dark_iterations": 500,
+    "dark_unresolved": [
+      {
+        "a": "GN",
+        "b": "Glasgow Subway",
+        "deltaE": 14.9
+      },
+      {
+        "a": "IL",
+        "b": "EM",
+        "deltaE": 14.5
+      },
+      {
+        "a": "CH",
+        "b": "NT",
+        "deltaE": 14.5
+      },
+      {
+        "a": "WMR",
+        "b": "XR",
+        "deltaE": 14.4
+      },
+      {
+        "a": "TP",
+        "b": "CS",
+        "deltaE": 14.3
+      },
+      {
+        "a": "HX",
+        "b": "Tyne and Wear Metro",
+        "deltaE": 14.9
+      },
+      {
+        "a": "XR",
+        "b": "West Midlands Metro",
+        "deltaE": 14.2
+      },
+      {
+        "a": "Manchester Metrolink",
+        "b": "Glasgow Subway",
+        "deltaE": 14.6
+      },
+      {
+        "a": "West Midlands Metro",
+        "b": "Croydon Tramlink",
+        "deltaE": 15
+      },
+      {
+        "a": "Croydon Tramlink",
+        "b": "Nottingham Express Transit",
+        "deltaE": 14.3
+      }
+    ],
+    "light_iterations": 238,
+    "light_unresolved": [
+      {
+        "a": "GX",
+        "b": "AW",
+        "deltaE": 12.4
+      },
+      {
+        "a": "GN",
+        "b": "XC",
+        "deltaE": 10.2
+      },
+      {
+        "a": "GN",
+        "b": "Glasgow Subway",
+        "deltaE": 9.9
+      },
+      {
+        "a": "TL",
+        "b": "IL",
+        "deltaE": 13.2
+      },
+      {
+        "a": "TL",
+        "b": "SW",
+        "deltaE": 7.6
+      },
+      {
+        "a": "TL",
+        "b": "NT",
+        "deltaE": 8.7
+      },
+      {
+        "a": "AW",
+        "b": "GC",
+        "deltaE": 12.6
+      },
+      {
+        "a": "CC",
+        "b": "GC",
+        "deltaE": 10.9
+      },
+      {
+        "a": "IL",
+        "b": "EM",
+        "deltaE": 9.2
+      },
+      {
+        "a": "IL",
+        "b": "CH",
+        "deltaE": 9.4
+      },
+      {
+        "a": "IL",
+        "b": "NT",
+        "deltaE": 12.1
+      },
+      {
+        "a": "CH",
+        "b": "NT",
+        "deltaE": 9.2
+      },
+      {
+        "a": "CH",
+        "b": "Docklands Light Railway",
+        "deltaE": 12.4
+      },
+      {
+        "a": "SW",
+        "b": "WMR",
+        "deltaE": 11.8
+      },
+      {
+        "a": "SW",
+        "b": "NT",
+        "deltaE": 12.9
+      },
+      {
+        "a": "WMR",
+        "b": "ES",
+        "deltaE": 8.4
+      },
+      {
+        "a": "SE",
+        "b": "ES",
+        "deltaE": 9.5
+      },
+      {
+        "a": "SE",
+        "b": "TP",
+        "deltaE": 14.8
+      },
+      {
+        "a": "SR",
+        "b": "GTR",
+        "deltaE": 12.6
+      },
+      {
+        "a": "SR",
+        "b": "Transport for London",
+        "deltaE": 11.1
+      },
+      {
+        "a": "GTR",
+        "b": "VT",
+        "deltaE": 11.7
+      },
+      {
+        "a": "GTR",
+        "b": "Transport for London",
+        "deltaE": 12.8
+      },
+      {
+        "a": "TP",
+        "b": "XR",
+        "deltaE": 9
+      },
+      {
+        "a": "VT",
+        "b": "Croydon Tramlink",
+        "deltaE": 13.3
+      },
+      {
+        "a": "VT",
+        "b": "Sheffield Supertram",
+        "deltaE": 10.2
+      },
+      {
+        "a": "VT",
+        "b": "Tyne and Wear Metro",
+        "deltaE": 13.4
+      },
+      {
+        "a": "CS",
+        "b": "West Midlands Metro",
+        "deltaE": 11.9
+      },
+      {
+        "a": "CS",
+        "b": "Croydon Tramlink",
+        "deltaE": 8.7
+      },
+      {
+        "a": "CS",
+        "b": "Nottingham Express Transit",
+        "deltaE": 11.1
+      },
+      {
+        "a": "XR",
+        "b": "West Midlands Metro",
+        "deltaE": 10.2
+      },
+      {
+        "a": "Manchester Metrolink",
+        "b": "Nottingham Express Transit",
+        "deltaE": 10.6
+      },
+      {
+        "a": "Manchester Metrolink",
+        "b": "Glasgow Subway",
+        "deltaE": 10.6
+      },
+      {
+        "a": "West Midlands Metro",
+        "b": "Croydon Tramlink",
+        "deltaE": 8.6
+      },
+      {
+        "a": "Croydon Tramlink",
+        "b": "Sheffield Supertram",
+        "deltaE": 12.1
+      },
+      {
+        "a": "Croydon Tramlink",
+        "b": "Nottingham Express Transit",
+        "deltaE": 13.4
+      },
+      {
+        "a": "Sheffield Supertram",
+        "b": "Tyne and Wear Metro",
+        "deltaE": 13.6
+      },
+      {
+        "a": "Sheffield Supertram",
+        "b": "Nottingham Express Transit",
+        "deltaE": 10
+      }
+    ],
+    "tfl_dark_iterations": 0,
+    "tfl_dark_unresolved": [],
+    "tfl_light_iterations": 1,
+    "tfl_light_unresolved": []
+  }
+}
