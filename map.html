@@ -1005,7 +1005,7 @@
       // accent/stationHoverFill matched to --t's fix above (#1A9E8F, the
       // site-wide light-theme turquoise) — was a slightly different, one-off
       // shade (#0AABA0) before.
-      accent: '#1A9E8F', stationFill: 'rgba(240,240,240,0.9)', stationHoverFill: 'rgba(26,158,143,0.15)', labelColor: '#444444', labelHalo: 'rgba(255,255,255,0.85)',
+      accent: '#1A9E8F', stationFill: '#FFFFFF', stationHoverFill: 'rgba(26,158,143,0.15)', labelColor: '#444444', labelHalo: 'rgba(255,255,255,0.85)',
       railwayMain: 'rgba(68,68,68,0.6)', railwaySecondary: 'rgba(68,68,68,0.38)', railwayClosed: 'rgba(68,68,68,0.26)',
     },
   };
@@ -1223,39 +1223,18 @@
 
   // ── Three-tier marker sizing (2026-07-14) ─────────────────────────────────
   // Major (top ~53, curated) / Mid (4+ platforms, stations-content.json) /
-  // Minor (everything else, ~2,319) — a size gradient across all three so
-  // the hierarchy reads at a glance, on top of the zoom-staggered reveal
-  // below. This replaces the previous two-tier "same size, just staggered
-  // zoom" approach — user feedback after seeing that live was that it still
-  // felt crowded once minor stations appeared, so tier 2 (mid) both softens
-  // the size jump AND the timing jump between "50 curated" and "all 2,600+
-  // at once". Radii chosen so at every zoom where multiple tiers are
-  // visible together, major > mid > minor holds (checked by hand across the
-  // overlap zooms, e.g. z10: major 4.9 > mid ~3.5 > minor 1.8).
+  // Minor (everything else, ~2,319) — tiers now differ ONLY by WHEN they
+  // appear (zoom-staggered reveal below), not how big they are. Previously
+  // had a size gradient (major > mid > minor) on top of the staggered
+  // reveal, but user feedback after seeing it live was to unify all three
+  // to the mid tier's size (e.g. Tamworth, Salisbury) — mid's radius/stroke
+  // is the one shared paint every tier's circle layer now uses.
   function stationsCirclePaint() {
-    var c = themeColors();
-    return {
-      'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, 3.5, 10, 4.9],
-      'circle-color': ['case', ['boolean', ['feature-state', 'hover'], false], c.stationHoverFill, c.stationFill],
-      'circle-stroke-width': ['case', ['boolean', ['feature-state', 'hover'], false], 2.5, 1.8],
-      'circle-stroke-color': c.accent,
-    };
-  }
-  function midStationsCirclePaint() {
     var c = themeColors();
     return {
       'circle-radius': ['interpolate', ['linear'], ['zoom'], 7, 2.8, 12, 4.0],
       'circle-color': ['case', ['boolean', ['feature-state', 'hover'], false], c.stationHoverFill, c.stationFill],
       'circle-stroke-width': ['case', ['boolean', ['feature-state', 'hover'], false], 2.2, 1.5],
-      'circle-stroke-color': c.accent,
-    };
-  }
-  function minorStationsCirclePaint() {
-    var c = themeColors();
-    return {
-      'circle-radius': ['interpolate', ['linear'], ['zoom'], 10, 1.8, 16, 2.8],
-      'circle-color': ['case', ['boolean', ['feature-state', 'hover'], false], c.stationHoverFill, c.stationFill],
-      'circle-stroke-width': ['case', ['boolean', ['feature-state', 'hover'], false], 1.8, 1.2],
       'circle-stroke-color': c.accent,
     };
   }
@@ -1278,10 +1257,10 @@
     // this is also the performance-friendly way to keep the mid/minor
     // points out of both rendering AND hit-testing below their thresholds.
     if (!map.getLayer('stations-circle-mid')) {
-      map.addLayer({ id: 'stations-circle-mid', type: 'circle', source: 'stations', filter: MID_FILTER, minzoom: MID_STATION_MINZOOM, paint: midStationsCirclePaint() });
+      map.addLayer({ id: 'stations-circle-mid', type: 'circle', source: 'stations', filter: MID_FILTER, minzoom: MID_STATION_MINZOOM, paint: stationsCirclePaint() });
     }
     if (!map.getLayer('stations-circle-minor')) {
-      map.addLayer({ id: 'stations-circle-minor', type: 'circle', source: 'stations', filter: MINOR_FILTER, minzoom: MINOR_STATION_MINZOOM, paint: minorStationsCirclePaint() });
+      map.addLayer({ id: 'stations-circle-minor', type: 'circle', source: 'stations', filter: MINOR_FILTER, minzoom: MINOR_STATION_MINZOOM, paint: stationsCirclePaint() });
     }
     // Major labels share minzoom with mid (the earliest-appearing non-major
     // tier) rather than a flat value of their own — otherwise, once mid dots
