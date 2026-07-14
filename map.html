@@ -932,18 +932,23 @@
       if (operatorsContent[code] && operatorsContent[code].name) operatorNameToCode[operatorsContent[code].name] = code;
     });
   }
+  // Returns the same cleaned-data promise it feeds onLoaded with, so a
+  // caller that needs to wait on it (e.g. the station-marker tiering below,
+  // which needs stations-content.json's platforms field for the mid tier)
+  // can chain off it directly instead of firing a second fetch.
   function loadJsonContent(url, onLoaded) {
-    fetch(url).then(function (r) { if (!r.ok) throw new Error(url + ' missing'); return r.json(); })
+    return fetch(url).then(function (r) { if (!r.ok) throw new Error(url + ' missing'); return r.json(); })
       .then(function (data) {
         var clean = {};
         if (data && typeof data === 'object') {
           Object.keys(data).forEach(function (k) { if (k !== '_notes') clean[k] = data[k]; });
         }
         onLoaded(clean);
+        return clean;
       })
-      .catch(function (e) { console.warn(url + ' unavailable', e); });
+      .catch(function (e) { console.warn(url + ' unavailable', e); return {}; });
   }
-  loadJsonContent('/stations-content.json', function (d) {
+  var stationsContentPromise = loadJsonContent('/stations-content.json', function (d) {
     stationsContent = d;
     if (mode === 'database' && selectedStationCrs) rebuildSidebarContent();
   });
@@ -1216,21 +1221,17 @@
     renderSelectedStationMarkers();
   }
 
-  // Major = the same curated "top stations" set /data/stations.geojson has
-  // always held (see majorCrsPromise below) — visible at every zoom, since
-  // they're the major landmarks. Radii are ~30% smaller than this layer's
-  // old flat values (5/7 → 3.5/4.9) per the map-marker sizing pass; still
-  // used as-is for the always-visible selected-station overlay
-  // (renderSelectedStationMarkers) too, which is a separate concern from
-  // tiering — see that function's own comment.
-  //
-  // 2026-07-14 follow-up: minor stations (below) were originally a distinct,
-  // noticeably-smaller ORM-style dot — user feedback after seeing it live
-  // was that smaller-plus-only-at-high-zoom read as TWO separate cutbacks
-  // stacked on each other, and that it looked fine sized the same as major
-  // once minzoom already keeps the low-zoom view uncluttered. So minor now
-  // reuses this exact same paint (see addStationsLayer) — the only
-  // remaining difference between the tiers is which zoom they appear at.
+  // ── Three-tier marker sizing (2026-07-14) ─────────────────────────────────
+  // Major (top ~53, curated) / Mid (4+ platforms, stations-content.json) /
+  // Minor (everything else, ~2,319) — a size gradient across all three so
+  // the hierarchy reads at a glance, on top of the zoom-staggered reveal
+  // below. This replaces the previous two-tier "same size, just staggered
+  // zoom" approach — user feedback after seeing that live was that it still
+  // felt crowded once minor stations appeared, so tier 2 (mid) both softens
+  // the size jump AND the timing jump between "50 curated" and "all 2,600+
+  // at once". Radii chosen so at every zoom where multiple tiers are
+  // visible together, major > mid > minor holds (checked by hand across the
+  // overlap zooms, e.g. z10: major 4.9 > mid ~3.5 > minor 1.8).
   function stationsCirclePaint() {
     var c = themeColors();
     return {
@@ -1240,8 +1241,27 @@
       'circle-stroke-color': c.accent,
     };
   }
-  var MAJOR_FILTER = ['==', ['get', 'major'], true];
-  var MINOR_FILTER = ['==', ['get', 'major'], false];
+  function midStationsCirclePaint() {
+    var c = themeColors();
+    return {
+      'circle-radius': ['interpolate', ['linear'], ['zoom'], 7, 2.8, 12, 4.0],
+      'circle-color': ['case', ['boolean', ['feature-state', 'hover'], false], c.stationHoverFill, c.stationFill],
+      'circle-stroke-width': ['case', ['boolean', ['feature-state', 'hover'], false], 2.2, 1.5],
+      'circle-stroke-color': c.accent,
+    };
+  }
+  function minorStationsCirclePaint() {
+    var c = themeColors();
+    return {
+      'circle-radius': ['interpolate', ['linear'], ['zoom'], 10, 1.8, 16, 2.8],
+      'circle-color': ['case', ['boolean', ['feature-state', 'hover'], false], c.stationHoverFill, c.stationFill],
+      'circle-stroke-width': ['case', ['boolean', ['feature-state', 'hover'], false], 1.8, 1.2],
+      'circle-stroke-color': c.accent,
+    };
+  }
+  var MAJOR_FILTER = ['==', ['get', 'tier'], 'major'];
+  var MID_FILTER = ['==', ['get', 'tier'], 'mid'];
+  var MINOR_FILTER = ['==', ['get', 'tier'], 'minor'];
 
   function addStationsLayer(gj) {
     var c = themeColors();
@@ -1255,21 +1275,28 @@
     }
     // minzoom is a plain per-layer property here (not a zoom expression
     // inside paint) — MapLibre culls the whole layer below it natively, so
-    // this is also the performance-friendly way to keep ~2,584 extra points
-    // out of both rendering AND hit-testing below MINOR_STATION_MINZOOM.
-    // Paint is the SAME as major (stationsCirclePaint(), not a smaller
-    // variant) — see that function's 2026-07-14 comment.
-    if (!map.getLayer('stations-circle-minor')) {
-      map.addLayer({ id: 'stations-circle-minor', type: 'circle', source: 'stations', filter: MINOR_FILTER, minzoom: MINOR_STATION_MINZOOM, paint: stationsCirclePaint() });
+    // this is also the performance-friendly way to keep the mid/minor
+    // points out of both rendering AND hit-testing below their thresholds.
+    if (!map.getLayer('stations-circle-mid')) {
+      map.addLayer({ id: 'stations-circle-mid', type: 'circle', source: 'stations', filter: MID_FILTER, minzoom: MID_STATION_MINZOOM, paint: midStationsCirclePaint() });
     }
-    // Major labels now share minzoom with the minor tier's own dots/labels
-    // (was a flat 9) — once minor dots start appearing at MINOR_STATION_
-    // MINZOOM, leaving major labels waiting for a later zoom would show
-    // large unlabelled major dots next to same-size, already-labelled minor
-    // ones, which reads backwards. Both label layers now appear together.
+    if (!map.getLayer('stations-circle-minor')) {
+      map.addLayer({ id: 'stations-circle-minor', type: 'circle', source: 'stations', filter: MINOR_FILTER, minzoom: MINOR_STATION_MINZOOM, paint: minorStationsCirclePaint() });
+    }
+    // Major labels share minzoom with mid (the earliest-appearing non-major
+    // tier) rather than a flat value of their own — otherwise, once mid dots
+    // start appearing at MID_STATION_MINZOOM, you'd see large unlabelled
+    // major dots next to already-labelled mid ones, which reads backwards.
     if (!map.getLayer('stations-label-major')) {
       map.addLayer({
-        id: 'stations-label-major', type: 'symbol', source: 'stations', minzoom: MINOR_STATION_MINZOOM, filter: MAJOR_FILTER,
+        id: 'stations-label-major', type: 'symbol', source: 'stations', minzoom: MID_STATION_MINZOOM, filter: MAJOR_FILTER,
+        layout: { 'text-field': ['get', 'name'], 'text-size': 10, 'text-anchor': 'top', 'text-offset': [0, 0.6] },
+        paint: { 'text-color': c.labelColor, 'text-halo-color': c.labelHalo, 'text-halo-width': 1 },
+      });
+    }
+    if (!map.getLayer('stations-label-mid')) {
+      map.addLayer({
+        id: 'stations-label-mid', type: 'symbol', source: 'stations', minzoom: MID_STATION_MINZOOM, filter: MID_FILTER,
         layout: { 'text-field': ['get', 'name'], 'text-size': 10, 'text-anchor': 'top', 'text-offset': [0, 0.6] },
         paint: { 'text-color': c.labelColor, 'text-halo-color': c.labelHalo, 'text-halo-width': 1 },
       });
@@ -1285,20 +1312,30 @@
   }
 
   // ── Full station marker set (2,637 stations, not just the curated ~50) ───
-  // Markers are tiered by WHEN they appear, not how they look (see
-  // stationsCirclePaint above — both tiers share it): "major" reuses the
-  // exact CRS set /data/stations.geojson has always curated — that file is
-  // kept around specifically as this app's existing definition of "top
-  // stations", not fetched into stationsData directly any more. Everything
-  // else in station-list.json (the full NaPTAN-derived list, ~2,637
-  // entries) is "minor".
+  // Three tiers, by WHEN they appear (size, see above) and WHAT counts as
+  // each tier:
+  //   major — the exact CRS set /data/stations.geojson has always curated
+  //           (see majorCrsPromise below) — this app's existing "top
+  //           stations" definition, not fetched into stationsData directly
+  //           any more.
+  //   mid   — everything else with stations-content.json's platforms >= 4
+  //           (MID_TIER_MIN_PLATFORMS below). Chosen after checking the
+  //           real distribution live: platform counts are heavily skewed
+  //           toward 1-2 platform stations, so a "6+" guess (the original
+  //           ask) only captured 55 stations against an expected ~450-500;
+  //           4+ was the user's pick after seeing the full breakdown
+  //           (~265 stations). Note 498/2,604 stations (19%) have no
+  //           platforms data at all and default to minor regardless of
+  //           threshold — a real coverage gap, not a tiering bug.
+  //   minor — everything remaining (~2,319 stations).
+  var MID_STATION_MINZOOM = 7;
   // 2026-07-14: was 11 (matching flyToAndSelectStation's own zoom:11) —
   // user feedback after seeing it live was that minor stations stayed
-  // hidden for too long while zooming in; lowered per their explicit ask.
-  // Minor dots are now full-size (see stationsCirclePaint), not a smaller
-  // ORM-style dot, so appearing at a wider zoom doesn't reintroduce the
-  // initial-view clutter this threshold exists to avoid.
-  var MINOR_STATION_MINZOOM = 8;
+  // hidden for too long while zooming in; lowered to 8, then split into a
+  // mid/minor pair (7/10) once "same size as major, just later" alone still
+  // felt crowded — see the three-tier comment above.
+  var MINOR_STATION_MINZOOM = 10;
+  var MID_TIER_MIN_PLATFORMS = 4;
   // station-list.json's names carry generic NaPTAN suffixes ("Alexandra
   // Palace Rail Station", "Kintore Railway Station", "Newcastle Airport
   // Metro Station") that /data/stations.geojson's curated names never did
@@ -1322,12 +1359,19 @@
   }).then(function (gj) {
     return new Set(gj.features.map(function (f) { return f.properties.crs; }));
   }).catch(function (e) {
-    console.warn('Could not load the major-station list (/data/stations.geojson) — every marker will render at minor size/zoom', e);
+    console.warn('Could not load the major-station list (/data/stations.geojson) — every marker will render as mid/minor tier only', e);
     return new Set();
   });
-  Promise.all([stationListPromise, majorCrsPromise]).then(function (results) {
-    var list = results[0], majorCrs = results[1];
+  Promise.all([stationListPromise, majorCrsPromise, stationsContentPromise]).then(function (results) {
+    var list = results[0], majorCrs = results[1], content = results[2] || {};
     if (!list.length) return;
+    function tierFor(crs) {
+      if (majorCrs.has(crs)) return 'major';
+      var entry = content[crs];
+      var platforms = entry && entry.platforms;
+      if (platforms != null && platforms >= MID_TIER_MIN_PLATFORMS) return 'mid';
+      return 'minor';
+    }
     stationsData = {
       type: 'FeatureCollection',
       features: list.map(function (s, i) {
@@ -1335,7 +1379,7 @@
           type: 'Feature',
           id: i, // unique per-feature id across the whole source — required for feature-state hover to work correctly regardless of which tier/layer rendered a given marker
           geometry: { type: 'Point', coordinates: [s.lon, s.lat] },
-          properties: { name: stripStationNameSuffix(s.name), crs: s.crs, major: majorCrs.has(s.crs) },
+          properties: { name: stripStationNameSuffix(s.name), crs: s.crs, tier: tierFor(s.crs) },
         };
       }),
     };
@@ -1408,13 +1452,13 @@
 
   // ── Station interactions (click → departure board) ───────────────────────
   var hoveredStationFeatureId = null;
-  // Bound to both tiers — feature ids are unique across the whole 'stations'
-  // source regardless of which layer rendered a given point (see the id:i
-  // assignment where stationsData is built), so hover/click behave
-  // identically for a major or minor marker; a minor marker simply isn't
-  // hit-testable at all below MINOR_STATION_MINZOOM since MapLibre's
+  // Bound to all three tiers — feature ids are unique across the whole
+  // 'stations' source regardless of which layer rendered a given point (see
+  // the id:i assignment where stationsData is built), so hover/click behave
+  // identically for a major, mid, or minor marker; a mid/minor marker
+  // simply isn't hit-testable at all below its own minzoom since MapLibre's
   // per-layer minzoom excludes it from the layer entirely at that zoom.
-  var STATION_MARKER_LAYERS = ['stations-circle-major', 'stations-circle-minor'];
+  var STATION_MARKER_LAYERS = ['stations-circle-major', 'stations-circle-mid', 'stations-circle-minor'];
   function wireStationInteractions() {
     STATION_MARKER_LAYERS.forEach(function (layerId) {
       map.on('mousemove', layerId, function (e) {
@@ -2039,15 +2083,16 @@
 
   // ── Selected-station marker(s) ─────────────────────────────────────────────
   // Originally a bugfix for the old curated-top-50-only marker set (every
-  // station now gets a real marker from stations-circle-major/minor, above —
-  // see the map station marker tiering pass). Kept as its own always-on-top
-  // source/layer because it still solves a real, separate problem: a "minor"
-  // station only renders on stations-circle-minor once the map is zoomed
-  // past MINOR_STATION_MINZOOM, but a from/to pair's fitBounds() (below) can
-  // easily land below that zoom for two far-apart stations, and a single
-  // selectStation() call doesn't always follow a zoom:11+ flyTo either (e.g.
-  // clicking a search result before ever zooming in). This guarantees
-  // whatever's currently selected (one point for a single station, two for
+  // station now gets a real marker from stations-circle-major/mid/minor,
+  // above — see the map station marker tiering pass). Kept as its own
+  // always-on-top source/layer because it still solves a real, separate
+  // problem: a "mid" or "minor" station only renders once the map is zoomed
+  // past that tier's own minzoom (MID_STATION_MINZOOM / MINOR_STATION_
+  // MINZOOM), but a from/to pair's fitBounds() (below) can easily land
+  // below either for two far-apart stations, and a single selectStation()
+  // call doesn't always follow a zoom:11+ flyTo either (e.g. clicking a
+  // search result before ever zooming in). This guarantees whatever's
+  // currently selected (one point for a single station, two for
   // a from/to pair) is visible regardless of tier/zoom, resolved via
   // coordsForCrs() (station-list.json, the FULL list). Re-applied by
   // addMapLayers() after every theme toggle, same pattern as the route
