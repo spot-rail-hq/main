@@ -1217,32 +1217,26 @@
   }
 
   // Major = the same curated "top stations" set /data/stations.geojson has
-  // always held (see majorCrsPromise below) — bigger dots, visible at every
-  // zoom, since they're the major landmarks. Radii are ~30% smaller than
-  // this layer's old flat values (5/7 → 3.5/4.9) per the map-marker sizing
-  // pass; still used as-is for the always-visible selected-station overlay
+  // always held (see majorCrsPromise below) — visible at every zoom, since
+  // they're the major landmarks. Radii are ~30% smaller than this layer's
+  // old flat values (5/7 → 3.5/4.9) per the map-marker sizing pass; still
+  // used as-is for the always-visible selected-station overlay
   // (renderSelectedStationMarkers) too, which is a separate concern from
   // tiering — see that function's own comment.
+  //
+  // 2026-07-14 follow-up: minor stations (below) were originally a distinct,
+  // noticeably-smaller ORM-style dot — user feedback after seeing it live
+  // was that smaller-plus-only-at-high-zoom read as TWO separate cutbacks
+  // stacked on each other, and that it looked fine sized the same as major
+  // once minzoom already keeps the low-zoom view uncluttered. So minor now
+  // reuses this exact same paint (see addStationsLayer) — the only
+  // remaining difference between the tiers is which zoom they appear at.
   function stationsCirclePaint() {
     var c = themeColors();
     return {
       'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, 3.5, 10, 4.9],
       'circle-color': ['case', ['boolean', ['feature-state', 'hover'], false], c.stationHoverFill, c.stationFill],
       'circle-stroke-width': ['case', ['boolean', ['feature-state', 'hover'], false], 2.5, 1.8],
-      'circle-stroke-color': c.accent,
-    };
-  }
-  // Minor = every other station (~2,584 of the 2,637) — small, unobtrusive
-  // dots roughly matching how ORM renders minor stations at comparable zoom
-  // levels, so they don't visually compete with the major markers. Gated to
-  // MINOR_STATION_MINZOOM via the layer's own minzoom (see addStationsLayer)
-  // rather than cluttering the initial UK-wide view.
-  function minorStationsCirclePaint() {
-    var c = themeColors();
-    return {
-      'circle-radius': ['interpolate', ['linear'], ['zoom'], 11, 2, 16, 3],
-      'circle-color': ['case', ['boolean', ['feature-state', 'hover'], false], c.stationHoverFill, c.stationFill],
-      'circle-stroke-width': ['case', ['boolean', ['feature-state', 'hover'], false], 2, 1],
       'circle-stroke-color': c.accent,
     };
   }
@@ -1262,22 +1256,24 @@
     // minzoom is a plain per-layer property here (not a zoom expression
     // inside paint) — MapLibre culls the whole layer below it natively, so
     // this is also the performance-friendly way to keep ~2,584 extra points
-    // out of both rendering AND hit-testing at the initial UK-wide zoom.
+    // out of both rendering AND hit-testing below MINOR_STATION_MINZOOM.
+    // Paint is the SAME as major (stationsCirclePaint(), not a smaller
+    // variant) — see that function's 2026-07-14 comment.
     if (!map.getLayer('stations-circle-minor')) {
-      map.addLayer({ id: 'stations-circle-minor', type: 'circle', source: 'stations', filter: MINOR_FILTER, minzoom: MINOR_STATION_MINZOOM, paint: minorStationsCirclePaint() });
+      map.addLayer({ id: 'stations-circle-minor', type: 'circle', source: 'stations', filter: MINOR_FILTER, minzoom: MINOR_STATION_MINZOOM, paint: stationsCirclePaint() });
     }
+    // Major labels now share minzoom with the minor tier's own dots/labels
+    // (was a flat 9) — once minor dots start appearing at MINOR_STATION_
+    // MINZOOM, leaving major labels waiting for a later zoom would show
+    // large unlabelled major dots next to same-size, already-labelled minor
+    // ones, which reads backwards. Both label layers now appear together.
     if (!map.getLayer('stations-label-major')) {
       map.addLayer({
-        id: 'stations-label-major', type: 'symbol', source: 'stations', minzoom: 9, filter: MAJOR_FILTER,
+        id: 'stations-label-major', type: 'symbol', source: 'stations', minzoom: MINOR_STATION_MINZOOM, filter: MAJOR_FILTER,
         layout: { 'text-field': ['get', 'name'], 'text-size': 10, 'text-anchor': 'top', 'text-offset': [0, 0.6] },
         paint: { 'text-color': c.labelColor, 'text-halo-color': c.labelHalo, 'text-halo-width': 1 },
       });
     }
-    // Same minzoom as stations-circle-minor, so a minor station's label
-    // never floats without its dot (or vice versa) — labels for ~2,584
-    // stations at minzoom 9 (the major layer's threshold) would also just
-    // be dense, overlapping clutter at a zoom level meant for regional
-    // context, not per-station text.
     if (!map.getLayer('stations-label-minor')) {
       map.addLayer({
         id: 'stations-label-minor', type: 'symbol', source: 'stations', minzoom: MINOR_STATION_MINZOOM, filter: MINOR_FILTER,
@@ -1289,13 +1285,20 @@
   }
 
   // ── Full station marker set (2,637 stations, not just the curated ~50) ───
-  // Markers are tiered (see stationsCirclePaint/minorStationsCirclePaint
-  // above): "major" reuses the exact CRS set /data/stations.geojson has
-  // always curated — that file is kept around specifically as this app's
-  // existing definition of "top stations", not fetched into stationsData
-  // directly any more. Everything else in station-list.json (the full
-  // NaPTAN-derived list, ~2,637 entries) is "minor".
-  var MINOR_STATION_MINZOOM = 11; // matches flyToAndSelectStation's own zoom:11 — already this app's working definition of "close enough to see one station clearly"
+  // Markers are tiered by WHEN they appear, not how they look (see
+  // stationsCirclePaint above — both tiers share it): "major" reuses the
+  // exact CRS set /data/stations.geojson has always curated — that file is
+  // kept around specifically as this app's existing definition of "top
+  // stations", not fetched into stationsData directly any more. Everything
+  // else in station-list.json (the full NaPTAN-derived list, ~2,637
+  // entries) is "minor".
+  // 2026-07-14: was 11 (matching flyToAndSelectStation's own zoom:11) —
+  // user feedback after seeing it live was that minor stations stayed
+  // hidden for too long while zooming in; lowered per their explicit ask.
+  // Minor dots are now full-size (see stationsCirclePaint), not a smaller
+  // ORM-style dot, so appearing at a wider zoom doesn't reintroduce the
+  // initial-view clutter this threshold exists to avoid.
+  var MINOR_STATION_MINZOOM = 8;
   // station-list.json's names carry generic NaPTAN suffixes ("Alexandra
   // Palace Rail Station", "Kintore Railway Station", "Newcastle Airport
   // Metro Station") that /data/stations.geojson's curated names never did
