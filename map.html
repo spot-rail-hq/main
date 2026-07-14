@@ -1132,7 +1132,13 @@
     // status: 'active' | 'disused' | 'abandoned' | 'construction'; kind:
     // 'rail' | 'light_rail' | 'tram' | 'subway' | 'narrow_gauge' | 'monorail'
     // | 'funicular'. Deliberately grey/ink-toned only (no hue variation) —
-    // see the THEME_COLORS comment above for why.
+    // see the THEME_COLORS comment above for why. Only ever applied to the
+    // 'railway-lines' (active-only, see below) layer now — the 'active'
+    // branch of the old combined expression is the only one still reachable
+    // once the layer is filtered to status=='active', but kept as a `case`
+    // (not simplified to the `match` alone) so a status value ever showing
+    // up as 'active' with no matching filter elsewhere still degrades to
+    // rc.railwayClosed rather than an undefined color.
     return ['case',
       ['==', ['get', 'status'], 'active'],
       ['match', ['get', 'kind'], 'rail', rc.railwayMain, rc.railwaySecondary],
@@ -1167,9 +1173,23 @@
       });
     }
     var rc = themeColors();
+    // Bugfix 2026-07-14: this used to be ONE layer with a data-expression
+    // line-dasharray (['case', ['==', ['get','status'],'active'], solid,
+    // dashed]) — MapLibre's style spec does NOT support data expressions on
+    // line-dasharray (only camera/zoom expressions or a constant), so
+    // map.addLayer() threw "data expressions not supported" and the ENTIRE
+    // layer silently failed to register, leaving the whole rail network
+    // invisible (confirmed via a headless run of the live page — the
+    // stations layer, added separately, was unaffected, which is why only
+    // station dots were visible with zero lines). Fixed by splitting into
+    // two layers on a `filter` (status==active vs not) instead of a data
+    // expression — each layer's own dasharray is then a plain constant,
+    // which the spec does allow.
+    var LINE_WIDTH_EXPR = ['interpolate', ['linear'], ['zoom'], 6, 1, 10, 1.6, 15, 2.4];
     if (!map.getLayer('railway-lines')) {
       map.addLayer({
         id: 'railway-lines', type: 'line', source: 'railway-vector', 'source-layer': 'railways',
+        filter: ['==', ['get', 'status'], 'active'],
         layout: { visibility: ormVisible ? 'visible' : 'none', 'line-cap': 'round', 'line-join': 'round' },
         paint: {
           'line-color': railwayLineColorExpression(rc),
@@ -1186,8 +1206,7 @@
           // 0.5-1px CSS width anti-aliases down to near-nothing, which fits
           // "no lines at all" better than the ruled-out data/config theories.
           // Widened the low/mid-zoom stops well clear of that threshold.
-          'line-width': ['interpolate', ['linear'], ['zoom'], 6, 1, 10, 1.6, 15, 2.4],
-          'line-dasharray': ['case', ['==', ['get', 'status'], 'active'], ['literal', [1, 0]], ['literal', [2, 2]]],
+          'line-width': LINE_WIDTH_EXPR,
         },
       });
     } else {
@@ -1199,6 +1218,26 @@
       // (shouldn't happen given diff:false, but cheap to guard) can't leave
       // stale colors from the previous theme.
       map.setPaintProperty('railway-lines', 'line-color', railwayLineColorExpression(rc));
+    }
+    // Closed/disused/abandoned/construction track — CLAUDE.md's Database-
+    // mode legend calls this "Closed (dashed)", so the dashed treatment is
+    // an intentional, documented visual distinction, not decoration; kept
+    // as a separate layer (see bugfix note above) rather than folded back
+    // into one data-expression dasharray.
+    if (!map.getLayer('railway-lines-closed')) {
+      map.addLayer({
+        id: 'railway-lines-closed', type: 'line', source: 'railway-vector', 'source-layer': 'railways',
+        filter: ['!=', ['get', 'status'], 'active'],
+        layout: { visibility: ormVisible ? 'visible' : 'none', 'line-cap': 'round', 'line-join': 'round' },
+        paint: {
+          'line-color': rc.railwayClosed,
+          'line-width': LINE_WIDTH_EXPR,
+          'line-dasharray': ['literal', [2, 2]],
+        },
+      }, 'railway-lines');
+    } else {
+      map.setLayoutProperty('railway-lines-closed', 'visibility', ormVisible ? 'visible' : 'none');
+      map.setPaintProperty('railway-lines-closed', 'line-color', rc.railwayClosed);
     }
 
     // stationsData is built once by the Promise.all() below (station-list.json
@@ -2228,6 +2267,9 @@
     if (!map || !map.getLayer('railway-lines')) return;
     ormVisible = !ormVisible;
     map.setLayoutProperty('railway-lines', 'visibility', ormVisible ? 'visible' : 'none');
+    if (map.getLayer('railway-lines-closed')) {
+      map.setLayoutProperty('railway-lines-closed', 'visibility', ormVisible ? 'visible' : 'none');
+    }
     layersBtn.setAttribute('aria-pressed', String(ormVisible));
   });
   document.getElementById('my-location').addEventListener('click', function () {
