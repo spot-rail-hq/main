@@ -854,18 +854,28 @@
   var ormVisible = true;
   var currentStadiaKey = '';
 
-  // ── Station list (autocomplete) ───────────────────────────────────────────
+  // ── Station list (autocomplete + map markers) ─────────────────────────────
   // /station-list.json is the full UK station list — [{name, crs, lat, lon}],
-  // ~2,600 entries — separate from /data/stations.geojson's 53-station subset
-  // used for map markers. Loaded once up front and cached.
+  // ~2,637 entries, already the site's client-side stand-in for the NaPTAN
+  // data living in Postgres (see stations-content.json's own _notes: "Lat/
+  // lon/tiploc already live in Postgres — don't duplicate here"; there's no
+  // live DB query from the client anywhere in this app, per CLAUDE.md's
+  // API-key rule, so this static export IS how that data reaches the map).
+  // Was autocomplete-only; now also the source for the full station-marker
+  // layer below (previously only /data/stations.geojson's 53-station
+  // curated subset ever got a marker at all). Loaded once up front and
+  // cached; stored as a promise too so the marker-building code below can
+  // wait on the exact same fetch instead of firing a second request.
   var stationList = [];
-  fetch('/station-list.json').then(function (r) {
+  var stationListPromise = fetch('/station-list.json').then(function (r) {
     if (!r.ok) throw new Error('station-list.json missing');
     return r.json();
   }).then(function (data) {
     stationList = Array.isArray(data) ? data : [];
+    return stationList;
   }).catch(function (e) {
     console.warn('station-list.json unavailable — autocomplete falls back to loaded map markers/stub', e);
+    return [];
   });
 
   // Small hardcoded fallback so autocomplete is testable even before
@@ -1186,14 +1196,14 @@
       map.setPaintProperty('railway-lines', 'line-color', railwayLineColorExpression(rc));
     }
 
+    // stationsData is built once by the Promise.all() below (station-list.json
+    // + the major-station set both need to resolve first) — if it beat the
+    // map to being ready, add it now; if not, that promise handler adds it
+    // itself the moment it resolves (it has its own map.isStyleLoaded() guard
+    // for the reverse ordering). Either way, this branch never fetches on its
+    // own any more — see the comment above stationListPromise.
     if (stationsData) {
       addStationsLayer(stationsData);
-    } else {
-      fetch('/data/stations.geojson').then(function (r) { return r.json(); }).then(function (gj) {
-        gj.features.forEach(function (f, i) { f.id = i; });
-        stationsData = gj;
-        addStationsLayer(stationsData);
-      }).catch(function (e) { console.error('Failed to load stations.geojson', e); });
     }
 
     // Same setStyle-wipes-runtime-layers issue as railway-vector/stations
@@ -1206,15 +1216,38 @@
     renderSelectedStationMarkers();
   }
 
+  // Major = the same curated "top stations" set /data/stations.geojson has
+  // always held (see majorCrsPromise below) — bigger dots, visible at every
+  // zoom, since they're the major landmarks. Radii are ~30% smaller than
+  // this layer's old flat values (5/7 → 3.5/4.9) per the map-marker sizing
+  // pass; still used as-is for the always-visible selected-station overlay
+  // (renderSelectedStationMarkers) too, which is a separate concern from
+  // tiering — see that function's own comment.
   function stationsCirclePaint() {
     var c = themeColors();
     return {
-      'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, 5, 10, 7],
+      'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, 3.5, 10, 4.9],
       'circle-color': ['case', ['boolean', ['feature-state', 'hover'], false], c.stationHoverFill, c.stationFill],
       'circle-stroke-width': ['case', ['boolean', ['feature-state', 'hover'], false], 2.5, 1.8],
       'circle-stroke-color': c.accent,
     };
   }
+  // Minor = every other station (~2,584 of the 2,637) — small, unobtrusive
+  // dots roughly matching how ORM renders minor stations at comparable zoom
+  // levels, so they don't visually compete with the major markers. Gated to
+  // MINOR_STATION_MINZOOM via the layer's own minzoom (see addStationsLayer)
+  // rather than cluttering the initial UK-wide view.
+  function minorStationsCirclePaint() {
+    var c = themeColors();
+    return {
+      'circle-radius': ['interpolate', ['linear'], ['zoom'], 11, 2, 16, 3],
+      'circle-color': ['case', ['boolean', ['feature-state', 'hover'], false], c.stationHoverFill, c.stationFill],
+      'circle-stroke-width': ['case', ['boolean', ['feature-state', 'hover'], false], 2, 1],
+      'circle-stroke-color': c.accent,
+    };
+  }
+  var MAJOR_FILTER = ['==', ['get', 'major'], true];
+  var MINOR_FILTER = ['==', ['get', 'major'], false];
 
   function addStationsLayer(gj) {
     var c = themeColors();
@@ -1223,18 +1256,88 @@
     } else {
       map.getSource('stations').setData(gj);
     }
-    if (!map.getLayer('stations-circle')) {
-      map.addLayer({ id: 'stations-circle', type: 'circle', source: 'stations', paint: stationsCirclePaint() });
+    if (!map.getLayer('stations-circle-major')) {
+      map.addLayer({ id: 'stations-circle-major', type: 'circle', source: 'stations', filter: MAJOR_FILTER, paint: stationsCirclePaint() });
     }
-    if (!map.getLayer('stations-label')) {
+    // minzoom is a plain per-layer property here (not a zoom expression
+    // inside paint) — MapLibre culls the whole layer below it natively, so
+    // this is also the performance-friendly way to keep ~2,584 extra points
+    // out of both rendering AND hit-testing at the initial UK-wide zoom.
+    if (!map.getLayer('stations-circle-minor')) {
+      map.addLayer({ id: 'stations-circle-minor', type: 'circle', source: 'stations', filter: MINOR_FILTER, minzoom: MINOR_STATION_MINZOOM, paint: minorStationsCirclePaint() });
+    }
+    if (!map.getLayer('stations-label-major')) {
       map.addLayer({
-        id: 'stations-label', type: 'symbol', source: 'stations', minzoom: 9,
+        id: 'stations-label-major', type: 'symbol', source: 'stations', minzoom: 9, filter: MAJOR_FILTER,
+        layout: { 'text-field': ['get', 'name'], 'text-size': 10, 'text-anchor': 'top', 'text-offset': [0, 0.6] },
+        paint: { 'text-color': c.labelColor, 'text-halo-color': c.labelHalo, 'text-halo-width': 1 },
+      });
+    }
+    // Same minzoom as stations-circle-minor, so a minor station's label
+    // never floats without its dot (or vice versa) — labels for ~2,584
+    // stations at minzoom 9 (the major layer's threshold) would also just
+    // be dense, overlapping clutter at a zoom level meant for regional
+    // context, not per-station text.
+    if (!map.getLayer('stations-label-minor')) {
+      map.addLayer({
+        id: 'stations-label-minor', type: 'symbol', source: 'stations', minzoom: MINOR_STATION_MINZOOM, filter: MINOR_FILTER,
         layout: { 'text-field': ['get', 'name'], 'text-size': 10, 'text-anchor': 'top', 'text-offset': [0, 0.6] },
         paint: { 'text-color': c.labelColor, 'text-halo-color': c.labelHalo, 'text-halo-width': 1 },
       });
     }
     if (!stationInteractionsWired) { wireStationInteractions(); stationInteractionsWired = true; }
   }
+
+  // ── Full station marker set (2,637 stations, not just the curated ~50) ───
+  // Markers are tiered (see stationsCirclePaint/minorStationsCirclePaint
+  // above): "major" reuses the exact CRS set /data/stations.geojson has
+  // always curated — that file is kept around specifically as this app's
+  // existing definition of "top stations", not fetched into stationsData
+  // directly any more. Everything else in station-list.json (the full
+  // NaPTAN-derived list, ~2,637 entries) is "minor".
+  var MINOR_STATION_MINZOOM = 11; // matches flyToAndSelectStation's own zoom:11 — already this app's working definition of "close enough to see one station clearly"
+  // station-list.json's names carry generic NaPTAN suffixes ("Alexandra
+  // Palace Rail Station", "Kintore Railway Station", "Newcastle Airport
+  // Metro Station") that /data/stations.geojson's curated names never did
+  // ("Birmingham New Street") — confirmed live, 2,599/2,637 entries have
+  // one. Stripped here for the hover-tooltip/marker display only (station-
+  // list.json itself, and search/autocomplete, which read from the same
+  // array, are untouched — a full site-wide name-curation pass is a bigger,
+  // separate job than this marker-tiering one; flagging that gap here
+  // rather than shipping visibly inconsistent hover text between tiers).
+  // Not perfect on every edge case — e.g. "Minffordd Ffestiniog Railway
+  // Station" (a heritage-line interchange) becomes "Minffordd Ffestiniog",
+  // not the more minimal "Minffordd", since this is a blunt trailing-suffix
+  // strip, not per-station curation.
+  function stripStationNameSuffix(name) {
+    var stripped = (name || '').replace(/\s+(?:Rail|Railway|Metro)?\s*Station$/i, '').trim();
+    return stripped || name;
+  }
+  var majorCrsPromise = fetch('/data/stations.geojson').then(function (r) {
+    if (!r.ok) throw new Error('stations.geojson missing');
+    return r.json();
+  }).then(function (gj) {
+    return new Set(gj.features.map(function (f) { return f.properties.crs; }));
+  }).catch(function (e) {
+    console.warn('Could not load the major-station list (/data/stations.geojson) — every marker will render at minor size/zoom', e);
+    return new Set();
+  });
+  Promise.all([stationListPromise, majorCrsPromise]).then(function (results) {
+    var list = results[0], majorCrs = results[1];
+    if (!list.length) return;
+    stationsData = {
+      type: 'FeatureCollection',
+      features: list.map(function (s, i) {
+        return {
+          type: 'Feature',
+          id: i, // unique per-feature id across the whole source — required for feature-state hover to work correctly regardless of which tier/layer rendered a given marker
+          geometry: { type: 'Point', coordinates: [s.lon, s.lat] },
+          properties: { name: stripStationNameSuffix(s.name), crs: s.crs, major: majorCrs.has(s.crs) },
+        };
+      }),
+    };
+    if (map && map.isStyleLoaded()) addStationsLayer(stationsData);
+  });
 
   // ── Theme toggle ──────────────────────────────────────────────────────────
   var THEME_KEY = 'srhq-theme';
@@ -1302,31 +1405,40 @@
 
   // ── Station interactions (click → departure board) ───────────────────────
   var hoveredStationFeatureId = null;
+  // Bound to both tiers — feature ids are unique across the whole 'stations'
+  // source regardless of which layer rendered a given point (see the id:i
+  // assignment where stationsData is built), so hover/click behave
+  // identically for a major or minor marker; a minor marker simply isn't
+  // hit-testable at all below MINOR_STATION_MINZOOM since MapLibre's
+  // per-layer minzoom excludes it from the layer entirely at that zoom.
+  var STATION_MARKER_LAYERS = ['stations-circle-major', 'stations-circle-minor'];
   function wireStationInteractions() {
-    map.on('mousemove', 'stations-circle', function (e) {
-      map.getCanvas().style.cursor = 'pointer';
-      if (!e.features.length) return;
-      var f = e.features[0];
-      if (hoveredStationFeatureId !== f.id) {
+    STATION_MARKER_LAYERS.forEach(function (layerId) {
+      map.on('mousemove', layerId, function (e) {
+        map.getCanvas().style.cursor = 'pointer';
+        if (!e.features.length) return;
+        var f = e.features[0];
+        if (hoveredStationFeatureId !== f.id) {
+          if (hoveredStationFeatureId !== null) map.setFeatureState({ source: 'stations', id: hoveredStationFeatureId }, { hover: false });
+          hoveredStationFeatureId = f.id;
+          map.setFeatureState({ source: 'stations', id: hoveredStationFeatureId }, { hover: true });
+        }
+        showHoverTooltip(f.geometry.coordinates, f.properties.name);
+      });
+      map.on('mouseleave', layerId, function () {
+        map.getCanvas().style.cursor = '';
         if (hoveredStationFeatureId !== null) map.setFeatureState({ source: 'stations', id: hoveredStationFeatureId }, { hover: false });
-        hoveredStationFeatureId = f.id;
-        map.setFeatureState({ source: 'stations', id: hoveredStationFeatureId }, { hover: true });
-      }
-      showHoverTooltip(f.geometry.coordinates, f.properties.name);
-    });
-    map.on('mouseleave', 'stations-circle', function () {
-      map.getCanvas().style.cursor = '';
-      if (hoveredStationFeatureId !== null) map.setFeatureState({ source: 'stations', id: hoveredStationFeatureId }, { hover: false });
-      hoveredStationFeatureId = null;
-      hideHoverTooltip();
+        hoveredStationFeatureId = null;
+        hideHoverTooltip();
+      });
+      map.on('click', layerId, function (e) {
+        if (!e.features.length) return;
+        var props = e.features[0].properties;
+        selectStation(props.name, props.crs);
+      });
     });
     map.on('zoomstart', hideHoverTooltip);
     map.on('dragstart', hideHoverTooltip);
-    map.on('click', 'stations-circle', function (e) {
-      if (!e.features.length) return;
-      var props = e.features[0].properties;
-      selectStation(props.name, props.crs);
-    });
   }
 
   function depStatusClass(status) {
@@ -1922,17 +2034,21 @@
     return (entry && entry.name) || crs;
   }
 
-  // ── Selected-station marker(s) — bugfix ───────────────────────────────────
-  // stations-circle (addStationsLayer, above) only draws the curated top-50
-  // /data/stations.geojson set — any station outside it (i.e. most of
-  // station-list.json, the full searchable list) never got a marker at all
-  // when selected, even though the camera still flew to the right place. This
-  // is a separate, always-on-top source/layer keyed to whatever is currently
-  // selected (one point for a single station, two for a from/to pair),
-  // resolved via coordsForCrs() (station-list.json, the FULL list) —
-  // independent of curated-content coverage, so "no database entry yet" no
-  // longer means "no marker either." Re-applied by addMapLayers() after every
-  // theme toggle, same pattern as the route highlight polyline below.
+  // ── Selected-station marker(s) ─────────────────────────────────────────────
+  // Originally a bugfix for the old curated-top-50-only marker set (every
+  // station now gets a real marker from stations-circle-major/minor, above —
+  // see the map station marker tiering pass). Kept as its own always-on-top
+  // source/layer because it still solves a real, separate problem: a "minor"
+  // station only renders on stations-circle-minor once the map is zoomed
+  // past MINOR_STATION_MINZOOM, but a from/to pair's fitBounds() (below) can
+  // easily land below that zoom for two far-apart stations, and a single
+  // selectStation() call doesn't always follow a zoom:11+ flyTo either (e.g.
+  // clicking a search result before ever zooming in). This guarantees
+  // whatever's currently selected (one point for a single station, two for
+  // a from/to pair) is visible regardless of tier/zoom, resolved via
+  // coordsForCrs() (station-list.json, the FULL list). Re-applied by
+  // addMapLayers() after every theme toggle, same pattern as the route
+  // highlight polyline below.
   var SELECTED_STATIONS_SOURCE_ID = 'selected-stations', SELECTED_STATIONS_LAYER_ID = 'selected-stations-circle';
   var selectedStationPoints = []; // [{lon, lat}]
   function renderSelectedStationMarkers() {
@@ -2613,8 +2729,14 @@
     if (idx !== -1) {
       list.splice(idx, 1);
     } else {
-      var feature = stationsData && stationsData.features.find(function (f) { return f.properties.crs === selectedStationCrs; });
-      list.push({ name: selectedStationName, crs: selectedStationCrs, toc: feature ? feature.properties.toc : '', addedAt: new Date().toISOString() });
+      // stationsData's own features carry no operator info (station-list.json,
+      // its source since the map-marker tiering pass, is just name/crs/lat/
+      // lon) — stations-content.json's real, OSM-membership-verified
+      // operators array is a strictly better source than the old marker
+      // geojson's toc field ever was anyway (that only covered the curated
+      // ~50; this covers ~2,600).
+      var stationOperators = stationsContent[selectedStationCrs] && stationsContent[selectedStationCrs].operators;
+      list.push({ name: selectedStationName, crs: selectedStationCrs, toc: (stationOperators && stationOperators[0]) || '', addedAt: new Date().toISOString() });
     }
     setSavedRoutes(list);
     starBtn.classList.toggle('starred', isStarred(selectedStationCrs));
