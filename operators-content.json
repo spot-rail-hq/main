@@ -1,19 +1,24 @@
 {
-  "_notes": "Keyed by a short operator code (your own convention — GWR, AWC, etc). 2026-07-13: seeded 28 new entries from api/incidents.js's TOC_REGION_TABLE, using that table's own 2-letter ATOC-style codes (VT, GR, XC, ...) as the key — name only, awaiting Wikipedia/manual enrichment like any other entry. RESOLVED: WMR (West Midlands Railway) predates that seed and keeps its own, longer code on purpose — TOC_REGION_TABLE's WM is a real-world ATOC operator code required for matching the live Darwin incident feed in api/incidents.js, not an arbitrary internal choice, so it is NOT changed to WMR for internal consistency; do not add a WM entry here. 2026-07-13 canonicalization pass (see chat): `aliases` (array of strings) is a new manual/curated field — OSM-tagged naming variants (spelling, casing, historical franchise/legal names) that should be treated as the same operator as this entry's `name`; also added to matching stations-content.json entries' `operators` arrays, replacing the variant string with the canonical `name`. `legal_entity` (string) is a separate new manual/curated field for a DIFFERENT real entity behind a brand (e.g. the group company operating it) — deliberately NOT folded into `aliases`/station data, since equating a legal entity with its brand would be wrong, not just imprecise. 2026-07-14: SE (Southeastern)'s wikipedia_title set to \"Southeastern (train operating company)\" — verified live against Wikipedia's API as a real, non-disambiguation page, exact match. GN (Great Northern)'s wikipedia_title set to \"Greater Thameslink Railway\", NOT its own article — bare \"Great Northern\" is a disambiguation page and no \"Great Northern (train operating company)\" article exists; Wikipedia confirms Thameslink Southern Great Northern Ltd, trading as Greater Thameslink Railway (GTR), took over Govia Thameslink Railway's services on 31 May 2026 and runs Gatwick Express/Great Northern/Southern/Thameslink as sub-brands with no separate per-brand articles post-merger, so GTR's article is genuinely the correct/only source for Great Northern content today. This is a deliberate exception to the usual \"wikipedia_title points to the entity's own article\" rule — flagged here so it isn't mistaken for a mis-resolution later. 2026-07-14 follow-up: swept SN/TL/GX/GN (the four Greater Thameslink Railway sub-brands) for stale \"Govia Thameslink Railway\" references. SN's headline/parent_company updated to \"Greater Thameslink Railway\". TL and GX already had it correctly recorded as history (a franchises entry ending 31 May 2026, TL also has the new \"Greater Thameslink Railway\" entry starting then) — left untouched, that's accurate history not a stale current-parent field. GN had no Govia reference to begin with (freshly set this session). NOTE left unresolved: TL's parent_company is \"Govia\" (not \"Govia Thameslink Railway\") — a different, narrower string referring to the private-sector parent group; didn't touch it since it wasn't the string asked about, but it's arguably equally stale post-nationalization and may need its own follow-up. 2026-07-14: \"Southern Railway\" folded into SN/Southern as a 19th alias (added to its `aliases` array; 15 stations' operators arrays updated) — after the membership-checking extraction switch this string reappeared as a genuinely stop-verified (not proximity) OSM tag, always co-occurring with \"Southern\" at the same stations, confirming it's a stale/duplicate relation tag for the same brand rather than the historic 1923–1947 Southern Railway company or proximity noise. By contrast \"Greater Thameslink Railway\" (which also reappeared under membership-checking, co-occurring with Thameslink/Southern/Gatwick Express/Great Northern) was deliberately NOT folded anywhere — it's the real current legal successor entity (GTR, since 31 May 2026) that Southern/Thameslink/Great Northern/Gatwick Express now operate under as sub-brands, confirmed via its own Wikipedia article; equating it with any one sub-brand would be wrong, same reasoning as `legal_entity`. fleet_classes store the EXACT display label as it should appear (not a bare number + assumed 'Class ' prefix) — this covers cases like Manchester Metrolink's M5000 that don't follow the 'Class NN' pattern. 'id' is used to link through to that vehicle's entry on the database page; 'display' is shown verbatim, no reformatting. franchises is the full history; sidebar should show the current one as a simple 'Operating since {start}' line by default, with the full array available as an expandable detail. FIELD OWNERSHIP (see scripts/ for the population scripts): headline/parent_company/franchises are written by scripts/fetch-wikipedia-facts.mjs (Wikipedia, narrative/historical — Claude extracts, never invents; headline is a punchy 8-12 word sentence, not a paragraph; a franchise entry only appears if the article states its dates). schema_jsonld is written by scripts/build-schema-jsonld.mjs (template assembly from the fields above, no new facts, no API calls). stations_operated/regions_served/fleet_classes are manual/curated only — neither OSM nor Wikipedia reliably has these without real risk of being wrong, so they're deliberately not automated. name/wikipedia_title are manual/curated only. _wikipedia is provenance metadata written by the Wikipedia script (no _osm block here — OSM doesn't own any operator-level field in this design; the OSM-derived operator name lives on the station/route entries that reference it, via their own operator/operators fields). 2026-07-13 follow-up: `sub_brands` (array of strings, on LE/Greater Anglia so far) is a named service brand under this operator that intentionally does NOT get its own operators-content.json entry and is NOT folded into `aliases`/station data — distinct from both a naming variant (aliases) and a different legal entity (legal_entity). `welsh_name` (string, on AW/Transport for Wales so far) is the official bilingual Welsh-language name — kept as its own field rather than merged into `aliases` because it's a live, still-used official name, not a deprecated/historical variant; station-content.json's \"Trafnidiaeth Cymru\" tags are deliberately left as-is, not replaced with \"Transport for Wales\".",
+  "_notes": "Keyed by a short operator code (your own convention — GWR, AWC, etc). 2026-07-13: seeded 28 new entries from api/incidents.js's TOC_REGION_TABLE, using that table's own 2-letter ATOC-style codes (VT, GR, XC, ...) as the key — name only, awaiting Wikipedia/manual enrichment like any other entry. RESOLVED: WMR (West Midlands Railway) predates that seed and keeps its own, longer code on purpose — TOC_REGION_TABLE's WM is a real-world ATOC operator code required for matching the live Darwin incident feed in api/incidents.js, not an arbitrary internal choice, so it is NOT changed to WMR for internal consistency; do not add a WM entry here. 2026-07-13 canonicalization pass (see chat): `aliases` (array of strings) is a new manual/curated field — OSM-tagged naming variants (spelling, casing, historical franchise/legal names) that should be treated as the same operator as this entry's `name`; also added to matching stations-content.json entries' `operators` arrays, replacing the variant string with the canonical `name`. `legal_entity` (string) is a separate new manual/curated field for a DIFFERENT real entity behind a brand (e.g. the group company operating it) — deliberately NOT folded into `aliases`/station data, since equating a legal entity with its brand would be wrong, not just imprecise. 2026-07-14: SE (Southeastern)'s wikipedia_title set to \"Southeastern (train operating company)\" — verified live against Wikipedia's API as a real, non-disambiguation page, exact match. GN (Great Northern)'s wikipedia_title set to \"Greater Thameslink Railway\", NOT its own article — bare \"Great Northern\" is a disambiguation page and no \"Great Northern (train operating company)\" article exists; Wikipedia confirms Thameslink Southern Great Northern Ltd, trading as Greater Thameslink Railway (GTR), took over Govia Thameslink Railway's services on 31 May 2026 and runs Gatwick Express/Great Northern/Southern/Thameslink as sub-brands with no separate per-brand articles post-merger, so GTR's article is genuinely the correct/only source for Great Northern content today. This is a deliberate exception to the usual \"wikipedia_title points to the entity's own article\" rule — flagged here so it isn't mistaken for a mis-resolution later. 2026-07-14 follow-up: swept SN/TL/GX/GN (the four Greater Thameslink Railway sub-brands) for stale \"Govia Thameslink Railway\" references. SN's headline/parent_company updated to \"Greater Thameslink Railway\". TL and GX already had it correctly recorded as history (a franchises entry ending 31 May 2026, TL also has the new \"Greater Thameslink Railway\" entry starting then) — left untouched, that's accurate history not a stale current-parent field. GN had no Govia reference to begin with (freshly set this session). NOTE left unresolved: TL's parent_company is \"Govia\" (not \"Govia Thameslink Railway\") — a different, narrower string referring to the private-sector parent group; didn't touch it since it wasn't the string asked about, but it's arguably equally stale post-nationalization and may need its own follow-up. 2026-07-14: \"Southern Railway\" folded into SN/Southern as a 19th alias (added to its `aliases` array; 15 stations' operators arrays updated) — after the membership-checking extraction switch this string reappeared as a genuinely stop-verified (not proximity) OSM tag, always co-occurring with \"Southern\" at the same stations, confirming it's a stale/duplicate relation tag for the same brand rather than the historic 1923–1947 Southern Railway company or proximity noise. By contrast \"Greater Thameslink Railway\" (which also reappeared under membership-checking, co-occurring with Thameslink/Southern/Gatwick Express/Great Northern) was deliberately NOT folded anywhere — it's the real current legal successor entity (GTR, since 31 May 2026) that Southern/Thameslink/Great Northern/Gatwick Express now operate under as sub-brands, confirmed via its own Wikipedia article; equating it with any one sub-brand would be wrong, same reasoning as `legal_entity`. fleet_classes store the EXACT display label as it should appear (not a bare number + assumed 'Class ' prefix) — this covers cases like Manchester Metrolink's M5000 that don't follow the 'Class NN' pattern. 'id' is used to link through to that vehicle's entry on the database page; 'display' is shown verbatim, no reformatting. franchises is the full history; sidebar should show the current one as a simple 'Operating since {start}' line by default, with the full array available as an expandable detail. FIELD OWNERSHIP (see scripts/ for the population scripts): headline/parent_company/franchises are written by scripts/fetch-wikipedia-facts.mjs (Wikipedia, narrative/historical — Claude extracts, never invents; headline is a punchy 8-12 word sentence, not a paragraph; a franchise entry only appears if the article states its dates). schema_jsonld is written by scripts/build-schema-jsonld.mjs (template assembly from the fields above, no new facts, no API calls). 2026-07-14 UI/content pass (mockup-routes.png/mockup-station.png): `stations_operated` is now computed by scripts/compute-operator-stats.mjs — a plain count of stations-content.json entries listing this operator's `name`/`aliases`, i.e. it inherits fetch-osm-facts.mjs's route-relation membership-verification standard rather than being a fresh guess. A genuine 0 (no verified station found — HT/Hull Trains, HX/Heathrow Express, XR/Elizabeth line as of this run) is left unset rather than written as literal 0, since 0 would misleadingly render as \"no stations\" for operators that plainly have real coverage; OSM just doesn't have a stop-verified route relation for them under these names yet. `regions_served` (main/other) and `notable_features` are now written by scripts/fetch-wikipedia-facts.mjs, same grounded-extraction discipline as headline/parent_company/franchises (never invented; omitted if the article doesn't state it) — see that script's header. `fleet_classes` remains manual/curated only — extracting specific class numbers from prose carries a higher hallucination risk than the other fields and needs the structured id/display shape below; not automated in this pass. name/wikipedia_title are manual/curated only. _wikipedia is provenance metadata written by the Wikipedia script (no _osm block here — OSM doesn't own any operator-level field in this design; the OSM-derived operator name lives on the station/route entries that reference it, via their own operator/operators fields). 2026-07-13 follow-up: `sub_brands` (array of strings, on LE/Greater Anglia so far) is a named service brand under this operator that intentionally does NOT get its own operators-content.json entry and is NOT folded into `aliases`/station data — distinct from both a naming variant (aliases) and a different legal entity (legal_entity). `welsh_name` (string, on AW/Transport for Wales so far) is the official bilingual Welsh-language name — kept as its own field rather than merged into `aliases` because it's a live, still-used official name, not a deprecated/historical variant; station-content.json's \"Trafnidiaeth Cymru\" tags are deliberately left as-is, not replaced with \"Transport for Wales\".",
   "WMR": {
     "name": "West Midlands Railway",
     "wikipedia_title": "West Midlands Trains",
-    "headline": "West Midlands Trains, renationalised under public ownership in 2026.",
+    "headline": "West Midlands Railway returned to state ownership on 1 February 2026",
     "parent_company": "DfT Operator",
     "franchises": [
       {
-        "name": "West Midlands Trains (DfT Operator, public ownership)",
+        "name": "Transport UK Group and Mitsui & Co (West Midlands Trains)",
+        "start": null,
+        "end": "1 February 2026"
+      },
+      {
+        "name": "WM Trains Limited (West Midlands Railway / London Northwestern Railway)",
         "start": "1 February 2026",
         "end": null
       }
     ],
     "_wikipedia": {
-      "fetched_at": "2026-07-13T07:14:44.815Z",
+      "fetched_at": "2026-07-14T11:43:05.914Z",
       "title": "West Midlands Trains",
       "url": "https://en.wikipedia.org/wiki/West_Midlands_Trains",
       "license": "CC BY-SA 4.0"
@@ -27,25 +32,63 @@
         "name": "DfT Operator"
       }
     },
-    "legal_entity": "West Midlands Trains (parent legal entity; also covers the London Northwestern Railway brand — not folded in as a simple alias)"
+    "legal_entity": "West Midlands Trains (parent legal entity; also covers the London Northwestern Railway brand — not folded in as a simple alias)",
+    "stations_operated": 118,
+    "notable_features": [
+      "Operates under two trading names: West Midlands Railway and London Northwestern Railway",
+      "Became state-owned on 1 February 2026 following the end of its outsourcing contract with Transport UK Group and Mitsui & Co",
+      "Services on the Stourbridge Town branch line are run by open access operator Pre Metro Operations on its behalf"
+    ],
+    "regions_served": {
+      "main": [
+        "West Midlands"
+      ],
+      "other": [
+        "London",
+        "North West England"
+      ]
+    }
   },
   "VT": {
     "name": "Avanti West Coast",
-    "headline": "Avanti West Coast to be nationalised, routes joining GBR by October 2027",
+    "headline": "Avanti West Coast posted Britain's worst train cancellation rate in 2022",
     "parent_company": "FirstGroup (70%) and Trenitalia (30%)",
     "franchises": [
       {
         "name": "West Coast Partnership",
-        "start": "8 December 2019",
-        "end": null
+        "start": "December 2019",
+        "end": "October 2027"
       }
     ],
     "wikipedia_title": "Avanti West Coast",
     "_wikipedia": {
-      "fetched_at": "2026-07-13T18:45:45.592Z",
+      "fetched_at": "2026-07-14T11:43:20.814Z",
       "title": "Avanti West Coast",
       "url": "https://en.wikipedia.org/wiki/Avanti_West_Coast",
       "license": "CC BY-SA 4.0"
+    },
+    "stations_operated": 42,
+    "notable_features": [
+      "Operates the West Coast Partnership franchise, successor to Virgin Trains' InterCity West Coast",
+      "Inherited 56 Class 390 Pendolino tilting high-speed EMUs and 20 Class 221 Super Voyager DEMUs from Virgin Trains",
+      "Pendolino fleet underwent major refurbishment between 2021 and 2024",
+      "Replaced Super Voyagers in 2024 with new Class 805 bi-mode and Class 807 electric multiple units from the Hitachi A-train family",
+      "New Class 805/807 units do not tilt unlike the Pendolinos and Super Voyagers they replaced",
+      "Had the worst train cancellation record in Great Britain (8% vs 3.8% national average) in year to November 2022",
+      "Launched smartcard ticketing in February 2021 as an alternative to paper tickets",
+      "Orange triangle logo represents the three geographic points of the West Coast Main Line",
+      "Being nationalised, with routes transferring to Great British Railways by October 2027",
+      "Set to be one of the last two train operators nationalised in Great Britain"
+    ],
+    "regions_served": {
+      "main": [
+        "London",
+        "West Midlands",
+        "North West England",
+        "North Wales",
+        "Scotland"
+      ],
+      "other": []
     }
   },
   "GR": {
@@ -65,7 +108,7 @@
     ],
     "wikipedia_title": "LNER",
     "_wikipedia": {
-      "fetched_at": "2026-07-13T18:45:50.228Z",
+      "fetched_at": "2026-07-14T11:43:23.089Z",
       "title": "LNER",
       "url": "https://en.wikipedia.org/wiki/LNER",
       "license": "CC BY-SA 4.0"
@@ -73,22 +116,23 @@
     "aliases": [
       "London North Eastern Railway",
       "Virgin Trains East Coast"
-    ]
+    ],
+    "stations_operated": 48
   },
   "XC": {
     "name": "CrossCountry",
-    "headline": "CrossCountry's Aberdeen-Penzance route, UK's longest, ended May 2025",
+    "headline": "CrossCountry once ran Britain's longest direct rail journey until 2025",
     "parent_company": "Arriva UK Trains",
     "franchises": [
       {
         "name": "CrossCountry",
-        "start": "2007-11-11",
-        "end": "2027-10-15"
+        "start": "2007",
+        "end": null
       }
     ],
     "wikipedia_title": "CrossCountry",
     "_wikipedia": {
-      "fetched_at": "2026-07-13T18:45:55.378Z",
+      "fetched_at": "2026-07-14T11:43:47.017Z",
       "title": "CrossCountry",
       "url": "https://en.wikipedia.org/wiki/CrossCountry",
       "license": "CC BY-SA 4.0"
@@ -96,7 +140,28 @@
     "aliases": [
       "Cross Country",
       "Arriva CrossCountry"
-    ]
+    ],
+    "stations_operated": 103,
+    "notable_features": [
+      "Once operated the UK's longest direct rail passenger service, Aberdeen to Penzance (13h15m), ended May 2025",
+      "One of only two franchised UK train operators that manages no stations (the other being Caledonian Sleeper)",
+      "Operates diesel trains only, as none of its routes are fully electrified",
+      "Removed the tilt function from its Class 221 Super Voyagers in 2008 to improve reliability",
+      "Network is centred on Birmingham New Street and deliberately avoids Greater London"
+    ],
+    "regions_served": {
+      "main": [
+        "the Midlands",
+        "the North of England",
+        "the South of England",
+        "Scotland"
+      ],
+      "other": [
+        "Wales",
+        "East Anglia",
+        "Cornwall"
+      ]
+    }
   },
   "EM": {
     "name": "East Midlands Railway",
@@ -104,55 +169,82 @@
     "parent_company": "Transport UK Group",
     "franchises": [
       {
-        "name": "East Midlands",
+        "name": "East Midlands franchise",
         "start": "18 August 2019",
         "end": null
+      },
+      {
+        "name": "National Rail Contract",
+        "start": "2022",
+        "end": "October 2026"
       }
     ],
     "wikipedia_title": "East Midlands Railway",
     "_wikipedia": {
-      "fetched_at": "2026-07-13T18:46:02.737Z",
+      "fetched_at": "2026-07-14T11:44:04.339Z",
       "title": "East Midlands Railway",
       "url": "https://en.wikipedia.org/wiki/East_Midlands_Railway",
       "license": "CC BY-SA 4.0"
     },
     "aliases": [
       "East Midlands"
-    ]
+    ],
+    "stations_operated": 119,
+    "notable_features": [
+      "Ordered 33 new bi-mode Class 810 Aurora high-speed train sets",
+      "Leased four ex-Hull Trains Class 180 units despite their history of technical difficulties",
+      "Contactless payment accepted between London St Pancras and Luton Airport Parkway",
+      "Operates Luton Airport Express service linked to automated Luton DART people mover, cutting journey to 32 minutes",
+      "Workers took part in the first national rail strike in the UK for three decades (2022–2023)",
+      "Ran some of the last regular InterCity 125 (Class 43) services, inherited then replaced by ex-LNER sets"
+    ],
+    "regions_served": {
+      "main": [
+        "the East Midlands"
+      ],
+      "other": []
+    }
   },
   "LN": {
     "name": "London Northwestern Railway",
-    "headline": "West Midlands Trains takes over London Northwestern Railway on 1 February 2026",
-    "parent_company": "WM Trains Limited",
+    "headline": "State-owned West Midlands Trains took over London Northwestern Railway in February 2026",
+    "parent_company": "WM Trains Limited (trading as West Midlands Trains)",
     "franchises": [
       {
         "name": "West Midlands Trains",
-        "start": "1 February 2026",
+        "start": "2026-02-01",
         "end": null
       }
     ],
     "wikipedia_title": "West Midlands Trains",
     "_wikipedia": {
-      "fetched_at": "2026-07-13T18:46:11.152Z",
+      "fetched_at": "2026-07-14T11:44:18.514Z",
       "title": "West Midlands Trains",
       "url": "https://en.wikipedia.org/wiki/West_Midlands_Trains",
       "license": "CC BY-SA 4.0"
-    }
+    },
+    "stations_operated": 56,
+    "notable_features": [
+      "Operates commuter services along the West Coast Main Line out of London Euston",
+      "Runs two local branch lines splitting off the WCML at Watford Junction and Bletchley",
+      "Express trains on its WCML corridor are operated by Avanti West Coast, not LNR itself",
+      "Brand taken over by state-owned WM Trains Limited on 1 February 2026, ending the Transport UK Group/Mitsui & Co contract"
+    ]
   },
   "GW": {
     "name": "Great Western Railway",
-    "headline": "Only railway to keep its name through the 1921 Grouping merger",
+    "headline": "Only British railway to keep its name through the 1921 grouping",
     "parent_company": "FirstGroup",
     "franchises": [
       {
         "name": "Great Western Railway",
-        "start": "September 2015",
+        "start": 2015,
         "end": null
       }
     ],
     "wikipedia_title": "Great Western Railway",
     "_wikipedia": {
-      "fetched_at": "2026-07-13T18:46:21.852Z",
+      "fetched_at": "2026-07-14T11:44:37.692Z",
       "title": "Great Western Railway",
       "url": "https://en.wikipedia.org/wiki/Great_Western_Railway",
       "license": "CC BY-SA 4.0"
@@ -161,30 +253,73 @@
       "GWR",
       "First Great Western",
       "Great Western Railways"
-    ]
+    ],
+    "stations_operated": 237,
+    "notable_features": [
+      "Engineered by Isambard Kingdom Brunel using his 7 ft broad gauge track",
+      "Only company to keep its identity through the Railways Act 1921 grouping",
+      "Installed the world's first commercial telegraph line, from Paddington to West Drayton in 1839",
+      "Became the largest docks operator in the world after the Railways Act 1921",
+      "Ran the first vacuum-braked general goods train in Britain in 1905",
+      "Introduced Britain's first railway-operated bus ('road motor') service in 1903",
+      "Box Tunnel was the longest railway tunnel driven at the time of its construction",
+      "The Cheltenham Spa Express ('Cheltenham Flyer') was once the fastest scheduled train in the world"
+    ],
+    "regions_served": {
+      "main": [
+        "Greater London",
+        "South West England",
+        "West Midlands",
+        "Wales"
+      ],
+      "other": []
+    }
   },
   "SW": {
     "name": "South Western Railway",
-    "headline": "State takes over South Western Railway from FirstGroup and MTR in May 2025",
+    "headline": "South Western Railway returns to state ownership after FirstGroup-MTR franchise ends",
     "parent_company": "DfT Operator",
     "franchises": [
       {
         "name": "South Western Railway (FirstGroup/MTR Corporation)",
         "start": null,
-        "end": "2025-05-25"
+        "end": "25 May 2025"
       },
       {
-        "name": "South Western Railway (DfT Operator)",
-        "start": "2025-05-25",
+        "name": "South Western Railway (state-owned)",
+        "start": "25 May 2025",
         "end": null
       }
     ],
     "wikipedia_title": "South Western Railway",
     "_wikipedia": {
-      "fetched_at": "2026-07-13T18:46:26.954Z",
+      "fetched_at": "2026-07-14T11:44:58.980Z",
       "title": "South Western Railway",
       "url": "https://en.wikipedia.org/wiki/South_Western_Railway",
       "license": "CC BY-SA 4.0"
+    },
+    "stations_operated": 185,
+    "notable_features": [
+      "State-owned train operator after nationalisation of the FirstGroup/MTR franchise in May 2025",
+      "Operates the Island Line brand on the Isle of Wight using Class 484 units converted from London Underground D78 Stock",
+      "Most services use 750 V DC third rail electrification, with a diesel fleet retained for the unelectrified West of England line",
+      "Bans non-folding bicycles from peak-time trains in a defined London commuter zone to save space",
+      "Retired its Class 455 fleet in March 2026 following introduction of Class 701 Arterio units"
+    ],
+    "regions_served": {
+      "main": [
+        "western Surrey",
+        "Hampshire",
+        "Dorset",
+        "Isle of Wight"
+      ],
+      "other": [
+        "Greater London",
+        "Berkshire",
+        "Wiltshire",
+        "Somerset",
+        "Devon"
+      ]
     }
   },
   "SE": {
@@ -194,47 +329,64 @@
       "Southeastern Railway"
     ],
     "wikipedia_title": "Southeastern (train operating company)",
-    "headline": "State-run Southeastern took over in 2021 after a £25m accounting scandal",
+    "headline": "Southeastern was renationalised in 2021 after a £25 million revenue fraud scandal",
     "parent_company": "DfT Operator",
     "franchises": [
       {
-        "name": "South Eastern franchise (operated by SE Trains Limited, trading as Southeastern)",
+        "name": "South Eastern franchise",
         "start": "17 October 2021",
         "end": null
       }
     ],
     "_wikipedia": {
-      "fetched_at": "2026-07-14T06:32:44.563Z",
+      "fetched_at": "2026-07-14T11:45:09.786Z",
       "title": "Southeastern (train operating company)",
       "url": "https://en.wikipedia.org/wiki/Southeastern_(train_operating_company)",
       "license": "CC BY-SA 4.0"
+    },
+    "stations_operated": 162,
+    "notable_features": [
+      "Operates the domestic services on High Speed 1",
+      "State-owned operator of last resort, taking over after a £25 million revenue declaration fraud",
+      "Network spans 540 miles (870 km) covering 180 stations, 164 of which it manages",
+      "£27 million refurbishment of its 29 Class 395 Javelin high-speed trains",
+      "£10 million upgrade of its 112-strong Class 375 Electrostar fleet",
+      "First operator to ban e-scooters and electric skateboards over lithium-ion battery fire risk",
+      "Introduced digital 'sTickets' season tickets bought via smartphone",
+      "Developing a fully automated vehicle inspection system with Siemens Mobility and Eversholt Rail, first deployed at Ramsgate depot"
+    ],
+    "regions_served": {
+      "main": [
+        "Kent",
+        "London",
+        "East Sussex"
+      ],
+      "other": [
+        "south-east London"
+      ]
     }
   },
   "SN": {
     "name": "Southern",
     "headline": "Southern is a Greater Thameslink Railway brand for English train services",
-    "parent_company": "Greater Thameslink Railway",
+    "parent_company": "Govia Thameslink Railway",
     "wikipedia_title": "Southern",
     "_wikipedia": {
-      "fetched_at": "2026-07-13T18:46:37.630Z",
+      "fetched_at": "2026-07-14T11:45:12.040Z",
       "title": "Southern",
       "url": "https://en.wikipedia.org/wiki/Southern",
       "license": "CC BY-SA 4.0"
     },
     "aliases": [
       "Southern Railway"
-    ]
+    ],
+    "stations_operated": 191
   },
   "TL": {
     "name": "Thameslink",
-    "headline": "Thameslink's £7 billion upgrade still hasn't hit 24 trains an hour",
-    "parent_company": "Govia",
+    "headline": "Thameslink's £7bn upgrade introduced world-first automatic train operation over ETCS Level 2",
+    "parent_company": "Govia Thameslink Railway",
     "franchises": [
-      {
-        "name": "Thameslink (Govia subsidiary)",
-        "start": null,
-        "end": "1 April 2006"
-      },
       {
         "name": "First Capital Connect",
         "start": "1 April 2006",
@@ -253,15 +405,24 @@
     ],
     "wikipedia_title": "Thameslink",
     "_wikipedia": {
-      "fetched_at": "2026-07-13T18:52:15.321Z",
+      "fetched_at": "2026-07-14T11:45:31.478Z",
       "title": "Thameslink",
       "url": "https://en.wikipedia.org/wiki/Thameslink",
       "license": "CC BY-SA 4.0"
-    }
+    },
+    "stations_operated": 139,
+    "notable_features": [
+      "World-first Automatic Train Operation (ATO) over ETCS Level 2 in the core section",
+      "Reopened the Snow Hill tunnel to passengers after 72 years in 1988",
+      "Part of the route (Bedford to Three Bridges) runs 24 hours a day",
+      "Subject of the £7 billion Thameslink Programme infrastructure upgrade",
+      "Uses purpose-built Class 700 dual-voltage trains introduced in 2016",
+      "Passenger demand quadrupled initial projections after the 1988 launch"
+    ]
   },
   "GX": {
     "name": "Gatwick Express",
-    "headline": "Gatwick Express becomes state-owned service under Greater Thameslink Railway from May 2026",
+    "headline": "First British Rail InterCity sector spun off as a private franchise",
     "franchises": [
       {
         "name": "National Express",
@@ -269,8 +430,8 @@
         "end": "22 June 2008"
       },
       {
-        "name": "Govia (South Central franchise)",
-        "start": "20 September 2009",
+        "name": "Southern",
+        "start": "22 June 2008",
         "end": "25 July 2015"
       },
       {
@@ -281,27 +442,65 @@
     ],
     "wikipedia_title": "Gatwick Express",
     "_wikipedia": {
-      "fetched_at": "2026-07-13T18:52:27.306Z",
+      "fetched_at": "2026-07-14T11:45:47.807Z",
       "title": "Gatwick Express",
       "url": "https://en.wikipedia.org/wiki/Gatwick_Express",
       "license": "CC BY-SA 4.0"
+    },
+    "stations_operated": 7,
+    "parent_company": "Greater Thameslink Railway",
+    "notable_features": [
+      "First portion of British Rail's InterCity sector converted into a separate train operating unit ahead of privatisation",
+      "Launched as a non-stop London-to-airport express service in May 1984",
+      "Among the first UK rail journeys to accept Oyster and contactless payment cards, from January 2016",
+      "Class 387/2 fleet allows three units to couple into a 12-coach train, versus a 10-coach maximum for the Class 442s it replaced",
+      "ASLEF drivers staged a dispute over Driver-Only Operation on the new 12-car Class 387 trains",
+      "Ordered by the Advertising Standards Authority in 2018 to drop its 30-minute journey time claim due to poor performance"
+    ],
+    "regions_served": {
+      "main": [
+        "South East England"
+      ],
+      "other": []
     }
   },
   "GN": {
     "name": "Great Northern",
     "wikipedia_title": "Greater Thameslink Railway",
-    "headline": "Great Northern to become part of state-owned Greater Thameslink Railway in 2026",
-    "parent_company": "DfT Operator (Department for Transport)",
+    "headline": "Great Northern's Moorgate route could be absorbed into London Overground by 2027",
+    "parent_company": "Thameslink Southern Great Northern Limited (Greater Thameslink Railway), owned by DfT Operator",
     "_wikipedia": {
-      "fetched_at": "2026-07-14T06:32:51.769Z",
+      "fetched_at": "2026-07-14T11:46:02.077Z",
       "title": "Greater Thameslink Railway",
       "url": "https://en.wikipedia.org/wiki/Greater_Thameslink_Railway",
       "license": "CC BY-SA 4.0"
+    },
+    "stations_operated": 55,
+    "franchises": [
+      {
+        "name": "Greater Thameslink Railway",
+        "start": "31 May 2026",
+        "end": null
+      }
+    ],
+    "notable_features": [
+      "Runs suburban services on the southern end of the East Coast Main Line",
+      "TfL has proposed taking over Moorgate to Welwyn Garden City, Hertford North and Stevenage services and integrating them into London Overground, potentially from Autumn 2027",
+      "Proposed takeover would increase frequency from 2 to 4 trains per hour and standardise fares",
+      "Proposed change linked to a planned 21,000-home development at Crews Hill",
+      "Any Overground takeover would continue to use the existing Class 717 rolling stock"
+    ],
+    "regions_served": {
+      "main": [
+        "Hertfordshire",
+        "North London"
+      ],
+      "other": []
     }
   },
   "CC": {
     "name": "c2c",
-    "headline": "State-owned DfT Operator takes over c2c services on 20 July 2025",
+    "headline": "State-owned DfT Operator takes over c2c's East London-Essex rail services in July 2025",
     "parent_company": "DfT Operator",
     "franchises": [
       {
@@ -312,34 +511,72 @@
     ],
     "wikipedia_title": "C2c",
     "_wikipedia": {
-      "fetched_at": "2026-07-13T18:44:02.657Z",
+      "fetched_at": "2026-07-14T11:46:11.792Z",
       "title": "C2c",
       "url": "https://en.wikipedia.org/wiki/C2c",
       "license": "CC BY-SA 4.0"
+    },
+    "stations_operated": 26,
+    "notable_features": [
+      "Class 357 and Class 720 trains capable of 100mph but restricted to 75mph by the line's speed limit",
+      "Fastest timetabled journey between Fenchurch Street and Shoeburyness is 56 minutes",
+      "Entire fleet inherited from predecessor operator, maintained at East Ham and Shoeburyness depots"
+    ],
+    "regions_served": {
+      "main": [
+        "East London",
+        "South Essex"
+      ],
+      "other": []
     }
   },
   "CH": {
     "name": "Chiltern Railways",
-    "headline": "Chiltern Railways set to return to public ownership in 2026",
+    "headline": "Only UK rail franchise once 51% owned by its own directors",
     "parent_company": "Arriva UK Trains",
     "franchises": [
       {
         "name": "Chiltern Railways franchise",
-        "start": "1996-07-21",
-        "end": "2026-09-20"
+        "start": "July 1996",
+        "end": "20 September 2026"
       }
     ],
     "wikipedia_title": "Chiltern Railways",
     "_wikipedia": {
-      "fetched_at": "2026-07-13T18:52:37.551Z",
+      "fetched_at": "2026-07-14T11:46:27.311Z",
       "title": "Chiltern Railways",
       "url": "https://en.wikipedia.org/wiki/Chiltern_Railways",
       "license": "CC BY-SA 4.0"
+    },
+    "stations_operated": 48,
+    "notable_features": [
+      "First post-privatisation franchise to order new rolling stock (Class 168 Clubman DMUs)",
+      "Uniquely had 51% of its founding shares controlled by its own directors",
+      "Shares tracks with London Underground's Metropolitan line under a unique unregulated track-access agreement",
+      "Runs a parliamentary train service on the Cherwell Valley line purely to maintain driver route knowledge",
+      "Suffered a six-week main line closure after the Gerrards Cross Tunnel collapse in 2005, leading to Tesco compensation",
+      "Delivered £250 million Evergreen 3 upgrade enabling 100 mph running on the Chiltern Main Line",
+      "Operates peak-hour locomotive-hauled services using Class 67/68 locomotives with Mark 3 coaches",
+      "Converted a Class 168 unit into 'HybridFlex', a battery hybrid train",
+      "PPM regularly exceeded 90%, rated among Britain's best-performing operators in the mid-2010s",
+      "Set to return to public ownership in September 2026 under Great British Railways reforms"
+    ],
+    "regions_served": {
+      "main": [
+        "Greater London",
+        "Buckinghamshire",
+        "Oxfordshire",
+        "Warwickshire",
+        "West Midlands"
+      ],
+      "other": [
+        "Northamptonshire"
+      ]
     }
   },
   "LE": {
     "name": "Greater Anglia",
-    "headline": "State-owned Greater Anglia took over East Anglian rail services on 12 October 2025",
+    "headline": "State-owned Greater Anglia took over Essex-to-Norfolk services in October 2025",
     "parent_company": "DfT Operator",
     "franchises": [
       {
@@ -350,7 +587,7 @@
     ],
     "wikipedia_title": "Greater Anglia",
     "_wikipedia": {
-      "fetched_at": "2026-07-13T18:47:26.760Z",
+      "fetched_at": "2026-07-14T11:46:34.649Z",
       "title": "Greater Anglia",
       "url": "https://en.wikipedia.org/wiki/Greater_Anglia",
       "license": "CC BY-SA 4.0"
@@ -360,27 +597,45 @@
     ],
     "sub_brands": [
       "Stansted Express"
-    ]
+    ],
+    "stations_operated": 93,
+    "notable_features": [
+      "Operates the Stansted Express airport rail link between Stansted Airport and London Liverpool Street",
+      "Installed new anti-trespass measures including fences, gates and 'witches' hats' after trespass incidents caused over 18 days of delays in 2025/26",
+      "State-owned, having taken over from Transport UK Group and Mitsui & Co under the Passenger Railway Services (Public Ownership) Act 2024"
+    ],
+    "regions_served": {
+      "main": [
+        "Essex",
+        "Suffolk",
+        "Norfolk"
+      ],
+      "other": [
+        "Hertfordshire",
+        "Cambridgeshire",
+        "East of England"
+      ]
+    }
   },
   "NT": {
     "name": "Northern",
-    "headline": "First UK rail franchise stripped for poor performance since 2003",
-    "parent_company": "DfT Operator",
+    "headline": "First rail franchise stripped for poor performance since Connex in 2003",
+    "parent_company": "DfT Operator (Department for Transport)",
     "franchises": [
       {
         "name": "Arriva Rail North",
         "start": "April 2016",
-        "end": "29 February 2020"
+        "end": "29 January 2020 (terminated, effective 1 March 2020)"
       },
       {
-        "name": "Northern",
+        "name": "Northern Trains Limited",
         "start": "1 March 2020",
         "end": null
       }
     ],
     "wikipedia_title": "Northern Trains",
     "_wikipedia": {
-      "fetched_at": "2026-07-13T19:43:09.917Z",
+      "fetched_at": "2026-07-14T11:46:57.713Z",
       "title": "Northern Trains",
       "url": "https://en.wikipedia.org/wiki/Northern_Trains",
       "license": "CC BY-SA 4.0"
@@ -390,11 +645,30 @@
       "Northern Trains",
       "Arriva Trains North",
       "Arriva Rail North"
-    ]
+    ],
+    "stations_operated": 459,
+    "notable_features": [
+      "First train operating company to have its franchise terminated for poor performance since Connex South Eastern in 2003",
+      "Now run directly by the government's operator of last resort (DfT Operator)",
+      "Introduced new Class 195 diesel and Class 331 electric multiple units fully into service by December 2020",
+      "Affected by the 2022–2024 UK railway strikes, the largest national rail strikes in three decades",
+      "Operates a rare parliamentary train service on the Stockport–Stalybridge line, twice weekly on Saturdays",
+      "Plans to procure up to 386 new trains totalling 896 carriages, introduced from 2030"
+    ],
+    "regions_served": {
+      "main": [
+        "North of England"
+      ],
+      "other": [
+        "North East England",
+        "North West England",
+        "Yorkshire and the Humber"
+      ]
+    }
   },
   "TP": {
     "name": "TransPennine Express",
-    "headline": "State-run TransPennine Express posts just 47.7% on-time performance in 2023-24",
+    "headline": "State-run TransPennine Express restored Castleford-York trains after a 50-year gap",
     "parent_company": "DfT Operator",
     "franchises": [
       {
@@ -405,132 +679,222 @@
     ],
     "wikipedia_title": "TransPennine Express",
     "_wikipedia": {
-      "fetched_at": "2026-07-13T18:47:33.690Z",
+      "fetched_at": "2026-07-14T11:47:07.603Z",
       "title": "TransPennine Express",
       "url": "https://en.wikipedia.org/wiki/TransPennine_Express",
       "license": "CC BY-SA 4.0"
     },
     "aliases": [
       "Transpennine Express"
-    ]
+    ],
+    "stations_operated": 98,
+    "notable_features": [
+      "Operated by the government as operator of last resort after predecessor's poor performance",
+      "Reinstated direct services between Castleford and York for the first time in 50 years",
+      "Ranked among the least punctual UK train operators in 2023, with only 47.7% on-time performance",
+      "Generated over 311,000 delay compensation claims in a single year",
+      "Ran Nova 3 sets of Class 68 diesel locomotives hauling Mark 5A carriages, later withdrawn",
+      "Planning procurement of up to 55 new trains (330 carriages) to support the Transpennine Route Upgrade"
+    ],
+    "regions_served": {
+      "main": [
+        "Northern England",
+        "Scotland"
+      ],
+      "other": []
+    }
   },
   "ME": {
     "name": "Merseyrail",
-    "headline": "Merseyrail carried 29.9 million passengers across its 76-mile network in 2024/2025",
-    "parent_company": "Joint venture between Serco and Transport UK Group",
+    "headline": "Merseyrail once achieved the UK's highest-ever train reliability score",
+    "parent_company": "Serco and Transport UK Group (50:50 joint venture, via Merseyrail Electrics 2002 Limited)",
     "franchises": [
       {
-        "name": "Merseyrail Electrics (MTL)",
-        "start": "1997-01-19",
-        "end": "2001-04-27"
+        "name": "MTL (Merseyrail Electrics franchise)",
+        "start": "1997",
+        "end": "2001"
       },
       {
         "name": "Arriva Trains Merseyside",
-        "start": "2001-04-27",
-        "end": "2003-07-20"
+        "start": "2001",
+        "end": "2003"
       },
       {
-        "name": "Merseyrail Electrics 2002 Limited",
-        "start": "2003-07-20",
-        "end": null
+        "name": "Merseyrail Electrics 2002 Limited (concession)",
+        "start": "2003",
+        "end": "2028"
       }
     ],
     "wikipedia_title": "Merseyrail",
     "_wikipedia": {
-      "fetched_at": "2026-07-13T19:40:44.177Z",
+      "fetched_at": "2026-07-14T11:47:28.614Z",
       "title": "Merseyrail",
       "url": "https://en.wikipedia.org/wiki/Merseyrail",
       "license": "CC BY-SA 4.0"
+    },
+    "stations_operated": 69,
+    "notable_features": [
+      "Uses Class 777 trains based on the Stadler METRO platform",
+      "Battery-electric (BEMU) trains reach Headbolt Lane despite unelectrified track",
+      "Carried 29.9 million passengers in 2024/2025",
+      "Network largely third-rail and self-contained/isolated from the rest of National Rail",
+      "76 miles of routes, of which 6.5 miles are underground",
+      "Named UK's most reliable train operator in 2010 with 96.33% reliability, the highest ever recorded by a UK operator",
+      "Mersey Railway Tunnel was among the first underground railway tunnels",
+      "Won a 2025 National Rail Award in the 'Great Place to Work' category",
+      "Achieved 93% overall passenger satisfaction in the 2025 Transport Focus survey"
+    ],
+    "regions_served": {
+      "main": [
+        "Merseyside",
+        "Liverpool City Region"
+      ],
+      "other": [
+        "Lancashire",
+        "Cheshire"
+      ]
     }
   },
   "SR": {
     "name": "ScotRail",
-    "headline": "ScotRail returns to state ownership after Abellio's franchise ends",
-    "parent_company": "Scottish Rail Holdings",
+    "headline": "Scotland's railway renationalised in 2022 after Abellio's franchise failed",
+    "parent_company": "Scottish Rail Holdings (SRH)",
     "franchises": [
       {
         "name": "Abellio ScotRail",
-        "start": 2015,
-        "end": 2022
+        "start": "2015",
+        "end": "31 March 2022"
       },
       {
         "name": "ScotRail Trains Limited",
-        "start": 2022,
+        "start": "1 April 2022",
         "end": null
       }
     ],
     "wikipedia_title": "ScotRail",
     "_wikipedia": {
-      "fetched_at": "2026-07-13T18:47:50.079Z",
+      "fetched_at": "2026-07-14T11:47:45.920Z",
       "title": "ScotRail",
       "url": "https://en.wikipedia.org/wiki/ScotRail",
       "license": "CC BY-SA 4.0"
+    },
+    "stations_operated": 363,
+    "notable_features": [
+      "State-owned operator of last resort after Abellio franchise was terminated",
+      "Permanently scrapped peak fares from September 2025, cutting commuter costs by up to 50%",
+      "Introduced AI-generated announcer voices, including one based on a ScotRail employee",
+      "Operates 'Highland Explorer' carriages with a 50:50 seating-to-bike-rack split",
+      "Runs 355 stations across Scotland",
+      "Electrifying the Fife Circle line for battery electric multiple unit use",
+      "Leasing 22 Class 222 units to replace its Inter7City fleet from 2027",
+      "Introduced a £10 minimum fare for passengers without valid tickets to tackle fare evasion"
+    ],
+    "regions_served": {
+      "main": [
+        "Scotland"
+      ],
+      "other": [
+        "Central Belt",
+        "Ayrshire",
+        "Inverclyde",
+        "Fife",
+        "Western Scotland",
+        "Highland",
+        "Midlothian"
+      ]
     }
   },
   "CS": {
     "name": "Caledonian Sleeper",
-    "headline": "Scotland's sleeper train now run by state-owned Scottish Rail Holdings",
+    "headline": "Caledonian Sleeper: one of only two remaining UK overnight sleeper services",
     "parent_company": "Scottish Rail Holdings",
     "franchises": [
       {
-        "name": "ScotRail franchise (operated by National Express)",
+        "name": "National Express",
         "start": "31 March 1997",
         "end": "17 October 2004"
       },
       {
-        "name": "ScotRail franchise (operated by FirstGroup)",
+        "name": "FirstGroup",
         "start": "17 October 2004",
         "end": "31 March 2015"
       },
       {
-        "name": "Caledonian Sleeper franchise (operated by Serco)",
+        "name": "Serco",
         "start": "31 March 2015",
-        "end": "June 2023"
+        "end": "25 June 2023"
       },
       {
-        "name": "Scottish Rail Holdings (state ownership)",
+        "name": "Scottish Rail Holdings",
         "start": "25 June 2023",
         "end": null
       }
     ],
     "wikipedia_title": "Caledonian Sleeper",
     "_wikipedia": {
-      "fetched_at": "2026-07-13T18:47:57.175Z",
+      "fetched_at": "2026-07-14T11:48:07.730Z",
       "title": "Caledonian Sleeper",
       "url": "https://en.wikipedia.org/wiki/Caledonian_Sleeper",
       "license": "CC BY-SA 4.0"
+    },
+    "stations_operated": 51,
+    "notable_features": [
+      "One of only two currently operating sleeper services in the UK, the other being the Night Riviera",
+      "Uses a combination of Class 92 electric locomotives and rebuilt Class 73/9 electro-diesel locomotives",
+      "New Mark 5 carriage fleet introduced during 2019, replacing British Rail-era rolling stock",
+      "Serco pledged to invest £100 million in new rolling stock as part of its 2015 franchise bid",
+      "Trains can run at up to 100 mph if delayed by more than 20 minutes, above their normal 80 mph limit",
+      "From January 2026 the Highland Sleeper will also call at Birmingham International"
+    ],
+    "regions_served": {
+      "main": [
+        "London",
+        "Scotland"
+      ],
+      "other": [
+        "West Midlands"
+      ]
     }
   },
   "GC": {
     "name": "Grand Central",
-    "headline": "Grand Central runs open-access rail services linking London with Sunderland and Bradford",
+    "headline": "British train operator links London with Sunderland and Bradford",
     "wikipedia_title": "Grand Central",
     "_wikipedia": {
-      "fetched_at": "2026-07-13T18:48:01.389Z",
+      "fetched_at": "2026-07-14T11:48:10.904Z",
       "title": "Grand Central",
       "url": "https://en.wikipedia.org/wiki/Grand_Central",
       "license": "CC BY-SA 4.0"
-    }
+    },
+    "stations_operated": 8
   },
   "HT": {
     "name": "Hull Trains",
-    "headline": "Open-access Hull Trains secures track access rights until December 2032",
+    "headline": "Hull Trains, Britain's open-access rail pioneer, scored 97% passenger satisfaction in 2017",
     "parent_company": "FirstGroup",
     "wikipedia_title": "Hull Trains",
     "_wikipedia": {
-      "fetched_at": "2026-07-13T18:48:08.019Z",
+      "fetched_at": "2026-07-14T11:48:20.528Z",
       "title": "Hull Trains",
       "url": "https://en.wikipedia.org/wiki/Hull_Trains",
       "license": "CC BY-SA 4.0"
-    }
+    },
+    "notable_features": [
+      "Established in 1999 as an open-access operator in response to low train frequency between Hull and London",
+      "Named Best UK Train Operator in 2017 with a 97% satisfaction rate in the National Rail Passenger Survey",
+      "Holds a track-access agreement extended to December 2032",
+      "Maximum speed raised from 100 mph to 125 mph with introduction of Class 222 Pioneer units",
+      "Currently operated by a fleet of five Class 802 Paragon bi-mode multiple units",
+      "Multiple temporary service suspensions during 2020-2021 due to the COVID-19 pandemic"
+    ]
   },
   "LD": {
     "name": "Lumo",
-    "headline": "Open-access operator Lumo began London to Edinburgh services in October 2021",
+    "headline": "Open-access Lumo offers only standard class seating and no guards",
     "parent_company": "FirstGroup",
     "wikipedia_title": "Lumo (train operating company)",
     "_wikipedia": {
-      "fetched_at": "2026-07-13T19:43:20.146Z",
+      "fetched_at": "2026-07-14T11:48:33.970Z",
       "title": "Lumo (train operating company)",
       "url": "https://en.wikipedia.org/wiki/Lumo_(train_operating_company)",
       "license": "CC BY-SA 4.0"
@@ -538,104 +902,204 @@
     "aliases": [
       "GTS Rail Operations"
     ],
-    "legal_entity": "GTS Rail Operations (legal operating company behind the Lumo brand, not a separate rebrand)"
+    "legal_entity": "GTS Rail Operations (legal operating company behind the Lumo brand, not a separate rebrand)",
+    "stations_operated": 64,
+    "notable_features": [
+      "Third open-access operator on the East Coast Main Line, after Hull Trains and Grand Central",
+      "Offers only standard class seating, unlike competitors",
+      "Does not use guards on its trains",
+      "Operates Class 803 EMUs based on the Hitachi AT300 design used for LNER's Azuma trains, but without an auxiliary diesel engine, using batteries instead for onboard power",
+      "£100 million order for five Class 803 high speed trains",
+      "Promotes itself as a 'digital-first' operator with paperless ticketing",
+      "Fastest Edinburgh to London service takes 4 hours 3 minutes",
+      "Trains capable of 125 mph (200 km/h)"
+    ],
+    "franchises": [
+      {
+        "name": "East Coast Main Line open-access track access agreement",
+        "start": "2016",
+        "end": null
+      }
+    ]
   },
   "HX": {
     "name": "Heathrow Express",
-    "headline": "Heathrow Express has carried over 100 million passengers since its 1998 launch",
+    "headline": "Tunnel collapse during construction led to a record £1.7 million safety fine",
     "parent_company": "Heathrow Airport Holdings",
     "franchises": [
       {
-        "name": "Heathrow Express operating contract",
-        "start": "2018",
+        "name": "Great Western Railway operation under management contract",
+        "start": "August 2018",
         "end": "2028"
       }
     ],
     "wikipedia_title": "Heathrow Express",
     "_wikipedia": {
-      "fetched_at": "2026-07-13T18:48:21.124Z",
+      "fetched_at": "2026-07-14T11:48:46.729Z",
       "title": "Heathrow Express",
       "url": "https://en.wikipedia.org/wiki/Heathrow_Express",
       "license": "CC BY-SA 4.0"
-    }
+    },
+    "notable_features": [
+      "Non-stop 15-minute service between London Paddington and Heathrow Airport",
+      "Built through two 6.8km single-bore tunnels with escape shafts",
+      "1994 tunnel collapse caused a then-record £1.7 million health and safety fine for Balfour Beatty and Geoconsult",
+      "Over 100 million passengers carried since opening in 1998",
+      "New Class 387 Electrostar trains introduced in December 2020, replacing original Class 332 fleet since 1998",
+      "Offers 'Business First' first-class cabin with Fast Track airport security",
+      "Uses Automatic Train Protection (ATP) and European Train Control System (ETCS) signalling",
+      "Carries around 16,000 passengers per day"
+    ]
   },
   "XR": {
     "name": "Elizabeth line",
-    "headline": "Elizabeth line now carries one-seventh of all UK rail trips",
+    "headline": "Elizabeth line, named for the Queen, now carries a seventh of UK rail trips",
     "parent_company": "Transport for London (TfL)",
     "franchises": [
       {
-        "name": "MTR Corporation (MTR Elizabeth line / TfL Rail)",
-        "start": "2014",
-        "end": "2025"
+        "name": "MTR Corporation (TfL Rail / MTR Elizabeth line)",
+        "start": "July 2014",
+        "end": "May 2025"
       },
       {
         "name": "GTS Rail Operations",
-        "start": "2025",
+        "start": "May 2025",
         "end": null
       }
     ],
     "wikipedia_title": "Elizabeth line",
     "_wikipedia": {
-      "fetched_at": "2026-07-13T18:43:45.880Z",
+      "fetched_at": "2026-07-14T11:49:07.839Z",
       "title": "Elizabeth line",
       "url": "https://en.wikipedia.org/wiki/Elizabeth_line",
       "license": "CC BY-SA 4.0"
+    },
+    "notable_features": [
+      "Named after Queen Elizabeth II, who officially opened it during her Platinum Jubilee",
+      "Reached over 200 million passenger trips a year, a seventh of all UK rail journeys",
+      "Operated exclusively by a purpose-built fleet of nine-car Class 345 trains",
+      "All 41 stations are step-free from street to platform",
+      "Uses Communications-Based Train Control in the central section and Abbey Wood branch",
+      "Won the 2024 RIBA London Building of the Year award and the Stirling Prize",
+      "Performs a similar role to the Paris RER and German S-Bahn systems",
+      "TfL bears 90% of revenue risk while the operator takes only 10%",
+      "Central section platforms built to allow future 240-metre trains despite 200-metre trains in use"
+    ],
+    "regions_served": {
+      "main": [
+        "Greater London"
+      ],
+      "other": []
     }
   },
   "AW": {
     "name": "Transport for Wales",
-    "headline": "Welsh Government seized control of Wales & Borders rail franchise in 2021",
+    "headline": "Welsh Government-owned TfW took over Wales rail operations mid-pandemic",
     "parent_company": "Welsh Government",
     "franchises": [
       {
-        "name": "Wales & Borders railway franchise (KeolisAmey Wales)",
-        "start": "2018",
+        "name": "Wales & Borders railway franchise (operated by KeolisAmey Wales, trading as Transport for Wales Rail Services)",
+        "start": "14 October 2018",
         "end": "7 February 2021"
       },
       {
-        "name": "Wales & Borders railway franchise (Transport for Wales Rail Limited)",
+        "name": "Wales & Borders railway franchise (operated by Transport for Wales Rail Limited)",
         "start": "7 February 2021",
         "end": null
       }
     ],
     "wikipedia_title": "Transport for Wales",
     "_wikipedia": {
-      "fetched_at": "2026-07-13T18:48:29.107Z",
+      "fetched_at": "2026-07-14T11:49:20.468Z",
       "title": "Transport for Wales",
       "url": "https://en.wikipedia.org/wiki/Transport_for_Wales",
       "license": "CC BY-SA 4.0"
     },
-    "welsh_name": "Trafnidiaeth Cymru"
+    "welsh_name": "Trafnidiaeth Cymru",
+    "stations_operated": 64,
+    "notable_features": [
+      "Owns the Wales & Borders rail franchise through subsidiary Transport for Wales Rail",
+      "Took over rail operations as a de facto operator of last resort during the COVID-19 pandemic",
+      "Acquired engineering firm Pullman Rail Ltd to support its Canton depot and Metro scheme",
+      "Launched TfW Ffeibr, a full-fibre internet infrastructure company for the South Wales valleys",
+      "Developing the T Network, an integrated multimodal transport network across Wales",
+      "Runs Fflecsi, a demand-responsive transport service launched in Newport in 2020"
+    ],
+    "regions_served": {
+      "main": [
+        "South Wales",
+        "North Wales",
+        "Swansea Bay",
+        "West Wales"
+      ],
+      "other": [
+        "South Wales valleys"
+      ]
+    }
   },
   "IL": {
     "name": "Island Line",
     "wikipedia_title": "Island Line",
     "_wikipedia": {
-      "fetched_at": "2026-07-13T18:43:49.893Z",
+      "fetched_at": "2026-07-14T11:49:22.771Z",
       "title": "Island Line",
       "url": "https://en.wikipedia.org/wiki/Island_Line",
       "license": "CC BY-SA 4.0"
     },
     "aliases": [
       "Island Line Trains"
-    ]
+    ],
+    "stations_operated": 8
   },
   "WR": {
     "name": "West Coast Railways",
-    "headline": "First private firm licensed as UK train operator, later hit by total network ban",
+    "headline": "First private firm granted UK train operating licence, back in 1998",
     "wikipedia_title": "West Coast Railways",
     "_wikipedia": {
-      "fetched_at": "2026-07-13T18:43:57.417Z",
+      "fetched_at": "2026-07-14T11:49:33.168Z",
       "title": "West Coast Railways",
       "url": "https://en.wikipedia.org/wiki/West_Coast_Railways",
       "license": "CC BY-SA 4.0"
-    }
+    },
+    "stations_operated": 3,
+    "notable_features": [
+      "First privately owned company to be granted a train operating company licence, in June 1998",
+      "Operated steam locomotive 5972 Olton Hall disguised as 'Hogwarts Castle' for the Harry Potter films' Hogwarts Express",
+      "Runs The Jacobite steam train along the West Highland Line, crossing the Glenfinnan Viaduct",
+      "Subject of an unprecedented total network operator's licence suspension by Network Rail in April 2015 after a SPAD at Wootton Bassett Junction",
+      "Fined £200,000 plus costs after pleading guilty to Health and Safety at Work Act offences over the 2015 Wootton Bassett incident",
+      "Fleet includes Class 37, 47 and 57 locomotives, including prototype passenger locomotive 57601",
+      "Hauled the Belmond Royal Scotsman luxury train under a contract won in 2005",
+      "Had its exemption to run hinged-door Mark 1/Mark 2 coaches without Central Door Locking revoked by the ORR in January 2024",
+      "A WCR locomotive was derailed during a run-round at Mallaig in June 2026"
+    ],
+    "parent_company": "Steamtown Railway Museum"
   },
   "ES": {
     "name": "Eurostar",
     "aliases": [
       "Eurostar International Ltd"
-    ]
+    ],
+    "stations_operated": 4,
+    "headline": "Eurostar carried a record 20 million passengers through the Channel Tunnel in 2025",
+    "parent_company": "SNCF (majority shareholder of Eurostar Group)",
+    "notable_features": [
+      "Runs through the Channel Tunnel, the world's longest underwater rail tunnel section",
+      "Formed from 2023 merger of Eurostar and Thalys into Eurostar Group",
+      "Transported over 400 million passengers since services began in 1994",
+      "Set British rail speed record of 334.7 km/h in 2003",
+      "Holds record for longest non-stop high-speed journey (London to Cannes, 1,421 km)",
+      "e320 fleet built by Siemens, first non-Alstom high-speed trains in France",
+      "Trains designed with splittable 'half-set' safety system for Channel Tunnel emergencies",
+      "Won World's Leading Passenger Rail Operator award 15 times",
+      "New Avelia Horizon 'Celestia' trains will be UK's first double-decker fleet"
+    ],
+    "wikipedia_title": "Eurostar",
+    "_wikipedia": {
+      "fetched_at": "2026-07-14T11:49:49.606Z",
+      "title": "Eurostar",
+      "url": "https://en.wikipedia.org/wiki/Eurostar",
+      "license": "CC BY-SA 4.0"
+    }
   }
 }

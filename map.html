@@ -422,9 +422,10 @@
      refreshDepartureBoard()). */
   #sb-dep-board .db-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
   /* Unscoped (was #sb-dep-board .db-label) so Database-mode content below can
-     reuse the exact same mono/uppercase/turquoise section-label style
-     instead of duplicating it under a new class name. */
-  .db-label { font-family: var(--font-mono); font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--t); }
+     reuse the exact same mono/uppercase/grey section-label style instead of
+     duplicating it under a new class name. Grey, not turquoise — turquoise
+     is reserved for actual links (Google Map, Wikipedia source, etc). */
+  .db-label { font-family: var(--font-mono); font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink); }
   .db-refresh-btn { flex-shrink: 0; font-size: 13px; }
   .db-refresh-btn.spinning i { display: inline-block; animation: db-refresh-spin 0.6s linear infinite; }
   @keyframes db-refresh-spin { to { transform: rotate(360deg); } }
@@ -443,6 +444,11 @@
   .db-links { display: flex; gap: 16px; }
   .db-links a { font-family: var(--font-mono); font-size: 12px; letter-spacing: 1px; text-transform: uppercase; color: var(--t); }
   .db-chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+  /* Scoped override, not a base .filter-chip change — region-jump and news
+     filter chips elsewhere keep their grey default; only station/operator
+     detail-panel chips (services, fleet, regions) go white per the color
+     pass, since here they're content, not a filter control. */
+  .db-chip-row .filter-chip { color: var(--ink-primary); }
   .db-wiki-link { display: block; padding: 10px 16px; font-family: var(--font-mono); font-size: 12px;
     letter-spacing: 1px; text-transform: uppercase; color: var(--t); }
   .db-empty { padding: 16px; }
@@ -453,8 +459,12 @@
      13-14px scale rather than borrowing index.html's much larger
      .spot-headline display size, which is sized for full landing-page
      cards, not this compact panel. */
-  .db-headline { padding: 10px 16px 4px; font-size: 14px; font-weight: 600; color: var(--ink-primary); line-height: 1.4; }
-  .db-franchise-list { padding: 6px 16px 10px; font-size: 13px; color: var(--ink); line-height: 1.8; list-style: none; }
+  .db-headline { padding: 10px 16px 4px; font-size: 14px; font-weight: 600; color: var(--ink); line-height: 1.4; }
+  .db-franchise-list { padding: 2px 16px 10px; list-style: none; }
+  .db-franchise-list li { padding: 6px 0; }
+  .db-franchise-list li:first-child { padding-top: 0; }
+  .db-franchise-name { display: block; font-size: 14px; color: var(--ink-primary); font-weight: 500; }
+  .db-franchise-dates { display: block; font-size: 12.5px; color: var(--ink); margin-top: 2px; }
   .db-hint { padding: 24px 20px; font-size: 13px; color: var(--ink); text-align: center; line-height: 1.6; }
   .dep-cols { display: flex; align-items: center; gap: 10px; padding: 6px 0 4px; font-family: var(--font-mono);
     font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink); border-bottom: 0.5px solid var(--br); }
@@ -544,7 +554,6 @@
   .sv-item:hover { color: var(--t); }
   .sv-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .sv-sub { font-size: 12px; color: var(--ink); flex-shrink: 0; }
-  .sv-remove { font-size: 15px; padding: 2px 6px; }
   .sv-empty { padding: 16px; font-size: 13px; color: var(--ink); text-align: center; }
 
   /* Persistent bottom strip — copyright/data attribution, never scrolls away
@@ -737,8 +746,8 @@
         <button class="header-tab" id="sb-tab-database" aria-label="Database mode" aria-pressed="false">Database</button>
       </div>
       <div class="sb-top-actions">
-        <button class="ghost-btn" id="sb-search-btn" aria-label="Search stations"><i class="ti ti-search"></i></button>
         <button class="ghost-btn" id="sb-saved-toggle" aria-label="Show saved stations" aria-pressed="false"><i class="ti ti-star"></i></button>
+        <button class="ghost-btn" id="sb-search-btn" aria-label="Search stations"><i class="ti ti-search"></i></button>
       </div>
     </div>
     <div class="sb-top-lower">
@@ -1605,33 +1614,54 @@
     });
   }
 
+  // Franchises render as an always-visible name/date-range list (mockup-
+  // routes.png), not the previous collapsed <details> summary — the mockup
+  // shows the full history plainly, no progressive disclosure.
+  function operatorFranchiseListHtml(franchises) {
+    if (!franchises || !franchises.length) return '';
+    return '<div class="db-field" data-anim-row><div class="db-label">Franchises</div><ul class="db-franchise-list">' +
+      franchises.map(function (f) {
+        return '<li><span class="db-franchise-name">' + escapeAttr(f.name) + '</span>' +
+          '<span class="db-franchise-dates">' + escapeAttr(f.start || '') + ' – ' + escapeAttr(f.end || 'present') + '</span></li>';
+      }).join('') + '</ul></div>';
+  }
+  function operatorRegionChipsHtml(label, regions) {
+    if (!regions || !regions.length) return '';
+    return '<div class="db-field" data-anim-row><div class="db-label">' + label + '</div><div class="db-chip-row">' +
+      regions.map(function (r) { return '<span class="filter-chip">' + escapeAttr(r) + '</span>'; }).join('') + '</div></div>';
+  }
   function operatorDetailSkeletonHtml() {
     var o = selection.code && operatorsContent[selection.code];
     if (!o) return dbComingSoonHtml(selection.fallbackName || selection.code);
     var html = '';
     html += dbHeadlineHtml(o.headline);
     html += dbFieldHtml('Parent company', o.parent_company);
-    html += dbFieldHtml('Stations operated', o.stations_operated);
-    if (o.regions_served) {
-      var regions = (o.regions_served.main || []).concat(o.regions_served.other || []);
-      if (regions.length) html += dbFieldHtml('Regions served', regions.join(', '));
-    }
-    var current = (o.franchises || []).filter(function (f) { return !f.end; })[0];
-    if (current) html += dbFieldHtml('Franchise', 'Operating since ' + current.start);
-    if (o.franchises && o.franchises.length > 1) {
-      html += '<details class="db-field" data-anim-row><summary class="db-label">Franchise history</summary>' +
-        '<ul class="db-franchise-list">' + o.franchises.map(function (f) {
-          return '<li>' + escapeAttr(f.name) + ' (' + escapeAttr(f.start) + ' – ' + escapeAttr(f.end || 'present') + ')</li>';
-        }).join('') + '</ul></details>';
-    }
+    html += operatorFranchiseListHtml(o.franchises);
+    html += operatorRegionChipsHtml('Main regions', o.regions_served && o.regions_served.main);
+    // Other regions is omitted entirely when empty, not shown as an empty
+    // section — see mockup-routes.png, which only has a Main regions block
+    // for operators with no secondary coverage.
+    html += operatorRegionChipsHtml('Other regions', o.regions_served && o.regions_served.other);
     if (o.fleet_classes && o.fleet_classes.length) {
-      html += '<div class="db-field" data-anim-row><div class="db-label">Fleet classes</div><div class="db-chip-row">' +
+      html += '<div class="db-field" data-anim-row><div class="db-label">Fleet</div><div class="db-chip-row">' +
         o.fleet_classes.map(function (c) { return '<span class="filter-chip">' + escapeAttr(c.display) + '</span>'; }).join('') + '</div></div>';
+    }
+    html += dbFieldHtml('Stations operated', o.stations_operated);
+    if (o.notable_features && o.notable_features.length) {
+      html += dbFieldHtml('Notable features', o.notable_features.join('; '));
     }
     html += dbWikipediaAttributionHtml(o);
     return html || dbComingSoonHtml(o.name);
   }
-  function wireOperatorDetail() {} // no interactive content yet — fleet-class chips are plain text (see Task 3 notes in the summary)
+  // Fleet-class chips are plain, unlinked text — investigated linking each
+  // to its entry on database.html and it's not straightforward right now:
+  // that page is a separate React app rendering straight from
+  // data/site-data.json (class number per row, e.g. "43"), with no anchor
+  // id per class and no shared identifier with fleet_classes' own `id`
+  // field here. Doing this properly needs database.html to expose stable
+  // per-class anchors first — flagging rather than building a fragile
+  // number-matching link in the meantime.
+  function wireOperatorDetail() {}
 
   // A full "browse all routes/operators" list was here, generated straight
   // from routes/operators-content.json — with the schema still only holding
@@ -2547,14 +2577,8 @@
       return '<div class="sv-item" data-anim-row data-idx="' + i + '" data-crs="' + escapeAttr(r.crs) + '">' +
         '<span class="sv-name">' + r.name + '</span>' +
         '<span class="sv-sub">' + (r.toc || '') + '</span>' +
-        '<button class="ghost-btn sv-remove" data-idx="' + i + '" aria-label="Remove saved station">×</button>' +
         '</div>';
     }).join('');
-  }
-  function renderSavedListInPlace() {
-    var el = document.getElementById('sv-list');
-    if (el) el.innerHTML = savedListRowsHtml();
-    wireSavedListRows();
   }
   function wireSavedListRows() {
     var listEl = document.getElementById('sv-list');
@@ -2566,15 +2590,6 @@
         if (!feature) return;
         map.flyTo({ center: feature.geometry.coordinates, zoom: 11, duration: 800 });
         selectStation(feature.properties.name, feature.properties.crs);
-      });
-    });
-    Array.prototype.forEach.call(listEl.querySelectorAll('.sv-remove'), function (btn) {
-      btn.addEventListener('click', function (e) {
-        e.stopPropagation();
-        var list = getSavedRoutes();
-        list.splice(parseInt(btn.dataset.idx, 10), 1);
-        setSavedRoutes(list);
-        renderSavedListInPlace();
       });
     });
   }

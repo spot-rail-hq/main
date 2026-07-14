@@ -28,7 +28,8 @@
  * This script is the ONLY writer for:
  *   stations-content.json  →  headline, opened_year, notable_features
  *   routes-content.json    →  headline, opened_year, operating_since
- *   operators-content.json →  headline, parent_company, franchises
+ *   operators-content.json →  headline, parent_company, franchises,
+ *                              regions_served, notable_features
  *   all three               →  wikipedia_title (ONLY when auto-resolved
  *                               with confidence — see above; a human-set
  *                               title is untouched, never overwritten)
@@ -42,11 +43,12 @@
  * (not writes) the fields both this script and fetch-osm-facts.mjs produce.
  * It never writes: platforms, wheelchair, operators (stations), length_km,
  * stopping_stations, type, operator (routes), stations_operated,
- * regions_served, fleet_classes (operators), name, photo, location,
+ * fleet_classes (operators), name, photo, location,
  * listed_status, or any existence/status field — those belong to
- * scripts/fetch-osm-facts.mjs (structured/physical), manual curation, or
- * the separate NaPTAN re-import pipeline. See that script's header for its
- * owned-fields list.
+ * scripts/fetch-osm-facts.mjs (structured/physical), scripts/compute-
+ * operator-stats.mjs (stations_operated — a plain derived count, no API
+ * calls), manual curation, or the separate NaPTAN re-import pipeline. See
+ * those scripts' headers for their owned-fields lists.
  *
  * Each run does a shallow merge: only the fields this script owns are ever
  * assigned, and ONLY when Claude actually found the fact on the page — a
@@ -78,13 +80,14 @@ const FILES = {
 const JOBS = {
   stations: [],
   routes: [],
-  // 2026-07-14: SE and GN both got a human-set wikipedia_title (see
-  // operators-content.json's _notes) after live-verifying the titles
-  // against Wikipedia's API directly — SE resolves normally; GN's points to
-  // "Greater Thameslink Railway" (its post-merger successor entity's
-  // article), a deliberate exception since GN has no standalone article.
-  // Running just these two to fetch/extract via the normal pipeline.
-  operators: ['SE', 'GN'],
+  // 2026-07-14 UI/content pass (mockup-routes.png): re-running every
+  // operator to backfill the new regions_served/notable_features fields
+  // (see EXTRACTION_SCHEMAS.operators) — a re-run is safe/idempotent per
+  // this script's shallow-merge discipline, and ES (Eurostar) still has no
+  // wikipedia_title set, so this also exercises the auto-resolve path for it
+  // (bare "Eurostar" verified live beforehand as a clean, non-ambiguous
+  // direct match).
+  operators: ['WMR', 'VT', 'GR', 'XC', 'EM', 'LN', 'GW', 'SW', 'SE', 'SN', 'TL', 'GX', 'GN', 'CC', 'CH', 'LE', 'NT', 'TP', 'ME', 'SR', 'CS', 'GC', 'HT', 'LD', 'HX', 'XR', 'AW', 'IL', 'WR', 'ES'],
 };
 
 const WIKI_API = 'https://en.wikipedia.org/w/api.php';
@@ -193,7 +196,7 @@ const EXTRACTION_SCHEMAS = {
     fields: `${HEADLINE_SPEC}, opened_year (year the line first opened, string), operating_since (year the CURRENT operator/franchise began running it, string — distinct from opened_year, which is about the line\'s original construction)`,
   },
   operators: {
-    fields: `${HEADLINE_SPEC}, parent_company (string, the ultimate/immediate parent company name, or null if independent/not stated), franchises (array of {name, start, end} — end is null for the current/ongoing franchise; only include entries the article actually states dates for)`,
+    fields: `${HEADLINE_SPEC}, parent_company (string, the ultimate/immediate parent company name, or null if independent/not stated), franchises (array of {name, start, end} — end is null for the current/ongoing franchise; only include entries the article actually states dates for), regions_served (an object {main: [...], other: [...]} of short NAMED GEOGRAPHIC REGIONS/COUNTIES/METRO AREAS ONLY — e.g. "Greater London", "South East England", "South Wales", "the East Midlands", "Merseyside". Each entry must be a proper region/county/city name, 1-4 words. Do NOT put route descriptions, line names, individual station names, or full sentences in this field — e.g. "West Coast Main Line between London and the Northwest" or "Hull Paragon to London King's Cross" are NOT valid entries, skip them instead of forcing them into a region name. main is the primary region(s) this operator serves; other is any region(s) the article describes as secondary/limited/peripheral. If the article only describes coverage via routes/stations and never names actual regions this way, set regions_served to null entirely rather than stretching a route description into a fake region name), notable_features (array of short phrase strings — genuinely distinguishing facts about this operator specifically: firsts, record-holding, notable technology/rolling stock, structural facts; NOT generic filler like "provides train services in England" — same standard as station-level notable_features)`,
   },
 };
 
@@ -252,6 +255,17 @@ function saveJson(p, data) {
   writeFileSync(p, JSON.stringify(data, null, 2) + '\n');
 }
 
+// Recurses into plain objects (e.g. regions_served's {main, other} shape) so
+// a nested-empty result like {main: [], other: []} counts as empty too —
+// confirmed live: without this, regions_served landed on 6/30 operators as
+// dead {main:[],other:[]} noise instead of being omitted like every other
+// empty field already correctly is.
+function isEmptyExtractedValue(v) {
+  if (v == null) return true;
+  if (Array.isArray(v)) return v.length === 0;
+  if (typeof v === 'object') return Object.values(v).every(isEmptyExtractedValue);
+  return false;
+}
 // Only assigns fields Claude actually returned a non-null/non-empty value
 // for — never blanks out an existing curated value, and never writes a
 // field outside this script's ownership list (enforced by only ever
@@ -260,8 +274,7 @@ function saveJson(p, data) {
 function mergeWikipediaFields(entry, extracted) {
   const out = { ...(entry || {}) };
   for (const [k, v] of Object.entries(extracted)) {
-    const isEmpty = v == null || (Array.isArray(v) && v.length === 0);
-    if (!isEmpty) out[k] = v;
+    if (!isEmptyExtractedValue(v)) out[k] = v;
   }
   return out;
 }
