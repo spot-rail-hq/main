@@ -78,14 +78,13 @@ const FILES = {
 const JOBS = {
   stations: [],
   routes: [],
-  // Title-resolution validation test (2026-07-13): none of these 4 have a
-  // wikipedia_title set yet — picked to cover the tricky cases: XR/IL/WR
-  // are plain names that should resolve on the first direct-lookup
-  // candidate; CC ("c2c") is a short, easily-confusable name that's a real
-  // shot at triggering the search fallback or an ambiguous flag.
-  // Re-testing the disambiguation-page fix: SE/NT/GN/LD all previously
-  // resolved to Wikipedia disambiguation pages under their bare name.
-  operators: ['SE', 'NT', 'GN', 'LD'],
+  // 2026-07-14: SE and GN both got a human-set wikipedia_title (see
+  // operators-content.json's _notes) after live-verifying the titles
+  // against Wikipedia's API directly — SE resolves normally; GN's points to
+  // "Greater Thameslink Railway" (its post-merger successor entity's
+  // article), a deliberate exception since GN has no standalone article.
+  // Running just these two to fetch/extract via the normal pipeline.
+  operators: ['SE', 'GN'],
 };
 
 const WIKI_API = 'https://en.wikipedia.org/w/api.php';
