@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-15T06:09:46.650Z",
+  "generated_at": "2026-07-15T07:25:53.644Z",
   "_notes": "SUPERSEDES the earlier algorithmically-generated TOC palette. toc hex are now REAL corporate colors (see assignment_report for source/confidence per operator) — primary tried first, secondary/alternate brand shade if primary collides, algorithmic hue-nudge fallback (flagged) only if neither real option clears separation. Light theme is the anchor (real liveries/websites are designed for pale backgrounds); dark theme is derived by lifting lightness, preserving true hue. metro/heritage are out of scope for corporate research (not TOCs) and keep their prior hand-picked design, gate-checked against the new toc placements. tfl_lines unchanged from the prior round.",
   "toc": {
     "GR": {
@@ -163,6 +163,14 @@
     "Glasgow Subway": {
       "dark": "#E643A0",
       "light": "#C3206D"
+    },
+    "Blackpool Tramway": {
+      "dark": "#E7415E",
+      "light": "#B11FC2"
+    },
+    "Edinburgh Trams": {
+      "dark": "#B43AF5",
+      "light": "#CF11D9"
     }
   },
   "tfl_lines": {
@@ -658,7 +666,7 @@
   ],
   "cvd_report": {
     "min_delta_e_threshold": 15,
-    "total_flagged_pairs": 206,
+    "total_flagged_pairs": 235,
     "known_adjacent_flagged": 0,
     "pairs": [
       {
@@ -768,6 +776,14 @@
       {
         "theme": "dark",
         "cvd_type": "deuteranopia",
+        "a": "GR",
+        "b": "Blackpool Tramway",
+        "deltaE_simulated": 4.6,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
         "a": "CC",
         "b": "GX",
         "deltaE_simulated": 4.7,
@@ -786,6 +802,14 @@
         "cvd_type": "protanopia",
         "a": "GX",
         "b": "TL",
+        "deltaE_simulated": 5.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "GR",
+        "b": "Blackpool Tramway",
         "deltaE_simulated": 5.2,
         "known_adjacent": false
       },
@@ -927,6 +951,14 @@
       },
       {
         "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "Manchester Metrolink",
+        "b": "Edinburgh Trams",
+        "deltaE_simulated": 6.7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
         "cvd_type": "protanopia",
         "a": "Tyne and Wear Metro",
         "b": "Nottingham Express Transit",
@@ -1011,6 +1043,14 @@
         "a": "SN",
         "b": "Croydon Tramlink",
         "deltaE_simulated": 7.5,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "Manchester Metrolink",
+        "b": "Edinburgh Trams",
+        "deltaE_simulated": 7.6,
         "known_adjacent": false
       },
       {
@@ -1134,6 +1174,22 @@
         "known_adjacent": false
       },
       {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "Blackpool Tramway",
+        "b": "Edinburgh Trams",
+        "deltaE_simulated": 8.9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "ES",
+        "b": "Edinburgh Trams",
+        "deltaE_simulated": 8.9,
+        "known_adjacent": false
+      },
+      {
         "theme": "dark",
         "cvd_type": "protanopia",
         "a": "SN",
@@ -1147,6 +1203,22 @@
         "a": "WMR",
         "b": "LE",
         "deltaE_simulated": 8.9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "SE",
+        "b": "Edinburgh Trams",
+        "deltaE_simulated": 9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "CH",
+        "b": "Edinburgh Trams",
+        "deltaE_simulated": 9,
         "known_adjacent": false
       },
       {
@@ -1186,6 +1258,14 @@
         "cvd_type": "deuteranopia",
         "a": "GX",
         "b": "TL",
+        "deltaE_simulated": 9.3,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "GN",
+        "b": "Edinburgh Trams",
         "deltaE_simulated": 9.3,
         "known_adjacent": false
       },
@@ -1310,6 +1390,14 @@
         "known_adjacent": false
       },
       {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "Blackpool Tramway",
+        "b": "Edinburgh Trams",
+        "deltaE_simulated": 9.8,
+        "known_adjacent": false
+      },
+      {
         "theme": "dark",
         "cvd_type": "protanopia",
         "a": "LD",
@@ -1382,6 +1470,14 @@
         "known_adjacent": false
       },
       {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "Transport for London",
+        "b": "Edinburgh Trams",
+        "deltaE_simulated": 10,
+        "known_adjacent": false
+      },
+      {
         "theme": "light",
         "cvd_type": "protanopia",
         "a": "GR",
@@ -1418,6 +1514,14 @@
         "cvd_type": "deuteranopia",
         "a": "GTR",
         "b": "CH",
+        "deltaE_simulated": 10.3,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "LN",
+        "b": "Edinburgh Trams",
         "deltaE_simulated": 10.3,
         "known_adjacent": false
       },
@@ -1470,6 +1574,14 @@
         "known_adjacent": false
       },
       {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "Nottingham Express Transit",
+        "b": "Edinburgh Trams",
+        "deltaE_simulated": 10.6,
+        "known_adjacent": false
+      },
+      {
         "theme": "light",
         "cvd_type": "protanopia",
         "a": "SN",
@@ -1499,6 +1611,14 @@
         "a": "LE",
         "b": "GR",
         "deltaE_simulated": 10.9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "Manchester Metrolink",
+        "b": "Blackpool Tramway",
+        "deltaE_simulated": 11,
         "known_adjacent": false
       },
       {
@@ -1535,6 +1655,14 @@
       },
       {
         "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "Nottingham Express Transit",
+        "b": "Edinburgh Trams",
+        "deltaE_simulated": 11.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
         "cvd_type": "deuteranopia",
         "a": "SR",
         "b": "SW",
@@ -1550,10 +1678,34 @@
         "known_adjacent": false
       },
       {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "GN",
+        "b": "Edinburgh Trams",
+        "deltaE_simulated": 11.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "Tyne and Wear Metro",
+        "b": "Blackpool Tramway",
+        "deltaE_simulated": 11.3,
+        "known_adjacent": false
+      },
+      {
         "theme": "light",
         "cvd_type": "deuteranopia",
         "a": "VT",
         "b": "ES",
+        "deltaE_simulated": 11.3,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "Tyne and Wear Metro",
+        "b": "Blackpool Tramway",
         "deltaE_simulated": 11.3,
         "known_adjacent": false
       },
@@ -1574,6 +1726,14 @@
         "known_adjacent": false
       },
       {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "Transport for London",
+        "b": "Edinburgh Trams",
+        "deltaE_simulated": 11.3,
+        "known_adjacent": false
+      },
+      {
         "theme": "light",
         "cvd_type": "protanopia",
         "a": "Docklands Light Railway",
@@ -1582,10 +1742,26 @@
         "known_adjacent": false
       },
       {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "Manchester Metrolink",
+        "b": "Blackpool Tramway",
+        "deltaE_simulated": 11.4,
+        "known_adjacent": false
+      },
+      {
         "theme": "dark",
         "cvd_type": "protanopia",
         "a": "GR",
         "b": "HT",
+        "deltaE_simulated": 11.4,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "XR",
+        "b": "Edinburgh Trams",
         "deltaE_simulated": 11.4,
         "known_adjacent": false
       },
@@ -1783,6 +1959,14 @@
       },
       {
         "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "LE",
+        "b": "Blackpool Tramway",
+        "deltaE_simulated": 12.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
         "cvd_type": "deuteranopia",
         "a": "XR",
         "b": "Nottingham Express Transit",
@@ -1803,6 +1987,14 @@
         "a": "LN",
         "b": "Manchester Metrolink",
         "deltaE_simulated": 12.3,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "WMR",
+        "b": "Blackpool Tramway",
+        "deltaE_simulated": 12.4,
         "known_adjacent": false
       },
       {
@@ -1862,6 +2054,14 @@
         "known_adjacent": false
       },
       {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "Tyne and Wear Metro",
+        "b": "Blackpool Tramway",
+        "deltaE_simulated": 12.9,
+        "known_adjacent": false
+      },
+      {
         "theme": "light",
         "cvd_type": "protanopia",
         "a": "GW",
@@ -1882,6 +2082,22 @@
         "cvd_type": "protanopia",
         "a": "SN",
         "b": "TL",
+        "deltaE_simulated": 13,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "TP",
+        "b": "Edinburgh Trams",
+        "deltaE_simulated": 13,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "HT",
+        "b": "Blackpool Tramway",
         "deltaE_simulated": 13,
         "known_adjacent": false
       },
@@ -1976,6 +2192,14 @@
       {
         "theme": "dark",
         "cvd_type": "deuteranopia",
+        "a": "LE",
+        "b": "Blackpool Tramway",
+        "deltaE_simulated": 13.5,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
         "a": "CH",
         "b": "Docklands Light Railway",
         "deltaE_simulated": 13.5,
@@ -1987,6 +2211,14 @@
         "a": "Tyne and Wear Metro",
         "b": "Glasgow Subway",
         "deltaE_simulated": 13.6,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "Tyne and Wear Metro",
+        "b": "Blackpool Tramway",
+        "deltaE_simulated": 13.7,
         "known_adjacent": false
       },
       {
@@ -2130,6 +2362,14 @@
         "cvd_type": "protanopia",
         "a": "ES",
         "b": "West Midlands Metro",
+        "deltaE_simulated": 14.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "West Midlands Metro",
+        "b": "Edinburgh Trams",
         "deltaE_simulated": 14.2,
         "known_adjacent": false
       },

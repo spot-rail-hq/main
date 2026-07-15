@@ -302,6 +302,29 @@ const METRO_BASE = {
   'Tyne and Wear Metro': '#C39BD3',
   'Nottingham Express Transit': '#A569BD',
   'Glasgow Subway': '#A12B82',
+  // Blackpool Tramway — real modern livery (since the 2012 Flexity 2
+  // fleet) genuinely is purple, confirmed via Wikipedia + independent web
+  // search, but no confident EXACT hex found despite checking Wikipedia,
+  // Brandfetch (blocked, 403), and Blackpool Transport's own live site/CSS
+  // (no purple in their :root brand variables at all — website branding
+  // and vehicle livery are evidently maintained separately). This value is
+  // a placeholder anchored to the real family, not a guessed exact hex —
+  // same treatment as Great Northern in the toc table.
+  'Blackpool Tramway': '#991BA7',
+  // Edinburgh Trams — a real hex WAS found (#B31B1B, "madder"/dark red,
+  // sourced from Wikipedia's WikiProject UK Railways colours list, the
+  // same source tier used successfully in Phase 1 — though tagged
+  // "Temporary rail colour" there, a mild caveat). NOT used here: under
+  // CVD simulation it collides with existing red-family TOCs (LNER-GR,
+  // Greater Anglia-LE) at ΔE as low as ~4 — real risk of a metro system
+  // reading as a TOC's line to a colorblind user, exactly what CLAUDE.md's
+  // "metro = purple family, kept visually distinct from TOCs" rule exists
+  // to prevent. Kept in the purple family instead, breaking from the real
+  // livery — flagging this explicitly since every other color decision
+  // this session prioritized real colors first; this is a deliberate,
+  // evidence-based exception, not an oversight. Revisit if you'd rather
+  // have livery authenticity over the categorical distinction.
+  'Edinburgh Trams': '#E113EC',
 };
 function toVividLightTheme(hex) {
   const { h, s, l } = hexToHsl(hex);

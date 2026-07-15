@@ -195,37 +195,74 @@ The 94 unsnapped break into two categories — read
 
 ---
 
-## Task 5 — Hosting/format decision (OPEN — not decided in this session)
+## Task 5 — Build the operators vector tile layer (2026-07-15, tested working)
 
-The original plan deferred this until real file-size numbers existed:
+`line-segments.json` (39.4MB raw / 6.2MB gzipped) hit the original plan's own
+stated trigger for falling back to vector tiles ("only if the real file size
+says otherwise") — for comparison, the largest existing plain-fetched JSON in
+the repo (`stations-content.json`) is 1.1MB. Rather than a flat-JSON fetch
+that blocks first paint, this is now tiled the same way `gb-railways.pmtiles`
+already is:
 
-| File | Raw | Gzipped |
-|---|---|---|
-| `scripts/output/line-segments.json` (full, national) | 39.4 MB | 6.2 MB |
-| — slimmed (drop `nodes`/`way_ids`, keep `id`/`operators`/`coords`/`length_m`) | 10.9 MB | 3.6 MB |
-| — slimmed + coords rounded to 5dp (~1.1m precision) | 9.1 MB | 2.6 MB |
-| `data/operator-colors.json` | 68 KB | 6.9 KB |
+```bash
+bash tile-generation/build-operator-tiles.sh
+```
 
-For comparison: the largest existing plain-fetched JSON in the repo
-(`stations-content.json`) is 1.1MB, and `gb-railways.pmtiles` (the closest
-precedent — also national-scale line geometry) is 18.4MB but served as
-*progressively-loaded vector tiles* (MapLibre fetches only the byte ranges
-for the current viewport/zoom, not the whole file up front), not one flat
-fetch.
+Runs `scripts/build-operator-tiles-geojson.mjs` (converts
+`line-segments.json` into newline-delimited GeoJSON — one Feature per
+segment, `operators` as a comma-joined string since MVT feature properties
+are scalar-only, no native array type, plus `operator_count` as a number so
+Phase 5's zoom-adaptive bundling doesn't need to re-split the string just to
+count) then `tippecanoe` to tile it.
 
-Even the slimmed+rounded version is ~19x the size of the biggest plain-JSON
-precedent in this repo and would block first paint until fully downloaded —
-the plan's own stated trigger for falling back to vector tiles ("only if the
-real file size says otherwise") has been hit. **Recommendation, not a
-decision**: extend the existing `tilemaker` pipeline (already used for
-`gb-railways.pmtiles`, see `PROMPT3-TILES-RUNBOOK.md`) with a second layer
-carrying `operators` (as a joined string or array) per LineString, hosted
-alongside the existing R2 bucket — reuses infrastructure and a build
-pattern already proven to work, rather than introducing a second hosting
-mechanism for a flat JSON file. This is a real scope/cost decision (new
-tilemaker profile, another R2 upload, MapLibre vector-source wiring in
-Phase 5) that needs your sign-off before Phase 5 starts, not something to
-default into.
+**Not built with `tilemaker`, deliberately** — `tilemaker` v3.1.0's `--input`
+only accepts a raw `.osm.pbf` file (confirmed via `--help`, no GeoJSON
+ingestion mode exists). Making it produce this layer would mean
+re-implementing this entire pipeline's classification logic (Phase 0–3's
+canonicalization, TfL splitting, `RELATION_ID_OVERRIDES`) a second time in
+Lua — a duplicate that would silently drift out of sync with the real
+(JS) one every time either changed. `tippecanoe` (GeoJSON → vector tiles,
+arbitrary properties preserved losslessly, outputs `.pmtiles` directly) is
+the right tool for tiling data that's already fully computed — same output
+format, same R2/CORS/MapLibre pattern as `gb-railways.pmtiles`, just a
+different generator for this one layer. `brew install tippecanoe` (v2.79.0
+verified working).
+
+**Verified, not just built:**
+- Output: `tile-generation/operators.pmtiles`, **7.55MB** — smaller than
+  even the gzipped flat-JSON alternative, and (unlike a flat fetch)
+  progressively loaded by viewport/zoom.
+- tippecanoe's own summary confirms all 6,126 input features made it into
+  the tiles (no silent drops): `6126 features, 1938936 bytes of geometry
+  and attributes...`.
+- Header/metadata read back correctly via the `pmtiles` npm package: 22,068
+  tiles, zoom 5–14, GB bbox, `vector_layers` reports the `operators` layer
+  with exactly the 4 expected fields (`id`/`operators`/`operator_count`/
+  `length_m`).
+- **Round-trip integrity spot-check**: pulled 3 of the 16 six-operator
+  segments (the hardest case — most properties to mangle) back out of the
+  actual tiles and diffed against `line-segments.json`. All 3 matched
+  exactly, e.g. segment 1708: tile property `operators` =
+  `"AW,EM,NT,TP,VT,XC"`, `operator_count` = `6` — identical to source, no
+  truncation, no reordering.
+- **Loads in a real MapLibre instance**: `tile-generation/test-operators-tiles.html`
+  (throwaway test page, not for production) — headless Chrome run confirmed
+  `map.addSource`/`map.addLayer` succeeded with zero errors and
+  `querySourceFeatures` returned features with correct properties. Needs a
+  Range-request-capable local server to test locally — **Python's
+  `http.server` does NOT support Range requests** (returns 200 full-file
+  instead of 206 partial, which breaks PMTiles' byte-range fetching); `npx
+  http-server --cors` does.
+
+## Task 6 — Host on R2 (OPEN — needs your Cloudflare access)
+
+Same steps as `PROMPT3-TILES-RUNBOOK.md` Task 2 — upload
+`tile-generation/operators.pmtiles` to the same R2 bucket already hosting
+`gb-railways.pmtiles`, same CORS policy (already scoped to `srhq.uk`/
+`www.srhq.uk`, no changes needed there), get the public URL, that's the only
+remaining step before Phase 5 can add the real `pmtiles://` source to
+`map.html`. No Cloudflare account access from here, same limitation as the
+original tiles runbook noted.
 
 `operator-colors.json` at 68KB needs no format decision — same pattern as
 every other `data/*.json` file already committed directly to the repo.
