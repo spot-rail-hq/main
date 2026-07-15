@@ -50,10 +50,17 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 const SEGMENTS_PATH = path.join(ROOT, 'scripts', 'output', 'line-segments.json');
 const STATIONS_PATH = path.join(ROOT, 'scripts', 'output', 'station-graph-links.json');
+const BRIDGES_PATH = path.join(ROOT, 'scripts', 'output', 'graph-bridges.json');
 const OUT_PATH = path.join(ROOT, 'data', 'routing-graph.json');
 
 const graph = JSON.parse(readFileSync(SEGMENTS_PATH, 'utf8'));
 const stationLinks = JSON.parse(readFileSync(STATIONS_PATH, 'utf8'));
+let bridges = [];
+try {
+  bridges = JSON.parse(readFileSync(BRIDGES_PATH, 'utf8')).bridges;
+} catch {
+  console.log('No scripts/output/graph-bridges.json found — skipping bridge edges (run build-graph-bridges.mjs first if you want them).');
+}
 
 function haversineMeters([lon1, lat1], [lon2, lat2]) {
   const R = 6371000;
@@ -153,6 +160,74 @@ for (const r of stationLinks.results) {
   stationNode[r.crs] = r.snapped ? nodeStationId(r.crs) : null;
 }
 
+// Prune known Metrolink tram-stop nodes that ended up topologically merged
+// into the Manchester heavy-rail segment graph (found 2026-07-15 while
+// investigating that island's connectivity — a PRE-EXISTING Phase 2 segment-
+// graph artifact, unrelated to the bridge work below: several Metrolink
+// lines reuse former heavy-rail alignments and apparently share an OSM node
+// with the rail network somewhere in that stretch, well before any bridging
+// happens here). Confirmed via live Overpass tag lookups (railway=tram_stop,
+// network=Manchester Metrolink) that these 10 are real tram stop-positions,
+// not rail. All 10 were also confirmed degree-1 (dead-end) in the graph, so
+// this prune is a no-op for every currently-working route — it's here so a
+// future segment-graph change can't accidentally make one of them a real
+// through-node without anyone noticing a train route silently using tram
+// track. Not a general node-mode audit (that would need tag-checking every
+// node in the graph, a bigger separate pass) — scoped to exactly the nodes
+// this investigation found and verified.
+const EXCLUDED_TRAM_NODE_IDS = [
+  32585982, 91898198, 292004860, 1495743227, 2319444508,
+  5813712617, 6981520395, 6982583044, 6988577653, 7315119440,
+];
+let prunedEdgeCount = 0;
+for (const rawId of EXCLUDED_TRAM_NODE_IDS) {
+  const key = adjacency.has(rawId) ? rawId : (adjacency.has(String(rawId)) ? String(rawId) : null);
+  if (key === null) continue; // not present in this build — fine, nothing to prune
+  const edges = adjacency.get(key) || [];
+  for (const e of edges) {
+    const neighborEdges = adjacency.get(e.to);
+    if (!neighborEdges) continue;
+    const before = neighborEdges.length;
+    adjacency.set(e.to, neighborEdges.filter((ne) => ne.to !== key));
+    prunedEdgeCount += before - adjacency.get(e.to).length;
+  }
+  adjacency.delete(key);
+  nodeCoord.delete(key);
+}
+
+// Bridge edges (scripts/build-graph-bridges.mjs) — reconnect a small,
+// explicitly reviewed allow-list of major regional networks that are
+// topologically disconnected due to OSM node-ID mismatches at complex
+// station throats, NOT a real physical gap. No segment_id/tile geometry
+// backs these (there's no mapped way for the gap itself) — the client's
+// resolveFromToGeometry() already has a bounded-gap bridge-with-a-straight-
+// line fallback (MAX_BRIDGEABLE_GAP_M) for exactly this shape of edge.
+// graph-bridges.json's node ids came back from routing-graph.json, where
+// JSON object keys are always strings — but this fresh adjacency Map keys
+// numeric OSM node ids as JS numbers (straight from line-segments.json),
+// since only nodeStationId()'s "S:"+crs ids are ever real strings. Without
+// this coercion, Map.has("30941069") silently misses the number-keyed
+// 30941069 and every numeric-node bridge gets dropped.
+function resolveNodeKey(id) {
+  if (adjacency.has(id)) return id;
+  if (typeof id === 'string' && /^\d+$/.test(id)) {
+    const n = Number(id);
+    if (adjacency.has(n)) return n;
+  }
+  return null;
+}
+
+let bridgeEdgeCount = 0;
+for (const b of bridges) {
+  const fromKey = resolveNodeKey(b.from), toKey = resolveNodeKey(b.to);
+  if (fromKey === null || toKey === null) {
+    console.log(`SKIP bridge for ${b.anchor}: endpoint not present in this graph build (${b.from} / ${b.to}) — rerun build-graph-bridges.mjs after any segment-graph change`);
+    continue;
+  }
+  addEdge(fromKey, toKey, b.distM, { type: 'bridge' });
+  bridgeEdgeCount++;
+}
+
 const nodes = {};
 for (const [id, edges] of adjacency) {
   nodes[id] = edges;
@@ -170,11 +245,13 @@ const output = {
   segments_split: splitSegmentCount,
   segments_unsplit: unsplitSegmentCount,
   sub_edges_from_splits: totalSubEdges,
+  bridge_edges: bridgeEdgeCount,
+  pruned_tram_nodes: EXCLUDED_TRAM_NODE_IDS.length,
   station_node: stationNode,
   nodes,
 };
 
 writeFileSync(OUT_PATH, JSON.stringify(output));
 
-console.log(`Routing graph: ${output.node_count} nodes, ${output.edge_count} edges (${splitSegmentCount} segments split into ${totalSubEdges} sub-edges, ${unsplitSegmentCount} left whole)`);
+console.log(`Routing graph: ${output.node_count} nodes, ${output.edge_count} edges (${splitSegmentCount} segments split into ${totalSubEdges} sub-edges, ${unsplitSegmentCount} left whole, ${bridgeEdgeCount} bridge edges, ${prunedEdgeCount} edges pruned from ${EXCLUDED_TRAM_NODE_IDS.length} known Metrolink tram nodes)`);
 console.log(`Written to ${OUT_PATH}`);

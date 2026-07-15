@@ -1,8 +1,9 @@
 # Operator-colored rail line data — generation runbook
 
-Produces the segment graph and color palette that Phase 5 (not yet started)
-will wire into `map.html` for citylines.co-style operator-colored line
-rendering. Mirrors `PROMPT3-TILES-RUNBOOK.md`'s structure. Everything below
+Produces the segment graph and color palette that `map.html` uses for
+citylines.co-style operator-colored line rendering (Phases 5-7 — multi-
+operator fan-out, From/To pathfinding, selected-station markers — are all
+live). Mirrors `PROMPT3-TILES-RUNBOOK.md`'s structure. Everything below
 was actually run in-session against a real local Overpass instance and real
 station/OSM data — nothing here is guessed or aspirational. The one thing
 still open is the final hosting/format decision for the largest output file

@@ -1,0 +1,110 @@
+{
+  "generated_at": "2026-07-15T14:45:40.309Z",
+  "threshold_m": 50,
+  "bridges": [
+    {
+      "anchor": "South Wales Valley Lines",
+      "crs": "CDQ",
+      "from": "30941069",
+      "to": "1334375830",
+      "distM": 9.14,
+      "fromTags": {},
+      "toTags": {}
+    },
+    {
+      "anchor": "Essex / c2c (Fenchurch St branch)",
+      "crs": "FST",
+      "from": "S:BKG",
+      "to": "3303248175",
+      "distM": 17.29,
+      "fromTags": null,
+      "toTags": {}
+    },
+    {
+      "anchor": "Manchester (Piccadilly + Victoria)",
+      "crs": "MAN",
+      "from": "S:MAN",
+      "to": "6439206436",
+      "distM": 25.69,
+      "fromTags": null,
+      "toTags": {
+        "railway": "buffer_stop"
+      }
+    },
+    {
+      "anchor": "Scottish Highlands (Inverness / Far North / Kyle)",
+      "crs": "INV",
+      "from": "S:INV",
+      "to": "6766602284",
+      "distM": 15.59,
+      "fromTags": null,
+      "toTags": {
+        "name": "Inverness",
+        "name:gd": "Inbhir Nis",
+        "network": "gb-national-rail",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "ref": "3",
+        "train": "yes"
+      }
+    },
+    {
+      "anchor": "Liverpool / Wrexham corridor",
+      "crs": "LVC",
+      "from": "3914514173",
+      "to": "6335333583",
+      "distM": 19.65,
+      "fromTags": {
+        "name": "Chester",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "train": "yes"
+      },
+      "toTags": {
+        "name": "Chester",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "train": "yes"
+      }
+    },
+    {
+      "anchor": "Branch cluster (ELE)",
+      "crs": "ELE",
+      "from": "1763992757",
+      "to": "392788546",
+      "distM": 25.81,
+      "fromTags": {
+        "railway": "switch"
+      },
+      "toTags": {
+        "railway": "switch"
+      }
+    },
+    {
+      "anchor": "Branch cluster (GNW)",
+      "crs": "GNW",
+      "from": "6418173067",
+      "to": "1604299836",
+      "distM": 15.71,
+      "fromTags": {
+        "railway": "switch"
+      },
+      "toTags": {
+        "name": "Pudding Mill Lane Junction",
+        "railway": "site",
+        "ref:tiploc": "PUDGMLL"
+      }
+    },
+    {
+      "anchor": "Charing Cross area",
+      "crs": "CHX",
+      "from": "S:CHX",
+      "to": "1272858565",
+      "distM": 38.03,
+      "fromTags": null,
+      "toTags": {
+        "railway": "buffer_stop"
+      }
+    }
+  ]
+}

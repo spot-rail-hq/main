@@ -32722,5 +32722,299 @@
       "incomplete": true,
       "notes": "no route relations found stopping here — operators list unset; hint: OSM tags this station's Wikipedia page as \"Wood Lane tube station\" — consider setting wikipedia_title (not auto-applied)"
     }
+  },
+  "AGR": {
+    "_osm": {
+      "fetched_at": "2026-07-15T17:07:59.312Z",
+      "node_id": null,
+      "incomplete": true,
+      "notes": "No OSM node found with ref:crs=AGR (plain or qualified, e.g. ref:crs:overground)."
+    }
+  },
+  "APN": {
+    "_osm": {
+      "fetched_at": "2026-07-15T17:07:59.582Z",
+      "node_id": null,
+      "incomplete": true,
+      "notes": "No OSM node found with ref:crs=APN (plain or qualified, e.g. ref:crs:overground)."
+    }
+  },
+  "BIB": {
+    "_osm": {
+      "fetched_at": "2026-07-15T17:07:59.848Z",
+      "node_id": null,
+      "incomplete": true,
+      "notes": "No OSM node found with ref:crs=BIB (plain or qualified, e.g. ref:crs:overground)."
+    }
+  },
+  "BPC": {
+    "_osm": {
+      "fetched_at": "2026-07-15T17:08:00.143Z",
+      "node_id": null,
+      "incomplete": true,
+      "notes": "No OSM node found with ref:crs=BPC (plain or qualified, e.g. ref:crs:overground)."
+    }
+  },
+  "BRT": {
+    "_osm": {
+      "fetched_at": "2026-07-15T17:08:00.398Z",
+      "node_id": null,
+      "incomplete": true,
+      "notes": "No OSM node found with ref:crs=BRT (plain or qualified, e.g. ref:crs:overground)."
+    }
+  },
+  "CFC": {
+    "_osm": {
+      "fetched_at": "2026-07-15T17:08:00.671Z",
+      "node_id": null,
+      "incomplete": true,
+      "notes": "No OSM node found with ref:crs=CFC (plain or qualified, e.g. ref:crs:overground)."
+    }
+  },
+  "FRR": {
+    "_osm": {
+      "fetched_at": "2026-07-15T17:08:00.970Z",
+      "node_id": null,
+      "incomplete": true,
+      "notes": "No OSM node found with ref:crs=FRR (plain or qualified, e.g. ref:crs:overground)."
+    }
+  },
+  "GCL": {
+    "_osm": {
+      "fetched_at": "2026-07-15T17:08:01.246Z",
+      "node_id": null,
+      "incomplete": true,
+      "notes": "No OSM node found with ref:crs=GCL (plain or qualified, e.g. ref:crs:overground)."
+    }
+  },
+  "GQL": {
+    "_osm": {
+      "fetched_at": "2026-07-15T17:08:01.516Z",
+      "node_id": null,
+      "incomplete": true,
+      "notes": "No OSM node found with ref:crs=GQL (plain or qualified, e.g. ref:crs:overground)."
+    }
+  },
+  "HII": {
+    "platforms": 8,
+    "wheelchair": "limited",
+    "operators": [
+      "Transport for London",
+      "Great Northern"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-15T17:08:03.555Z",
+      "node_id": 6414163635,
+      "incomplete": false,
+      "notes": "hint: OSM tags this station's Wikipedia page as \"Highbury & Islington station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "LHR": {
+    "_osm": {
+      "fetched_at": "2026-07-15T17:08:03.829Z",
+      "node_id": null,
+      "incomplete": true,
+      "notes": "No OSM node found with ref:crs=LHR (plain or qualified, e.g. ref:crs:overground)."
+    }
+  },
+  "LIF": {
+    "platforms": 3,
+    "wheelchair": "yes",
+    "operators": [
+      "West Midlands Railway",
+      "London Northwestern Railway"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-15T17:08:05.413Z",
+      "node_id": 6082898473,
+      "incomplete": false,
+      "notes": "hint: OSM tags this station's Wikipedia page as \"Lichfield Trent Valley railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "LVL": {
+    "_osm": {
+      "fetched_at": "2026-07-15T17:08:05.678Z",
+      "node_id": null,
+      "incomplete": true,
+      "notes": "No OSM node found with ref:crs=LVL (plain or qualified, e.g. ref:crs:overground)."
+    }
+  },
+  "MFD": {
+    "_osm": {
+      "fetched_at": "2026-07-15T17:08:05.950Z",
+      "node_id": null,
+      "incomplete": true,
+      "notes": "No OSM node found with ref:crs=MFD (plain or qualified, e.g. ref:crs:overground)."
+    }
+  },
+  "MUF": {
+    "_osm": {
+      "fetched_at": "2026-07-15T17:08:06.228Z",
+      "node_id": null,
+      "incomplete": true,
+      "notes": "No OSM node found with ref:crs=MUF (plain or qualified, e.g. ref:crs:overground)."
+    }
+  },
+  "NTB": {
+    "_osm": {
+      "fetched_at": "2026-07-15T17:08:06.522Z",
+      "node_id": null,
+      "incomplete": true,
+      "notes": "No OSM node found with ref:crs=NTB (plain or qualified, e.g. ref:crs:overground)."
+    }
+  },
+  "OPY": {
+    "_osm": {
+      "fetched_at": "2026-07-15T17:08:06.773Z",
+      "node_id": null,
+      "incomplete": true,
+      "notes": "No OSM node found with ref:crs=OPY (plain or qualified, e.g. ref:crs:overground)."
+    }
+  },
+  "PMG": {
+    "_osm": {
+      "fetched_at": "2026-07-15T17:08:07.043Z",
+      "node_id": null,
+      "incomplete": true,
+      "notes": "No OSM node found with ref:crs=PMG (plain or qualified, e.g. ref:crs:overground)."
+    }
+  },
+  "RBS": {
+    "_osm": {
+      "fetched_at": "2026-07-15T17:08:07.311Z",
+      "node_id": null,
+      "incomplete": true,
+      "notes": "No OSM node found with ref:crs=RBS (plain or qualified, e.g. ref:crs:overground)."
+    }
+  },
+  "REL": {
+    "_osm": {
+      "fetched_at": "2026-07-15T17:08:07.557Z",
+      "node_id": null,
+      "incomplete": true,
+      "notes": "No OSM node found with ref:crs=REL (plain or qualified, e.g. ref:crs:overground)."
+    }
+  },
+  "SHV": {
+    "_osm": {
+      "fetched_at": "2026-07-15T17:08:07.829Z",
+      "node_id": null,
+      "incomplete": true,
+      "notes": "No OSM node found with ref:crs=SHV (plain or qualified, e.g. ref:crs:overground)."
+    }
+  },
+  "SMC": {
+    "_osm": {
+      "fetched_at": "2026-07-15T17:08:08.106Z",
+      "node_id": null,
+      "incomplete": true,
+      "notes": "No OSM node found with ref:crs=SMC (plain or qualified, e.g. ref:crs:overground)."
+    }
+  },
+  "SNP": {
+    "_osm": {
+      "fetched_at": "2026-07-15T17:08:08.384Z",
+      "node_id": null,
+      "incomplete": true,
+      "notes": "No OSM node found with ref:crs=SNP (plain or qualified, e.g. ref:crs:overground)."
+    }
+  },
+  "STQ": {
+    "_osm": {
+      "fetched_at": "2026-07-15T17:08:08.647Z",
+      "node_id": null,
+      "incomplete": true,
+      "notes": "No OSM node found with ref:crs=STQ (plain or qualified, e.g. ref:crs:overground)."
+    }
+  },
+  "TAH": {
+    "_osm": {
+      "fetched_at": "2026-07-15T17:08:08.919Z",
+      "node_id": null,
+      "incomplete": true,
+      "notes": "No OSM node found with ref:crs=TAH (plain or qualified, e.g. ref:crs:overground)."
+    }
+  },
+  "TEA": {
+    "_osm": {
+      "fetched_at": "2026-07-15T17:08:09.195Z",
+      "node_id": null,
+      "incomplete": true,
+      "notes": "No OSM node found with ref:crs=TEA (plain or qualified, e.g. ref:crs:overground)."
+    }
+  },
+  "TYB": {
+    "_osm": {
+      "fetched_at": "2026-07-15T17:08:09.470Z",
+      "node_id": null,
+      "incomplete": true,
+      "notes": "No OSM node found with ref:crs=TYB (plain or qualified, e.g. ref:crs:overground)."
+    }
+  },
+  "WED": {
+    "_osm": {
+      "fetched_at": "2026-07-15T17:08:09.744Z",
+      "node_id": null,
+      "incomplete": true,
+      "notes": "No OSM node found with ref:crs=WED (plain or qualified, e.g. ref:crs:overground)."
+    }
+  },
+  "WLH": {
+    "_osm": {
+      "fetched_at": "2026-07-15T17:08:10.019Z",
+      "node_id": null,
+      "incomplete": true,
+      "notes": "No OSM node found with ref:crs=WLH (plain or qualified, e.g. ref:crs:overground)."
+    }
+  },
+  "ZZT": {
+    "_osm": {
+      "fetched_at": "2026-07-15T17:08:10.290Z",
+      "node_id": null,
+      "incomplete": true,
+      "notes": "No OSM node found with ref:crs=ZZT (plain or qualified, e.g. ref:crs:overground)."
+    }
+  },
+  "ABX": {
+    "platforms": 4,
+    "wheelchair": "yes",
+    "operators": [
+      "GTS Rail Operations",
+      "Thameslink"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-15T17:08:11.870Z",
+      "node_id": 5871218017,
+      "incomplete": false,
+      "notes": "1 relation(s) found via proximity but couldn't verify stop membership (no PTv2 stop-role tagging) — excluded, but manual review may find real coverage; hint: OSM tags this station's Wikipedia page as \"Abbey Wood railway station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "FDX": {
+    "platforms": 4,
+    "wheelchair": "yes",
+    "operators": [
+      "Thameslink",
+      "GTS Rail Operations"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-15T17:08:14.092Z",
+      "node_id": 3284103165,
+      "incomplete": false,
+      "notes": "hint: OSM tags this station's Wikipedia page as \"Farringdon station\" — consider setting wikipedia_title (not auto-applied)"
+    }
+  },
+  "WHX": {
+    "platforms": 2,
+    "wheelchair": "yes",
+    "operators": [
+      "Transport for London",
+      "GTS Rail Operations"
+    ],
+    "_osm": {
+      "fetched_at": "2026-07-15T17:08:15.995Z",
+      "node_id": 2426825788,
+      "incomplete": false,
+      "notes": "hint: OSM tags this station's Wikipedia page as \"Whitechapel station\" — consider setting wikipedia_title (not auto-applied)"
+    }
   }
 }

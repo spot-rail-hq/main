@@ -80,6 +80,15 @@ const JOBS = {
   routes: [],
 };
 
+// Scoped re-run override — e.g. `STATIONS_OVERRIDE=ABX,FDX,HII node
+// scripts/fetch-osm-facts.mjs` — for re-running just a handful of stations
+// (after a query-logic fix, say) without editing the full 2,637-entry JOBS
+// list above and risking losing/mis-restoring it.
+if (process.env.STATIONS_OVERRIDE) {
+  JOBS.stations = process.env.STATIONS_OVERRIDE.split(',').map((s) => s.trim()).filter(Boolean);
+  JOBS.routes = [];
+}
+
 // 2026-07-13: switched from the public overpass-api.de instance to a
 // self-hosted one (wiktorn/overpass-api Docker image, GB extract from
 // Geofabrik) — the public instance rate-limited hard enough during a
@@ -179,12 +188,31 @@ const SERVICE_TYPE_LABELS = {
 
 async function enrichStation(crs) {
   console.log(`\n── station ${crs} ──`);
-  const stationQ = `[out:json][timeout:25];node["ref:crs"="${crs}"];out tags;`;
+  // Key-regex + value-regex, not a plain ["ref:crs"="X"] match: a single
+  // physical node often carries MULTIPLE CRS codes when it serves more than
+  // one fare/booking system on one platform cluster — the plain `ref:crs`
+  // tag holds the primary/mainline code, and `ref:crs:overground` /
+  // `ref:crs:underground` / `ref:crs:crossrail` / `ref:crs:High_Level` /
+  // `ref:crs:Low_Level` etc. hold the others (confirmed live: Highbury &
+  // Islington's node is ref:crs=HHY + ref:crs:overground=HII; Abbey Wood is
+  // ref:crs=ABW + ref:crs:crossrail=ABX; Lichfield Trent Valley is
+  // ref:crs=LTV + ref:crs:High_Level=LIF). A plain-tag-only query silently
+  // missed every qualified-variant CRS in station-list.json — 33 stations
+  // (2026-07-15 full re-run) got NO stations-content.json entry at all as a
+  // result. This regex form is a strict superset of the old exact-match
+  // query (`ref:crs` itself still matches `^ref:crs`), so it's safe to
+  // simply replace it rather than add a fallback branch.
+  const stationQ = `[out:json][timeout:25];node[~"^ref:crs"~"^${crs}$"];out tags;`;
   const stationRes = await overpassQuery(stationQ);
   const node = stationRes.elements[0];
   if (!node) {
-    console.warn(`  no OSM node tagged ref:crs=${crs} — nothing to merge, left for manual curation.`);
-    return { crs, incomplete: true, notes: `No OSM node found with ref:crs=${crs}.` };
+    console.warn(`  no OSM node tagged ref:crs=${crs} (plain or qualified) — nothing to merge, left for manual curation.`);
+    // Still write a minimal _osm stub (empty result, not skipped entirely)
+    // so a future run — or a human — can tell "genuinely absent from OSM,
+    // already checked" apart from "never attempted", instead of an entry
+    // that's silently indistinguishable from one this script has never
+    // touched.
+    return { crs, result: {}, incomplete: true, notes: `No OSM node found with ref:crs=${crs} (plain or qualified, e.g. ref:crs:overground).` };
   }
   const tags = node.tags || {};
 

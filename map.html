@@ -854,6 +854,34 @@
   var stationsData = null;   // parsed /data/stations.geojson, ids assigned
   var stationInteractionsWired = false;
   var operatorLineInteractionsWired = false;
+  var initialCameraVerified = false; // see verifyInitialCameraPosition() below
+
+  // A real, if intermittent, MapLibre race confirmed via headless testing
+  // (2026-07-15): shortly after map creation, the camera occasionally
+  // settles away from the constructor's own center/zoom (e.g. observed
+  // drifting from the intended [-2.5,54.5]/z5.5 to [-3.25,55.67]/z4.89 with
+  // no code anywhere requesting that position) — root cause not fully
+  // pinned down (suspected: the remote Stadia style JSON loads
+  // asynchronously and something in that path re-triggers a transform
+  // recalculation), but NOT a tile-loading or tippecanoe-feature-dropping
+  // issue as first suspected. Consequence: a drifted zoom can land below
+  // operators.pmtiles' minzoom (5), so the ENTIRE base rail-line layer
+  // renders nothing — this is what the original "no track lines on the
+  // Live map" bug report was actually seeing, and it silently persisted
+  // through the Phase 5 rendering rebuild since Phase 5 never touched
+  // camera/viewport code. Fix: re-assert the known-good literal
+  // mapInitCenter/mapInitZoom (NOT getCenter()/getZoom(), which could
+  // already reflect the drift) a few times over the first few seconds after
+  // load, since testing showed the drift isn't perfectly synchronous either.
+  function verifyInitialCameraPosition(attempt) {
+    attempt = attempt || 1;
+    if (initialCameraVerified || !map) return;
+    var z = map.getZoom(), c = map.getCenter();
+    var drifted = Math.abs(z - mapInitZoom) > 0.3 || Math.abs(c.lng - mapInitCenter[0]) > 0.3 || Math.abs(c.lat - mapInitCenter[1]) > 0.3;
+    if (drifted) map.jumpTo({ center: mapInitCenter, zoom: mapInitZoom });
+    if (attempt >= 6) { initialCameraVerified = true; return; }
+    setTimeout(function () { verifyInitialCameraPosition(attempt + 1); }, 500);
+  }
   var incidents = [];
   var activeFilter = 'all';
   var mode = 'live';
@@ -1128,6 +1156,15 @@
     var coordsOut = [];
     for (var i = 0; i < edges.length; i++) {
       var info = edges[i].edge;
+      if (info.type === 'bridge') {
+        // Coordinate-proximity bridge edge (build-graph-bridges.mjs) — no
+        // segment_id/tile geometry backs it by construction (there's no
+        // mapped way for the gap itself), so skip straight to the same
+        // bounded-gap straight-line fallback used for a missing tile
+        // feature below, without ever querying the tile source for it.
+        if (edges[i].length_m !== undefined && edges[i].length_m <= MAX_BRIDGEABLE_GAP_M) continue;
+        return null;
+      }
       var feats = map.querySourceFeatures('operator-vector', {
         sourceLayer: 'operators',
         filter: ['==', ['get', 'segment_id'], info.segment_id],
@@ -1254,6 +1291,7 @@
   }
 
   var map;
+  var mapInitCenter, mapInitZoom; // see verifyInitialCameraPosition() below
 
   (async function initMap() {
     var config = { stadiaKey: '' };
@@ -1265,6 +1303,8 @@
     var mobile = window.innerWidth < 768;
     var initCenter = mobile ? [-2.5, 54.0] : [-2.5, 54.5];
     var initZoom = mobile ? 4.8 : 5.5;
+    mapInitCenter = initCenter;
+    mapInitZoom = initZoom;
 
     map = new maplibregl.Map({
       container: 'map',
@@ -1290,6 +1330,7 @@
     );
 
     map.on('load', addMapLayers);
+    map.on('load', function () { verifyInitialCameraPosition(); }); // separate listener, not folded into addMapLayers — that also re-runs on every theme toggle via setStyle, and this correction is a true-first-load-only concern
   })();
 
   // ── Map layers: railway vector overlay + stations ────────────────────────
@@ -1341,30 +1382,14 @@
   }
 
   // ── Operator-colored lines (Phase 5) ───────────────────────────────────────
-  // MULTI-OPERATOR RENDERING CHOICE (flagged for review, not silently
-  // decided — see the Phase 5 checkpoint conversation): a shared-track
-  // segment's `operators` tile property is a comma-joined string (e.g.
-  // "GC,GR,LD,NT,TP,XC" for the busiest Doncaster-area throats) — a line
-  // literally cannot show 6 colors at once without true per-operator
-  // fan-out (duplicating each shared segment once per operator with a
-  // computed line-offset, per the original approved plan's Phase 5 design)
-  // — which needs the tiles themselves to carry one feature per operator
-  // per segment, not one feature with a joined list. That's a real tiling
-  // change, not a styling one, so it's deferred rather than half-built here.
-  // For now: single-operator segments render in their real operator/metro/
-  // heritage color (exact match against the joined string — a single-op
-  // segment's `operators` value IS just that one operator's key, no comma,
-  // so an exact-match `match` expression works without any client-side
-  // string splitting); multi-operator segments render in a shared NEUTRAL
-  // color (reusing the site's existing "dimmed ink" secondary-text tone,
-  // not inventing a new hue) rather than picking one operator to
-  // (misleadingly) represent the whole junction. Line WIDTH scales with
-  // operator_count instead, so busy shared corridors still read as visually
-  // "more important" — this mirrors the plan's own fallback design for
-  // heavily-shared segments ("a single bundled/neutral-weight line...
-  // distinguishable by weight, not by trying to show every color").
-  // TRUE PER-OPERATOR FAN-OUT (2026-07-15 follow-up, replacing the v1
-  // neutral-multi-operator-color approach described above). scripts/
+  // MULTI-OPERATOR RENDERING — TRUE PER-OPERATOR FAN-OUT (superseded the
+  // original v1 "single shared-neutral-color line, width scales with
+  // operator_count" approach from the initial Phase 5 checkpoint — that v1
+  // approach is gone from the code, kept here only as one sentence of
+  // history: it existed because the tiles used to carry one feature per
+  // segment with a comma-joined `operators` string, e.g. "GC,GR,LD,NT,TP,XC"
+  // for the busiest Doncaster-area throats, which structurally can't show 6
+  // colors on one line). scripts/
   // build-operator-tiles-geojson.mjs now emits one tile feature PER
   // OPERATOR PER SEGMENT — identical geometry, single `operators` value
   // each — instead of one feature per segment with a comma-joined string.
