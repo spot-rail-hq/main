@@ -128,7 +128,7 @@ function findNearest(stationLon, stationLat) {
           const coords = segments[segIdx].coords;
           const [ax, ay] = coords[i], [bx, by] = coords[i + 1];
           const r = nearestPointOnEdge(stationLon, stationLat, ax, ay, bx, by, mPerDegLon, mPerDegLat);
-          if (!best || r.distM < best.distM) best = { distM: r.distM, segIdx, edgeIndex: i, lon: r.lon, lat: r.lat };
+          if (!best || r.distM < best.distM) best = { distM: r.distM, segIdx, edgeIndex: i, lon: r.lon, lat: r.lat, t: r.t };
         }
       }
     }
@@ -156,6 +156,15 @@ for (const st of stations) {
     distance_m: nearest ? Math.round(nearest.distM * 10) / 10 : null,
     segment_id: nearest ? segments[nearest.segIdx].id : null,
     snap_point: nearest ? [Math.round(nearest.lon * 1e6) / 1e6, Math.round(nearest.lat * 1e6) / 1e6] : null,
+    // Phase 6 addition: WHERE along the segment the station snapped — which
+    // consecutive-node edge (edge_index into that segment's coords array)
+    // and how far along it (edge_t, 0=start node/1=end node) — needed to
+    // split a segment precisely at the station's real position for routing,
+    // rather than approximating to the nearest endpoint. Not derived from
+    // anything new: nearestPointOnEdge() already computed both internally,
+    // this just stops discarding them.
+    edge_index: nearest ? nearest.edgeIndex : null,
+    edge_t: nearest ? Math.round(nearest.t * 1e6) / 1e6 : null,
   });
 }
 

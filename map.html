@@ -991,6 +991,154 @@
     }
   });
 
+  // ── From/To pathfinding (Phase 6) ──────────────────────────────────────────
+  // data/routing-graph.json — built by scripts/build-routing-graph.mjs from
+  // the Phase 2 segment graph + Phase 3 station snapping. Deliberately NOT
+  // the full ~39MB line-segments.json: this is a purpose-built, geometry-
+  // free routing graph (nodes/edges/weights only — 2.0MB raw / 393KB
+  // gzipped, comparable to stations-content.json's 1.1MB, well inside
+  // "ship it to the client" territory). Resolved-path GEOMETRY is
+  // reconstructed at render time from the operators.pmtiles tile source
+  // (already loaded for the fan-out rendering) by segment_id, not shipped
+  // here — see resolveFromToGeometry() below.
+  //
+  // RECOMMENDATION (client-side, not a Vercel function): computing this
+  // in-browser needs no secret/private data (CLAUDE.md's /api/ rule is
+  // scoped to calls needing a hidden key — Darwin token, Stadia key — this
+  // graph is the same public data already used for rendering), a server
+  // round-trip would add latency for zero benefit (the function would need
+  // to load this exact data on every cold start anyway, and the client
+  // already needs the tile source loaded regardless), and Dijkstra over
+  // ~7,100 nodes / 8,669 edges runs in single-digit milliseconds in JS —
+  // no scaling concern at this size.
+  var routingGraph = null;
+  var routingGraphPromise = fetch('/data/routing-graph.json').then(function (r) {
+    if (!r.ok) throw new Error('routing-graph.json missing');
+    return r.json();
+  }).then(function (d) { routingGraph = d; return d; })
+    .catch(function (e) { console.warn('routing-graph.json unavailable — From/To pathfinding will report no route', e); return null; });
+
+  // Plain binary min-heap keyed by dist — no library, small enough to
+  // hand-roll and this file is vanilla-JS-only per CLAUDE.md's stack rules.
+  function MinHeap() { this.a = []; }
+  MinHeap.prototype.push = function (node, dist) {
+    var a = this.a; a.push({ node: node, dist: dist });
+    var i = a.length - 1;
+    while (i > 0) {
+      var p = (i - 1) >> 1;
+      if (a[p].dist <= a[i].dist) break;
+      var tmp = a[p]; a[p] = a[i]; a[i] = tmp; i = p;
+    }
+  };
+  MinHeap.prototype.pop = function () {
+    var a = this.a;
+    var top = a[0], last = a.pop();
+    if (a.length) {
+      a[0] = last;
+      var i = 0;
+      while (true) {
+        var l = i * 2 + 1, r = i * 2 + 2, smallest = i;
+        if (l < a.length && a[l].dist < a[smallest].dist) smallest = l;
+        if (r < a.length && a[r].dist < a[smallest].dist) smallest = r;
+        if (smallest === i) break;
+        var tmp = a[i]; a[i] = a[smallest]; a[smallest] = tmp; i = smallest;
+      }
+    }
+    return top;
+  };
+  MinHeap.prototype.isEmpty = function () { return this.a.length === 0; };
+
+  // Dijkstra over routingGraph.nodes (adjacency list: nodeId -> [{to,
+  // length_m, edge}]). Returns { edges: [{from,to,edge}, ...] } in
+  // traversal order (fromNode -> toNode) and totalLength_m, or null if no
+  // path exists (disconnected components — e.g. Glasgow Subway/heritage
+  // islands vs. the mainline graph, a real and expected case, not a bug).
+  function dijkstra(fromNode, toNode) {
+    if (!routingGraph || !routingGraph.nodes[fromNode] || !routingGraph.nodes[toNode]) return null;
+    if (fromNode === toNode) return { edges: [], totalLength_m: 0 };
+    var dist = {}; dist[fromNode] = 0;
+    var prevEdge = {};
+    var visited = {};
+    var heap = new MinHeap();
+    heap.push(fromNode, 0);
+    while (!heap.isEmpty()) {
+      var cur = heap.pop();
+      if (visited[cur.node]) continue;
+      visited[cur.node] = true;
+      if (cur.node === toNode) break;
+      var edges = routingGraph.nodes[cur.node] || [];
+      for (var i = 0; i < edges.length; i++) {
+        var e = edges[i];
+        if (visited[e.to]) continue;
+        var nd = cur.dist + e.length_m;
+        if (dist[e.to] === undefined || nd < dist[e.to]) {
+          dist[e.to] = nd;
+          prevEdge[e.to] = { from: cur.node, edge: e.edge };
+          heap.push(e.to, nd);
+        }
+      }
+    }
+    if (dist[toNode] === undefined) return null;
+    var pathEdges = [];
+    var node = toNode;
+    while (node !== fromNode) {
+      var pe = prevEdge[node];
+      pathEdges.push({ from: pe.from, to: node, edge: pe.edge });
+      node = pe.from;
+    }
+    pathEdges.reverse();
+    return { edges: pathEdges, totalLength_m: dist[toNode] };
+  }
+
+  // fromCrs/toCrs -> { found, reason?, totalLength_m?, edges? }. reason is
+  // only set when found=false, for the sidebar's no-route messaging.
+  function computeFromToPath(fromCrs, toCrs) {
+    if (!routingGraph) return { found: false, reason: 'loading' };
+    var fromNode = routingGraph.station_node[fromCrs];
+    var toNode = routingGraph.station_node[toCrs];
+    if (!fromNode || !toNode) return { found: false, reason: 'unsnapped' }; // one or both stations aren't on the segment graph at all (Phase 3's ~94 known gaps)
+    var result = dijkstra(fromNode, toNode);
+    if (!result) return { found: false, reason: 'disconnected' }; // real graph, no connected path (e.g. an isolated metro system vs. the mainline)
+    return { found: true, totalLength_m: result.totalLength_m, edges: result.edges };
+  }
+
+  // Reconstructs the resolved path's actual line geometry from the
+  // operators.pmtiles tile source (already loaded for fan-out rendering) —
+  // NOT shipped in routing-graph.json, see the comment above it for why.
+  // Requires the relevant tiles to already be loaded, i.e. call this after
+  // fitBounds()-ing the path into view and waiting for 'idle' — see
+  // selectFromTo() below.
+  function resolveFromToGeometry(edges) {
+    var coordsOut = [];
+    for (var i = 0; i < edges.length; i++) {
+      var info = edges[i].edge;
+      var feats = map.querySourceFeatures('operator-vector', {
+        sourceLayer: 'operators',
+        filter: ['==', ['get', 'segment_id'], info.segment_id],
+      });
+      if (!feats.length) return null; // tile not loaded / segment not found — caller should treat as unresolved, not silently draw a broken partial line
+      var full = feats[0].geometry.coordinates;
+      var slice = info.type === 'segment' ? full : full.slice(Math.min(info.from_index, info.to_index), Math.max(info.from_index, info.to_index) + 1);
+      if (slice.length < 2) continue;
+      // Orient this slice from `edges[i].from` -> `edges[i].to` — compare
+      // against the (approximate) node coordinate to decide if it needs
+      // reversing, since tile geometry has no inherent direction relative
+      // to the graph traversal.
+      var fromCoord = routingGraph.node_coord[edges[i].from];
+      if (fromCoord) {
+        var dStart = Math.abs(slice[0][0] - fromCoord[0]) + Math.abs(slice[0][1] - fromCoord[1]);
+        var dEnd = Math.abs(slice[slice.length - 1][0] - fromCoord[0]) + Math.abs(slice[slice.length - 1][1] - fromCoord[1]);
+        if (dEnd < dStart) slice = slice.slice().reverse();
+      }
+      if (coordsOut.length && coordsOut[coordsOut.length - 1][0] === slice[0][0] && coordsOut[coordsOut.length - 1][1] === slice[0][1]) {
+        coordsOut.push.apply(coordsOut, slice.slice(1));
+      } else {
+        coordsOut.push.apply(coordsOut, slice);
+      }
+    }
+    return coordsOut.length >= 2 ? coordsOut : null;
+  }
+
   // ── Sidebar selection state ────────────────────────────────────────────────
   // selectedStationCrs/Name is the ONE shared "which station is selected"
   // state that both Live and Database rendering read from (Task 4) — it
@@ -1466,6 +1614,10 @@
     // (map.on('load', addMapLayers)), which shouldn't move the viewport
     // out from under the user either.
     if (selection.type === 'route' && selection.id) renderRoutePolylineGeometry(selection.id);
+    // Phase 6: same re-apply, for a From/To pathfinding result — redraws
+    // from the CACHED resolved geometry only (no re-fetch, no re-fly), a
+    // no-op if nothing's resolved yet (still loading, or no route found).
+    if (selection.type === 'fromto') renderFromToPolylineGeometry();
     renderSelectedStationMarkers();
   }
 
@@ -1483,6 +1635,27 @@
       'circle-radius': ['interpolate', ['linear'], ['zoom'], 7, 2.8, 12, 4.0],
       'circle-color': ['case', ['boolean', ['feature-state', 'hover'], false], c.stationHoverFill, c.stationFill],
       'circle-stroke-width': ['case', ['boolean', ['feature-state', 'hover'], false], 2.2, 1.5],
+      'circle-stroke-color': c.accent,
+    };
+  }
+  // Phase 7 — the selected-station marker (SELECTED_STATIONS_LAYER_ID, a
+  // separate GeoJSON layer drawn on top of the regular tiered markers,
+  // covering both the single-station-select case and each From/To
+  // endpoint — see setSelectedStationPoints()) at 200% of the base circle
+  // size, same zoom-scaling shape as stationsCirclePaint() so it stays
+  // proportionally consistent at every zoom rather than a fixed pixel
+  // size that would look right at one zoom and wrong at others. Radius AND
+  // stroke-width both doubled (7,2.8->5.6 / 12,4.0->8.0; stroke 1.5->3.0)
+  // for a uniform 2x scale, not just a bigger circle with the same-weight
+  // outline. No hover feature-state here (unlike stationsCirclePaint) —
+  // this layer isn't wired for mouse hover, so those case branches would
+  // just be permanently-dead code.
+  function selectedStationCirclePaint() {
+    var c = themeColors();
+    return {
+      'circle-radius': ['interpolate', ['linear'], ['zoom'], 7, 5.6, 12, 8.0],
+      'circle-color': c.stationFill,
+      'circle-stroke-width': 3.0,
       'circle-stroke-color': c.accent,
     };
   }
@@ -1798,7 +1971,10 @@
 
   function renderSelectionChrome() {
     savedToggleBtn.setAttribute('aria-pressed', String(selection.type === 'saved'));
-    if (selection.type !== 'route') clearRoutePolyline(); // Task 2: polyline only persists while a route is actually selected
+    // Task 2, extended Phase 6: the shared magenta highlight layer now
+    // serves both a named-route selection AND a from/to graph-pathfinding
+    // result — only clear it when NEITHER applies, not just "not a route".
+    if (selection.type !== 'route' && selection.type !== 'fromto') clearRoutePolyline();
     var type = effectiveSelectionType();
     if (type === 'none') {
       sidebarEl.classList.remove('has-selection');
@@ -1876,14 +2052,27 @@
   function stationLiveSkeletonHtml() {
     return depBoardHtml('Departures') + liveNewsBlockHtml();
   }
+  // Phase 6: this used to check selection.directRouteId (a CURATED named-
+  // route lookup against routes-content.json, which is empty bar its
+  // _notes placeholder — meaning this message showed for literally every
+  // From/To pair, regardless of whether a real route existed, an open item
+  // flagged when the map bugs were first scoped). Now reflects the real
+  // segment-graph pathfinding result instead — a meaningfully different,
+  // much more useful signal.
+  function fromToNoRouteNoteHtml() {
+    var p = selection.fromToPath;
+    if (!p || p.found) return '';
+    if (p.reason === 'loading') return '<div class="dep-empty" data-anim-row>Finding route…</div>';
+    if (p.reason === 'unsnapped') return '<div class="dep-empty" data-anim-row>No direct route found — one of these stations isn\'t on the mapped rail network yet.</div>';
+    return '<div class="dep-empty" data-anim-row>No direct route found between these stations.</div>'; // 'disconnected' (e.g. an isolated metro system vs. the mainline) or any other reason
+  }
   function fromToSkeletonHtml() {
     // Next-trains data above comes live from Darwin/Huxley2 and is
-    // independent of routes-content.json, so it still renders normally even
-    // when there's no curated route for this pair — this note is purely
-    // about curated-route coverage, not whether live services exist.
-    var noRouteNote = selection.directRouteId ? '' :
-      '<div class="dep-empty" data-anim-row>No direct route found between these stations.</div>';
-    return depBoardHtml('Next trains') + noRouteNote + liveNewsBlockHtml();
+    // independent of the graph pathfinding result, so it still renders
+    // normally even when there's no connected route for this pair — this
+    // note is purely about the map's route highlight, not whether live
+    // services exist.
+    return depBoardHtml('Next trains') + fromToNoRouteNoteHtml() + liveNewsBlockHtml();
   }
   function liveDefaultSkeletonHtml() {
     return emptyDepBoardHtml() + liveNewsBlockHtml();
@@ -2274,27 +2463,73 @@
       fromCrs: from.crs, fromName: from.name,
       toCrs: to.crs, toName: to.name,
       directRouteId: findDirectRoute(from.crs, to.crs),
+      // Phase 6: real graph-based pathfinding result, resolved async below
+      // (routing-graph.json may still be loading, and finding the path's
+      // actual line geometry needs the relevant map tiles loaded, which
+      // needs a camera move first) — starts as 'loading' so the sidebar can
+      // show something sensible before the real found/no-route result is
+      // known, rather than a stale default.
+      fromToPath: { found: false, reason: 'loading' },
     };
     renderSelectionChrome();
     expandSidebarIfCollapsed();
     animateSidebarTransition();
     loadDepartureBoard(from.crs, mySeq, to.crs);
 
-    if (from.lat != null && from.lon != null && to.lat != null && to.lon != null) {
-      var bounds = new maplibregl.LngLatBounds([from.lon, from.lat], [from.lon, from.lat]);
-      bounds.extend([to.lon, to.lat]);
+    var fromCoord = (from.lat != null && from.lon != null) ? [from.lon, from.lat] : null;
+    var toCoord = (to.lat != null && to.lon != null) ? [to.lon, to.lat] : null;
+    if (fromCoord && toCoord) {
+      var bounds = new maplibregl.LngLatBounds(fromCoord, fromCoord);
+      bounds.extend(toCoord);
       map.fitBounds(bounds, { padding: 80, duration: 800 });
-      // Bugfix: this from/to path used to fly the camera and stop there —
-      // no endpoint markers, no route polyline (that's a separate selection
-      // type — see selectRoute()/drawRoutePolyline() — never called from
-      // here). routes-content.json has no entries at all yet (still just its
-      // _notes placeholder), so there's no curated route to look up for this
-      // pair regardless; the graceful fallback is these two endpoint
-      // markers, which don't depend on any curated content existing.
       setSelectedStationPoints([{ lon: from.lon, lat: from.lat }, { lon: to.lon, lat: to.lat }]);
     } else {
       setSelectedStationPoints([]);
     }
+
+    // Real pathfinding, resolved once routing-graph.json is available (it's
+    // fetched once, up front — usually already resolved by the time a user
+    // gets around to picking two stations, but not assumed). mySeq/
+    // selectionSeq is the same stale-response guard already used by
+    // loadDepartureBoard elsewhere in this file — if the user picks a
+    // different pair (or clears the selection) before this resolves, this
+    // result is silently dropped instead of clobbering the newer one.
+    routingGraphPromise.then(function () {
+      if (mySeq !== selectionSeq) return;
+      var result = computeFromToPath(from.crs, to.crs);
+      selection.fromToPath = result;
+      if (mode === 'live' && selection.type === 'fromto' && selection.fromCrs === from.crs && selection.toCrs === to.crs) {
+        rebuildSidebarContent(); // now showing the real found/no-route result instead of 'loading'
+      }
+      if (!result.found) return;
+
+      // Extend the camera to the WHOLE resolved path, not just the two
+      // endpoints — a curvy real route can run outside their straight-line
+      // bounding box — then wait for 'idle' (animation settled AND all
+      // newly-required tiles loaded) before trying to read geometry back
+      // out of them.
+      var pathBounds = fromCoord ? new maplibregl.LngLatBounds(fromCoord, fromCoord) : null;
+      result.edges.forEach(function (e) {
+        [e.from, e.to].forEach(function (nodeId) {
+          var c = routingGraph.node_coord[nodeId];
+          if (!c) return;
+          if (!pathBounds) pathBounds = new maplibregl.LngLatBounds(c, c); else pathBounds.extend(c);
+        });
+      });
+      if (pathBounds) map.fitBounds(pathBounds, { padding: 80, duration: 800 });
+
+      function tryResolveGeometry(isRetry) {
+        if (mySeq !== selectionSeq) return;
+        var coords = resolveFromToGeometry(result.edges);
+        if (!coords) {
+          if (!isRetry) map.once('idle', function () { tryResolveGeometry(true); }); // one retry for a very long route whose tiles hadn't all finished loading yet; give up quietly after that rather than looping forever
+          return;
+        }
+        selection.fromToPath.renderCoords = coords;
+        renderFromToPolylineGeometry();
+      }
+      map.once('idle', function () { tryResolveGeometry(false); });
+    });
   }
 
   function clearSelection() {
@@ -2384,7 +2619,7 @@
       map.getSource(SELECTED_STATIONS_SOURCE_ID).setData(gj);
     }
     if (!map.getLayer(SELECTED_STATIONS_LAYER_ID)) {
-      map.addLayer({ id: SELECTED_STATIONS_LAYER_ID, type: 'circle', source: SELECTED_STATIONS_SOURCE_ID, paint: stationsCirclePaint() });
+      map.addLayer({ id: SELECTED_STATIONS_LAYER_ID, type: 'circle', source: SELECTED_STATIONS_SOURCE_ID, paint: selectedStationCirclePaint() });
     }
   }
   function setSelectedStationPoints(points) {
@@ -2415,12 +2650,13 @@
   // over whatever route id happened to be current at add-time. Splitting
   // geometry from camera-fly, and wiring the handlers exactly once using a
   // live-read `currentRouteId` instead of a per-call closure, fixes both.
-  function renderRoutePolylineGeometry(id) {
-    var r = routesContent[id];
-    if (!map || !map.isStyleLoaded() || !r || !r.stopping_stations || r.stopping_stations.length < 2) return null;
-    var coords = r.stopping_stations.map(coordsForCrs).filter(function (c) { return c; });
-    if (coords.length < 2) return null;
-    currentRouteId = id;
+  // Shared by both a named-route selection AND a Phase 6 From/To
+  // pathfinding result — pure geometry draw, no camera movement, no
+  // knowledge of which caller it's for. Extracted from what used to be
+  // renderRoutePolylineGeometry()'s body so From/To didn't need to
+  // duplicate the whole add-source/add-layer/wire-handlers-once dance.
+  function drawMagentaHighlightGeometry(coords) {
+    if (!map || !map.isStyleLoaded() || !coords || coords.length < 2) return false;
     var geojson = { type: 'Feature', geometry: { type: 'LineString', coordinates: coords }, properties: {} };
     if (!map.getSource(ROUTE_SOURCE_ID)) {
       map.addSource(ROUTE_SOURCE_ID, { type: 'geojson', data: geojson });
@@ -2447,7 +2683,10 @@
       // not the layer — they survive the layer itself being torn down and
       // re-added by setStyle(), so registering them once here (guarded by
       // routeHandlersWired, which is never reset) is correct and sufficient
-      // for the lifetime of the page.
+      // for the lifetime of the page. Only meaningful for the named-route
+      // case (selectRoute) — harmless no-op when a From/To path is what's
+      // actually showing, since the condition below already requires
+      // selection.type/id to match a route specifically.
       map.on('click', ROUTE_LAYER_ID, function () {
         if (currentRouteId && (selection.type !== 'route' || selection.id !== currentRouteId)) selectRoute(currentRouteId);
       });
@@ -2455,7 +2694,27 @@
       map.on('mouseleave', ROUTE_LAYER_ID, function () { map.getCanvas().style.cursor = ''; });
       routeHandlersWired = true;
     }
+    return true;
+  }
+
+  function renderRoutePolylineGeometry(id) {
+    var r = routesContent[id];
+    if (!map || !map.isStyleLoaded() || !r || !r.stopping_stations || r.stopping_stations.length < 2) return null;
+    var coords = r.stopping_stations.map(coordsForCrs).filter(function (c) { return c; });
+    if (coords.length < 2) return null;
+    currentRouteId = id;
+    drawMagentaHighlightGeometry(coords);
     return coords;
+  }
+
+  // Phase 6 — redraws the From/To path from its CACHED resolved geometry
+  // (selection.fromToPath.renderCoords, computed once in selectFromTo()'s
+  // async resolution flow below). Called on theme toggle re-apply, same
+  // pattern as renderRoutePolylineGeometry — never recomputes Dijkstra or
+  // refetches tile geometry, just redraws what was already resolved.
+  function renderFromToPolylineGeometry() {
+    if (selection.type !== 'fromto' || !selection.fromToPath || !selection.fromToPath.renderCoords) return;
+    drawMagentaHighlightGeometry(selection.fromToPath.renderCoords);
   }
 
   // User-initiated selection — draws the geometry AND flies the camera to
