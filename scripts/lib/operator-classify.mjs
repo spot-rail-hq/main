@@ -83,3 +83,22 @@ export function classify(raw) {
   if (EXCLUDED.has(raw)) return { bucket: 'excluded', canonical: null, code: null };
   return { bucket: 'unrecognized', canonical: null, code: null };
 }
+
+// Phase 3 (2026-07-15): the bare operator tag "Transport for London" covers
+// all 137 London Underground + Overground route relations undifferentiated
+// — but every one of those relations' own `name` tag DOES carry its real
+// specific line ("Bakerloo line: Harrow & Wealdstone → Elephant & Castle"
+// for Underground, "Windrush Line: Dalston Junction → West Croydon" for the
+// 2024-renamed Overground lines) — confirmed empirically against a live
+// query of all 137 relations: 100% matched this pattern, zero unparseable.
+// classify() itself only ever sees the bare operator STRING (used by Phase
+// 0's coarse per-string inventory, which has no per-relation tag access),
+// so this is a separate, second-pass refinement applied only where a full
+// relation (with its `name` tag) is available — see build-line-
+// segments.mjs's use of it. Returns null (caller should keep the generic
+// 'Transport for London' canonical, not silently drop the relation) if a
+// name tag ever doesn't match this pattern — flag, don't guess.
+export function splitTflLine(nameTag) {
+  const m = (nameTag || '').match(/^(.*?)\s+[Ll]ine:/);
+  return m ? m[1].trim() : null;
+}

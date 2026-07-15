@@ -58,7 +58,7 @@
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import { classify } from './lib/operator-classify.mjs';
+import { classify, splitTflLine } from './lib/operator-classify.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OUT_DIR = path.join(__dirname, 'output');
@@ -74,7 +74,11 @@ const NATIONAL = process.env.LINE_SEGMENTS_NATIONAL === '1';
 const CHECKPOINT_BBOX = process.env.LINE_SEGMENTS_BBOX
   ? process.env.LINE_SEGMENTS_BBOX.split(',').map(Number)
   : [53.35, -1.75, 55.05, -0.85];
-const OUT_PATH = path.join(OUT_DIR, NATIONAL ? 'line-segments.json' : 'line-segments-checkpoint.json');
+// Optional label so a second/third checkpoint corridor (e.g. a Scotland or
+// South West run, for cross-corridor validation) writes to its own file
+// instead of overwriting the default corridor's output.
+const LABEL = process.env.LINE_SEGMENTS_LABEL || '';
+const OUT_PATH = path.join(OUT_DIR, NATIONAL ? 'line-segments.json' : `line-segments-checkpoint${LABEL ? '-' + LABEL : ''}.json`);
 
 async function overpassQuery(ql, { retries = 3, timeoutMs = 180000 } = {}) {
   for (let attempt = 1; attempt <= retries; attempt++) {
@@ -133,13 +137,29 @@ async function main() {
   const relQ = `[out:json][timeout:180]${bboxClause};rel["type"="route"]["route"~"^(train|light_rail|tram|subway)$"];out tags;`;
   const relData = await overpassQuery(relQ);
   const relById = new Map();
+  // Phase 3: "Transport for London" is a single bare operator tag covering
+  // all 137 Underground+Overground relations — split each one out to its
+  // real specific line via the relation's own `name` tag (see splitTflLine
+  // in operator-classify.mjs for why this is reliable). Tracked here so the
+  // checkpoint can report exactly how many split cleanly vs. fell back to
+  // the generic bucket (should be 0, confirmed empirically beforehand, but
+  // not assumed for every future re-run — flagged, not silently dropped).
+  let tflSplitCount = 0, tflUnsplitCount = 0;
   for (const r of relData.elements) {
     const rawOp = r.tags.operator || r.tags.brand || '(none)';
     const cls = classify(rawOp);
+    if (cls.bucket === 'metro' && cls.canonical === 'Transport for London') {
+      const line = splitTflLine(r.tags.name);
+      if (line) { cls.canonical = line; tflSplitCount++; }
+      else tflUnsplitCount++;
+    }
     relById.set(r.id, { id: r.id, raw: rawOp, ...cls, name: r.tags.name, from: r.tags.from, to: r.tags.to });
   }
   const relations = [...relById.values()].filter((r) => r.bucket === 'toc' || r.bucket === 'metro' || r.bucket === 'heritage');
   console.log(`  ${relData.elements.length} relations in scope, ${relations.length} colorable (toc/metro/heritage — excluded/unrecognized dropped)`);
+  if (tflSplitCount || tflUnsplitCount) {
+    console.log(`  TfL line split: ${tflSplitCount} relations split to their real specific line, ${tflUnsplitCount} fell back to generic 'Transport for London'`);
+  }
 
   // ─── Step 2: way members per relation (track ways only, role="") ──────
   console.log('\n[2/5] Fetching way members per relation…');
@@ -271,7 +291,7 @@ async function main() {
       const coords = nodes.map((n) => nodeCoord.get(n));
       let length_m = 0;
       for (let i = 0; i < coords.length - 1; i++) length_m += haversineMeters(coords[i], coords[i + 1]);
-      segments.push({ id: segments.length, nodes, operators, way_ids: [...ways], length_m: Math.round(length_m) });
+      segments.push({ id: segments.length, nodes, coords, operators, way_ids: [...ways], length_m: Math.round(length_m) });
     }
   }
 
@@ -307,7 +327,7 @@ async function main() {
     const coords = nodes.map((n) => nodeCoord.get(n));
     let length_m = 0;
     for (let i = 0; i < coords.length - 1; i++) length_m += haversineMeters(coords[i], coords[i + 1]);
-    segments.push({ id: segments.length, nodes, operators, way_ids: [...ways], length_m: Math.round(length_m), loop: true });
+    segments.push({ id: segments.length, nodes, coords, operators, way_ids: [...ways], length_m: Math.round(length_m), loop: true });
     loopCount++;
   }
   if (loopCount) console.log(`  ${loopCount} closed-loop segments (no physical junction anywhere on the loop)`);
@@ -343,6 +363,7 @@ async function main() {
     significant_node_count: significant.size,
     segment_count: segments.length,
     operators_per_segment_histogram: opCounts,
+    tfl_line_split: { split: tflSplitCount, unsplit: tflUnsplitCount },
     segments,
   };
   writeFileSync(OUT_PATH, JSON.stringify(output, null, 2) + '\n');
@@ -352,6 +373,9 @@ async function main() {
   console.log(`Ways: ${wayGeom.size} with geometry (of ${allWayIds.size} referenced)`);
   console.log(`Nodes: ${adjacency.size}, Edges: ${edgeOperators.size}, Significant nodes: ${significant.size}`);
   console.log(`Segments: ${segments.length}`);
+  if (tflSplitCount || tflUnsplitCount) {
+    console.log(`TfL line split: ${tflSplitCount} split, ${tflUnsplitCount} unsplit (generic 'Transport for London')`);
+  }
   console.log('Operators-per-segment distribution:', JSON.stringify(opCounts));
   console.log(`Max operators on one segment: ${maxOps}`);
   for (const s of maxOpsSegments) console.log(`  segment ${s.id}: [${s.operators.join(', ')}] (${(s.length_m / 1000).toFixed(2)}km, ${s.nodes.length} nodes)`);
