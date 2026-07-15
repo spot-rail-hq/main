@@ -183,6 +183,67 @@ export const RELATION_ID_OVERRIDES = {
   // name tagging as a caveat even though the promotion itself is high-
   // confidence.
   2588073: { bucket: 'toc', canonical: 'NT', code: 'NT' },
+
+  // ─── Heritage/tram recovery pass (2026-07-15) ─────────────────────────
+  // Same discipline: each checked individually against a real source
+  // (official site / Wikipedia / steamheritage.co.uk-style listings) before
+  // promotion, not a blanket "any preserved-sounding name" rule. Heritage
+  // lines all get the shared bucket:'heritage' canonical:'Heritage' treatment
+  // (matching every other heritage entry — CLAUDE.md's heritage bucket is
+  // one shared color since preserved lines never physically overlap each
+  // other). Real modern tram SYSTEMS (not preservation attractions) go to
+  // 'metro' instead, each with its own canonical name, matching how
+  // Manchester Metrolink/Glasgow Subway/etc. are already treated.
+
+  // Welsh Highland Railway (Caernarfon–Porthmadog) — currently operating,
+  // well-established (run by the same trust as Festiniog Railway, already
+  // in the heritage bucket, but treated as its own entry here since the
+  // heritage bucket doesn't distinguish by operator anyway).
+  163449: { bucket: 'heritage', canonical: 'Heritage', code: null },
+  // Epping Ongar Railway — confirmed currently operating (eorailway.co.uk,
+  // regular running days plus event specials).
+  165230: { bucket: 'heritage', canonical: 'Heritage', code: null },
+  // Lakeside & Haverthwaite Railway — confirmed currently operating daily
+  // in-season (lakesiderailway.co.uk, 2026 season 28 Mar–1 Nov).
+  4254002: { bucket: 'heritage', canonical: 'Heritage', code: null },
+  // Severn Valley Railway (Preserved) — one of the UK's best-established
+  // heritage railways (Bridgnorth–Kidderminster), currently operating.
+  11094285: { bucket: 'heritage', canonical: 'Heritage', code: null },
+  // Steeple Grange Light Railway — confirmed currently operating (sglr.co.uk,
+  // Sundays + bank holidays, end of March–September — normal heritage-
+  // railway seasonal pattern, not a disqualifying "seasonal-only" case).
+  11134330: { bucket: 'heritage', canonical: 'Heritage', code: null },
+  // Lynton and Barnstaple Railway — confirmed currently operating a 1-mile
+  // restored section (Woody Bay–Killington Lane), steam/diesel heritage
+  // trains (lynton-rail.co.uk).
+  12114293: { bucket: 'heritage', canonical: 'Heritage', code: null },
+  // Crich Tramway (National Tramway Museum) — long-established heritage
+  // tram museum with an operating demonstration line; classified heritage
+  // (preservation/museum in nature), not metro (not a real commuter transit
+  // system).
+  13986644: { bucket: 'heritage', canonical: 'Heritage', code: null },
+  // Great Orme Tramway, both sections — confirmed currently operating daily
+  // (greatormetramway.co.uk, 2026 season). Britain's only cable-hauled
+  // street tramway; historic/funicular tourist attraction in character,
+  // classified heritage rather than metro for the same reason as Crich.
+  575019: { bucket: 'heritage', canonical: 'Heritage', code: null },
+  575020: { bucket: 'heritage', canonical: 'Heritage', code: null },
+  // Seaton Tramway — confirmed currently operating (tram.co.uk, 2026
+  // schedule runs Feb–Nov). Heritage narrow-gauge tram, same reasoning.
+  163554: { bucket: 'heritage', canonical: 'Heritage', code: null },
+
+  // Edinburgh Trams — a real, modern, fare-paying urban tram SYSTEM (not a
+  // preservation attraction), operating since 2014 — classified metro,
+  // matching Manchester Metrolink/Glasgow Subway's treatment. Includes the
+  // Newhaven extension relation, confirmed opened 7 June 2023 (real and
+  // operating, not a proposed/incomplete extension as initially guessed).
+  2632877: { bucket: 'metro', canonical: 'Edinburgh Trams', code: null },
+  4116776: { bucket: 'metro', canonical: 'Edinburgh Trams', code: null },
+  11819309: { bucket: 'metro', canonical: 'Edinburgh Trams', code: null },
+  // Blackpool Tramway (Blackpool–Fleetwood) — a real, modern, day-to-day
+  // public transit tram system (modernized 2012), classified metro.
+  7119569: { bucket: 'metro', canonical: 'Blackpool Tramway', code: null },
+  10841330: { bucket: 'metro', canonical: 'Blackpool Tramway', code: null },
 };
 
 export function applyRelationOverride(relationId, cls) {

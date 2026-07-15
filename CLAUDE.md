@@ -143,9 +143,11 @@ consistently without duplicating the table.
   a glance, matching the legend's "Metro/LRT (purple)") · `heritage`
   (preserved lines — one shared amber-family color; never the literal
   `--a` "delays/warnings" amber, to avoid reading as a service alert) ·
-  `tfl_lines` (reference only, not yet wired into rendering — London
-  Underground/DLR/Overground's real official per-line colors, kept ready
-  for whenever route-name-based line-splitting is confirmed working).
+  `tfl_lines` (London Underground's 11 lines + the 6 real 2024-renamed
+  London Overground lines, each with its own real official color —
+  route-name-based line-splitting is confirmed working, see the pipeline
+  note below; DLR and Elizabeth line are separately tagged in OSM and
+  already live in the `metro`/`toc` categories respectively, not here).
 - **Never uses `--t` (turquoise)** for any operator/category color — reserved
   exclusively for UI meaning (links, the From/To selected-path highlight).
 - Canonicalization (which raw OSM operator/brand tag maps to which
@@ -160,9 +162,21 @@ consistently without duplicating the table.
   that network is now tagged at the parent-company level in OSM, not by
   individual sub-brand — Southern/Thameslink/Great Northern/Gatwick Express
   share one color pending a route-name-based way to split them back out).
-- Rebuild: `node scripts/build-operator-inventory.mjs` (needs local
-  Overpass, see the OSM runbook) then `node scripts/build-operator-palette.mjs`
-  — folds into the same refresh cadence as the station/operator content.
+- This category/color table is one piece of a larger pipeline — the
+  physical SEGMENT GRAPH (which track belongs to which operator(s), used
+  for the actual line rendering, not just the color lookup) and the
+  per-station graph-snapping both live in their own build scripts and
+  outputs, documented end to end in **`LINE-COLORING-RUNBOOK.md`**
+  (mirrors `PROMPT3-TILES-RUNBOOK.md`'s structure — read that file for the
+  full rebuild sequence, current stats, and the open hosting/format
+  decision for the segment graph's output, not repeated here). Short
+  version: `node scripts/build-operator-inventory.mjs` →
+  `node scripts/build-operator-palette.mjs` (this section's table) →
+  `node scripts/build-line-segments.mjs` (checkpoint a bbox first, see
+  runbook) → `LINE_SEGMENTS_NATIONAL=1 node scripts/build-line-segments.mjs`
+  → `node scripts/build-station-graph-links.mjs`. Needs a local Overpass
+  instance (see the OSM runbook) for every step except the last. Folds into
+  the same refresh cadence as the station/operator content.
 
 ## What NOT to do
 - Never show jargon to users: no STANOX, CRS codes (internal only), headcodes
