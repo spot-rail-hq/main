@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-14T21:43:42.792Z",
+  "generated_at": "2026-07-15T06:09:46.650Z",
   "_notes": "SUPERSEDES the earlier algorithmically-generated TOC palette. toc hex are now REAL corporate colors (see assignment_report for source/confidence per operator) — primary tried first, secondary/alternate brand shade if primary collides, algorithmic hue-nudge fallback (flagged) only if neither real option clears separation. Light theme is the anchor (real liveries/websites are designed for pale backgrounds); dark theme is derived by lifting lightness, preserving true hue. metro/heritage are out of scope for corporate research (not TOCs) and keep their prior hand-picked design, gate-checked against the new toc placements. tfl_lines unchanged from the prior round.",
   "toc": {
     "GR": {
@@ -221,6 +221,30 @@
     "Overground": {
       "dark": "#FBBD81",
       "light": "#EE7C0E"
+    },
+    "Liberty": {
+      "dark": "#A5B1B3",
+      "light": "#606667"
+    },
+    "Lioness": {
+      "dark": "#FFCB74",
+      "light": "#EF9600"
+    },
+    "Mildmay": {
+      "dark": "#7BB8E6",
+      "light": "#2774AE"
+    },
+    "Suffragette": {
+      "dark": "#AAD6AF",
+      "light": "#5BA763"
+    },
+    "Weaver": {
+      "dark": "#D085AF",
+      "light": "#893B67"
+    },
+    "Windrush": {
+      "dark": "#EE8D92",
+      "light": "#D22730"
     }
   },
   "heritage": {
@@ -2287,5 +2311,403 @@
       }
     ]
   },
-  "tfl_light_close_check": []
+  "tfl_light_close_check": [],
+  "overground_cvd_report": {
+    "min_delta_e_threshold": 15,
+    "total_flagged_pairs": 56,
+    "pairs": [
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "Liberty",
+        "b": "District",
+        "deltaE_simulated": 11.7
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "Liberty",
+        "b": "District",
+        "deltaE_simulated": 13
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "Lioness",
+        "b": "Central",
+        "deltaE_simulated": 12.4
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "Lioness",
+        "b": "Central",
+        "deltaE_simulated": 13.6
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "Lioness",
+        "b": "Circle",
+        "deltaE_simulated": 11
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "Lioness",
+        "b": "Circle",
+        "deltaE_simulated": 10.8
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "Mildmay",
+        "b": "Victoria",
+        "deltaE_simulated": 12.6
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "Mildmay",
+        "b": "Victoria",
+        "deltaE_simulated": 14
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "Weaver",
+        "b": "District",
+        "deltaE_simulated": 12.7
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "Windrush",
+        "b": "Bakerloo",
+        "deltaE_simulated": 8.8
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "Windrush",
+        "b": "Bakerloo",
+        "deltaE_simulated": 13.5
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "Windrush",
+        "b": "Central",
+        "deltaE_simulated": 11.3
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "Windrush",
+        "b": "Central",
+        "deltaE_simulated": 11
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "Liberty",
+        "b": "Suffragette",
+        "deltaE_simulated": 9.7
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "Liberty",
+        "b": "Weaver",
+        "deltaE_simulated": 12.6
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "Lioness",
+        "b": "Windrush",
+        "deltaE_simulated": 13.5
+      },
+      {
+        "theme": "light",
+        "cvd_type": "protanopia",
+        "a": "Suffragette",
+        "b": "Weaver",
+        "deltaE_simulated": 8.7
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "Liberty",
+        "b": "District",
+        "deltaE_simulated": 14.4
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "Liberty",
+        "b": "District",
+        "deltaE_simulated": 10.2
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "none (plain ΔE76)",
+        "a": "Liberty",
+        "b": "Jubilee",
+        "deltaE": 9.1
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "Liberty",
+        "b": "Jubilee",
+        "deltaE_simulated": 9.6
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "Liberty",
+        "b": "Jubilee",
+        "deltaE_simulated": 9.5
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "Liberty",
+        "b": "Waterloo & City",
+        "deltaE_simulated": 10.4
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "Liberty",
+        "b": "Waterloo & City",
+        "deltaE_simulated": 10.5
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "Lioness",
+        "b": "Bakerloo",
+        "deltaE_simulated": 11.3
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "Lioness",
+        "b": "Bakerloo",
+        "deltaE_simulated": 12.3
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "Lioness",
+        "b": "Central",
+        "deltaE_simulated": 12.3
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "Lioness",
+        "b": "Central",
+        "deltaE_simulated": 7.6
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "Lioness",
+        "b": "Circle",
+        "deltaE_simulated": 5.7
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "Lioness",
+        "b": "Circle",
+        "deltaE_simulated": 6.8
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "Lioness",
+        "b": "Metropolitan",
+        "deltaE_simulated": 11.3
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "none (plain ΔE76)",
+        "a": "Mildmay",
+        "b": "Victoria",
+        "deltaE": 13.9
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "Mildmay",
+        "b": "Victoria",
+        "deltaE_simulated": 10.6
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "Mildmay",
+        "b": "Victoria",
+        "deltaE_simulated": 14.4
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "Suffragette",
+        "b": "District",
+        "deltaE_simulated": 7.7
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "Suffragette",
+        "b": "Jubilee",
+        "deltaE_simulated": 7.3
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "Suffragette",
+        "b": "Jubilee",
+        "deltaE_simulated": 4.5
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "none (plain ΔE76)",
+        "a": "Suffragette",
+        "b": "Waterloo & City",
+        "deltaE": 12.7
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "Suffragette",
+        "b": "Waterloo & City",
+        "deltaE_simulated": 10.1
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "Suffragette",
+        "b": "Waterloo & City",
+        "deltaE_simulated": 9.5
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "Weaver",
+        "b": "District",
+        "deltaE_simulated": 1.9
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "Weaver",
+        "b": "Jubilee",
+        "deltaE_simulated": 13
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "none (plain ΔE76)",
+        "a": "Windrush",
+        "b": "Central",
+        "deltaE": 8.2
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "Windrush",
+        "b": "Central",
+        "deltaE_simulated": 7.7
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "Windrush",
+        "b": "Central",
+        "deltaE_simulated": 8
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "Windrush",
+        "b": "Circle",
+        "deltaE_simulated": 12.8
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "none (plain ΔE76)",
+        "a": "Windrush",
+        "b": "Hammersmith & City",
+        "deltaE": 11.4
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "Windrush",
+        "b": "Hammersmith & City",
+        "deltaE_simulated": 10.4
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "Windrush",
+        "b": "Hammersmith & City",
+        "deltaE_simulated": 9.8
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "Windrush",
+        "b": "Metropolitan",
+        "deltaE_simulated": 4.2
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "Windrush",
+        "b": "Metropolitan",
+        "deltaE_simulated": 3.3
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "Liberty",
+        "b": "Suffragette",
+        "deltaE_simulated": 11
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "Liberty",
+        "b": "Suffragette",
+        "deltaE_simulated": 6.8
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "Liberty",
+        "b": "Weaver",
+        "deltaE_simulated": 12.9
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "Lioness",
+        "b": "Windrush",
+        "deltaE_simulated": 13.6
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "Suffragette",
+        "b": "Weaver",
+        "deltaE_simulated": 6.1
+      }
+    ]
+  }
 }

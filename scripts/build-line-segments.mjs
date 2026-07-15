@@ -58,7 +58,7 @@
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import { classify, splitTflLine } from './lib/operator-classify.mjs';
+import { classify, splitTflLine, applyRelationOverride, RELATION_ID_OVERRIDES } from './lib/operator-classify.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OUT_DIR = path.join(__dirname, 'output');
@@ -145,13 +145,22 @@ async function main() {
   // the generic bucket (should be 0, confirmed empirically beforehand, but
   // not assumed for every future re-run — flagged, not silently dropped).
   let tflSplitCount = 0, tflUnsplitCount = 0;
+  let overrideCount = 0;
   for (const r of relData.elements) {
     const rawOp = r.tags.operator || r.tags.brand || '(none)';
-    const cls = classify(rawOp);
+    let cls = classify(rawOp);
     if (cls.bucket === 'metro' && cls.canonical === 'Transport for London') {
       const line = splitTflLine(r.tags.name);
       if (line) { cls.canonical = line; tflSplitCount++; }
       else tflUnsplitCount++;
+    }
+    // Phase 3 follow-up: only ever overrides relations classify() would
+    // otherwise EXCLUDE — a hand-verified per-relation-ID table (see
+    // RELATION_ID_OVERRIDES), not a blanket rule, so this can never
+    // silently reclassify something that was already toc/metro/heritage.
+    if (cls.bucket === 'excluded' && RELATION_ID_OVERRIDES[r.id]) {
+      cls = applyRelationOverride(r.id, cls);
+      overrideCount++;
     }
     relById.set(r.id, { id: r.id, raw: rawOp, ...cls, name: r.tags.name, from: r.tags.from, to: r.tags.to });
   }
@@ -159,6 +168,9 @@ async function main() {
   console.log(`  ${relData.elements.length} relations in scope, ${relations.length} colorable (toc/metro/heritage — excluded/unrecognized dropped)`);
   if (tflSplitCount || tflUnsplitCount) {
     console.log(`  TfL line split: ${tflSplitCount} relations split to their real specific line, ${tflUnsplitCount} fell back to generic 'Transport for London'`);
+  }
+  if (overrideCount) {
+    console.log(`  Relation-ID overrides applied: ${overrideCount} (recovered from 'excluded' via hand-verified real-world operator lookup)`);
   }
 
   // ─── Step 2: way members per relation (track ways only, role="") ──────

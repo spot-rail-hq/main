@@ -357,6 +357,30 @@ const TFL_LINE_COLORS = {
   Piccadilly: '#003688', Victoria: '#0098D4', 'Waterloo & City': '#95CDBA',
   'Elizabeth line': '#6950A1', DLR: '#00A4A7',
   Overground: '#EE7C0E',
+  // 2026-07-15 (Phase 3 follow-up): the 6 real 2024-renamed London
+  // Overground lines, previously missing — the generic 'Overground' entry
+  // above is left in place (unused now that Phase 2/3's segment graph
+  // splits every Overground relation to its real specific line, but
+  // harmless to keep as a fallback).
+  //
+  // Two sources were checked, and they DISAGREED — worth recording why one
+  // won. OSM's `colour` tag on the live route relations was internally
+  // 100% consistent (every relation for a given line carries the same hex)
+  // but gave Weaver = #9B0058, which is a near-exact duplicate of
+  // Metropolitan's official #9B0056 (ΔE76 1.2 — i.e. visually identical)
+  // AND doesn't match "maroon" (every independent verbal description of
+  // Weaver's color) — #9B0058 reads as magenta/pink, not maroon. That
+  // combination (accidentally matching a different Underground line almost
+  // exactly, AND contradicting the line's own documented color family) is
+  // a strong signal of an OSM tagging error, not a real TfL color choice.
+  // Wikipedia's Module:Adjacent_stations/London_Overground — sourced from
+  // "Pantone's own RGB values" per TfL's official standard, per its own
+  // documentation — gives Weaver = #893B67, a genuine maroon, resolving
+  // the collision. Used that source for all 6 instead (Liberty #606667,
+  // Lioness #EF9600, Mildmay #2774AE, Suffragette #5BA763, Weaver #893B67,
+  // Windrush #D22730) rather than mixing sources per-line.
+  Liberty: '#606667', Lioness: '#EF9600', Mildmay: '#2774AE',
+  Suffragette: '#5BA763', Weaver: '#893B67', Windrush: '#D22730',
 };
 function toDarkThemeFromOfficial(hex) {
   const { h, s, l } = hexToHsl(hex);
@@ -373,6 +397,32 @@ const tflLightCloseCheck = [];
     if (de < MIN_DELTA_E) tflLightCloseCheck.push({ a: keys[i], b: keys[j], deltaE: Math.round(de * 10) / 10 });
   }
 }
+
+// 2026-07-15: the plain-ΔE check above (kept, unchanged) never ran a CVD
+// simulation for tfl_lines at all — only the TOC/metro placement loop was
+// CVD-gated. Per the explicit request accompanying the 6 new Overground
+// colors, run the same protanopia/deuteranopia simulated-ΔE check used for
+// TOC/metro against: each of the 6 new Overground lines vs. each of the 11
+// existing Underground lines, and the 6 new lines against each other (81
+// pairs total) — both light and dark theme.
+const OVERGROUND_NEW = ['Liberty', 'Lioness', 'Mildmay', 'Suffragette', 'Weaver', 'Windrush'];
+const UNDERGROUND_11 = ['Bakerloo', 'Central', 'Circle', 'District', 'Hammersmith & City', 'Jubilee', 'Metropolitan', 'Northern', 'Piccadilly', 'Victoria', 'Waterloo & City'];
+function overgroundCvdCheck(hexByKey, themeLabel) {
+  const flagged = [];
+  const pairs = [];
+  for (const a of OVERGROUND_NEW) for (const b of UNDERGROUND_11) pairs.push([a, b]);
+  for (let i = 0; i < OVERGROUND_NEW.length; i++) for (let j = i + 1; j < OVERGROUND_NEW.length; j++) pairs.push([OVERGROUND_NEW[i], OVERGROUND_NEW[j]]);
+  for (const [a, b] of pairs) {
+    const plainDe = deltaE76(hexByKey[a], hexByKey[b]);
+    if (plainDe < MIN_DELTA_E) flagged.push({ theme: themeLabel, cvd_type: 'none (plain ΔE76)', a, b, deltaE: Math.round(plainDe * 10) / 10 });
+    for (const type of ['protanopia', 'deuteranopia']) {
+      const de = deltaE76(simulateCvd(hexByKey[a], type), simulateCvd(hexByKey[b], type));
+      if (de < MIN_DELTA_E) flagged.push({ theme: themeLabel, cvd_type: type, a, b, deltaE_simulated: Math.round(de * 10) / 10 });
+    }
+  }
+  return flagged;
+}
+const overgroundCvdFlags = [...overgroundCvdCheck(TFL_LINE_COLORS, 'light'), ...overgroundCvdCheck(tflDarkByKey, 'dark')];
 
 // ═══ CVD report (informational for non-adjacent pairs, was blocking for
 // known-adjacent ones during assignment above) ════════════════════════════
@@ -414,11 +464,25 @@ const palette = {
     pairs: cvdFlags,
   },
   tfl_light_close_check: tflLightCloseCheck,
+  overground_cvd_report: {
+    min_delta_e_threshold: MIN_DELTA_E,
+    total_flagged_pairs: overgroundCvdFlags.length,
+    pairs: overgroundCvdFlags,
+  },
 };
 
 writeFileSync(OUT_PATH, JSON.stringify(palette, null, 2) + '\n');
 
 console.log(`Wrote ${tocKeys.length} TOC + ${metroKeys.length} Metro/LRT + ${Object.keys(TFL_LINE_COLORS).length} TfL-line-reference + 1 Heritage color to ${OUT_PATH}\n`);
+
+console.log('=== 6 new Overground line colors ===');
+for (const k of OVERGROUND_NEW) console.log(`  ${k}: light ${TFL_LINE_COLORS[k]} / dark ${tflDarkByKey[k]}`);
+console.log(`CVD/ΔE check (6 new vs. 11 Underground lines + vs. each other, light+dark): ${overgroundCvdFlags.length} flagged pairs`);
+if (overgroundCvdFlags.length) {
+  for (const f of overgroundCvdFlags) console.log(`  [${f.theme}] ${f.a} vs ${f.b} — ${f.cvd_type}: ΔE ${f.deltaE_simulated ?? f.deltaE}`);
+} else {
+  console.log('  none — all 81 pairs (light+dark, plain ΔE + both CVD types) clear the ΔE76 >= 15 threshold.');
+}
 console.log('=== TOC assignment report ===');
 for (const r of assignmentReport) {
   console.log(`  ${r.code.padEnd(4)} ${r.name.padEnd(26)} [${r.confidence.padEnd(6)}] ${r.method.padEnd(28)} ${r.chosen}${r.notes ? '  — ' + r.notes : ''}`);
