@@ -839,6 +839,11 @@
   // Served from R2's r2.dev testing subdomain — rate-limited, dev-only.
   // Swap for a custom domain (e.g. tiles.srhq.uk) before production launch.
   var PMTILES_URL = 'https://pub-f3c70a3d45aa443d81dab5db7f762d2a.r2.dev/gb-railways.pmtiles';
+  // Phase 5 — operator-colored rail lines. Built via tile-generation/
+  // build-operator-tiles.sh from scripts/output/line-segments.json (the
+  // Phase 2 segment graph); see LINE-COLORING-RUNBOOK.md for the full
+  // pipeline. Same R2 bucket/CORS setup as gb-railways.pmtiles above.
+  var OPERATOR_TILES_URL = 'https://pub-f3c70a3d45aa443d81dab5db7f762d2a.r2.dev/operators.pmtiles';
   var pmtilesProtocolRegistered = false;
   function ensurePmtilesProtocol() {
     if (pmtilesProtocolRegistered || typeof pmtiles === 'undefined') return;
@@ -848,6 +853,7 @@
 
   var stationsData = null;   // parsed /data/stations.geojson, ids assigned
   var stationInteractionsWired = false;
+  var operatorLineInteractionsWired = false;
   var incidents = [];
   var activeFilter = 'all';
   var mode = 'live';
@@ -962,6 +968,27 @@
     rebuildOperatorNameIndex();
     if (selection.type === 'operator') rebuildSidebarContent();
     else if (mode === 'database' && !selectedStationCrs && selection.type === 'none') rebuildSidebarContent();
+  });
+
+  // ── Operator line colors (Phase 5) ─────────────────────────────────────────
+  // data/operator-colors.json's toc/metro/tfl_lines/heritage sections, merged
+  // into one flat {operatorKey: {dark,light}} lookup — see
+  // buildOperatorColorLookup() below for why all four sections are needed
+  // (a segment's `operators` tile property can hold a TOC code, a metro/tram
+  // canonical name, OR an individual TfL line name, depending on which
+  // bucket classify() put that relation in back in Phase 0/3).
+  var operatorColorsData = null;
+  var operatorColorLookupCache = {}; // theme -> flat lookup, built lazily, invalidated whenever operatorColorsData changes
+  loadJsonContent('/data/operator-colors.json', function (d) {
+    operatorColorsData = d;
+    operatorColorLookupCache = {};
+    // Same late-arrival re-color pattern as every other runtime paint
+    // property in this file — if the operator-lines layer already exists
+    // (map loaded faster than this fetch), recolor it now instead of
+    // leaving it stuck on the neutral fallback.
+    if (map && map.isStyleLoaded() && map.getLayer('operator-lines')) {
+      map.setPaintProperty('operator-lines', 'line-color', operatorLineColorExpression(themeColors()));
+    }
   });
 
   // ── Sidebar selection state ────────────────────────────────────────────────
@@ -1146,6 +1173,132 @@
     ];
   }
 
+  // ── Operator-colored lines (Phase 5) ───────────────────────────────────────
+  // MULTI-OPERATOR RENDERING CHOICE (flagged for review, not silently
+  // decided — see the Phase 5 checkpoint conversation): a shared-track
+  // segment's `operators` tile property is a comma-joined string (e.g.
+  // "GC,GR,LD,NT,TP,XC" for the busiest Doncaster-area throats) — a line
+  // literally cannot show 6 colors at once without true per-operator
+  // fan-out (duplicating each shared segment once per operator with a
+  // computed line-offset, per the original approved plan's Phase 5 design)
+  // — which needs the tiles themselves to carry one feature per operator
+  // per segment, not one feature with a joined list. That's a real tiling
+  // change, not a styling one, so it's deferred rather than half-built here.
+  // For now: single-operator segments render in their real operator/metro/
+  // heritage color (exact match against the joined string — a single-op
+  // segment's `operators` value IS just that one operator's key, no comma,
+  // so an exact-match `match` expression works without any client-side
+  // string splitting); multi-operator segments render in a shared NEUTRAL
+  // color (reusing the site's existing "dimmed ink" secondary-text tone,
+  // not inventing a new hue) rather than picking one operator to
+  // (misleadingly) represent the whole junction. Line WIDTH scales with
+  // operator_count instead, so busy shared corridors still read as visually
+  // "more important" — this mirrors the plan's own fallback design for
+  // heavily-shared segments ("a single bundled/neutral-weight line...
+  // distinguishable by weight, not by trying to show every color").
+  // TRUE PER-OPERATOR FAN-OUT (2026-07-15 follow-up, replacing the v1
+  // neutral-multi-operator-color approach described above). scripts/
+  // build-operator-tiles-geojson.mjs now emits one tile feature PER
+  // OPERATOR PER SEGMENT — identical geometry, single `operators` value
+  // each — instead of one feature per segment with a comma-joined string.
+  // The color expression below needed no shape change (every feature's
+  // `operators` was always exact-match-able; a multi-operator segment used
+  // to produce ONE feature whose joined value never matched anything,
+  // falling to the neutral default below — now it produces N features that
+  // each match their own operator exactly). The neutral fallback stays,
+  // but only as a genuine defensive fallback (operator-colors.json still
+  // loading, or a truly unrecognized key), not as "the multi-operator
+  // treatment" — it should rarely if ever be hit once data has loaded.
+  // line-offset (see operatorLineOffsetExpression below) is what actually
+  // replaces the old neutral-color treatment: `operator_index`/
+  // `operator_total` (new tile properties) position each operator's line
+  // as a thin parallel offset from the real track, centered on 0 so the
+  // fan is symmetric regardless of how many operators share that stretch.
+  var MULTI_OPERATOR_NEUTRAL = { dark: '#9AA4B2', light: '#444444' }; // == THEME_COLORS labelColor ("dimmed ink") — defensive fallback only, see above
+
+  function buildOperatorColorLookup(theme) {
+    if (operatorColorLookupCache[theme]) return operatorColorLookupCache[theme];
+    var lookup = {};
+    if (operatorColorsData) {
+      ['toc', 'metro', 'tfl_lines'].forEach(function (bucket) {
+        var section = operatorColorsData[bucket];
+        if (!section) return;
+        Object.keys(section).forEach(function (key) {
+          if (section[key] && section[key][theme]) lookup[key] = section[key][theme];
+        });
+      });
+      if (operatorColorsData.heritage && operatorColorsData.heritage[theme]) {
+        lookup['Heritage'] = operatorColorsData.heritage[theme];
+      }
+    }
+    operatorColorLookupCache[theme] = lookup;
+    return lookup;
+  }
+
+  function operatorLineColorExpression(rc) {
+    var theme = currentTheme();
+    var lookup = buildOperatorColorLookup(theme);
+    var expr = ['match', ['get', 'operators']];
+    Object.keys(lookup).forEach(function (key) {
+      expr.push(key, lookup[key]);
+    });
+    expr.push(MULTI_OPERATOR_NEUTRAL[theme]); // defensive fallback only now — see comment above
+    return expr;
+  }
+
+  // Zoom-interpolated per-lane width (thicker at low/zoomed-out, thinner at
+  // high/zoomed-in, per the Prompt 2 scoping — illustrative stops, exact
+  // original numbers weren't preserved in this session's context). No
+  // longer scaled by operator_count — under fan-out, "busy junction"
+  // already reads visually via the SPATIAL WIDTH of the fanned-out group of
+  // lines, not per-line thickness; stacking both would make already-narrow
+  // offset lanes collide. A floor around 1.2-1.3px keeps individual lanes
+  // visible at low zoom (sub-1px lines anti-alias to near-nothing on
+  // Retina, same issue already documented for the base railway-lines
+  // layer) even though at low zoom adjacent lanes will visually merge into
+  // a single thicker-looking stripe — an acceptable, expected degrade.
+  //
+  // Bugfix (caught via the same headless-browser check that found the
+  // earlier line-dasharray bug): a ['zoom'] expression is only valid as the
+  // DIRECT top-level input to interpolate/step — MapLibre rejects it when
+  // nested inside another expression like ['*', zoomInterpolate, x]. Kept
+  // that fix's shape here (single top-level zoom-interpolate, extra
+  // multipliers folded into each stop's own value) since the same
+  // constraint applies to line-offset below too.
+  function operatorLineWidthExpression(extraMultiplierExpr) {
+    function stopValue(base) {
+      return extraMultiplierExpr === undefined ? base : ['*', base, extraMultiplierExpr];
+    }
+    return ['interpolate', ['linear'], ['zoom'],
+      5, stopValue(1.3),
+      8, stopValue(1.8),
+      12, stopValue(2.2),
+      16, stopValue(2.6),
+    ];
+  }
+
+  // Fan-out offset: operator_index centered on (operator_total-1)/2, so
+  // e.g. 3 operators -> offset UNITS -1, 0, +1; 6 operators -> -2.5, -1.5,
+  // -0.5, +0.5, +1.5, +2.5 — always symmetric around the real track (offset
+  // 0), never biased to one side. Lane spacing (the multiplier applied to
+  // those units) widens with zoom for the same reason width does: more
+  // screen room at high zoom to usefully separate lanes, tighter/more
+  // overlapping at low zoom where showing every lane separately isn't
+  // legible anyway. Same top-level-zoom-expression constraint as width
+  // above, same fix shape.
+  function operatorLineOffsetExpression() {
+    var offsetUnits = ['-', ['get', 'operator_index'], ['/', ['-', ['get', 'operator_total'], 1], 2]];
+    function stopValue(laneWidth) {
+      return ['*', offsetUnits, laneWidth];
+    }
+    return ['interpolate', ['linear'], ['zoom'],
+      5, stopValue(1.2),
+      8, stopValue(2),
+      12, stopValue(3.2),
+      16, stopValue(4.5),
+    ];
+  }
+
   function addMapLayers() {
     greyOutLandcover(currentTheme());
     hideOceanLabels();
@@ -1239,6 +1392,62 @@
       map.setLayoutProperty('railway-lines-closed', 'visibility', ormVisible ? 'visible' : 'none');
       map.setPaintProperty('railway-lines-closed', 'line-color', rc.railwayClosed);
     }
+
+    // ── Operator-colored lines (Phase 5) — drawn ON TOP of the grey base
+    // layers above, so track with real operator coverage visually replaces
+    // the grey appearance; track with no coverage (excluded/freight-only/
+    // genuinely un-mapped) still shows the grey base underneath for
+    // context, same relationship the "closed" dashed layer already has.
+    if (!map.getSource('operator-vector')) {
+      map.addSource('operator-vector', {
+        type: 'vector',
+        url: 'pmtiles://' + OPERATOR_TILES_URL,
+        // promoteId, not generateId — operators.pmtiles' features already
+        // carry a stable per-segment `id` (from line-segments.json), and a
+        // stable id is required for feature-state hover to survive panning
+        // across tile boundaries correctly.
+        promoteId: 'id',
+        attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors',
+      });
+    }
+    // Hover "glow" — a wider, theme-appropriate-neutral halo drawn BEHIND
+    // the real colored line, opacity driven entirely by feature-state, so
+    // hovering brightens/emphasizes a line WITHOUT introducing a new hue —
+    // turquoise is reserved for UI-only meaning (links, the future Phase 6
+    // From/To path highlight) and every other design-token color already
+    // carries other meaning (magenta=urgent/Live, amber=warnings,
+    // lime=heritage), so this deliberately stays achromatic rather than
+    // picking one of them. FLAGGED FOR REVIEW along with the multi-operator
+    // neutral-color choice above — this is a discretionary call, not a
+    // spec'd requirement.
+    if (!map.getLayer('operator-lines-hover-glow')) {
+      map.addLayer({
+        id: 'operator-lines-hover-glow', type: 'line', source: 'operator-vector', 'source-layer': 'operators',
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: {
+          'line-color': currentTheme() === 'dark' ? '#FFFFFF' : '#14141E',
+          'line-width': operatorLineWidthExpression(2.4),
+          'line-offset': operatorLineOffsetExpression(),
+          'line-opacity': ['case', ['boolean', ['feature-state', 'hover'], false], 0.5, 0],
+        },
+      });
+    } else {
+      map.setPaintProperty('operator-lines-hover-glow', 'line-color', currentTheme() === 'dark' ? '#FFFFFF' : '#14141E');
+    }
+    if (!map.getLayer('operator-lines')) {
+      map.addLayer({
+        id: 'operator-lines', type: 'line', source: 'operator-vector', 'source-layer': 'operators',
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: {
+          'line-color': operatorLineColorExpression(rc),
+          'line-width': operatorLineWidthExpression(['case', ['boolean', ['feature-state', 'hover'], false], 1.35, 1]),
+          'line-offset': operatorLineOffsetExpression(),
+        },
+      });
+    } else {
+      map.setPaintProperty('operator-lines', 'line-color', operatorLineColorExpression(rc));
+    }
+    if (!operatorLineInteractionsWired) { wireOperatorLineInteractions(); operatorLineInteractionsWired = true; }
 
     // stationsData is built once by the Promise.all() below (station-list.json
     // + the major-station set both need to resolve first) — if it beat the
@@ -1501,6 +1710,50 @@
         var props = e.features[0].properties;
         selectStation(props.name, props.crs);
       });
+    });
+    map.on('zoomstart', hideHoverTooltip);
+    map.on('dragstart', hideHoverTooltip);
+  }
+
+  // ── Operator line hover (Phase 5, updated for true fan-out) ────────────────
+  // Per-FEATURE hover-highlight — still NOT the original plan's network-wide
+  // "highlight this operator's entire path across the map" design (that's a
+  // separate, bigger feature: reacting to every one of an operator's
+  // features anywhere, not just the one under the cursor). That remains a
+  // deliberate scope reduction, flagged as before. What DID change with true
+  // fan-out: each operator now has its OWN feature with its OWN unique id
+  // (segment_id * 10 + operator_index, see build-operator-tiles-geojson.mjs)
+  // instead of one shared-geometry feature per segment, so hovering one lane
+  // of a fanned-out junction now correctly highlights ONLY that lane — no
+  // more risk of a shared id lighting up every operator sharing that track.
+  // Name resolution is simpler too: `operators` is always a single key now,
+  // no more comma-split/join needed.
+  function resolveOperatorDisplayName(key) {
+    if (operatorsContent[key] && operatorsContent[key].name) return operatorsContent[key].name;
+    return key; // metro/heritage/TfL-line keys are already human-readable canonical names
+  }
+  function wireOperatorLineInteractions() {
+    var hoveredFeatureId = null;
+    map.on('mousemove', 'operator-lines', function (e) {
+      map.getCanvas().style.cursor = 'pointer';
+      if (!e.features.length) return;
+      var f = e.features[0];
+      if (hoveredFeatureId !== f.id) {
+        if (hoveredFeatureId !== null) {
+          map.setFeatureState({ source: 'operator-vector', sourceLayer: 'operators', id: hoveredFeatureId }, { hover: false });
+        }
+        hoveredFeatureId = f.id;
+        map.setFeatureState({ source: 'operator-vector', sourceLayer: 'operators', id: hoveredFeatureId }, { hover: true });
+      }
+      showHoverTooltip(e.lngLat, resolveOperatorDisplayName(f.properties.operators));
+    });
+    map.on('mouseleave', 'operator-lines', function () {
+      map.getCanvas().style.cursor = '';
+      if (hoveredFeatureId !== null) {
+        map.setFeatureState({ source: 'operator-vector', sourceLayer: 'operators', id: hoveredFeatureId }, { hover: false });
+      }
+      hoveredFeatureId = null;
+      hideHoverTooltip();
     });
     map.on('zoomstart', hideHoverTooltip);
     map.on('dragstart', hideHoverTooltip);

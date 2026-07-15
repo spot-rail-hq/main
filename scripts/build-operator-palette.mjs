@@ -302,15 +302,9 @@ const METRO_BASE = {
   'Tyne and Wear Metro': '#C39BD3',
   'Nottingham Express Transit': '#A569BD',
   'Glasgow Subway': '#A12B82',
-  // Blackpool Tramway — real modern livery (since the 2012 Flexity 2
-  // fleet) genuinely is purple, confirmed via Wikipedia + independent web
-  // search, but no confident EXACT hex found despite checking Wikipedia,
-  // Brandfetch (blocked, 403), and Blackpool Transport's own live site/CSS
-  // (no purple in their :root brand variables at all — website branding
-  // and vehicle livery are evidently maintained separately). This value is
-  // a placeholder anchored to the real family, not a guessed exact hex —
-  // same treatment as Great Northern in the toc table.
-  'Blackpool Tramway': '#991BA7',
+  // Blackpool Tramway is NOT in this table — see the dedicated
+  // BLACKPOOL_TRAMWAY_COLOR block right after this loop for why (it needs
+  // to skip toVividLightTheme(), unlike every other metro entry).
   // Edinburgh Trams — a real hex WAS found (#B31B1B, "madder"/dark red,
   // sourced from Wikipedia's WikiProject UK Railways colours list, the
   // same source tier used successfully in Phase 1 — though tagged
@@ -334,6 +328,38 @@ for (const [key, baseHex] of Object.entries(METRO_BASE)) {
   const candidate = toVividLightTheme(baseHex);
   const gate = passesGates(candidate, key, placedLight);
   placedLight[key] = gate.ok ? candidate : findFallbackHue(candidate, key, placedLight).hex;
+}
+
+// ═══ Blackpool Tramway — deliberate exception to the vivid-lightness-band
+// convention every other TOC/metro light-theme color follows ═══════════════
+// 2026-07-15 follow-up: the original placeholder (#991BA7, run through the
+// normal METRO_BASE loop above) collided with LNER (GR) at ΔE 4.6 under
+// both CVD types in DARK theme — genuinely severe. Root-caused via a full
+// search: toVividLightTheme() forces light-theme lightness into a narrow
+// 38-54% band (same as every other TOC/metro entry) — and NO hue anywhere
+// in the purple/violet range (255-335°) clears ΔE76>=15 against the full
+// existing palette (every TOC + every other metro entry, both CVD types,
+// both themes) within that band. Best achievable there is 9 remaining
+// collisions, one as severe as ΔE 1.8 — not meaningfully better than the
+// original problem. Widening the search to a DARKER, less-saturated purple
+// (lightness ~20% instead of the usual 38-54%) DOES find a genuine
+// zero-collision solution — #4D1A36 (light) / #932B64 (dark), hue 326°,
+// still clearly reads as purple/magenta, just deeper and less vivid than
+// the rest of the palette. Chosen over the alternative (a near-zero-
+// collision option exists at hue ~240°, blue-violet, 1 remaining flag at
+// ΔE 11.1) because that alternative is genuinely BLUE, not purple —
+// defeats the point of the purple-family category rule entirely, whereas
+// this one is a lightness/vividness compromise within a color that's
+// still unambiguously purple. Flagging this as a real, deliberate
+// departure from the vivid-theme convention — revisit if you'd rather
+// accept a small residual CVD risk (any of the near-misses above) to keep
+// this entry visually consistent with the rest of the palette's vividness.
+const BLACKPOOL_TRAMWAY_LIGHT = '#4D1A36';
+const BLACKPOOL_TRAMWAY_DARK = '#932B64';
+{
+  const gateLight = passesGates(BLACKPOOL_TRAMWAY_LIGHT, 'Blackpool Tramway', placedLight);
+  if (!gateLight.ok) throw new Error(`Blackpool Tramway light candidate no longer clears gates (${gateLight.reason}) — palette must have changed since this was hand-verified; re-run the search in the Task 2 follow-up conversation, don't just ignore this.`);
+  placedLight['Blackpool Tramway'] = BLACKPOOL_TRAMWAY_LIGHT;
 }
 
 const HERITAGE_COLOR = '#B8752E';
@@ -368,6 +394,19 @@ for (const key of [...tocOrder, ...Object.keys(METRO_BASE)]) {
   const direct = toDarkThemeFromLight(placedLight[key]);
   const gate = passesGates(direct, key, darkByKey);
   darkByKey[key] = gate.ok ? direct : findFallbackHue(direct, key, darkByKey).hex;
+}
+// Blackpool Tramway again bypasses the generic derive-then-gate flow — its
+// dark value was hand-verified together with its light value (see the
+// BLACKPOOL_TRAMWAY_LIGHT/DARK block above), re-verify here rather than
+// silently trust it's still exact after any upstream palette change.
+{
+  const rederived = toDarkThemeFromLight(BLACKPOOL_TRAMWAY_LIGHT);
+  if (rederived !== BLACKPOOL_TRAMWAY_DARK) {
+    throw new Error(`Blackpool Tramway dark value drifted from its hand-verified constant (expected ${BLACKPOOL_TRAMWAY_DARK}, toDarkThemeFromLight now produces ${rederived}) — toDarkThemeFromLight() must have changed since this was verified; investigate before trusting this color.`);
+  }
+  const gateDark = passesGates(BLACKPOOL_TRAMWAY_DARK, 'Blackpool Tramway', darkByKey);
+  if (!gateDark.ok) throw new Error(`Blackpool Tramway dark candidate no longer clears gates (${gateDark.reason}) — re-run the search, don't just ignore this.`);
+  darkByKey['Blackpool Tramway'] = BLACKPOOL_TRAMWAY_DARK;
 }
 const heritageDark = toDarkThemeFromLight(heritageLight);
 
@@ -467,7 +506,7 @@ const cvdFlags = [...cvdCheck(placedLight, 'light'), ...cvdCheck(darkByKey, 'dar
   .sort((a, b) => (b.known_adjacent - a.known_adjacent) || (a.deltaE_simulated - b.deltaE_simulated));
 
 // ═══ Assemble output ══════════════════════════════════════════════════
-const tocKeys = Object.keys(REAL_TOC_COLORS), metroKeys = Object.keys(METRO_BASE);
+const tocKeys = Object.keys(REAL_TOC_COLORS), metroKeys = [...Object.keys(METRO_BASE), 'Blackpool Tramway'];
 function withThemes(keys) {
   return Object.fromEntries(keys.map((k) => [k, { dark: darkByKey[k], light: placedLight[k] }]));
 }
