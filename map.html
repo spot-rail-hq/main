@@ -1073,7 +1073,7 @@
         var nd = cur.dist + e.length_m;
         if (dist[e.to] === undefined || nd < dist[e.to]) {
           dist[e.to] = nd;
-          prevEdge[e.to] = { from: cur.node, edge: e.edge };
+          prevEdge[e.to] = { from: cur.node, edge: e.edge, length_m: e.length_m };
           heap.push(e.to, nd);
         }
       }
@@ -1083,7 +1083,7 @@
     var node = toNode;
     while (node !== fromNode) {
       var pe = prevEdge[node];
-      pathEdges.push({ from: pe.from, to: node, edge: pe.edge });
+      pathEdges.push({ from: pe.from, to: node, edge: pe.edge, length_m: pe.length_m });
       node = pe.from;
     }
     pathEdges.reverse();
@@ -1105,9 +1105,25 @@
   // Reconstructs the resolved path's actual line geometry from the
   // operators.pmtiles tile source (already loaded for fan-out rendering) —
   // NOT shipped in routing-graph.json, see the comment above it for why.
-  // Requires the relevant tiles to already be loaded, i.e. call this after
-  // fitBounds()-ing the path into view and waiting for 'idle' — see
-  // selectFromTo() below.
+  //
+  // MISSING-TILE HANDLING — root-caused, not just retried past: a headless
+  // check on a real 93-edge route (KGX->Edinburgh) found one edge whose
+  // segment_id NEVER resolved via querySourceFeatures, even after 10
+  // retries over 4+ seconds. Root cause: that segment is a genuine 22-metre
+  // sliver (a Mildmay-line micro-segment) — tippecanoe correctly drops
+  // sub-pixel features from LOW-zoom tiles as standard, expected vector-
+  // tile generation behaviour, and the low zoom this route's fitBounds
+  // lands on (to fit London-to-Edinburgh in view) simply never carries that
+  // feature. No amount of retrying fixes this — it's not a loading race,
+  // the data legitimately isn't in those tiles. Fix: if a specific edge's
+  // geometry can't be found AND that edge is short (<300m, generously above
+  // the 22m real case — a gap this small is imperceptible on a rendered
+  // route), skip it and let the straight line between its neighbours bridge
+  // the invisible gap, rather than failing the whole path over a few
+  // metres. A LONGER missing edge is treated as a real failure (returns
+  // null, caller retries) since silently straight-lining a longer gap could
+  // visibly cut a corner a real train doesn't.
+  var MAX_BRIDGEABLE_GAP_M = 300;
   function resolveFromToGeometry(edges) {
     var coordsOut = [];
     for (var i = 0; i < edges.length; i++) {
@@ -1116,7 +1132,10 @@
         sourceLayer: 'operators',
         filter: ['==', ['get', 'segment_id'], info.segment_id],
       });
-      if (!feats.length) return null; // tile not loaded / segment not found — caller should treat as unresolved, not silently draw a broken partial line
+      if (!feats.length) {
+        if (edges[i].length_m !== undefined && edges[i].length_m <= MAX_BRIDGEABLE_GAP_M) continue; // bridge with a straight line to the next resolvable point, see comment above
+        return null; // a real gap, not a negligible one — caller should retry, not silently draw a misleading shortcut
+      }
       var full = feats[0].geometry.coordinates;
       var slice = info.type === 'segment' ? full : full.slice(Math.min(info.from_index, info.to_index), Math.max(info.from_index, info.to_index) + 1);
       if (slice.length < 2) continue;
@@ -1811,6 +1830,19 @@
     map.once('style.load', addMapLayers);
   }
   window.srhqToggleMapTheme = toggleTheme;
+  // Same debug/test-hook convention as the line above — selectFromTo is a
+  // function declaration (hoisted), so this is valid even though it's
+  // defined later in the file. Also a real deep-linking hook waiting to
+  // happen, not just a test convenience.
+  window.srhqSelectFromTo = function (fromCrs, toCrs) {
+    var list = getStationList();
+    var from = list.find(function (s) { return s.crs === fromCrs; });
+    var to = list.find(function (s) { return s.crs === toCrs; });
+    if (!from || !to) { console.warn('srhqSelectFromTo: unknown CRS', fromCrs, toCrs); return; }
+    selectFromTo(from, to);
+  };
+  window.srhqDebugSelection = function () { return selection; }; // read-only, same debug-hook convention as above
+  window.srhqSelectStation = function (crs) { flyToAndSelectStation(crs); }; // same convention — single-station select (Phase 7)
   document.getElementById('siteThemeToggle').addEventListener('click', toggleTheme);
   applyHeaderLogo();
 
@@ -2472,6 +2504,16 @@
       fromToPath: { found: false, reason: 'loading' },
     };
     renderSelectionChrome();
+    // Bugfix: renderSelectionChrome()'s clearRoutePolyline() call only fires
+    // when selection.type is NEITHER 'route' NOR 'fromto' — correct for not
+    // wiping an in-progress fromto's highlight on every re-render, but that
+    // also means switching from one fromto PAIR to a different one left the
+    // OLD pair's magenta line on screen (found via a headless check: the
+    // layer stayed visible:true after selecting a second, disconnected
+    // pair). A fresh selection should always start with a clean highlight —
+    // either the new pair's real path replaces it once resolved, or (no
+    // route found) it just stays hidden, never a stale previous route.
+    clearRoutePolyline();
     expandSidebarIfCollapsed();
     animateSidebarTransition();
     loadDepartureBoard(from.crs, mySeq, to.crs);
@@ -2505,9 +2547,7 @@
 
       // Extend the camera to the WHOLE resolved path, not just the two
       // endpoints — a curvy real route can run outside their straight-line
-      // bounding box — then wait for 'idle' (animation settled AND all
-      // newly-required tiles loaded) before trying to read geometry back
-      // out of them.
+      // bounding box.
       var pathBounds = fromCoord ? new maplibregl.LngLatBounds(fromCoord, fromCoord) : null;
       result.edges.forEach(function (e) {
         [e.from, e.to].forEach(function (nodeId) {
@@ -2518,17 +2558,33 @@
       });
       if (pathBounds) map.fitBounds(pathBounds, { padding: 80, duration: 800 });
 
-      function tryResolveGeometry(isRetry) {
+      // Bugfix, found via a headless check on a real long route (KGX->EDB,
+      // 93 edges): a single map.once('idle', ...) is NOT reliable here.
+      // MapLibre's 'idle' only fires on a TRANSITION into the idle state —
+      // if the map happens to already be idle at the moment this is
+      // registered (a real, observed race), it never fires again and the
+      // geometry lookup never even gets attempted. Separately,
+      // resolveFromToGeometry() can legitimately need more than one 'idle'
+      // cycle to succeed for a long path: most of a 93-edge path's tiles
+      // loaded after the first idle, but at least one segment's tile
+      // genuinely hadn't yet (confirmed directly — querySourceFeatures
+      // returned real matches for 4 of 5 sampled edges after one idle
+      // pass, zero for the 5th). Fixed with a bounded setTimeout retry loop
+      // instead of relying on 'idle' semantics at all — simpler to reason
+      // about, and immune to the "already idle" pitfall.
+      var geometryAttempts = 0, MAX_GEOMETRY_ATTEMPTS = 10;
+      function tryResolveGeometry() {
         if (mySeq !== selectionSeq) return;
+        geometryAttempts++;
         var coords = resolveFromToGeometry(result.edges);
         if (!coords) {
-          if (!isRetry) map.once('idle', function () { tryResolveGeometry(true); }); // one retry for a very long route whose tiles hadn't all finished loading yet; give up quietly after that rather than looping forever
-          return;
+          if (geometryAttempts < MAX_GEOMETRY_ATTEMPTS) setTimeout(tryResolveGeometry, 400);
+          return; // give up quietly after MAX_GEOMETRY_ATTEMPTS rather than retrying forever — the path was still found and the sidebar reflects that, it just can't draw the highlight if tiles genuinely never finish loading (e.g. a real network failure)
         }
         selection.fromToPath.renderCoords = coords;
         renderFromToPolylineGeometry();
       }
-      map.once('idle', function () { tryResolveGeometry(false); });
+      setTimeout(tryResolveGeometry, 400); // let the fitBounds camera move start before the first attempt
     });
   }
 
@@ -2605,8 +2661,18 @@
   // highlight polyline below.
   var SELECTED_STATIONS_SOURCE_ID = 'selected-stations', SELECTED_STATIONS_LAYER_ID = 'selected-stations-circle';
   var selectedStationPoints = []; // [{lon, lat}]
+  // Bugfix (found via a headless theme-toggle check while verifying Phase
+  // 7): this used to also require map.isStyleLoaded(), unlike every other
+  // layer-adding call in addMapLayers() (railway-lines/operator-lines/
+  // stations just check !map plus their own getSource/getLayer existence
+  // guards). style.load firing does NOT guarantee isStyleLoaded() is
+  // already true — a known MapLibre timing gap — so this extra check could
+  // silently no-op right after a theme toggle, leaving the selected-
+  // station marker (now Phase 7's 200%-enlarged highlight) missing until
+  // some unrelated later action happened to call this again. Dropped to
+  // match the rest of the file's pattern.
   function renderSelectedStationMarkers() {
-    if (!map || !map.isStyleLoaded()) return;
+    if (!map) return;
     var gj = {
       type: 'FeatureCollection',
       features: selectedStationPoints.map(function (p) {
@@ -2656,7 +2722,12 @@
   // renderRoutePolylineGeometry()'s body so From/To didn't need to
   // duplicate the whole add-source/add-layer/wire-handlers-once dance.
   function drawMagentaHighlightGeometry(coords) {
-    if (!map || !map.isStyleLoaded() || !coords || coords.length < 2) return false;
+    // No isStyleLoaded() guard here on purpose: style.load firing does not
+    // guarantee isStyleLoaded() returns true immediately (same MapLibre gap
+    // fixed in renderSelectedStationMarkers) — this call only fires once
+    // more per resolution, so a false negative here means the highlight
+    // silently never draws rather than just being retried.
+    if (!map || !coords || coords.length < 2) return false;
     var geojson = { type: 'Feature', geometry: { type: 'LineString', coordinates: coords }, properties: {} };
     if (!map.getSource(ROUTE_SOURCE_ID)) {
       map.addSource(ROUTE_SOURCE_ID, { type: 'geojson', data: geojson });
