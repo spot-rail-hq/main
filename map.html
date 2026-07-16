@@ -425,7 +425,7 @@
      reuse the exact same mono/uppercase/grey section-label style instead of
      duplicating it under a new class name. Grey, not turquoise — turquoise
      is reserved for actual links (Google Map, Wikipedia source, etc). */
-  .db-label { font-family: var(--font-mono); font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink); }
+  .db-label { font-family: var(--font-mono); font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink); }
   .db-refresh-btn { flex-shrink: 0; font-size: 13px; }
   .db-refresh-btn.spinning i { display: inline-block; animation: db-refresh-spin 0.6s linear infinite; }
   @keyframes db-refresh-spin { to { transform: rotate(360deg); } }
@@ -437,34 +437,57 @@
      same data-anim-row stagger every other sidebar view already uses. */
   .db-field { padding: 10px 16px; }
   .db-field .db-label { margin-bottom: 4px; }
-  .db-value { font-size: 14px; color: var(--ink-primary); line-height: 1.5; }
+  .db-value { font-size: 13px; color: var(--ink-primary); line-height: 1.5; }
   .db-photo { padding: 0 16px 10px; }
-  .db-photo img { width: 100%; border-radius: 10px; display: block; }
+  .db-photo img { width: 100%; border-radius: 10px; display: block; aspect-ratio: 16/10; object-fit: cover; }
+  /* Exact-attribution format (2026-07-16 station panel rework) — never a
+     generic "Image via Wikipedia" line (that pattern lives in database.html
+     for the fleet spotlight and was deliberately NOT reused here): always
+     "{photographer/uploader} – {source} – {license}", e.g. "Richard Kelly
+     from Manchester, England – Flickr – CC BY 2.0". See dbPhotoCreditHtml()
+     — the three parts are rendered separately, from stations-content.json's
+     photo.photographer/photo.source/photo.license, never from one free-typed
+     attribution string, so a curator can't accidentally type a vaguer line. */
   .db-photo-credit { font-size: 11px; color: var(--ink); margin-top: 4px; }
+  .db-photo-credit a { color: var(--ink); text-decoration: underline; }
   .db-links { display: flex; gap: 16px; }
-  .db-links a { font-family: var(--font-mono); font-size: 12px; letter-spacing: 1px; text-transform: uppercase; color: var(--t); }
+  .db-links a { font-family: var(--font-mono); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--t); }
   .db-chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
   /* Scoped override, not a base .filter-chip change — region-jump and news
      filter chips elsewhere keep their grey default; only station/operator
      detail-panel chips (services, fleet, regions) go white per the color
      pass, since here they're content, not a filter control. */
   .db-chip-row .filter-chip { color: var(--ink-primary); }
-  .db-wiki-link { display: block; padding: 10px 16px; font-family: var(--font-mono); font-size: 12px;
+  .db-wiki-link { display: block; padding: 10px 16px; font-family: var(--font-mono); font-size: 11px;
     letter-spacing: 1px; text-transform: uppercase; color: var(--t); }
+  /* Non-linked variant — used only for the settlement-article case (see
+     dbWikipediaAttributionHtml()'s sourceType check): the matched article is
+     about the town/village the station sits in, not a dedicated station
+     page, so this deliberately does NOT link out or imply one exists.
+     Same position/weight as .db-wiki-link, muted ink instead of turquoise
+     link color, no arrow. */
+  .db-source-plain { display: block; padding: 10px 16px; font-family: var(--font-mono); font-size: 11px;
+    letter-spacing: 1px; text-transform: uppercase; color: var(--ink); }
   .db-empty { padding: 16px; }
   .db-empty .db-label { margin-bottom: 8px; }
   .db-empty p { font-size: 13px; color: var(--ink); line-height: 1.5; }
   /* Punchy one-line headline (Wikipedia-sourced, 8-12 words) — bolder and
      more prominent than .db-value, but kept within the sidebar's existing
-     13-14px scale rather than borrowing index.html's much larger
+     13px scale rather than borrowing index.html's much larger
      .spot-headline display size, which is sized for full landing-page
      cards, not this compact panel. */
-  .db-headline { padding: 10px 16px 4px; font-size: 14px; font-weight: 600; color: var(--ink-primary); line-height: 1.4; }
+  .db-headline { padding: 10px 16px 4px; font-size: 13px; font-weight: 600; color: var(--ink-primary); line-height: 1.4; }
   .db-franchise-list { padding: 2px 16px 10px; list-style: none; }
   .db-franchise-list li { padding: 6px 0; }
   .db-franchise-list li:first-child { padding-top: 0; }
-  .db-franchise-name { display: block; font-size: 14px; color: var(--ink-primary); font-weight: 500; }
-  .db-franchise-dates { display: block; font-size: 12.5px; color: var(--ink); margin-top: 2px; }
+  .db-franchise-name { display: block; font-size: 13px; color: var(--ink-primary); font-weight: 500; }
+  .db-franchise-dates { display: block; font-size: 11px; color: var(--ink); margin-top: 2px; }
+  /* Notable-features list (2026-07-16) — was a single ";"-joined .db-value
+     line, unreadable once a station has 7-12 facts (e.g. London Victoria).
+     Bulleted list, same visual weight/pattern as .db-franchise-list. */
+  .db-notable-list { padding: 2px 16px 10px; list-style: none; }
+  .db-notable-list li { position: relative; padding: 4px 0 4px 14px; font-size: 13px; color: var(--ink-primary); line-height: 1.5; }
+  .db-notable-list li::before { content: ''; position: absolute; left: 0; top: 11px; width: 4px; height: 4px; border-radius: 50%; background: var(--t); }
   .db-hint { padding: 24px 20px; font-size: 13px; color: var(--ink); text-align: center; line-height: 1.6; }
   .dep-cols { display: flex; align-items: center; gap: 10px; padding: 6px 0 4px; font-family: var(--font-mono);
     font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink); border-bottom: 0.5px solid var(--br); }
@@ -2173,10 +2196,49 @@
   // fetch-wikipedia-facts.mjs after it actually pulled content), not on
   // wikipedia_title alone, which can be set by a curator before any fetch
   // has run — that shouldn't imply Wikipedia content is showing yet.
+  //
+  // sourceType: 'settlement-article' (2026-07-16 station panel rework) —
+  // set by fetch-wikipedia-facts.mjs's NO_DEEP_LINK_KEYS handling for a
+  // geo-confidence match whose article turned out to be about the town/
+  // village the station sits in, not a dedicated station page (see
+  // scripts/output/wikipedia-coverage-report.json's geoMatchTownArticleDetail
+  // — the bucket is empty as of the 2026-07-16 matching-bug fix, but the
+  // mechanism stays live for any future genuine case). Renders as plain,
+  // non-linked text — no deep-link to a page that isn't really about the
+  // station, and the wording says which place the source actually covers
+  // rather than implying a dedicated article ("Source: Wikipedia
+  // (Armadale, West Lothian)", not "Source: Wikipedia — Armadale railway
+  // station (Scotland) (CC BY-SA) →").
   function dbWikipediaAttributionHtml(entry) {
     var wiki = entry && entry._wikipedia;
     if (!wiki || !wiki.url) return '';
+    if (wiki.sourceType === 'settlement-article') {
+      return '<span class="db-source-plain" data-anim-row>Source: Wikipedia (' + escapeAttr(wiki.title || '') + ')</span>';
+    }
     return '<a class="db-wiki-link" data-anim-row href="' + escapeAttr(wiki.url) + '" target="_blank" rel="noopener">Source: Wikipedia — ' + escapeAttr(wiki.title || '') + ' (CC BY-SA) →</a>';
+  }
+
+  // Exact-attribution photo credit — see .db-photo-credit's CSS comment for
+  // why this is built from three separate stored fields rather than one
+  // free-typed string. Whole line links to photo.sourceUrl when present
+  // (good CC-license practice, and matches the reference example's implicit
+  // "credit links back to the source" pattern), plain text otherwise.
+  function dbPhotoCreditHtml(photo) {
+    if (!photo || !photo.photographer || !photo.source || !photo.license) return '';
+    var text = escapeAttr(photo.photographer) + ' – ' + escapeAttr(photo.source) + ' – ' + escapeAttr(photo.license);
+    if (photo.sourceUrl) {
+      return '<div class="db-photo-credit"><a href="' + escapeAttr(photo.sourceUrl) + '" target="_blank" rel="noopener">' + text + '</a></div>';
+    }
+    return '<div class="db-photo-credit">' + text + '</div>';
+  }
+
+  // Bulleted notable-features list — shared by stations and operators (both
+  // populate the same notable_features shape from scripts/fetch-wikipedia-
+  // facts.mjs). Absent entirely when empty/missing, never an empty header.
+  function notableFeaturesHtml(features) {
+    if (!features || !features.length) return '';
+    return '<div class="db-field" data-anim-row><div class="db-label">Notable features</div><ul class="db-notable-list">' +
+      features.map(function (f) { return '<li>' + escapeAttr(f) + '</li>'; }).join('') + '</ul></div>';
   }
 
   // ── schema.org JSON-LD injection ──────────────────────────────────────────
@@ -2214,35 +2276,37 @@
     document.head.appendChild(tag);
   }
 
-  // wheelchair is the raw OSM wheelchair=* tag value — mapped to plain
-  // wording rather than shown verbatim, per CLAUDE.md's "no jargon" rule.
-  var WHEELCHAIR_LABELS = { yes: 'Step-free access', limited: 'Limited step-free access', no: 'Not step-free' };
-  function wheelchairLabel(v) {
-    return v ? (WHEELCHAIR_LABELS[v] || null) : null;
-  }
-
+  // Accessibility field removed (2026-07-16 station panel rework, per the
+  // approved mockup) — wheelchair data is still fetched/stored by
+  // scripts/fetch-osm-facts.mjs (s.wheelchair), just no longer rendered
+  // here. wheelchairLabel()/WHEELCHAIR_LABELS removed with it — this was
+  // their only caller.
   function stationDatabaseSkeletonHtml() {
     var crs = (selectedStationCrs || '').toUpperCase();
     var s = stationsContent[crs];
     if (!s) return dbComingSoonHtml(selectedStationName || crs);
     var html = '';
+    // Only rendered where a real photo exists — most stations (stub-tier,
+    // no-article-tier, and the pending disambiguation-only bucket) won't
+    // have one yet, since photo is manual/curated-only (see
+    // stations-content.json's _notes) and this block is a pure no-op until
+    // a human adds one.
     if (s.photo && s.photo.url) {
       html += '<div class="db-photo" data-anim-row><img src="' + escapeAttr(s.photo.url) + '" alt="' + escapeAttr(s.name || '') + '" loading="lazy" />' +
-        (s.photo.attribution ? '<div class="db-photo-credit">' + s.photo.attribution + '</div>' : '') + '</div>';
+        dbPhotoCreditHtml(s.photo) + '</div>';
     }
     html += dbHeadlineHtml(s.headline);
     html += dbFieldHtml('Location', s.location);
-    // Google Map / Street View aren't stored — constructed at render time
-    // from lat/lon, per stations-content.json's own _notes.
+    // Google Map isn't stored — constructed at render time from lat/lon,
+    // per stations-content.json's own _notes. Street View link removed
+    // (2026-07-16, per the approved mockup).
     var coords = coordsForCrs(crs);
     if (coords) {
       html += '<div class="db-field" data-anim-row><div class="db-links">' +
         '<a href="https://www.google.com/maps/search/?api=1&query=' + coords[1] + ',' + coords[0] + '" target="_blank" rel="noopener">Google Map</a>' +
-        '<a href="https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=' + coords[1] + ',' + coords[0] + '" target="_blank" rel="noopener">Street View</a>' +
         '</div></div>';
     }
     html += dbFieldHtml('Platforms', s.platforms);
-    html += dbFieldHtml('Accessibility', wheelchairLabel(s.wheelchair));
     html += dbFieldHtml('Opened', s.opened_year);
     html += dbFieldHtml('Listed status', s.listed_status);
     if (s.operators && s.operators.length) {
@@ -2250,9 +2314,7 @@
         s.operators.map(function (name) { return '<button type="button" class="filter-chip db-op-chip" data-op="' + escapeAttr(name) + '">' + name + '</button>'; }).join('') +
         '</div></div>';
     }
-    if (s.notable_features && s.notable_features.length) {
-      html += dbFieldHtml('Notable features', s.notable_features.join('; '));
-    }
+    html += notableFeaturesHtml(s.notable_features);
     html += dbWikipediaAttributionHtml(s);
     return html || dbComingSoonHtml(s.name);
   }
@@ -2335,9 +2397,7 @@
         o.fleet_classes.map(function (c) { return '<span class="filter-chip">' + escapeAttr(c.display) + '</span>'; }).join('') + '</div></div>';
     }
     html += dbFieldHtml('Stations operated', o.stations_operated);
-    if (o.notable_features && o.notable_features.length) {
-      html += dbFieldHtml('Notable features', o.notable_features.join('; '));
-    }
+    html += notableFeaturesHtml(o.notable_features);
     html += dbWikipediaAttributionHtml(o);
     return html || dbComingSoonHtml(o.name);
   }
