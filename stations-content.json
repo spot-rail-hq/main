@@ -5381,7 +5381,22 @@
       "incomplete": false,
       "notes": "hint: OSM tags this station's Wikipedia page as \"Brunswick railway station\" — consider setting wikipedia_title (not auto-applied)"
     },
-    "wikipedia_title": "Brunswick railway station"
+    "wikipedia_title": "Brunswick railway station",
+    "headline": "Liverpool's Brunswick station rebuilt in 1998 after original 1864 closure",
+    "opened_year": "1998",
+    "notable_features": [
+      "Original station opened 1864 by Garston and Liverpool Railway",
+      "Closed after just ten years in 1874",
+      "Present station opened in 1998 on new through route",
+      "Near mouth of former Liverpool Overhead Railway tunnel to Dingle",
+      "Situated between former Toxteth and Harrington Docks"
+    ],
+    "_wikipedia": {
+      "fetched_at": "2026-07-16T12:14:45.738Z",
+      "title": "Brunswick railway station",
+      "url": "https://en.wikipedia.org/wiki/Brunswick_railway_station",
+      "license": "CC BY-SA 4.0"
+    }
   },
   "BRX": {
     "platforms": 2,
