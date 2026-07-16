@@ -178,6 +178,16 @@ consistently without duplicating the table.
   instance (see the OSM runbook) for every step except the last. Folds into
   the same refresh cadence as the station/operator content.
 
+## Local dev environment notes
+- Terse/auto-looking commits you may see in `git log` ("map", "route", "05",
+  "00", "1", "Update map.html", etc.) are Aaron committing via GitHub
+  Desktop's GUI mid-session on his own machine, not a hook, CI job, cron
+  timer, or editor extension — all of those were checked and ruled out
+  (2026-07 investigation). GitHub Desktop auto-fills the summary as
+  "Update {filename}" when the message field is left blank and only one
+  file changed. This is expected human behavior — don't re-investigate it;
+  just note it in passing if relevant and move on.
+
 ## What NOT to do
 - Never show jargon to users: no STANOX, CRS codes (internal only), headcodes
 - Never hardcode hex colours — use the CSS vars defined in :root

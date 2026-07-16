@@ -2,13 +2,14 @@
   "generatedAt": "2026-07-15T20:20:03.338Z",
   "totalStations": 2637,
   "matchRate": {
-    "autoMatched": 2576,
-    "needsManualReview": 61
+    "autoMatched": 2577,
+    "needsManualReview": 60
   },
   "tierCounts": {
-    "no-article": 61,
-    "stub": 2101,
-    "substantive": 475
+    "no-article": 60,
+    "stub": 2099,
+    "substantive": 472,
+    "geo-match-town-article": 6
   },
   "tierCrsLists": {
     "no-article": [
@@ -33,7 +34,6 @@
       "KNG",
       "KTR",
       "LAG",
-      "LAY",
       "LIF",
       "LVL",
       "MFD",
@@ -255,7 +255,6 @@
       "BHO",
       "BHR",
       "BHS",
-      "BIB",
       "BID",
       "BIF",
       "BIG",
@@ -305,7 +304,6 @@
       "BMR",
       "BMS",
       "BMV",
-      "BMY",
       "BNA",
       "BNC",
       "BND",
@@ -1178,6 +1176,7 @@
       "LAR",
       "LAS",
       "LAW",
+      "LAY",
       "LBK",
       "LBO",
       "LBR",
@@ -1812,7 +1811,6 @@
       "SNI",
       "SNK",
       "SNL",
-      "SNN",
       "SNO",
       "SNP",
       "SNR",
@@ -2182,7 +2180,6 @@
       "ABW",
       "ABX",
       "ACK",
-      "ADL",
       "AGR",
       "AGS",
       "ALN",
@@ -2195,7 +2192,6 @@
       "APS",
       "ARB",
       "ARG",
-      "ARM",
       "ASC",
       "AVF",
       "AVN",
@@ -2603,7 +2599,6 @@
       "VXH",
       "WAT",
       "WCF",
-      "WCH",
       "WCK",
       "WCL",
       "WCM",
@@ -2653,6 +2648,14 @@
       "YRK",
       "ZCW",
       "ZWL"
+    ],
+    "geo-match-town-article": [
+      "ADL",
+      "ARM",
+      "BIB",
+      "BMY",
+      "SNN",
+      "WCH"
     ]
   },
   "needsManualReview": [
@@ -2888,23 +2891,6 @@
         "Langwith - Whaley Thorns railway station",
         "Langwith - Whaley Thorns station",
         "Langwith - Whaley Thorns"
-      ]
-    },
-    {
-      "crs": "LAY",
-      "name": "Layton (Lancs) Rail Station",
-      "reason": "No Wikipedia page found for any candidate title.",
-      "weakCandidate": null,
-      "candidatesTried": [
-        "Layton railway station",
-        "Layton railway station (Lancs)",
-        "Layton station",
-        "Layton station (Lancs)",
-        "Layton",
-        "Layton (Lancs)",
-        "Layton railway station (Lancashire)",
-        "Layton station (Lancashire)",
-        "Layton (Lancashire)"
       ]
     },
     {
@@ -3417,7 +3403,7 @@
       "disambiguation-only-likely-has-article": 24,
       "unverified-page-found": 1,
       "no-page-found-any-candidate": 25,
-      "mixed-other": 11
+      "mixed-other": 10
     },
     "entries": {
       "disambiguation-only-likely-has-article": [
@@ -3703,11 +3689,6 @@
           "weakCandidate": null
         },
         {
-          "crs": "LAY",
-          "name": "Layton (Lancs) Rail Station",
-          "weakCandidate": null
-        },
-        {
           "crs": "NCO",
           "name": "Newcourt Rail Station",
           "weakCandidate": null
@@ -3739,5 +3720,53 @@
         }
       ]
     }
+  },
+  "geoMatchTownArticleDetail": {
+    "_note": "Added 2026-07-16: geo-confidence matches (accepted on coordinate proximity, not title match) whose Wikipedia description starts with Town/City/Village/Suburb/Hamlet/Civil parish in... — the matched article is about the settlement the station sits in, not a dedicated station article. Detected via scripts/scope-wikipedia-coverage.mjs isGeoMatchTownArticle(), applied retroactively across all 2,577 already-matched stations (no new fetches needed — description/confidence were already cached per station from the original matching pass). Handling for this bucket (agreed 2026-07-16, to apply when the full stations-content.json rollout runs): keep the already-extracted notable_features text as-is (it is already correctly scoped to station-relevant sentences, grounded in the article, nothing to redo) — but change source attribution to make the town-article origin explicit (e.g. \"Source: Wikipedia (Placename)\" rather than implying a dedicated \"Placename railway station\" page) and do NOT auto-populate a Wikipedia deep-link/\"read more\" the way substantive-tier stations get, since there is no dedicated station page to send a reader to. Tiered separately from substantive/stub so tier counts accurately reflect \"has a dedicated station article\" vs \"mentioned within a town article\".",
+    "count": 6,
+    "entries": [
+      {
+        "crs": "ADL",
+        "name": "Adlington (Lancs) Rail Station",
+        "matchedTitle": "Adlington, Lancashire",
+        "description": "Village and civil parish in Lancashire, England",
+        "extractLength": 502
+      },
+      {
+        "crs": "ARM",
+        "name": "Armadale (W Lothian) Rail Station",
+        "matchedTitle": "Armadale, West Lothian",
+        "description": "Town in West Lothian, Scotland",
+        "extractLength": 617
+      },
+      {
+        "crs": "BIB",
+        "name": "Bishop's Lydeard Rail Station",
+        "matchedTitle": "Bishops Lydeard",
+        "description": "Village and civil parish in Somerset, England",
+        "extractLength": 316
+      },
+      {
+        "crs": "BMY",
+        "name": "Bramley (Hants) Rail Station",
+        "matchedTitle": "Bramley, Hampshire",
+        "description": "Village and parish in Hampshire, England",
+        "extractLength": 270
+      },
+      {
+        "crs": "SNN",
+        "name": "Swinton (Manchester) Rail Station",
+        "matchedTitle": "Swinton, Greater Manchester",
+        "description": "Town in Greater Manchester, England",
+        "extractLength": 241
+      },
+      {
+        "crs": "WCH",
+        "name": "Whitchurch (Hants) Rail Station",
+        "matchedTitle": "Whitchurch, Hampshire",
+        "description": "Town in Hampshire, England",
+        "extractLength": 595
+      }
+    ]
   }
 }

@@ -236,8 +236,32 @@ export async function matchStation(station, extraCandidates = []) {
   };
 }
 
+// ─── geo-match-town-article detection (2026-07-16) ────────────────────────
+// A "geo" (not "title") confidence match means the candidate title didn't
+// textually resolve to the station name — the ONLY reason it was accepted
+// is that its coordinates happened to be within GEO_REJECT_KM. Confirmed
+// live via the Phase 2 preview sample: this can land on the TOWN/VILLAGE
+// article the station sits in (e.g. "Armadale, West Lothian" — a real,
+// substantial article, but about the town, not a dedicated station page)
+// rather than any station-specific article. Wikipedia's own REST summary
+// `description` field reliably says so in these cases ("Town in West
+// Lothian, Scotland") — a real station article's description instead reads
+// like "National Rail station in London, England". Only relevant to
+// geo-confidence matches: a title-match already proves textual identity
+// with the station name, so a settlement-shaped description there would be
+// a coincidence, not evidence of a wrong page.
+const SETTLEMENT_DESCRIPTION_PATTERN = /^(Town|City|Village|Suburb|Hamlet|Civil parish)\b/i;
+export function isGeoMatchTownArticle(matchResult) {
+  return (
+    matchResult.status === 'matched' &&
+    matchResult.confidence === 'geo' &&
+    SETTLEMENT_DESCRIPTION_PATTERN.test(matchResult.description || '')
+  );
+}
+
 export function classifyTier(matchResult) {
   if (matchResult.status !== 'matched') return 'no-article';
+  if (isGeoMatchTownArticle(matchResult)) return 'geo-match-town-article';
   return matchResult.extractLength >= STUB_THRESHOLD_CHARS ? 'substantive' : 'stub';
 }
 
@@ -281,7 +305,7 @@ async function main() {
   const all = Object.values(checkpoint.results);
   const matched = all.filter((r) => r.status === 'matched');
   const needsReview = all.filter((r) => r.status === 'needs-review');
-  const tiers = { 'no-article': [], stub: [], substantive: [] };
+  const tiers = { 'no-article': [], stub: [], substantive: [], 'geo-match-town-article': [] };
   for (const r of all) tiers[r.tier].push(r.crs);
 
   const sampleSubstantive = matched
@@ -304,6 +328,7 @@ async function main() {
       'no-article': tiers['no-article'].length,
       stub: tiers.stub.length,
       substantive: tiers.substantive.length,
+      'geo-match-town-article': tiers['geo-match-town-article'].length,
     },
     tierCrsLists: tiers,
     needsManualReview: needsReview.map((r) => ({
@@ -331,6 +356,7 @@ Generated: ${report.generatedAt}
 - no-article: ${report.tierCounts['no-article']}
 - stub (extract < ${STUB_THRESHOLD_CHARS} chars): ${report.tierCounts.stub}
 - substantive (extract >= ${STUB_THRESHOLD_CHARS} chars): ${report.tierCounts.substantive}
+- geo-match-town-article (geo-confidence match landed on a town/place article, not a dedicated station article — see Step 2 handling notes): ${report.tierCounts['geo-match-town-article']}
 
 ## Sample substantive entries
 ${sampleSubstantive.map((s) => `### ${s.name} (${s.crs}) — matched "${s.matchedTitle}", ${s.extractLength} chars\n> ${s.extractPreview}${s.extractLength > 500 ? '…' : ''}\n`).join('\n')}

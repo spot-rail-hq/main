@@ -77,8 +77,43 @@ const FILES = {
 // to confidently resolve one first; if it can't, the entry is left as-is
 // (existing "content coming soon" fallback) and reported under "needs your
 // manual review" at the end of the run, it is never guessed at.
+// ONLY_KIND env var (optional): restricts a run to a single JOBS category
+// ('stations' | 'routes' | 'operators') without needing to blank out the
+// other two arrays first — added 2026-07-16 for the stations tiered
+// rollout below, which needed to run only JOBS.stations without disturbing
+// the already-configured JOBS.operators backlog. e.g.:
+//   ONLY_KIND=stations node scripts/fetch-wikipedia-facts.mjs
+const ONLY_KIND = process.env.ONLY_KIND;
+
+// 2026-07-16 tiered content rollout: every substantive-tier + geo-match-
+// town-article station from scripts/output/wikipedia-coverage-report.json's
+// tierCrsLists, minus any CRS that already has notable_features populated
+// (BHM, from an earlier pass — re-running it would just waste a call on an
+// idempotent no-op). Loaded programmatically from the report file, rather
+// than hand-copied into a literal array, specifically so this list is
+// guaranteed to match the report exactly (~478 entries — too large and
+// error-prone to transcribe by hand without risking a silent mismatch).
+// wikipedia_title was pre-seeded on each of these directly in
+// stations-content.json from the coverage report's already-verified
+// matchedTitle (see scripts/scope-wikipedia-coverage.mjs's Phase 1
+// matching — title/geo confirmed, or NO_DEEP_LINK_KEYS-flagged town-article
+// matches, see below) rather than re-resolved here — this script's own
+// resolveWikipediaTitle() only does title-text matching, not the
+// coordinate-based matching that found the 6 NO_DEEP_LINK_KEYS entries, so
+// letting it re-resolve those from scratch here would likely fail them.
+function loadStationsRolloutJob() {
+  const reportPath = path.join(ROOT, 'scripts', 'output', 'wikipedia-coverage-report.json');
+  const report = JSON.parse(readFileSync(reportPath, 'utf8'));
+  const stationsContent = JSON.parse(readFileSync(FILES.stations, 'utf8'));
+  const target = [...report.tierCrsLists.substantive, ...report.tierCrsLists['geo-match-town-article']];
+  return target.filter((crs) => {
+    const existing = stationsContent[crs];
+    return !(existing && existing.notable_features && existing.notable_features.length);
+  });
+}
+
 const JOBS = {
-  stations: [],
+  stations: loadStationsRolloutJob(),
   routes: [],
   // 2026-07-14 UI/content pass (mockup-routes.png): re-running every
   // operator to backfill the new regions_served/notable_features fields
@@ -89,6 +124,18 @@ const JOBS = {
   // direct match).
   operators: ['WMR', 'VT', 'GR', 'XC', 'EM', 'LN', 'GW', 'SW', 'SE', 'SN', 'TL', 'GX', 'GN', 'CC', 'CH', 'LE', 'NT', 'TP', 'ME', 'SR', 'CS', 'GC', 'HT', 'LD', 'HX', 'XR', 'AW', 'IL', 'WR', 'ES'],
 };
+
+// 2026-07-16: geo-confidence matches whose article is about the town/
+// village the station sits in, not a dedicated station page (see
+// scripts/output/wikipedia-coverage-report.json's geoMatchTownArticleDetail
+// for the full reasoning/list). These 6 still get headline/notable_features
+// extracted normally below — the extraction is already correctly grounded
+// in station-relevant sentences within the article — but wikipedia_title is
+// deliberately NOT persisted (no auto-generated "Wikipedia ↗" deep-link to
+// a page that isn't really about the station), and _wikipedia gets a
+// sourceType marker so a future render pass knows to show plain-text
+// attribution ("Source: Wikipedia (<title>)") instead of a link.
+const NO_DEEP_LINK_KEYS = new Set(['ADL', 'ARM', 'BIB', 'BMY', 'SNN', 'WCH']);
 
 const WIKI_API = 'https://en.wikipedia.org/w/api.php';
 const CLAUDE_API = 'https://api.anthropic.com/v1/messages';
@@ -329,8 +376,14 @@ async function processEntry(kind, key, content, report) {
     url: page.url,
     license: 'CC BY-SA 4.0',
   };
+  let noDeepLinkNote = '';
+  if (kind === 'stations' && NO_DEEP_LINK_KEYS.has(key)) {
+    delete content[key].wikipedia_title; // matched article is about the settlement, not a dedicated station page — see NO_DEEP_LINK_KEYS comment above
+    content[key]._wikipedia.sourceType = 'settlement-article';
+    noDeepLinkNote = ' [NO_DEEP_LINK_KEYS: wikipedia_title withheld, sourceType=settlement-article]';
+  }
   const extractedFields = Object.keys(extracted).filter((k) => extracted[k] != null && !(Array.isArray(extracted[k]) && !extracted[k].length)).join(', ') || '(nothing — article had none of the requested facts)';
-  console.log(`  ${key}: extracted ${extractedFields}${resolvedTitle ? ` (wikipedia_title auto-resolved via ${resolvedTitle.method}: "${resolvedTitle.title}")` : ''}`);
+  console.log(`  ${key}: extracted ${extractedFields}${resolvedTitle ? ` (wikipedia_title auto-resolved via ${resolvedTitle.method}: "${resolvedTitle.title}")` : ''}${noDeepLinkNote}`);
   report.push({ key, status: 'ok', resolvedTitle: resolvedTitle ? resolvedTitle.title : null });
 }
 
@@ -364,7 +417,16 @@ async function main() {
   }
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+// Guard added 2026-07-16 after a live incident: a plain `import()` of this
+// module (e.g. to inspect JOBS or test a syntax change) executed main() as
+// a side effect, since top-level code had no such guard — it started
+// resolving/writing real stations before pre-seeded wikipedia_title values
+// were in place, producing several wrong-page writes (caught and reverted
+// via git checkout). Mirrors the same guard already in
+// scripts/scope-wikipedia-coverage.mjs.
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main().catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
+}

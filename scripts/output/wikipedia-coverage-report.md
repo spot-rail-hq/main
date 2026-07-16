@@ -1,16 +1,27 @@
 # Wikipedia coverage scoping report — naptan_stations
 
 Generated: 2026-07-15T20:20:03.338Z
-Updated: 2026-07-16T06:11:58.794Z (abbreviation-mismatch re-test, scripts/rematch-abbreviation-mismatches.mjs)
+Updated: 2026-07-16T10:58:42.691Z (Phase 1 abbreviation re-test + geo-match-town-article detection folded in)
 
 ## Match rate (Phase 1)
-- Auto-matched: 2576 / 2637
-- Needs manual review: 61 / 2637
+- Auto-matched: 2577 / 2637
+- Needs manual review: 60 / 2637
 
 ## Tier breakdown (Phase 2)
-- no-article: 61
-- stub (extract < 400 chars): 2101
-- substantive (extract >= 400 chars): 475
+- no-article: 60
+- stub (extract < 400 chars): 2099
+- substantive (extract >= 400 chars): 472
+- geo-match-town-article (geo-confidence match landed on a town/place article, not a dedicated station article — see geoMatchTownArticleDetail in the JSON report for handling rules): 6
+
+## geo-match-town-article — full list (6 stations)
+- **ADL** (Adlington (Lancs) Rail Station) — matched "Adlington, Lancashire" (Village and civil parish in Lancashire, England)
+- **ARM** (Armadale (W Lothian) Rail Station) — matched "Armadale, West Lothian" (Town in West Lothian, Scotland)
+- **BIB** (Bishop's Lydeard Rail Station) — matched "Bishops Lydeard" (Village and civil parish in Somerset, England)
+- **BMY** (Bramley (Hants) Rail Station) — matched "Bramley, Hampshire" (Village and parish in Hampshire, England)
+- **SNN** (Swinton (Manchester) Rail Station) — matched "Swinton, Greater Manchester" (Town in Greater Manchester, England)
+- **WCH** (Whitchurch (Hants) Rail Station) — matched "Whitchurch, Hampshire" (Town in Hampshire, England)
+
+Handling (agreed 2026-07-16, applies at full rollout time): keep the already-extracted notable_features as-is; change source attribution to make the town-article origin explicit (e.g. "Source: Wikipedia (Placename)" not "...(Placename railway station)"); do NOT auto-populate a Wikipedia deep-link, since there's no dedicated station page to send a reader to.
 
 ## Sample substantive entries
 ### London Victoria Rail Station (VIC) — matched "London Victoria station", 1318 chars
@@ -39,12 +50,12 @@ Updated: 2026-07-16T06:11:58.794Z (abbreviation-mismatch re-test, scripts/rematc
 
 
 ## Needs manual review — breakdown by cause
-- disambiguation-only-likely-has-article: 24 (untouched this pass)
-- unverified-page-found: 1 (untouched this pass)
-- no-page-found-any-candidate: 25 (untouched this pass)
-- mixed-other (abbreviation mismatch): 11 remaining after re-test (was 22; 11 resolved, 10 had no qualifier to expand, 1 still unresolved)
+- disambiguation-only-likely-has-article: 24 (untouched)
+- unverified-page-found: 1 (untouched)
+- no-page-found-any-candidate: 25 (untouched)
+- mixed-other (abbreviation mismatch): 10 remaining (11 resolved via the abbreviation table in Phase 1, LAY additionally resolved via the '(England)' fallback candidate)
 
-## Needs manual review (first 30 of 61)
+## Needs manual review (first 30 of 60)
 - **ADV** (Andover Rail Station): No Wikipedia page found for any candidate title.
 - **ALX** (Alexandria Rail Station): No Wikipedia page found for any candidate title.
 - **APN** (Newcastle Airport Metro Station): No Wikipedia page found for any candidate title.
@@ -66,7 +77,6 @@ Updated: 2026-07-16T06:11:58.794Z (abbreviation-mismatch re-test, scripts/rematc
 - **KNG** (Kingston Rail Station): No Wikipedia page found for any candidate title.
 - **KTR** (Kintore Railway Station): No Wikipedia page found for any candidate title.
 - **LAG** (Langwith - Whaley Thorns Rail Station): No Wikipedia page found for any candidate title.
-- **LAY** (Layton (Lancs) Rail Station): No Wikipedia page found for any candidate title.
 - **LIF** (Lichfield Trent Valley High Level Rail Station): No Wikipedia page found for any candidate title.
 - **LVL** (Liverpool Lime Street Low Level Rail Station): No Wikipedia page found for any candidate title.
 - **MFD** (Minffordd Ffestiniog Railway Station): No Wikipedia page found for any candidate title.
@@ -75,5 +85,6 @@ Updated: 2026-07-16T06:11:58.794Z (abbreviation-mismatch re-test, scripts/rematc
 - **NAR** (Narberth Rail Station): No Wikipedia page found for any candidate title.
 - **NBE** (Newbridge Rail Station): No Wikipedia page found for any candidate title.
 - **NCO** (Newcourt Rail Station): No Wikipedia page found for any candidate title.
+- **NMK** (Newmarket Rail Station): No Wikipedia page found for any candidate title.
 
 Full CRS lists per tier and the complete review list are in wikipedia-coverage-report.json.
