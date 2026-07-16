@@ -1324,26 +1324,22 @@
     // width at the bottom on tablet/mobile.
     map.addControl(new maplibregl.AttributionControl({ compact: true }), 'top-right');
 
-    // Padding-aware, same as the "All UK" region-jump chip (regionJumpFlyToPadding(),
-    // defined further down this script but safe to call here — it's a hoisted
-    // function declaration and this only actually runs once the whole script,
-    // including regionJumpEl's assignment, has finished its synchronous pass,
-    // since we're already past an `await` by this point). Without this, the
-    // GB bounds fit centers across the FULL viewport width including the area
-    // the sidebar covers, so the visible map (right of the sidebar) looks
-    // off-center on first load.
-    var rjPad = regionJumpFlyToPadding();
-    map.fitBounds(
-      [[-8.5, 49.5], [2.0, 61.0]],
-      { padding: rjPad ? { top: 20, right: 20, bottom: 20, left: rjPad.left + 20 } : 20, animate: false }
-    );
-    // verifyInitialCameraPosition()'s anti-drift watchdog below snaps back to
-    // mapInitCenter/mapInitZoom if the camera drifts — re-point those at the
-    // ACTUAL post-fitBounds camera (which differs from the raw initCenter/
-    // initZoom above once padding shifts it), so the watchdog doesn't fight
-    // this correction by snapping back to the un-padded position.
-    mapInitCenter = [map.getCenter().lng, map.getCenter().lat];
-    mapInitZoom = map.getZoom();
+    // Apply the exact same center/zoom/padding recipe as the "All UK"
+    // region-jump chip (regionJumpFlyToPadding(), defined further down this
+    // script but safe to call here — it's a hoisted function declaration and
+    // this only actually runs once the whole script, including
+    // regionJumpEl's assignment, has finished its synchronous pass, since
+    // we're already past an `await` by this point) — jumpTo is just that
+    // button's flyTo without the animation. initCenter/initZoom above
+    // already equal the "All UK" button's own data-lng/data-lat/data-zoom,
+    // so this makes first load pixel-identical to clicking that button,
+    // rather than an independent bounds-fit that can land on a different
+    // effective center/zoom. padding shifts how center is anchored on
+    // screen but not the stored center/zoom values themselves, so
+    // mapInitCenter/mapInitZoom (set above from initCenter/initZoom) stay
+    // correct for verifyInitialCameraPosition()'s anti-drift watchdog below
+    // without needing to re-read them back from the map.
+    map.jumpTo({ center: initCenter, zoom: initZoom, padding: regionJumpFlyToPadding() });
 
     map.on('load', addMapLayers);
     map.on('load', function () { verifyInitialCameraPosition(); }); // separate listener, not folded into addMapLayers — that also re-runs on every theme toggle via setStyle, and this correction is a true-first-load-only concern
