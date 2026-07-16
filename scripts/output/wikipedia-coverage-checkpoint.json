@@ -1310,26 +1310,15 @@
       "name": "Armadale (W Lothian) Rail Station",
       "lat": 55.88570975781,
       "lon": -3.69541259893,
-      "tier": "no-article",
-      "status": "needs-review",
-      "reason": "No Wikipedia page found for any candidate title.",
-      "weakCandidate": null,
-      "candidatesTried": [
-        "Armadale railway station",
-        "Armadale railway station (W Lothian)",
-        "Armadale station",
-        "Armadale station (W Lothian)",
-        "Armadale",
-        "Armadale (W Lothian)"
-      ],
-      "notes": [
-        "\"Armadale railway station\": disambiguation page, skipped",
-        "\"Armadale railway station (W Lothian)\": no page",
-        "\"Armadale station\": disambiguation page, skipped",
-        "\"Armadale station (W Lothian)\": no page",
-        "\"Armadale\": disambiguation page, skipped",
-        "\"Armadale (W Lothian)\": no page"
-      ]
+      "tier": "substantive",
+      "status": "matched",
+      "matchedTitle": "Armadale, West Lothian",
+      "matchedCandidate": "Armadale (West Lothian)",
+      "confidence": "geo",
+      "extractLength": 617,
+      "extract": "Armadale is a town within the county of West Lothian in the Central Belt of Scotland. It lies to the west of Bathgate and to the east of Blackridge. Armadale, formerly known as Barbauchlaw, is an ex-mining town which was also known for its brick manufacturing. It is named after Armadale in Sutherland, this estate being owned by Sir William Honeyman who later acquired the land of Barbauchlaw. Primarily a residential community, the town has a number of different public places, a central Mains Street and a series of parks, green spaces and nature reserves, many of which lie atop former mines and industrial areas.",
+      "pageUrl": "https://en.wikipedia.org/wiki/Armadale%2C_West_Lothian",
+      "description": "Town in West Lothian, Scotland"
     },
     "ARN": {
       "crs": "ARN",
@@ -3971,26 +3960,15 @@
       "name": "Bramley (West Yorks) Rail Station",
       "lat": 53.80534873272,
       "lon": -1.63720617396,
-      "tier": "no-article",
-      "status": "needs-review",
-      "reason": "No Wikipedia page found for any candidate title.",
-      "weakCandidate": null,
-      "candidatesTried": [
-        "Bramley railway station",
-        "Bramley railway station (West Yorks)",
-        "Bramley station",
-        "Bramley station (West Yorks)",
-        "Bramley",
-        "Bramley (West Yorks)"
-      ],
-      "notes": [
-        "\"Bramley railway station\": disambiguation page, skipped",
-        "\"Bramley railway station (West Yorks)\": no page",
-        "\"Bramley station\": disambiguation page, skipped",
-        "\"Bramley station (West Yorks)\": no page",
-        "\"Bramley\": disambiguation page, skipped",
-        "\"Bramley (West Yorks)\": no page"
-      ]
+      "tier": "stub",
+      "status": "matched",
+      "matchedTitle": "Bramley railway station (West Yorkshire)",
+      "matchedCandidate": "Bramley railway station (West Yorkshire)",
+      "confidence": "title+geo",
+      "extractLength": 135,
+      "extract": "Bramley railway station serves the suburb of Bramley, Leeds, England. It lies on the Calder Valley line 4 miles (6 km) west from Leeds.",
+      "pageUrl": "https://en.wikipedia.org/wiki/Bramley_railway_station_(West_Yorkshire)",
+      "description": "Railway station in West Yorkshire, England"
     },
     "BLG": {
       "crs": "BLG",
@@ -15453,26 +15431,15 @@
       "name": "Garston (Herts) Rail Station",
       "lat": 51.68661575959,
       "lon": -0.38174113492,
-      "tier": "no-article",
-      "status": "needs-review",
-      "reason": "No Wikipedia page found for any candidate title.",
-      "weakCandidate": null,
-      "candidatesTried": [
-        "Garston railway station",
-        "Garston railway station (Herts)",
-        "Garston station",
-        "Garston station (Herts)",
-        "Garston",
-        "Garston (Herts)"
-      ],
-      "notes": [
-        "\"Garston railway station\": disambiguation page, skipped",
-        "\"Garston railway station (Herts)\": no page",
-        "\"Garston station\": disambiguation page, skipped",
-        "\"Garston station (Herts)\": no page",
-        "\"Garston\": disambiguation page, skipped",
-        "\"Garston (Herts)\": no page"
-      ]
+      "tier": "stub",
+      "status": "matched",
+      "matchedTitle": "Garston railway station (Hertfordshire)",
+      "matchedCandidate": "Garston railway station (Hertfordshire)",
+      "confidence": "title+geo",
+      "extractLength": 252,
+      "extract": "Garston railway station serves the Garston area of Watford in Hertfordshire, England. It is the third station on the Abbey Line after Watford Junction and Watford North. The station and all trains serving it are operated by London Northwestern Railway.",
+      "pageUrl": "https://en.wikipedia.org/wiki/Garston_railway_station_(Hertfordshire)",
+      "description": "Railway station in Hertfordshire, England"
     },
     "GST": {
       "crs": "GST",
@@ -18209,26 +18176,15 @@
       "name": "Hatton (Warks) Rail Station",
       "lat": 52.2952778199,
       "lon": -1.67297514159,
-      "tier": "no-article",
-      "status": "needs-review",
-      "reason": "No Wikipedia page found for any candidate title.",
-      "weakCandidate": null,
-      "candidatesTried": [
-        "Hatton railway station",
-        "Hatton railway station (Warks)",
-        "Hatton station",
-        "Hatton station (Warks)",
-        "Hatton",
-        "Hatton (Warks)"
-      ],
-      "notes": [
-        "\"Hatton railway station\": disambiguation page, skipped",
-        "\"Hatton railway station (Warks)\": no page",
-        "\"Hatton station\": disambiguation page, skipped",
-        "\"Hatton station (Warks)\": no page",
-        "\"Hatton\": disambiguation page, skipped",
-        "\"Hatton (Warks)\": no page"
-      ]
+      "tier": "stub",
+      "status": "matched",
+      "matchedTitle": "Hatton railway station (England)",
+      "matchedCandidate": "Hatton railway station (Warwickshire)",
+      "confidence": "title+geo",
+      "extractLength": 368,
+      "extract": "Hatton railway station takes the name of the village of Hatton in Warwickshire, England, although it is about 1 mile (1.6 km) from the village. It is situated in the linear settlement of the same name, that evolved around the station, mainly in the 1950s and 1960s. Other close settlements are Little Shrewley and Shrewley. The station is managed by Chiltern Railways.",
+      "pageUrl": "https://en.wikipedia.org/wiki/Hatton_railway_station_(England)",
+      "description": "Railway station in Warwickshire, England"
     },
     "HTO": {
       "crs": "HTO",
@@ -20675,7 +20631,10 @@
         "Layton station",
         "Layton station (Lancs)",
         "Layton",
-        "Layton (Lancs)"
+        "Layton (Lancs)",
+        "Layton railway station (Lancashire)",
+        "Layton station (Lancashire)",
+        "Layton (Lancashire)"
       ],
       "notes": [
         "\"Layton railway station\": disambiguation page, skipped",
@@ -20683,7 +20642,10 @@
         "\"Layton station\": disambiguation page, skipped",
         "\"Layton station (Lancs)\": no page",
         "\"Layton\": disambiguation page, skipped",
-        "\"Layton (Lancs)\": no page"
+        "\"Layton (Lancs)\": no page",
+        "\"Layton railway station (Lancashire)\": no page",
+        "\"Layton station (Lancashire)\": no page",
+        "\"Layton (Lancashire)\": no page"
       ]
     },
     "LBG": {
@@ -23101,26 +23063,15 @@
       "name": "Millbrook (Hants) Rail Station",
       "lat": 50.91149602682,
       "lon": -1.43384250246,
-      "tier": "no-article",
-      "status": "needs-review",
-      "reason": "No Wikipedia page found for any candidate title.",
-      "weakCandidate": null,
-      "candidatesTried": [
-        "Millbrook railway station",
-        "Millbrook railway station (Hants)",
-        "Millbrook station",
-        "Millbrook station (Hants)",
-        "Millbrook",
-        "Millbrook (Hants)"
-      ],
-      "notes": [
-        "\"Millbrook railway station\": disambiguation page, skipped",
-        "\"Millbrook railway station (Hants)\": no page",
-        "\"Millbrook station\": disambiguation page, skipped",
-        "\"Millbrook station (Hants)\": no page",
-        "\"Millbrook\": disambiguation page, skipped",
-        "\"Millbrook (Hants)\": no page"
-      ]
+      "tier": "stub",
+      "status": "matched",
+      "matchedTitle": "Millbrook railway station (Hampshire)",
+      "matchedCandidate": "Millbrook railway station (Hampshire)",
+      "confidence": "title+geo",
+      "extractLength": 207,
+      "extract": "Millbrook railway station is a small station in the Millbrook area of Southampton, England. It is served mainly by the Salisbury to Romsey stopping service. This service runs once per hour in each direction.",
+      "pageUrl": "https://en.wikipedia.org/wiki/Millbrook_railway_station_(Hampshire)",
+      "description": "Railway station in Hampshire, England"
     },
     "MBR": {
       "crs": "MBR",
@@ -23912,26 +23863,15 @@
       "name": "Millbrook (Beds) Rail Station",
       "lat": 52.05383666604,
       "lon": -0.53270303785,
-      "tier": "no-article",
-      "status": "needs-review",
-      "reason": "No Wikipedia page found for any candidate title.",
-      "weakCandidate": null,
-      "candidatesTried": [
-        "Millbrook railway station",
-        "Millbrook railway station (Beds)",
-        "Millbrook station",
-        "Millbrook station (Beds)",
-        "Millbrook",
-        "Millbrook (Beds)"
-      ],
-      "notes": [
-        "\"Millbrook railway station\": disambiguation page, skipped",
-        "\"Millbrook railway station (Beds)\": no page",
-        "\"Millbrook station\": disambiguation page, skipped",
-        "\"Millbrook station (Beds)\": no page",
-        "\"Millbrook\": disambiguation page, skipped",
-        "\"Millbrook (Beds)\": no page"
-      ]
+      "tier": "stub",
+      "status": "matched",
+      "matchedTitle": "Millbrook railway station (Bedfordshire)",
+      "matchedCandidate": "Millbrook railway station (Bedfordshire)",
+      "confidence": "title+geo",
+      "extractLength": 255,
+      "extract": "Millbrook railway station serves the villages of Millbrook and Marston Moretaine in Bedfordshire, England. It is on the Marston Vale Line, between Stewartby and Lidlington. Millbrook is also the principal stop for the Marston Vale Millennium Country Park.",
+      "pageUrl": "https://en.wikipedia.org/wiki/Millbrook_railway_station_(Bedfordshire)",
+      "description": "Railway station in Millbrook, Bedfordshire, England"
     },
     "MLD": {
       "crs": "MLD",
@@ -23983,26 +23923,15 @@
       "name": "Mill Hill (Lancs) Rail Station",
       "lat": 53.73545796702,
       "lon": -2.5017353241,
-      "tier": "no-article",
-      "status": "needs-review",
-      "reason": "No Wikipedia page found for any candidate title.",
-      "weakCandidate": null,
-      "candidatesTried": [
-        "Mill Hill railway station",
-        "Mill Hill railway station (Lancs)",
-        "Mill Hill station",
-        "Mill Hill station (Lancs)",
-        "Mill Hill",
-        "Mill Hill (Lancs)"
-      ],
-      "notes": [
-        "\"Mill Hill railway station\": disambiguation page, skipped",
-        "\"Mill Hill railway station (Lancs)\": no page",
-        "\"Mill Hill station\": disambiguation page, skipped",
-        "\"Mill Hill station (Lancs)\": no page",
-        "\"Mill Hill\" → \"Mill Hill\": rejected, 280.7km from station",
-        "\"Mill Hill (Lancs)\": no page"
-      ]
+      "tier": "stub",
+      "status": "matched",
+      "matchedTitle": "Mill Hill railway station (Lancashire)",
+      "matchedCandidate": "Mill Hill railway station (Lancashire)",
+      "confidence": "title+geo",
+      "extractLength": 326,
+      "extract": "Mill Hill railway station serves Mill Hill in the Blackburn with Darwen borough in Lancashire, England. It is 1+1⁄4 miles (2.0 km) west of Blackburn railway station. It is an island platformed station managed by Northern. It was opened by the Lancashire and Yorkshire Railway in 1884, almost forty years after the line itself.",
+      "pageUrl": "https://en.wikipedia.org/wiki/Mill_Hill_railway_station_(Lancashire)",
+      "description": "Railway station in Blackburn, Lancashire, England"
     },
     "MLM": {
       "crs": "MLM",
@@ -25754,26 +25683,15 @@
       "name": "Northumberland Park (Tyne & Wear) Rail Station",
       "lat": 55.033251,
       "lon": -1.520037,
-      "tier": "no-article",
-      "status": "needs-review",
-      "reason": "No Wikipedia page found for any candidate title.",
-      "weakCandidate": null,
-      "candidatesTried": [
-        "Northumberland Park railway station",
-        "Northumberland Park railway station (Tyne & Wear)",
-        "Northumberland Park station",
-        "Northumberland Park station (Tyne & Wear)",
-        "Northumberland Park",
-        "Northumberland Park (Tyne & Wear)"
-      ],
-      "notes": [
-        "\"Northumberland Park railway station\": disambiguation page, skipped",
-        "\"Northumberland Park railway station (Tyne & Wear)\": no page",
-        "\"Northumberland Park station\": disambiguation page, skipped",
-        "\"Northumberland Park station (Tyne & Wear)\": no page",
-        "\"Northumberland Park\": disambiguation page, skipped",
-        "\"Northumberland Park (Tyne & Wear)\": no page"
-      ]
+      "tier": "stub",
+      "status": "matched",
+      "matchedTitle": "Northumberland Park station (Tyne and Wear)",
+      "matchedCandidate": "Northumberland Park railway station (Tyne and Wear)",
+      "confidence": "title+geo",
+      "extractLength": 292,
+      "extract": "Northumberland Park is a multimodal transport hub with both a Tyne and Wear Metro station and a National Rail station, serving the village of Backworth and suburbs of Northumberland Park and West Allotment, as well as the nearby Cobalt Business Park, North Tyneside in Tyne and Wear, England.",
+      "pageUrl": "https://en.wikipedia.org/wiki/Northumberland_Park_station_(Tyne_and_Wear)",
+      "description": "Transport interchange in Tyne and Wear"
     },
     "NOR": {
       "crs": "NOR",
@@ -32633,26 +32551,15 @@
       "name": "St Margarets (Herts) Rail Station",
       "lat": 51.78784053112,
       "lon": 0.00126921709,
-      "tier": "no-article",
-      "status": "needs-review",
-      "reason": "No Wikipedia page found for any candidate title.",
-      "weakCandidate": null,
-      "candidatesTried": [
-        "St Margarets railway station",
-        "St Margarets railway station (Herts)",
-        "St Margarets station",
-        "St Margarets station (Herts)",
-        "St Margarets",
-        "St Margarets (Herts)"
-      ],
-      "notes": [
-        "\"St Margarets railway station\": disambiguation page, skipped",
-        "\"St Margarets railway station (Herts)\": no page",
-        "\"St Margarets station\": disambiguation page, skipped",
-        "\"St Margarets station (Herts)\": no page",
-        "\"St Margarets\": disambiguation page, skipped",
-        "\"St Margarets (Herts)\": no page"
-      ]
+      "tier": "substantive",
+      "status": "matched",
+      "matchedTitle": "St Margarets railway station (Hertfordshire)",
+      "matchedCandidate": "St Margarets railway station (Hertfordshire)",
+      "confidence": "title+geo",
+      "extractLength": 406,
+      "extract": "St Margarets railway station is on the Hertford East branch line off the West Anglia Main Line in the east of England, serving the villages of Stanstead St Margarets and Stanstead Abbotts, Hertfordshire. It is 20 miles 25 chains (32.7 km) down the line from London Liverpool Street and is situated between Rye House and Ware. Its three-letter station code is SMT. It is in the civil parish of Great Amwell.",
+      "pageUrl": "https://en.wikipedia.org/wiki/St_Margarets_railway_station_(Hertfordshire)",
+      "description": "Network Rail station in Hertfordshire, England"
     },
     "SMY": {
       "crs": "SMY",
@@ -34549,26 +34456,15 @@
       "name": "Swinton (South Yorks) Rail Station",
       "lat": 53.48623990981,
       "lon": -1.30582124974,
-      "tier": "no-article",
-      "status": "needs-review",
-      "reason": "No Wikipedia page found for any candidate title.",
-      "weakCandidate": null,
-      "candidatesTried": [
-        "Swinton railway station",
-        "Swinton railway station (South Yorks)",
-        "Swinton station",
-        "Swinton station (South Yorks)",
-        "Swinton",
-        "Swinton (South Yorks)"
-      ],
-      "notes": [
-        "\"Swinton railway station\": disambiguation page, skipped",
-        "\"Swinton railway station (South Yorks)\": no page",
-        "\"Swinton station\": disambiguation page, skipped",
-        "\"Swinton station (South Yorks)\": no page",
-        "\"Swinton\": disambiguation page, skipped",
-        "\"Swinton (South Yorks)\": no page"
-      ]
+      "tier": "stub",
+      "status": "matched",
+      "matchedTitle": "Swinton railway station (South Yorkshire)",
+      "matchedCandidate": "Swinton railway station (South Yorkshire)",
+      "confidence": "title+geo",
+      "extractLength": 311,
+      "extract": "Swinton railway station is a railway station in Swinton, South Yorkshire, England. It has three platforms and a small bus station, and lies at the junction of the former North Midland Railway main line between Rotherham Masborough and Leeds via Cudworth and the former South Yorkshire Railway line to Doncaster.",
+      "pageUrl": "https://en.wikipedia.org/wiki/Swinton_railway_station_(South_Yorkshire)",
+      "description": "Railway station in South Yorkshire, England"
     },
     "SWO": {
       "crs": "SWO",
@@ -39270,26 +39166,15 @@
       "name": "Whitchurch (Shrops) Rail Station",
       "lat": 52.96806000406,
       "lon": -2.67169819188,
-      "tier": "no-article",
-      "status": "needs-review",
-      "reason": "No Wikipedia page found for any candidate title.",
-      "weakCandidate": null,
-      "candidatesTried": [
-        "Whitchurch railway station",
-        "Whitchurch railway station (Shrops)",
-        "Whitchurch station",
-        "Whitchurch station (Shrops)",
-        "Whitchurch",
-        "Whitchurch (Shrops)"
-      ],
-      "notes": [
-        "\"Whitchurch railway station\": disambiguation page, skipped",
-        "\"Whitchurch railway station (Shrops)\": no page",
-        "\"Whitchurch station\": disambiguation page, skipped",
-        "\"Whitchurch station (Shrops)\": no page",
-        "\"Whitchurch\": disambiguation page, skipped",
-        "\"Whitchurch (Shrops)\": no page"
-      ]
+      "tier": "stub",
+      "status": "matched",
+      "matchedTitle": "Whitchurch railway station (Shropshire)",
+      "matchedCandidate": "Whitchurch railway station (Shropshire)",
+      "confidence": "title+geo",
+      "extractLength": 226,
+      "extract": "Whitchurch (Shropshire) railway station serves the town of Whitchurch, in Shropshire, England. The station is 18¾ miles (30 km) north of Shrewsbury on the Welsh Marches Line. It is maintained and served by Transport for Wales.",
+      "pageUrl": "https://en.wikipedia.org/wiki/Whitchurch_railway_station_(Shropshire)",
+      "description": "Railway station in Shropshire, England"
     },
     "WTE": {
       "crs": "WTE",

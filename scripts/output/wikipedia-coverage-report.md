@@ -1,15 +1,16 @@
 # Wikipedia coverage scoping report — naptan_stations
 
 Generated: 2026-07-15T20:20:03.338Z
+Updated: 2026-07-16T06:11:58.794Z (abbreviation-mismatch re-test, scripts/rematch-abbreviation-mismatches.mjs)
 
 ## Match rate (Phase 1)
-- Auto-matched: 2565 / 2637
-- Needs manual review: 72 / 2637
+- Auto-matched: 2576 / 2637
+- Needs manual review: 61 / 2637
 
 ## Tier breakdown (Phase 2)
-- no-article: 72
-- stub (extract < 400 chars): 2092
-- substantive (extract >= 400 chars): 473
+- no-article: 61
+- stub (extract < 400 chars): 2101
+- substantive (extract >= 400 chars): 475
 
 ## Sample substantive entries
 ### London Victoria Rail Station (VIC) — matched "London Victoria station", 1318 chars
@@ -38,22 +39,17 @@ Generated: 2026-07-15T20:20:03.338Z
 
 
 ## Needs manual review — breakdown by cause
-Of the 72 flagged entries:
-- **24 — disambiguation-only, article likely exists**: every candidate title resolved to a Wikipedia disambiguation page (e.g. "Chatham railway station" lists Chatham (Kent), Chatham (Ontario), Chatham (Melbourne)…). NaPTAN's plain name gives no qualifier to pick the right one, but the real article almost certainly exists under a further-qualified title. Confirmed live: Halifax, Chatham, Kingston, Andover all fall in this bucket.
-- **22 — mixed (abbreviation mismatch)**: NaPTAN carries an abbreviated qualifier ("W Lothian", "Warks", "Hants", "Herts", "Lancs") that doesn't match Wikipedia's disambiguator, which usually spells the county out in full. Confirmed live: expanding the abbreviation resolves most of these instantly — "Hatton railway station (Warwickshire)" → redirects to a real page; "Millbrook railway station (Hampshire)" and "Garston railway station (Hertfordshire)" both resolve directly. **This is likely low-hanging fruit** — a small NaPTAN-abbreviation → full-county-name lookup table would probably clear most of this bucket without any manual guessing.
-- **25 — no page found for any candidate**: genuinely no confident Wikipedia coverage found — includes metro/light-rail stops, NaPTAN-specific naming quirks ("ELL" suffix, "Low Level" stations that may be covered as a section of a parent station's article rather than their own page), and some newer/smaller stations.
-- **1 — unverified page found**: a real page exists but neither title-normalization nor geo-coordinates could confirm it's the right one (Manchester United FC station → matched the football club's own article, correctly rejected as unconfirmed).
+- disambiguation-only-likely-has-article: 24 (untouched this pass)
+- unverified-page-found: 1 (untouched this pass)
+- no-page-found-any-candidate: 25 (untouched this pass)
+- mixed-other (abbreviation mismatch): 11 remaining after re-test (was 22; 11 resolved, 10 had no qualifier to expand, 1 still unresolved)
 
-Full breakdown with per-station detail is in `needsManualReviewBreakdown` in the JSON report.
-
-## Needs manual review (first 30 of 72)
+## Needs manual review (first 30 of 61)
 - **ADV** (Andover Rail Station): No Wikipedia page found for any candidate title.
 - **ALX** (Alexandria Rail Station): No Wikipedia page found for any candidate title.
 - **APN** (Newcastle Airport Metro Station): No Wikipedia page found for any candidate title.
-- **ARM** (Armadale (W Lothian) Rail Station): No Wikipedia page found for any candidate title.
 - **ASF** (Ashfield Rail Station): No Wikipedia page found for any candidate title.
 - **BCZ** (Brent Cross West Station): No Wikipedia page found for any candidate title.
-- **BLE** (Bramley (West Yorks) Rail Station): No Wikipedia page found for any candidate title.
 - **BLM** (Belmont Rail Station): No Wikipedia page found for any candidate title.
 - **BTR** (Braintree Rail Station): No Wikipedia page found for any candidate title.
 - **CBK** (Cranbrook Rail Station): No Wikipedia page found for any candidate title.
@@ -64,18 +60,20 @@ Full breakdown with per-station detail is in `needsManualReviewBreakdown` in the
 - **FRF** (Fairfield Rail Station): No Wikipedia page found for any candidate title.
 - **GCL** (Glasgow Central Low Level Rail Station): No Wikipedia page found for any candidate title.
 - **GQL** (Glasgow Queen Street Low Level Rail Station): No Wikipedia page found for any candidate title.
-- **GSN** (Garston (Herts) Rail Station): No Wikipedia page found for any candidate title.
 - **HFX** (Halifax Rail Station): No Wikipedia page found for any candidate title.
 - **HGM** (Higham Rail Station): No Wikipedia page found for any candidate title.
 - **HIG** (Highbridge & Burnham-on-Sea Rail Station): No Wikipedia page found for any candidate title.
-- **HTN** (Hatton (Warks) Rail Station): No Wikipedia page found for any candidate title.
 - **KNG** (Kingston Rail Station): No Wikipedia page found for any candidate title.
 - **KTR** (Kintore Railway Station): No Wikipedia page found for any candidate title.
 - **LAG** (Langwith - Whaley Thorns Rail Station): No Wikipedia page found for any candidate title.
 - **LAY** (Layton (Lancs) Rail Station): No Wikipedia page found for any candidate title.
 - **LIF** (Lichfield Trent Valley High Level Rail Station): No Wikipedia page found for any candidate title.
 - **LVL** (Liverpool Lime Street Low Level Rail Station): No Wikipedia page found for any candidate title.
-- **MBK** (Millbrook (Hants) Rail Station): No Wikipedia page found for any candidate title.
 - **MFD** (Minffordd Ffestiniog Railway Station): No Wikipedia page found for any candidate title.
+- **MTO** (Marton Rail Station): No Wikipedia page found for any candidate title.
+- **MUF** (Manchester United FC Rail Station): Found a page ("Manchester United F.C.") but couldn't confirm it's the right one — title doesn't match and no coordinates to check.
+- **NAR** (Narberth Rail Station): No Wikipedia page found for any candidate title.
+- **NBE** (Newbridge Rail Station): No Wikipedia page found for any candidate title.
+- **NCO** (Newcourt Rail Station): No Wikipedia page found for any candidate title.
 
 Full CRS lists per tier and the complete review list are in wikipedia-coverage-report.json.

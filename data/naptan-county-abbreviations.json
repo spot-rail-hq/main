@@ -1,0 +1,41 @@
+{
+  "_notes": "Maps NaPTAN's abbreviated county/region qualifiers (the text NaPTAN puts in parentheses after a station name, e.g. \"Hatton (Warks) Rail Station\") to the full name Wikipedia's disambiguation convention expects (e.g. \"Hatton railway station (Warwickshire)\"). Used by scripts/rematch-abbreviation-mismatches.mjs as an extra matching candidate on top of scripts/scope-wikipedia-coverage.mjs's normal candidate list — it does not replace or edit that script's own matching logic. 'observedInStationList' entries were confirmed present by scanning all 62 distinct parenthetical qualifiers across the full 2,637-row station-list.json (2026-07 scoping pass); 'preemptive' entries are the same standard UK county-abbreviation convention (matching Ordnance Survey/postal short forms) but did not happen to appear in that scan — kept here so future re-runs (new stations added to NaPTAN) don't need this table extended for an already-known abbreviation family. Entries already spelled out in full in NaPTAN (e.g. 'Devon', 'Kent', 'Cardiff') and non-county place-name qualifiers (e.g. 'Battersea', 'Glasgow', 'Rhondda') are deliberately NOT here — they need no expansion.",
+  "observedInStationList": {
+    "Beds": "Bedfordshire",
+    "Berks": "Berkshire",
+    "Cambs": "Cambridgeshire",
+    "Derbys": "Derbyshire",
+    "Glos": "Gloucestershire",
+    "Hants": "Hampshire",
+    "Herts": "Hertfordshire",
+    "Lancs": "Lancashire",
+    "Leics": "Leicestershire",
+    "N Yorks": "North Yorkshire",
+    "Notts": "Nottinghamshire",
+    "Oxon": "Oxfordshire",
+    "S Lanarks": "South Lanarkshire",
+    "S Yorks": "South Yorkshire",
+    "Shrops": "Shropshire",
+    "South Yorks": "South Yorkshire",
+    "Staffs": "Staffordshire",
+    "Tyne & Wear": "Tyne and Wear",
+    "W Lothian": "West Lothian",
+    "Warks": "Warwickshire",
+    "West Yorks": "West Yorkshire",
+    "Wilts": "Wiltshire"
+  },
+  "preemptive": {
+    "Beds & Hunts": "Bedfordshire",
+    "Bucks": "Buckinghamshire",
+    "Lincs": "Lincolnshire",
+    "Northants": "Northamptonshire",
+    "Northumb": "Northumberland",
+    "S Glos": "South Gloucestershire",
+    "S Wales": "South Wales",
+    "Som": "Somerset",
+    "W Sussex": "West Sussex",
+    "E Sussex": "East Sussex",
+    "W Yorks": "West Yorkshire",
+    "Worcs": "Worcestershire"
+  }
+}

@@ -2,23 +2,21 @@
   "generatedAt": "2026-07-15T20:20:03.338Z",
   "totalStations": 2637,
   "matchRate": {
-    "autoMatched": 2565,
-    "needsManualReview": 72
+    "autoMatched": 2576,
+    "needsManualReview": 61
   },
   "tierCounts": {
-    "no-article": 72,
-    "stub": 2092,
-    "substantive": 473
+    "no-article": 61,
+    "stub": 2101,
+    "substantive": 475
   },
   "tierCrsLists": {
     "no-article": [
       "ADV",
       "ALX",
       "APN",
-      "ARM",
       "ASF",
       "BCZ",
-      "BLE",
       "BLM",
       "BTR",
       "CBK",
@@ -29,28 +27,22 @@
       "FRF",
       "GCL",
       "GQL",
-      "GSN",
       "HFX",
       "HGM",
       "HIG",
-      "HTN",
       "KNG",
       "KTR",
       "LAG",
       "LAY",
       "LIF",
       "LVL",
-      "MBK",
       "MFD",
-      "MLB",
-      "MLH",
       "MTO",
       "MUF",
       "NAR",
       "NBE",
       "NCO",
       "NMK",
-      "NOP",
       "NRC",
       "NUM",
       "NWT",
@@ -68,21 +60,18 @@
       "SBK",
       "SEF",
       "SHT",
-      "SMT",
       "SPF",
       "SPL",
       "SRL",
       "STK",
       "STQ",
       "SUU",
-      "SWN",
       "SYD",
       "TAH",
       "TIR",
       "TRD",
       "TYB",
       "UPW",
-      "WTC",
       "ZBU"
     ],
     "stub": [
@@ -291,6 +280,7 @@
       "BKW",
       "BLA",
       "BLB",
+      "BLE",
       "BLG",
       "BLI",
       "BLK",
@@ -898,6 +888,7 @@
       "GRY",
       "GSD",
       "GSL",
+      "GSN",
       "GST",
       "GSW",
       "GSY",
@@ -1050,6 +1041,7 @@
       "HTE",
       "HTF",
       "HTH",
+      "HTN",
       "HTO",
       "HTW",
       "HTY",
@@ -1318,6 +1310,7 @@
       "MAU",
       "MAX",
       "MAY",
+      "MBK",
       "MBT",
       "MCB",
       "MCE",
@@ -1357,9 +1350,11 @@
       "MIS",
       "MKM",
       "MKR",
+      "MLB",
       "MLD",
       "MLF",
       "MLG",
+      "MLH",
       "MLM",
       "MLN",
       "MLW",
@@ -1451,6 +1446,7 @@
       "NNP",
       "NNT",
       "NOA",
+      "NOP",
       "NOR",
       "NPD",
       "NQU",
@@ -1901,6 +1897,7 @@
       "SWK",
       "SWL",
       "SWM",
+      "SWN",
       "SWO",
       "SWR",
       "SWT",
@@ -2142,6 +2139,7 @@
       "WSU",
       "WSW",
       "WTB",
+      "WTC",
       "WTG",
       "WTH",
       "WTL",
@@ -2197,6 +2195,7 @@
       "APS",
       "ARB",
       "ARG",
+      "ARM",
       "ASC",
       "AVF",
       "AVN",
@@ -2554,6 +2553,7 @@
       "SMK",
       "SML",
       "SMN",
+      "SMT",
       "SNF",
       "SNT",
       "SNY",
@@ -2690,20 +2690,6 @@
       ]
     },
     {
-      "crs": "ARM",
-      "name": "Armadale (W Lothian) Rail Station",
-      "reason": "No Wikipedia page found for any candidate title.",
-      "weakCandidate": null,
-      "candidatesTried": [
-        "Armadale railway station",
-        "Armadale railway station (W Lothian)",
-        "Armadale station",
-        "Armadale station (W Lothian)",
-        "Armadale",
-        "Armadale (W Lothian)"
-      ]
-    },
-    {
       "crs": "ASF",
       "name": "Ashfield Rail Station",
       "reason": "No Wikipedia page found for any candidate title.",
@@ -2723,20 +2709,6 @@
         "Brent Cross West Station railway station",
         "Brent Cross West Station station",
         "Brent Cross West Station"
-      ]
-    },
-    {
-      "crs": "BLE",
-      "name": "Bramley (West Yorks) Rail Station",
-      "reason": "No Wikipedia page found for any candidate title.",
-      "weakCandidate": null,
-      "candidatesTried": [
-        "Bramley railway station",
-        "Bramley railway station (West Yorks)",
-        "Bramley station",
-        "Bramley station (West Yorks)",
-        "Bramley",
-        "Bramley (West Yorks)"
       ]
     },
     {
@@ -2853,20 +2825,6 @@
       ]
     },
     {
-      "crs": "GSN",
-      "name": "Garston (Herts) Rail Station",
-      "reason": "No Wikipedia page found for any candidate title.",
-      "weakCandidate": null,
-      "candidatesTried": [
-        "Garston railway station",
-        "Garston railway station (Herts)",
-        "Garston station",
-        "Garston station (Herts)",
-        "Garston",
-        "Garston (Herts)"
-      ]
-    },
-    {
       "crs": "HFX",
       "name": "Halifax Rail Station",
       "reason": "No Wikipedia page found for any candidate title.",
@@ -2897,20 +2855,6 @@
         "Highbridge & Burnham-on-Sea railway station",
         "Highbridge & Burnham-on-Sea station",
         "Highbridge & Burnham-on-Sea"
-      ]
-    },
-    {
-      "crs": "HTN",
-      "name": "Hatton (Warks) Rail Station",
-      "reason": "No Wikipedia page found for any candidate title.",
-      "weakCandidate": null,
-      "candidatesTried": [
-        "Hatton railway station",
-        "Hatton railway station (Warks)",
-        "Hatton station",
-        "Hatton station (Warks)",
-        "Hatton",
-        "Hatton (Warks)"
       ]
     },
     {
@@ -2957,7 +2901,10 @@
         "Layton station",
         "Layton station (Lancs)",
         "Layton",
-        "Layton (Lancs)"
+        "Layton (Lancs)",
+        "Layton railway station (Lancashire)",
+        "Layton station (Lancashire)",
+        "Layton (Lancashire)"
       ]
     },
     {
@@ -2983,20 +2930,6 @@
       ]
     },
     {
-      "crs": "MBK",
-      "name": "Millbrook (Hants) Rail Station",
-      "reason": "No Wikipedia page found for any candidate title.",
-      "weakCandidate": null,
-      "candidatesTried": [
-        "Millbrook railway station",
-        "Millbrook railway station (Hants)",
-        "Millbrook station",
-        "Millbrook station (Hants)",
-        "Millbrook",
-        "Millbrook (Hants)"
-      ]
-    },
-    {
       "crs": "MFD",
       "name": "Minffordd Ffestiniog Railway Station",
       "reason": "No Wikipedia page found for any candidate title.",
@@ -3005,34 +2938,6 @@
         "Minffordd Ffestiniog Railway Station railway station",
         "Minffordd Ffestiniog Railway Station station",
         "Minffordd Ffestiniog Railway Station"
-      ]
-    },
-    {
-      "crs": "MLB",
-      "name": "Millbrook (Beds) Rail Station",
-      "reason": "No Wikipedia page found for any candidate title.",
-      "weakCandidate": null,
-      "candidatesTried": [
-        "Millbrook railway station",
-        "Millbrook railway station (Beds)",
-        "Millbrook station",
-        "Millbrook station (Beds)",
-        "Millbrook",
-        "Millbrook (Beds)"
-      ]
-    },
-    {
-      "crs": "MLH",
-      "name": "Mill Hill (Lancs) Rail Station",
-      "reason": "No Wikipedia page found for any candidate title.",
-      "weakCandidate": null,
-      "candidatesTried": [
-        "Mill Hill railway station",
-        "Mill Hill railway station (Lancs)",
-        "Mill Hill station",
-        "Mill Hill station (Lancs)",
-        "Mill Hill",
-        "Mill Hill (Lancs)"
       ]
     },
     {
@@ -3104,20 +3009,6 @@
         "Newmarket railway station",
         "Newmarket station",
         "Newmarket"
-      ]
-    },
-    {
-      "crs": "NOP",
-      "name": "Northumberland Park (Tyne & Wear) Rail Station",
-      "reason": "No Wikipedia page found for any candidate title.",
-      "weakCandidate": null,
-      "candidatesTried": [
-        "Northumberland Park railway station",
-        "Northumberland Park railway station (Tyne & Wear)",
-        "Northumberland Park station",
-        "Northumberland Park station (Tyne & Wear)",
-        "Northumberland Park",
-        "Northumberland Park (Tyne & Wear)"
       ]
     },
     {
@@ -3317,20 +3208,6 @@
       ]
     },
     {
-      "crs": "SMT",
-      "name": "St Margarets (Herts) Rail Station",
-      "reason": "No Wikipedia page found for any candidate title.",
-      "weakCandidate": null,
-      "candidatesTried": [
-        "St Margarets railway station",
-        "St Margarets railway station (Herts)",
-        "St Margarets station",
-        "St Margarets station (Herts)",
-        "St Margarets",
-        "St Margarets (Herts)"
-      ]
-    },
-    {
       "crs": "SPF",
       "name": "Springfield Rail Station",
       "reason": "No Wikipedia page found for any candidate title.",
@@ -3397,20 +3274,6 @@
       ]
     },
     {
-      "crs": "SWN",
-      "name": "Swinton (South Yorks) Rail Station",
-      "reason": "No Wikipedia page found for any candidate title.",
-      "weakCandidate": null,
-      "candidatesTried": [
-        "Swinton railway station",
-        "Swinton railway station (South Yorks)",
-        "Swinton station",
-        "Swinton station (South Yorks)",
-        "Swinton",
-        "Swinton (South Yorks)"
-      ]
-    },
-    {
       "crs": "SYD",
       "name": "Sydenham Rail Station",
       "reason": "No Wikipedia page found for any candidate title.",
@@ -3474,20 +3337,6 @@
         "Upwey railway station",
         "Upwey station",
         "Upwey"
-      ]
-    },
-    {
-      "crs": "WTC",
-      "name": "Whitchurch (Shrops) Rail Station",
-      "reason": "No Wikipedia page found for any candidate title.",
-      "weakCandidate": null,
-      "candidatesTried": [
-        "Whitchurch railway station",
-        "Whitchurch railway station (Shrops)",
-        "Whitchurch station",
-        "Whitchurch station (Shrops)",
-        "Whitchurch",
-        "Whitchurch (Shrops)"
       ]
     },
     {
@@ -3563,12 +3412,12 @@
   "stubThresholdChars": 400,
   "geoRejectKm": 20,
   "needsManualReviewBreakdown": {
-    "_note": "Categorizes the 72 needs-manual-review entries by *why* Phase 1 couldn't confidently match. disambiguation-only-likely-has-article means every candidate title resolved to a Wikipedia disambiguation page — the real article almost certainly exists under a further-qualified title (e.g. \"Chatham railway station (Kent)\") that NaPTAN's plain name doesn't give us enough to guess; a human adding a county/region hint would likely resolve most of these quickly. no-page-found-any-candidate means no page existed under any candidate at all (metro stops, unusual NaPTAN naming like \"ELL\"/\"Low Level\" suffixes, very new stations, etc.) — genuinely no confident Wikipedia coverage found. unverified-page-found means a real, non-disambiguation page was found but neither title normalization nor geo-coordinates could confirm it's the right one.",
+    "_note": "Categorizes the 72 needs-manual-review entries by *why* Phase 1 couldn't confidently match. disambiguation-only-likely-has-article means every candidate title resolved to a Wikipedia disambiguation page — the real article almost certainly exists under a further-qualified title (e.g. \"Chatham railway station (Kent)\") that NaPTAN's plain name doesn't give us enough to guess; a human adding a county/region hint would likely resolve most of these quickly. no-page-found-any-candidate means no page existed under any candidate at all (metro stops, unusual NaPTAN naming like \"ELL\"/\"Low Level\" suffixes, very new stations, etc.) — genuinely no confident Wikipedia coverage found. unverified-page-found means a real, non-disambiguation page was found but neither title normalization nor geo-coordinates could confirm it's the right one. [Updated 2026-07-16T06:11:58.792Z: re-tested via scripts/rematch-abbreviation-mismatches.mjs with a NaPTAN-abbreviation → full-county-name lookup table (data/naptan-county-abbreviations.json) as an extra matching candidate — 11 of the original 22 resolved this way, 1 still didn't match even with the expansion, 10 had no abbreviated qualifier to expand in the first place and are unchanged.]",
     "counts": {
       "disambiguation-only-likely-has-article": 24,
       "unverified-page-found": 1,
       "no-page-found-any-candidate": 25,
-      "mixed-other": 22
+      "mixed-other": 11
     },
     "entries": {
       "disambiguation-only-likely-has-article": [
@@ -3839,16 +3688,6 @@
           "weakCandidate": null
         },
         {
-          "crs": "ARM",
-          "name": "Armadale (W Lothian) Rail Station",
-          "weakCandidate": null
-        },
-        {
-          "crs": "BLE",
-          "name": "Bramley (West Yorks) Rail Station",
-          "weakCandidate": null
-        },
-        {
           "crs": "CBK",
           "name": "Cranbrook Rail Station",
           "weakCandidate": null
@@ -3864,43 +3703,13 @@
           "weakCandidate": null
         },
         {
-          "crs": "GSN",
-          "name": "Garston (Herts) Rail Station",
-          "weakCandidate": null
-        },
-        {
-          "crs": "HTN",
-          "name": "Hatton (Warks) Rail Station",
-          "weakCandidate": null
-        },
-        {
           "crs": "LAY",
           "name": "Layton (Lancs) Rail Station",
           "weakCandidate": null
         },
         {
-          "crs": "MBK",
-          "name": "Millbrook (Hants) Rail Station",
-          "weakCandidate": null
-        },
-        {
-          "crs": "MLB",
-          "name": "Millbrook (Beds) Rail Station",
-          "weakCandidate": null
-        },
-        {
-          "crs": "MLH",
-          "name": "Mill Hill (Lancs) Rail Station",
-          "weakCandidate": null
-        },
-        {
           "crs": "NCO",
           "name": "Newcourt Rail Station",
-          "weakCandidate": null
-        },
-        {
-          "crs": "NOP",
-          "name": "Northumberland Park (Tyne & Wear) Rail Station",
           "weakCandidate": null
         },
         {
@@ -3926,21 +3735,6 @@
         {
           "crs": "SBK",
           "name": "South Bank Rail Station",
-          "weakCandidate": null
-        },
-        {
-          "crs": "SMT",
-          "name": "St Margarets (Herts) Rail Station",
-          "weakCandidate": null
-        },
-        {
-          "crs": "SWN",
-          "name": "Swinton (South Yorks) Rail Station",
-          "weakCandidate": null
-        },
-        {
-          "crs": "WTC",
-          "name": "Whitchurch (Shrops) Rail Station",
           "weakCandidate": null
         }
       ]

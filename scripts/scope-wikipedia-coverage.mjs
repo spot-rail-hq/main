@@ -60,29 +60,29 @@ import path from 'node:path';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
-const STATION_LIST_PATH = path.join(ROOT, 'station-list.json');
+export const STATION_LIST_PATH = path.join(ROOT, 'station-list.json');
 const OUTPUT_DIR = path.join(ROOT, 'scripts', 'output');
-const CHECKPOINT_PATH = path.join(OUTPUT_DIR, 'wikipedia-coverage-checkpoint.json');
-const REPORT_JSON_PATH = path.join(OUTPUT_DIR, 'wikipedia-coverage-report.json');
-const REPORT_MD_PATH = path.join(OUTPUT_DIR, 'wikipedia-coverage-report.md');
+export const CHECKPOINT_PATH = path.join(OUTPUT_DIR, 'wikipedia-coverage-checkpoint.json');
+export const REPORT_JSON_PATH = path.join(OUTPUT_DIR, 'wikipedia-coverage-report.json');
+export const REPORT_MD_PATH = path.join(OUTPUT_DIR, 'wikipedia-coverage-report.md');
 
 const REST_SUMMARY_API = 'https://en.wikipedia.org/api/rest_v1/page/summary/';
 const USER_AGENT = 'SpotRailHQ-content-scoping-script/1.0 (+https://srhq.uk; static report build step, not a live API dependency)';
 const REQUEST_DELAY_MS = 150; // be a good citizen — this is 2,637+ stations, up to ~6 requests each worst case
 const MAX_RETRIES = 3;
-const GEO_REJECT_KM = 20;
-const STUB_THRESHOLD_CHARS = 400;
+export const GEO_REJECT_KM = 20;
+export const STUB_THRESHOLD_CHARS = 400;
 const CHECKPOINT_EVERY = 50;
 
 function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
-function loadJson(p, fallback) {
+export function loadJson(p, fallback) {
   if (!existsSync(p)) return fallback;
   return JSON.parse(readFileSync(p, 'utf8'));
 }
-function saveJson(p, data) {
+export function saveJson(p, data) {
   writeFileSync(p, JSON.stringify(data, null, 2) + '\n');
 }
 
@@ -90,14 +90,14 @@ function saveJson(p, data) {
 // NaPTAN names look like "Alexandra Palace Rail Station" or
 // "Richmond (London) Rail Station" — strip the "Rail Station" suffix and
 // split off any trailing "(Qualifier)" disambiguator.
-function splitNaptanName(rawName) {
+export function splitNaptanName(rawName) {
   let s = rawName.trim().replace(/\s*rail\s*station\s*$/i, '').trim();
   const m = s.match(/^(.*?)\s*\(([^)]+)\)\s*$/);
   if (m) return { base: m[1].trim(), qualifier: m[2].trim() };
   return { base: s, qualifier: null };
 }
 
-function normalizeForCompare(s) {
+export function normalizeForCompare(s) {
   return (s || '')
     .toLowerCase()
     .replace(/\(.*?\)/g, '')
@@ -107,7 +107,7 @@ function normalizeForCompare(s) {
     .trim();
 }
 
-function buildCandidates(base, qualifier) {
+export function buildCandidates(base, qualifier) {
   const list = [];
   list.push(`${base} railway station`);
   if (qualifier) list.push(`${base} railway station (${qualifier})`);
@@ -158,9 +158,13 @@ async function fetchSummary(title) {
 }
 
 // ─── Phase 1 + 2 combined per station (one fetch pass reused for both) ────
-async function matchStation(station) {
+// extraCandidates: appended after the standard candidate list — used by
+// scripts/rematch-abbreviation-mismatches.mjs to try a NaPTAN-abbreviation-
+// expanded qualifier (e.g. "Warks" → "Warwickshire") without duplicating
+// this function's matching/scoring logic.
+export async function matchStation(station, extraCandidates = []) {
   const { base, qualifier } = splitNaptanName(station.name);
-  const candidates = buildCandidates(base, qualifier);
+  const candidates = [...buildCandidates(base, qualifier), ...extraCandidates];
   const normalizedBase = normalizeForCompare(base);
   let weakCandidate = null;
   const triedNotes = [];
@@ -225,7 +229,7 @@ async function matchStation(station) {
   };
 }
 
-function classifyTier(matchResult) {
+export function classifyTier(matchResult) {
   if (matchResult.status !== 'matched') return 'no-article';
   return matchResult.extractLength >= STUB_THRESHOLD_CHARS ? 'substantive' : 'stub';
 }
@@ -337,7 +341,12 @@ Full CRS lists per tier and the complete review list are in wikipedia-coverage-r
   console.log(`Report written to ${REPORT_JSON_PATH} and ${REPORT_MD_PATH}`);
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+// Only auto-run when executed directly (`node scripts/scope-wikipedia-coverage.mjs`) —
+// scripts/rematch-abbreviation-mismatches.mjs imports this module's functions
+// without wanting the full 2,637-station run to fire.
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main().catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
+}
