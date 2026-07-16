@@ -5424,7 +5424,23 @@
       "incomplete": false,
       "notes": "hint: OSM tags this station's Wikipedia page as \"Barry railway station\" — consider setting wikipedia_title (not auto-applied)"
     },
-    "wikipedia_title": "Barry railway station"
+    "wikipedia_title": "Barry railway station",
+    "headline": "Barry station junction gained a third platform in £200m South Wales upgrade",
+    "opened_year": "1889",
+    "notable_features": [
+      "Junction station at the start of the Vale of Glamorgan Line",
+      "Originally the terminus of the Barry Railway",
+      "Third platform (Platform 3) added as part of a £200m regeneration scheme",
+      "Featured in two episodes of Gavin & Stacey",
+      "New footbridge with lifts installed from February 2022",
+      "Former signal box demolished in 2014 during platform works"
+    ],
+    "_wikipedia": {
+      "fetched_at": "2026-07-16T12:14:53.547Z",
+      "title": "Barry railway station",
+      "url": "https://en.wikipedia.org/wiki/Barry_railway_station",
+      "license": "CC BY-SA 4.0"
+    }
   },
   "BSB": {
     "platforms": 2,
