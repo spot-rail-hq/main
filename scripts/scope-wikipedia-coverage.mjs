@@ -115,6 +115,13 @@ export function buildCandidates(base, qualifier) {
   if (qualifier) list.push(`${base} station (${qualifier})`);
   list.push(base);
   if (qualifier) list.push(`${base} (${qualifier})`);
+  // Wikipedia disambiguates some England stations against an international
+  // namesake with "(England)" rather than a county name (confirmed live for
+  // Layton — the Blackpool station is "Layton railway station (England)",
+  // disambiguated against Layton station, Utah — and Hatton railway station
+  // resolves the same way). Tried last: only relevant once the more specific
+  // candidates above have failed.
+  list.push(`${base} railway station (England)`);
   return [...new Set(list)];
 }
 

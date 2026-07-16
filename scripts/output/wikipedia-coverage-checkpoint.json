@@ -20621,32 +20621,15 @@
       "name": "Layton (Lancs) Rail Station",
       "lat": 53.83526789853,
       "lon": -3.02999045915,
-      "tier": "no-article",
-      "status": "needs-review",
-      "reason": "No Wikipedia page found for any candidate title.",
-      "weakCandidate": null,
-      "candidatesTried": [
-        "Layton railway station",
-        "Layton railway station (Lancs)",
-        "Layton station",
-        "Layton station (Lancs)",
-        "Layton",
-        "Layton (Lancs)",
-        "Layton railway station (Lancashire)",
-        "Layton station (Lancashire)",
-        "Layton (Lancashire)"
-      ],
-      "notes": [
-        "\"Layton railway station\": disambiguation page, skipped",
-        "\"Layton railway station (Lancs)\": no page",
-        "\"Layton station\": disambiguation page, skipped",
-        "\"Layton station (Lancs)\": no page",
-        "\"Layton\": disambiguation page, skipped",
-        "\"Layton (Lancs)\": no page",
-        "\"Layton railway station (Lancashire)\": no page",
-        "\"Layton station (Lancashire)\": no page",
-        "\"Layton (Lancashire)\": no page"
-      ]
+      "tier": "stub",
+      "status": "matched",
+      "matchedTitle": "Layton railway station (England)",
+      "matchedCandidate": "Layton railway station (England)",
+      "confidence": "title+geo",
+      "extractLength": 211,
+      "extract": "Layton is a railway station that serves the Blackpool suburbs of Layton and Bispham, in Lancashire, England. It is a stop on the northern Blackpool branch line. It is managed by Northern Trains and is unstaffed.",
+      "pageUrl": "https://en.wikipedia.org/wiki/Layton_railway_station_(England)",
+      "description": "Railway station in Lancashire, England"
     },
     "LBG": {
       "crs": "LBG",
