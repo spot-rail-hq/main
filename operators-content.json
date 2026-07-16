@@ -870,31 +870,31 @@
   },
   "HT": {
     "name": "Hull Trains",
-    "headline": "Hull Trains, Britain's open-access rail pioneer, scored 97% passenger satisfaction in 2017",
+    "headline": "Open-access Hull Trains named Best UK Train Operator with 97% satisfaction",
     "parent_company": "FirstGroup",
     "wikipedia_title": "Hull Trains",
     "_wikipedia": {
-      "fetched_at": "2026-07-14T11:48:20.528Z",
+      "fetched_at": "2026-07-16T12:47:26.893Z",
       "title": "Hull Trains",
       "url": "https://en.wikipedia.org/wiki/Hull_Trains",
       "license": "CC BY-SA 4.0"
     },
     "notable_features": [
-      "Established in 1999 as an open-access operator in response to low train frequency between Hull and London",
-      "Named Best UK Train Operator in 2017 with a 97% satisfaction rate in the National Rail Passenger Survey",
-      "Holds a track-access agreement extended to December 2032",
-      "Maximum speed raised from 100 mph to 125 mph with introduction of Class 222 Pioneer units",
-      "Currently operated by a fleet of five Class 802 Paragon bi-mode multiple units",
-      "Multiple temporary service suspensions during 2020-2021 due to the COVID-19 pandemic"
+      "Established in 1999 as an open-access operator in response to low InterCity East Coast service frequency",
+      "Holds a track-access agreement extended multiple times, now running until December 2032",
+      "Named Best UK Train Operator in 2017 with a 97% passenger satisfaction rate",
+      "Introduction of Class 222 Pioneers raised top speed from 100 mph to 125 mph",
+      "Operates a fleet of five Class 802 'Paragon' bi-mode multiple units introduced from December 2019",
+      "Repeatedly suspended and resumed services during the COVID-19 pandemic in 2020 and 2021"
     ]
   },
   "LD": {
     "name": "Lumo",
-    "headline": "Open-access Lumo offers only standard class seating and no guards",
+    "headline": "Open-access rail operator Lumo offers only standard class, no guards",
     "parent_company": "FirstGroup",
     "wikipedia_title": "Lumo (train operating company)",
     "_wikipedia": {
-      "fetched_at": "2026-07-14T11:48:33.970Z",
+      "fetched_at": "2026-07-16T12:47:43.121Z",
       "title": "Lumo (train operating company)",
       "url": "https://en.wikipedia.org/wiki/Lumo_(train_operating_company)",
       "license": "CC BY-SA 4.0"
@@ -905,14 +905,13 @@
     "legal_entity": "GTS Rail Operations (legal operating company behind the Lumo brand, not a separate rebrand)",
     "stations_operated": 64,
     "notable_features": [
+      "Open-access operator distinct from franchised services, using additional East Coast Main Line paths",
       "Third open-access operator on the East Coast Main Line, after Hull Trains and Grand Central",
-      "Offers only standard class seating, unlike competitors",
-      "Does not use guards on its trains",
-      "Operates Class 803 EMUs based on the Hitachi AT300 design used for LNER's Azuma trains, but without an auxiliary diesel engine, using batteries instead for onboard power",
-      "£100 million order for five Class 803 high speed trains",
-      "Promotes itself as a 'digital-first' operator with paperless ticketing",
-      "Fastest Edinburgh to London service takes 4 hours 3 minutes",
-      "Trains capable of 125 mph (200 km/h)"
+      "Offers only standard class seating and does not use guards on its trains",
+      "Operates Class 803 electric trains, a Hitachi AT300 variant without a diesel engine, using batteries instead for onboard power during overhead line failures",
+      "Fastest East Coast service runs Edinburgh to London in 4 hours and 3 minutes",
+      "Brand name 'Lumo' combines 'luminosity' and 'motion'",
+      "Promotes itself as a 'digital-first' operator with paperless ticketing"
     ],
     "franchises": [
       {
@@ -924,7 +923,7 @@
   },
   "HX": {
     "name": "Heathrow Express",
-    "headline": "Tunnel collapse during construction led to a record £1.7 million safety fine",
+    "headline": "Heathrow Express races non-stop from Paddington to Heathrow in just 15 minutes",
     "parent_company": "Heathrow Airport Holdings",
     "franchises": [
       {
@@ -935,55 +934,55 @@
     ],
     "wikipedia_title": "Heathrow Express",
     "_wikipedia": {
-      "fetched_at": "2026-07-14T11:48:46.729Z",
+      "fetched_at": "2026-07-16T12:47:56.288Z",
       "title": "Heathrow Express",
       "url": "https://en.wikipedia.org/wiki/Heathrow_Express",
       "license": "CC BY-SA 4.0"
     },
     "notable_features": [
-      "Non-stop 15-minute service between London Paddington and Heathrow Airport",
-      "Built through two 6.8km single-bore tunnels with escape shafts",
-      "1994 tunnel collapse caused a then-record £1.7 million health and safety fine for Balfour Beatty and Geoconsult",
+      "Non-stop 15-minute journey between London Paddington and Heathrow Airport",
+      "Built via a joint venture between BAA and British Rail, with construction starting in 1993",
+      "Tunnel collapse in 1994 led to record £1.7 million fine for Balfour Beatty and Geoconsult under health and safety legislation",
+      "Offered a Paddington check-in and luggage drop-off service (1999-2003), similar to Hong Kong's Airport Express",
+      "Brand, uniforms, train design and station architecture created by Wolff Olins",
+      "Uses Automatic Train Protection (ATP) and European Train Control System (ETCS) on its route",
       "Over 100 million passengers carried since opening in 1998",
-      "New Class 387 Electrostar trains introduced in December 2020, replacing original Class 332 fleet since 1998",
-      "Offers 'Business First' first-class cabin with Fast Track airport security",
-      "Uses Automatic Train Protection (ATP) and European Train Control System (ETCS) signalling",
-      "Carries around 16,000 passengers per day"
+      "New Class 387 Electrostar trains introduced from December 2020, replacing original Class 332 fleet used since 1998",
+      "Operates jointly by Great Western Railway and Heathrow Express Operating Company under a contract extended to 2028"
     ]
   },
   "XR": {
     "name": "Elizabeth line",
-    "headline": "Elizabeth line, named for the Queen, now carries a seventh of UK rail trips",
-    "parent_company": "Transport for London (TfL)",
+    "headline": "New London railway named for the Queen carries a seventh of UK rail trips",
+    "parent_company": "Go-Ahead Group, Tokyo Metro and Sumitomo Corporation (GTS Rail Operations)",
     "franchises": [
       {
-        "name": "MTR Corporation (TfL Rail / MTR Elizabeth line)",
-        "start": "July 2014",
-        "end": "May 2025"
+        "name": "MTR Crossrail / MTR Elizabeth line",
+        "start": 2015,
+        "end": 2025
       },
       {
         "name": "GTS Rail Operations",
-        "start": "May 2025",
+        "start": 2025,
         "end": null
       }
     ],
     "wikipedia_title": "Elizabeth line",
     "_wikipedia": {
-      "fetched_at": "2026-07-14T11:49:07.839Z",
+      "fetched_at": "2026-07-16T12:48:12.884Z",
       "title": "Elizabeth line",
       "url": "https://en.wikipedia.org/wiki/Elizabeth_line",
       "license": "CC BY-SA 4.0"
     },
     "notable_features": [
       "Named after Queen Elizabeth II, who officially opened it during her Platinum Jubilee",
-      "Reached over 200 million passenger trips a year, a seventh of all UK rail journeys",
-      "Operated exclusively by a purpose-built fleet of nine-car Class 345 trains",
+      "Reached over 200 million trips annually in its second year of operation",
+      "Carries one seventh of all rail trips in the United Kingdom",
+      "Operates exclusively with purpose-built nine-car Class 345 trains carrying up to 1,500 passengers",
       "All 41 stations are step-free from street to platform",
-      "Uses Communications-Based Train Control in the central section and Abbey Wood branch",
-      "Won the 2024 RIBA London Building of the Year award and the Stirling Prize",
-      "Performs a similar role to the Paris RER and German S-Bahn systems",
-      "TfL bears 90% of revenue risk while the operator takes only 10%",
-      "Central section platforms built to allow future 240-metre trains despite 200-metre trains in use"
+      "Central section runs up to 24 trains per hour in each direction",
+      "Won the RIBA Stirling Prize for architecture in 2024",
+      "Uses Communications-Based Train Control in the central section and Abbey Wood branch, with ETCS on the Heathrow branch"
     ],
     "regions_served": {
       "main": [
@@ -994,23 +993,18 @@
   },
   "AW": {
     "name": "Transport for Wales",
-    "headline": "Welsh Government-owned TfW took over Wales rail operations mid-pandemic",
+    "headline": "Welsh Government rail body became last-resort operator during COVID-19 pandemic",
     "parent_company": "Welsh Government",
     "franchises": [
       {
-        "name": "Wales & Borders railway franchise (operated by KeolisAmey Wales, trading as Transport for Wales Rail Services)",
-        "start": "14 October 2018",
-        "end": "7 February 2021"
-      },
-      {
-        "name": "Wales & Borders railway franchise (operated by Transport for Wales Rail Limited)",
-        "start": "7 February 2021",
+        "name": "Wales & Borders",
+        "start": 2018,
         "end": null
       }
     ],
     "wikipedia_title": "Transport for Wales",
     "_wikipedia": {
-      "fetched_at": "2026-07-14T11:49:20.468Z",
+      "fetched_at": "2026-07-16T12:48:24.168Z",
       "title": "Transport for Wales",
       "url": "https://en.wikipedia.org/wiki/Transport_for_Wales",
       "license": "CC BY-SA 4.0"
@@ -1018,22 +1012,21 @@
     "welsh_name": "Trafnidiaeth Cymru",
     "stations_operated": 64,
     "notable_features": [
-      "Owns the Wales & Borders rail franchise through subsidiary Transport for Wales Rail",
-      "Took over rail operations as a de facto operator of last resort during the COVID-19 pandemic",
-      "Acquired engineering firm Pullman Rail Ltd to support its Canton depot and Metro scheme",
-      "Launched TfW Ffeibr, a full-fibre internet infrastructure company for the South Wales valleys",
-      "Developing the T Network, an integrated multimodal transport network across Wales",
-      "Runs Fflecsi, a demand-responsive transport service launched in Newport in 2020"
+      "Replaced the Arriva Trains Wales brand on the Wales & Borders franchise from 14 October 2018",
+      "Welsh Government-owned company took over day-to-day franchise operations as an operator of last resort on 7 February 2021 due to COVID-19 pandemic",
+      "Acquired Cardiff-based engineering firm Pullman Rail Ltd from Colas Rail in 2021 to support its Canton depot",
+      "Launched TfW Ffeibr, a full-fibre internet infrastructure company for the South Wales valleys, in November 2024",
+      "Developing the T Network, an integrated multimodal transport network across Wales"
     ],
     "regions_served": {
       "main": [
+        "Wales"
+      ],
+      "other": [
         "South Wales",
         "North Wales",
         "Swansea Bay",
         "West Wales"
-      ],
-      "other": [
-        "South Wales valleys"
       ]
     }
   },
@@ -1041,7 +1034,7 @@
     "name": "Island Line",
     "wikipedia_title": "Island Line",
     "_wikipedia": {
-      "fetched_at": "2026-07-14T11:49:22.771Z",
+      "fetched_at": "2026-07-16T12:48:26.747Z",
       "title": "Island Line",
       "url": "https://en.wikipedia.org/wiki/Island_Line",
       "license": "CC BY-SA 4.0"
@@ -1053,27 +1046,34 @@
   },
   "WR": {
     "name": "West Coast Railways",
-    "headline": "First private firm granted UK train operating licence, back in 1998",
+    "headline": "First privately owned company ever granted a UK train operating licence",
     "wikipedia_title": "West Coast Railways",
     "_wikipedia": {
-      "fetched_at": "2026-07-14T11:49:33.168Z",
+      "fetched_at": "2026-07-16T12:48:39.735Z",
       "title": "West Coast Railways",
       "url": "https://en.wikipedia.org/wiki/West_Coast_Railways",
       "license": "CC BY-SA 4.0"
     },
     "stations_operated": 3,
     "notable_features": [
-      "First privately owned company to be granted a train operating company licence, in June 1998",
-      "Operated steam locomotive 5972 Olton Hall disguised as 'Hogwarts Castle' for the Harry Potter films' Hogwarts Express",
-      "Runs The Jacobite steam train along the West Highland Line, crossing the Glenfinnan Viaduct",
-      "Subject of an unprecedented total network operator's licence suspension by Network Rail in April 2015 after a SPAD at Wootton Bassett Junction",
-      "Fined £200,000 plus costs after pleading guilty to Health and Safety at Work Act offences over the 2015 Wootton Bassett incident",
-      "Fleet includes Class 37, 47 and 57 locomotives, including prototype passenger locomotive 57601",
-      "Hauled the Belmond Royal Scotsman luxury train under a contract won in 2005",
-      "Had its exemption to run hinged-door Mark 1/Mark 2 coaches without Central Door Locking revoked by the ORR in January 2024",
-      "A WCR locomotive was derailed during a run-round at Mallaig in June 2026"
+      "Became the first privately owned company to be granted a UK train operating licence, in June 1998",
+      "Owned and operated steam locomotive 5972 Olton Hall as 'Hogwarts Castle' hauling the Hogwarts Express in the Harry Potter films",
+      "In 2015 became subject to an unprecedented total network access ban by Network Rail, the first of its kind since privatisation",
+      "Fined £200,000 plus £64,000 costs after a 2015 signal-passed-at-danger incident at Wootton Bassett Junction",
+      "Operates The Jacobite steam service on the West Highland Line, crossing the famous Glenfinnan Viaduct",
+      "Repeatedly subject to ORR prohibition notices and exemption revocations over safety and rolling stock issues (2016, 2023, 2024)"
     ],
-    "parent_company": "Steamtown Railway Museum"
+    "parent_company": "Steamtown Railway Museum",
+    "regions_served": {
+      "main": [
+        "Lancashire"
+      ],
+      "other": [
+        "West London",
+        "the Scottish Highlands",
+        "Yorkshire"
+      ]
+    }
   },
   "ES": {
     "name": "Eurostar",
@@ -1081,22 +1081,22 @@
       "Eurostar International Ltd"
     ],
     "stations_operated": 4,
-    "headline": "Eurostar carried a record 20 million passengers through the Channel Tunnel in 2025",
-    "parent_company": "SNCF (majority shareholder of Eurostar Group)",
+    "headline": "Eurostar's Channel Tunnel trains carried a record 20 million passengers in 2025",
+    "parent_company": "Eurostar Group",
     "notable_features": [
-      "Runs through the Channel Tunnel, the world's longest underwater rail tunnel section",
-      "Formed from 2023 merger of Eurostar and Thalys into Eurostar Group",
-      "Transported over 400 million passengers since services began in 1994",
-      "Set British rail speed record of 334.7 km/h in 2003",
-      "Holds record for longest non-stop high-speed journey (London to Cannes, 1,421 km)",
-      "e320 fleet built by Siemens, first non-Alstom high-speed trains in France",
-      "Trains designed with splittable 'half-set' safety system for Channel Tunnel emergencies",
-      "Won World's Leading Passenger Rail Operator award 15 times",
-      "New Avelia Horizon 'Celestia' trains will be UK's first double-decker fleet"
+      "Runs through the Channel Tunnel, the world's longest underwater tunnel",
+      "Set a British speed record of 334.7 km/h in 2003",
+      "First Eurostar extension to a new country with direct London–Amsterdam/Rotterdam services launched in 2018",
+      "Formed via 2023 merger with Thalys to create a single Western European high-speed network",
+      "Class 373 trains split into two independent half-sets for Channel Tunnel emergency safety",
+      "e320 Siemens Velaro trains run at up to 320 km/h and are quadri-current for cross-border operation",
+      "Upcoming Eurostar Celestia double-decker trains would be the first major double-decker fleet in the UK",
+      "Set record for longest non-stop high-speed journey (London to Cannes, 1,421 km) in 2006",
+      "Has run 'Tread Lightly' programme since 2007 aiming for carbon-neutral operation"
     ],
     "wikipedia_title": "Eurostar",
     "_wikipedia": {
-      "fetched_at": "2026-07-14T11:49:49.606Z",
+      "fetched_at": "2026-07-16T12:48:55.908Z",
       "title": "Eurostar",
       "url": "https://en.wikipedia.org/wiki/Eurostar",
       "license": "CC BY-SA 4.0"

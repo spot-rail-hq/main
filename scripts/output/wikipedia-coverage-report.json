@@ -7,9 +7,9 @@
   },
   "tierCounts": {
     "no-article": 60,
-    "stub": 2099,
-    "substantive": 472,
-    "geo-match-town-article": 6
+    "stub": 2107,
+    "substantive": 470,
+    "geo-match-town-article": 0
   },
   "tierCrsLists": {
     "no-article": [
@@ -94,6 +94,7 @@
       "ADC",
       "ADD",
       "ADK",
+      "ADL",
       "ADM",
       "ADN",
       "ADR",
@@ -141,6 +142,7 @@
       "APY",
       "ARD",
       "ARL",
+      "ARM",
       "ARN",
       "ARR",
       "ART",
@@ -255,6 +257,7 @@
       "BHO",
       "BHR",
       "BHS",
+      "BIB",
       "BID",
       "BIF",
       "BIG",
@@ -309,7 +312,6 @@
       "BND",
       "BNE",
       "BNF",
-      "BNG",
       "BNH",
       "BNI",
       "BNL",
@@ -378,6 +380,7 @@
       "BTO",
       "BTS",
       "BTT",
+      "BTY",
       "BUB",
       "BUC",
       "BUD",
@@ -465,6 +468,7 @@
       "CGM",
       "CGN",
       "CGW",
+      "CHC",
       "CHD",
       "CHE",
       "CHF",
@@ -705,6 +709,7 @@
       "ECC",
       "ECP",
       "ECS",
+      "EDB",
       "EDG",
       "EDL",
       "EDN",
@@ -1162,6 +1167,7 @@
       "KVD",
       "KVP",
       "KWB",
+      "KWG",
       "KWL",
       "KWN",
       "KYL",
@@ -1268,7 +1274,6 @@
       "LPG",
       "LPR",
       "LPW",
-      "LRB",
       "LRD",
       "LRG",
       "LRH",
@@ -1334,6 +1339,7 @@
       "MEY",
       "MFH",
       "MFL",
+      "MFT",
       "MGM",
       "MGN",
       "MHM",
@@ -1677,6 +1683,7 @@
       "RVN",
       "RWC",
       "RYB",
+      "RYE",
       "RYH",
       "RYN",
       "RYR",
@@ -1864,6 +1871,7 @@
       "STC",
       "STD",
       "STE",
+      "STG",
       "STH",
       "STJ",
       "STN",
@@ -1990,7 +1998,6 @@
       "ULL",
       "ULV",
       "UMB",
-      "UNI",
       "UPH",
       "UPL",
       "UPT",
@@ -2021,6 +2028,7 @@
       "WBR",
       "WBY",
       "WCB",
+      "WCH",
       "WCX",
       "WDB",
       "WDD",
@@ -2230,6 +2238,8 @@
       "BMF",
       "BMH",
       "BMT",
+      "BMY",
+      "BNG",
       "BNM",
       "BNV",
       "BNW",
@@ -2245,7 +2255,6 @@
       "BSV",
       "BTN",
       "BTP",
-      "BTY",
       "BUU",
       "BYI",
       "BYK",
@@ -2266,7 +2275,6 @@
       "CFN",
       "CFO",
       "CGD",
-      "CHC",
       "CHH",
       "CHN",
       "CHW",
@@ -2323,7 +2331,6 @@
       "EBV",
       "ECL",
       "ECR",
-      "EDB",
       "EFF",
       "EFL",
       "ELP",
@@ -2415,7 +2422,6 @@
       "KSW",
       "KTH",
       "KWD",
-      "KWG",
       "LAU",
       "LBG",
       "LBZ",
@@ -2431,6 +2437,7 @@
       "LNG",
       "LPT",
       "LPY",
+      "LRB",
       "LST",
       "LSX",
       "LTS",
@@ -2450,7 +2457,6 @@
       "MDL",
       "MFA",
       "MFF",
-      "MFT",
       "MHS",
       "MIA",
       "MKC",
@@ -2526,7 +2532,6 @@
       "RUG",
       "RUN",
       "RYD",
-      "RYE",
       "RYP",
       "SAF",
       "SBJ",
@@ -2551,6 +2556,7 @@
       "SMN",
       "SMT",
       "SNF",
+      "SNN",
       "SNT",
       "SNY",
       "SOC",
@@ -2565,7 +2571,6 @@
       "SRT",
       "STA",
       "STF",
-      "STG",
       "STL",
       "STM",
       "STP",
@@ -2594,6 +2599,7 @@
       "TWI",
       "TYL",
       "UHL",
+      "UNI",
       "UPM",
       "VIC",
       "VXH",
@@ -2649,14 +2655,7 @@
       "ZCW",
       "ZWL"
     ],
-    "geo-match-town-article": [
-      "ADL",
-      "ARM",
-      "BIB",
-      "BMY",
-      "SNN",
-      "WCH"
-    ]
+    "geo-match-town-article": []
   },
   "needsManualReview": [
     {
@@ -3722,51 +3721,8 @@
     }
   },
   "geoMatchTownArticleDetail": {
-    "_note": "Added 2026-07-16: geo-confidence matches (accepted on coordinate proximity, not title match) whose Wikipedia description starts with Town/City/Village/Suburb/Hamlet/Civil parish in... — the matched article is about the settlement the station sits in, not a dedicated station article. Detected via scripts/scope-wikipedia-coverage.mjs isGeoMatchTownArticle(), applied retroactively across all 2,577 already-matched stations (no new fetches needed — description/confidence were already cached per station from the original matching pass). Handling for this bucket (agreed 2026-07-16, to apply when the full stations-content.json rollout runs): keep the already-extracted notable_features text as-is (it is already correctly scoped to station-relevant sentences, grounded in the article, nothing to redo) — but change source attribution to make the town-article origin explicit (e.g. \"Source: Wikipedia (Placename)\" rather than implying a dedicated \"Placename railway station\" page) and do NOT auto-populate a Wikipedia deep-link/\"read more\" the way substantive-tier stations get, since there is no dedicated station page to send a reader to. Tiered separately from substantive/stub so tier counts accurately reflect \"has a dedicated station article\" vs \"mentioned within a town article\".",
-    "count": 6,
-    "entries": [
-      {
-        "crs": "ADL",
-        "name": "Adlington (Lancs) Rail Station",
-        "matchedTitle": "Adlington, Lancashire",
-        "description": "Village and civil parish in Lancashire, England",
-        "extractLength": 502
-      },
-      {
-        "crs": "ARM",
-        "name": "Armadale (W Lothian) Rail Station",
-        "matchedTitle": "Armadale, West Lothian",
-        "description": "Town in West Lothian, Scotland",
-        "extractLength": 617
-      },
-      {
-        "crs": "BIB",
-        "name": "Bishop's Lydeard Rail Station",
-        "matchedTitle": "Bishops Lydeard",
-        "description": "Village and civil parish in Somerset, England",
-        "extractLength": 316
-      },
-      {
-        "crs": "BMY",
-        "name": "Bramley (Hants) Rail Station",
-        "matchedTitle": "Bramley, Hampshire",
-        "description": "Village and parish in Hampshire, England",
-        "extractLength": 270
-      },
-      {
-        "crs": "SNN",
-        "name": "Swinton (Manchester) Rail Station",
-        "matchedTitle": "Swinton, Greater Manchester",
-        "description": "Town in Greater Manchester, England",
-        "extractLength": 241
-      },
-      {
-        "crs": "WCH",
-        "name": "Whitchurch (Hants) Rail Station",
-        "matchedTitle": "Whitchurch, Hampshire",
-        "description": "Town in Hampshire, England",
-        "extractLength": 595
-      }
-    ]
+    "_note": "RESOLVED 2026-07-16: this tier is now empty. The 6 stations originally flagged here (ADL, ARM, BIB, BMY, SNN, WCH), plus 9 more discovered during a follow-up investigation (CHC, HOC, KWG, MFT, STG, BTY, BYK, EDB, RYE) — 15 total — all turned out to have a REAL, dedicated Wikipedia station article after all. The original matching logic missed them because: (1) some direct-lookup candidates hit disambiguation pages and the code correctly rejected those but then fell through to a lower-specificity candidate that wrongly matched an adjacent place/landmark article or, in 3 cases (BTY, BYK, RYE), a completely unrelated topic sharing the same bare name (Bentley Motors the car maker; rye the cereal grain); (2) NaPTAN abbreviated qualifiers (e.g. S Yorks) were not being expanded before candidate lookup OR full-text search. Root-caused and fixed in scripts/scope-wikipedia-coverage.mjs (matchStation()): added a full-text-search fallback tried before any bare/low-specificity candidate, made the abbreviation-expansion table (data/naptan-county-abbreviations.json) a first-class part of both direct candidates and the search query, required real geo confirmation (never text-equality alone) for the last-resort bare-name tier, and added a station-titled-hit preference when a search returns multiple geo-plausible results. Verified via a full re-match of all 2,577 previously-matched stations (scripts/rescan-full-matching.mjs, scripts/output/wikipedia-rescan-diff-report.json) — 11 more stations (all stub-tier, never reached by the extraction rollout, so no wrong data ever reached stations-content.json) also picked up corrected matches; 0 broke into needs-review. isGeoMatchTownArticle() and NO_DEEP_LINK_KEYS are left in place (NO_DEEP_LINK_KEYS now empty) as the mechanism for any genuine future case — a station that really has no dedicated article at all — rather than removed.",
+    "count": 0,
+    "entries": []
   }
 }

@@ -1,0 +1,98 @@
+{
+  "generatedAt": "2026-07-16T14:32:27.819Z",
+  "totalRechecked": 2577,
+  "changedCount": 11,
+  "unchangedCount": 2566,
+  "nowNeedsReviewCount": 0,
+  "changed": [
+    {
+      "crs": "BCF",
+      "name": "Beaconsfield Rail Station",
+      "old": "Beaconsfield",
+      "new": "Beaconsfield railway station (England)",
+      "newConfidence": "title+geo",
+      "newDescription": "Railway station in Buckinghamshire, England"
+    },
+    {
+      "crs": "BNG",
+      "name": "Bangor (Gwynedd) Rail Station",
+      "old": "Bangor, Gwynedd",
+      "new": "Bangor railway station (Wales)",
+      "newConfidence": "title+geo",
+      "newDescription": "Railway station in Gwynedd, Wales"
+    },
+    {
+      "crs": "BWS",
+      "name": "Barrow upon Soar Rail Station",
+      "old": "Barrow upon Soar",
+      "new": "Barrow-upon-Soar railway station",
+      "newConfidence": "title+geo",
+      "newDescription": "Railway station in Leicestershire, England"
+    },
+    {
+      "crs": "HOP",
+      "name": "Hope (Derbyshire) Rail Station",
+      "old": "Hope",
+      "new": "Hope railway station (England)",
+      "newConfidence": "title+geo",
+      "newDescription": "Railway station in Derbyshire, England"
+    },
+    {
+      "crs": "HPE",
+      "name": "Hope (Flintshire) Rail Station",
+      "old": "Hope",
+      "new": "Hope railway station (Wales)",
+      "newConfidence": "title+geo",
+      "newDescription": "Railway station in Flintshire, Wales"
+    },
+    {
+      "crs": "KPA",
+      "name": "Kensington (Olympia) Rail Station",
+      "old": "Kensington",
+      "new": "Kensington (Olympia) station",
+      "newConfidence": "title+geo",
+      "newDescription": "Rail interchange station in London, England"
+    },
+    {
+      "crs": "LRB",
+      "name": "London Road (Brighton) Rail Station",
+      "old": "London Road",
+      "new": "London Road (Brighton) railway station",
+      "newConfidence": "title+geo",
+      "newDescription": "Railway station in Brighton, England"
+    },
+    {
+      "crs": "LRD",
+      "name": "London Road (Guildford) Rail Station",
+      "old": "London Road",
+      "new": "London Road (Guildford) railway station",
+      "newConfidence": "title+geo",
+      "newDescription": "Railway station in Surrey, England"
+    },
+    {
+      "crs": "MCE",
+      "name": "Metrocentre Rail Station",
+      "old": "Metrocentre",
+      "new": "MetroCentre railway station",
+      "newConfidence": "title+geo",
+      "newDescription": "Railway station in Tyne and Wear, England"
+    },
+    {
+      "crs": "PTW",
+      "name": "Prestwick Rail Station",
+      "old": "Prestwick",
+      "new": "Prestwick Town railway station",
+      "newConfidence": "geo",
+      "newDescription": "Railway station in South Ayrshire, Scotland"
+    },
+    {
+      "crs": "UNI",
+      "name": "University Rail Station",
+      "old": "University",
+      "new": "University railway station (England)",
+      "newConfidence": "title+geo",
+      "newDescription": "Railway station in Birmingham, England"
+    }
+  ],
+  "nowNeedsReview": []
+}

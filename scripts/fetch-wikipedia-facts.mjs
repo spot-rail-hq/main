@@ -128,14 +128,18 @@ const JOBS = {
 // 2026-07-16: geo-confidence matches whose article is about the town/
 // village the station sits in, not a dedicated station page (see
 // scripts/output/wikipedia-coverage-report.json's geoMatchTownArticleDetail
-// for the full reasoning/list). These 6 still get headline/notable_features
-// extracted normally below — the extraction is already correctly grounded
-// in station-relevant sentences within the article — but wikipedia_title is
-// deliberately NOT persisted (no auto-generated "Wikipedia ↗" deep-link to
-// a page that isn't really about the station), and _wikipedia gets a
-// sourceType marker so a future render pass knows to show plain-text
-// attribution ("Source: Wikipedia (<title>)") instead of a link.
-const NO_DEEP_LINK_KEYS = new Set(['ADL', 'ARM', 'BIB', 'BMY', 'SNN', 'WCH']);
+// for the full reasoning/list). Kept as an EMPTY set as of the same day's
+// follow-up investigation — every one of the original 6 (ADL, ARM, BIB,
+// BMY, SNN, WCH) turned out to have a real, dedicated station article
+// after all (hiding behind a disambiguation page or a qualifier the
+// original candidate list never tried, e.g. "Armadale railway station
+// (Scotland)"), confirmed via manual full-text-search verification and
+// re-matched — so none needed this suppression in the end. Left in place
+// (empty) rather than deleted, since a genuine geo-match-town-article case
+// may turn up on a future full 2,637 re-run once matchStation() gains the
+// full-text-search fallback described in its own comment block below —
+// this is still the mechanism that would handle it when one does.
+const NO_DEEP_LINK_KEYS = new Set([]);
 
 const WIKI_API = 'https://en.wikipedia.org/w/api.php';
 const CLAUDE_API = 'https://api.anthropic.com/v1/messages';
@@ -394,6 +398,7 @@ function sleep(ms) {
 async function main() {
   const needsReview = [];
   for (const kind of ['stations', 'routes', 'operators']) {
+    if (ONLY_KIND && kind !== ONLY_KIND) continue; // bug fix 2026-07-16: ONLY_KIND was declared but never actually checked here — a stations-only run also burned through the entire JOBS.operators backlog (harmless in that case since it was legitimate pre-existing queued work, but not what was intended, and it's what ran the account's API credits down mid-run)
     const filePath = FILES[kind];
     const content = loadJson(filePath);
     console.log(`\n── ${kind} ──`);

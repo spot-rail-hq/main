@@ -67,6 +67,28 @@ export const REPORT_JSON_PATH = path.join(OUTPUT_DIR, 'wikipedia-coverage-report
 export const REPORT_MD_PATH = path.join(OUTPUT_DIR, 'wikipedia-coverage-report.md');
 
 const REST_SUMMARY_API = 'https://en.wikipedia.org/api/rest_v1/page/summary/';
+const WIKI_API_ACTION = 'https://en.wikipedia.org/w/api.php'; // used only by searchFallback() below, for action=query&list=search — the REST summary API has no full-text search endpoint of its own
+
+// 2026-07-16: baked directly into the core candidate-building/search flow
+// below (buildCandidates(), lastResortCandidates(), searchFallback()) —
+// previously this table was only consulted by the separate, one-off
+// scripts/rematch-abbreviation-mismatches.mjs script for the narrow
+// "mixed-other" needs-review bucket. Folding it in here means a station
+// whose qualified candidate 404s only because NaPTAN's abbreviation
+// ("S Yorks") doesn't match Wikipedia's spelled-out form ("South
+// Yorkshire") gets the expanded form tried BEFORE ever falling through to
+// a less specific, more collision-prone candidate — confirmed live this
+// was exactly why BYK (Bentley, S Yorks) didn't resolve even with the
+// search fallback below: the search query itself needs the expanded
+// county name too, Wikipedia's search doesn't reliably fuzzy-match "S
+// Yorks" to "South Yorkshire" on its own.
+const ABBREV_TABLE_PATH = path.join(ROOT, 'data', 'naptan-county-abbreviations.json');
+function loadAbbreviationMap() {
+  if (!existsSync(ABBREV_TABLE_PATH)) return {};
+  const raw = JSON.parse(readFileSync(ABBREV_TABLE_PATH, 'utf8'));
+  return { ...raw.observedInStationList, ...raw.preemptive };
+}
+const ABBREVIATION_MAP = loadAbbreviationMap();
 const USER_AGENT = 'SpotRailHQ-content-scoping-script/1.0 (+https://srhq.uk; static report build step, not a live API dependency)';
 const REQUEST_DELAY_MS = 150; // be a good citizen — this is 2,637+ stations, up to ~6 requests each worst case
 const MAX_RETRIES = 3;
@@ -107,14 +129,30 @@ export function normalizeForCompare(s) {
     .trim();
 }
 
+// ─── candidate ordering (fixed 2026-07-16) ─────────────────────────────────
+// Two lists, tried in two separate passes by matchStation() below — not one
+// flat list — because a live incident showed why the split matters: a bare
+// base name with no "station" text and no qualifier (e.g. plain "Bentley",
+// plain "Rye") can coincidentally text-match a completely unrelated
+// Wikipedia article (Bentley Motors the car maker; rye the cereal grain).
+// Confirmed live: this happened for real (BTY/BYK → "Bentley", RYE → "Rye"),
+// silently, because those bare candidates were previously interleaved with
+// the qualified ones and got accepted the moment any later, more specific
+// candidate 404'd — often BEFORE a full-text search was ever tried, since
+// there wasn't one. SPECIFIC_CANDIDATES (this function) always contain
+// either "station" text or an explicit qualifier, making an unrelated-topic
+// collision essentially impossible; BARE_CANDIDATES (below) contain neither
+// and are only tried after a full-text-search fallback has also failed, and
+// even then only accepted with real geo confirmation — see matchStation().
 export function buildCandidates(base, qualifier) {
   const list = [];
+  const expandedQualifier = qualifier && ABBREVIATION_MAP[qualifier];
   list.push(`${base} railway station`);
   if (qualifier) list.push(`${base} railway station (${qualifier})`);
+  if (expandedQualifier) list.push(`${base} railway station (${expandedQualifier})`);
   list.push(`${base} station`);
   if (qualifier) list.push(`${base} station (${qualifier})`);
-  list.push(base);
-  if (qualifier) list.push(`${base} (${qualifier})`);
+  if (expandedQualifier) list.push(`${base} station (${expandedQualifier})`);
   // Wikipedia disambiguates some England stations against an international
   // namesake with "(England)" rather than a county name (confirmed live for
   // Layton — the Blackpool station is "Layton railway station (England)",
@@ -123,6 +161,95 @@ export function buildCandidates(base, qualifier) {
   // candidates above have failed.
   list.push(`${base} railway station (England)`);
   return [...new Set(list)];
+}
+
+// Candidates with NO "station"/"railway station" text — just the bare base
+// name, optionally with a location qualifier attached. The single most
+// collision-prone candidate form (confirmed live: bare "Bentley" → Bentley
+// Motors; "Charing Cross (Glasgow)" — bare, qualifier only, no "station"
+// text — → the road-junction article, not a dedicated station page).
+// Deliberately excluded from buildCandidates() and only ever tried by
+// matchStation() as the last resort, after the full-text search fallback,
+// and even then only accepted with real geo confirmation — see
+// evaluateSummary()'s requireGeo parameter.
+export function buildLastResortCandidates(base, qualifier) {
+  const list = [base];
+  const expandedQualifier = qualifier && ABBREVIATION_MAP[qualifier];
+  if (qualifier) list.push(`${base} (${qualifier})`);
+  if (expandedQualifier) list.push(`${base} (${expandedQualifier})`);
+  return [...new Set(list)];
+}
+
+// ─── full-text search fallback (added 2026-07-16) ──────────────────────────
+// Tried when every SPECIFIC_CANDIDATES direct lookup has failed (404'd,
+// hit a disambiguation page, or failed geo verification) — before ever
+// falling through to a bare, unqualified candidate. Mirrors
+// fetch-wikipedia-facts.mjs's resolveWikipediaTitle() search-fallback
+// shape, but verifies EITHER a normalized-title match OR a geo match
+// (resolveWikipediaTitle only does the title check, which is enough there
+// since it's choosing among named entities like operators/routes, not
+// disambiguating stations that share a name with unrelated topics).
+// Confirmed live this finds the real article in every case checked by hand
+// during the 2026-07-16 investigation, e.g. searching "Bentley railway
+// station South Yorkshire" surfaces "Bentley railway station (South
+// Yorkshire)" directly, and "Stirling railway station" (search, not direct
+// lookup) surfaces "Stirling railway station (Scotland)" even though the
+// direct-lookup candidate for bare "Stirling railway station" is itself a
+// disambiguation page.
+// expandedQualifier preferred over the raw NaPTAN qualifier when available
+// — confirmed live this matters: searching "Bentley railway station S
+// Yorks" did not surface "Bentley railway station (South Yorkshire)" in
+// Wikipedia's top results, but "Bentley railway station South Yorkshire"
+// (expanded) did.
+async function searchFallback(base, qualifier, normalizedBase, station) {
+  const expandedQualifier = qualifier && ABBREVIATION_MAP[qualifier];
+  const queryQualifier = expandedQualifier || qualifier;
+  const query = queryQualifier ? `${base} railway station ${queryQualifier}` : `${base} railway station`;
+  const url = `${WIKI_API_ACTION}?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json&srlimit=6`;
+  const res = await fetch(url, { headers: { 'User-Agent': USER_AGENT } });
+  if (!res.ok) return { results: [], notes: [`search "${query}": HTTP ${res.status}`] };
+  const data = await res.json();
+  const hits = (data.query && data.query.search) || [];
+  const notes = [];
+  // Evaluate every hit first, then prefer a "station"-titled passing hit
+  // over a same-location-but-not-actually-a-station one, rather than
+  // returning the first hit that merely passes title/geo — confirmed live
+  // this matters: for Charing Cross (Glasgow), the road-junction article
+  // "Charing Cross, Glasgow" sits at THE SAME coordinates as the actual
+  // station (it's literally the junction the station is under), so it
+  // passes geo verification just as validly as "Charing Cross railway
+  // station (Scotland)" does — text/geo alone can't tell them apart when
+  // Wikipedia's search happens to rank the non-station article first.
+  const passing = [];
+  for (const hit of hits) {
+    const summary = await fetchSummary(hit.title);
+    await sleep(REQUEST_DELAY_MS);
+    if (!summary || summary.error || summary.type === 'disambiguation') {
+      notes.push(`search hit "${hit.title}": ${!summary ? 'no page' : summary.error || 'disambiguation'}`);
+      continue;
+    }
+    const titleMatch = normalizeForCompare(summary.title) === normalizedBase;
+    let geoOk = null;
+    if (summary.coordinates && station.lat != null && station.lon != null) {
+      const dist = haversineKm(station.lat, station.lon, summary.coordinates.lat, summary.coordinates.lon);
+      geoOk = dist <= GEO_REJECT_KM;
+    }
+    if (titleMatch || geoOk === true) {
+      passing.push({ summary, hitTitle: hit.title, confidence: titleMatch && geoOk === true ? 'title+geo' : titleMatch ? 'title' : 'geo' });
+      continue;
+    }
+    notes.push(`search hit "${hit.title}": unverified (no title/geo match)`);
+  }
+  if (!passing.length) return { results: [], notes };
+  const stationTitled = passing.find((p) => /\bstation\b/i.test(p.summary.title));
+  const chosen = stationTitled || passing[0];
+  if (stationTitled && stationTitled !== passing[0]) {
+    notes.push(`preferred "${stationTitled.summary.title}" (station-titled) over earlier-ranked "${passing[0].summary.title}" (same location, not station-titled)`);
+  }
+  return {
+    results: [{ summary: chosen.summary, candidate: `search:"${query}"→"${chosen.hitTitle}"`, confidence: chosen.confidence }],
+    notes,
+  };
 }
 
 // ─── geo sanity check ──────────────────────────────────────────────────────
@@ -164,65 +291,108 @@ async function fetchSummary(title) {
   }
 }
 
+// Evaluates one already-fetched summary against a station, for either a
+// direct-lookup candidate string or a search-fallback hit. requireGeo=true
+// (used only for the last-resort bare-name tier below) means a title-text
+// match ALONE is never enough — real geo confirmation is mandatory, since a
+// bare unqualified name is the one candidate form most likely to
+// text-collide with a same-named but topically unrelated Wikipedia article
+// (confirmed live: bare "Bentley" → Bentley Motors; bare "Rye" → the grain).
+function evaluateSummary(summary, normalizedBase, station, requireGeo) {
+  if (summary.type === 'disambiguation') return { accepted: false, reason: 'disambiguation page, skipped' };
+  const titleMatch = normalizeForCompare(summary.title) === normalizedBase;
+  let geoOk = null;
+  if (summary.coordinates && station.lat != null && station.lon != null) {
+    const dist = haversineKm(station.lat, station.lon, summary.coordinates.lat, summary.coordinates.lon);
+    geoOk = dist <= GEO_REJECT_KM;
+    if (!geoOk) return { accepted: false, reason: `rejected, ${dist.toFixed(1)}km from station` };
+  }
+  const confirmed = requireGeo ? geoOk === true : titleMatch || geoOk === true;
+  if (!confirmed) {
+    return {
+      accepted: false,
+      reason: requireGeo && titleMatch && geoOk == null
+        ? 'unverified — bare-name candidate requires geo confirmation, but the matched page has no coordinates to check'
+        : 'unverified (no title/geo match)',
+      weak: { title: summary.title, extractLength: (summary.extract || '').length, hasCoordinates: !!summary.coordinates },
+    };
+  }
+  return {
+    accepted: true,
+    confidence: titleMatch && geoOk === true ? 'title+geo' : titleMatch ? 'title' : 'geo',
+  };
+}
+
+function toMatchResult(summary, candidate, confidence) {
+  return {
+    status: 'matched',
+    matchedTitle: summary.title,
+    matchedCandidate: candidate,
+    confidence,
+    extractLength: (summary.extract || '').length,
+    extract: summary.extract || '',
+    pageUrl: summary.content_urls?.desktop?.page || null,
+    description: summary.description || null,
+  };
+}
+
 // ─── Phase 1 + 2 combined per station (one fetch pass reused for both) ────
-// extraCandidates: appended after the standard candidate list — used by
-// scripts/rematch-abbreviation-mismatches.mjs to try a NaPTAN-abbreviation-
-// expanded qualifier (e.g. "Warks" → "Warwickshire") without duplicating
-// this function's matching/scoring logic.
+// extraCandidates: appended after the SPECIFIC (non-bare) candidate list —
+// used by scripts/rematch-abbreviation-mismatches.mjs to try a NaPTAN-
+// abbreviation-expanded qualifier (e.g. "Warks" → "Warwickshire") without
+// duplicating this function's matching/scoring logic.
+//
+// Three passes, most-specific/least-collision-prone first (fixed 2026-07-16
+// — see buildCandidates()'s comment for the incident this responds to):
+//   1. SPECIFIC candidates (buildCandidates() + extraCandidates) — always
+//      contain "station" text or an explicit qualifier, so a same-named
+//      unrelated-topic collision is essentially impossible.
+//   2. Full-text search fallback (searchFallback()) — catches real, correctly-
+//      qualified station articles that direct lookup can't guess the exact
+//      title of (confirmed live for e.g. "Bentley railway station (South
+//      Yorkshire)", "Stirling railway station (Scotland)").
+//   3. Bare, unqualified base name, GEO REQUIRED — the last resort, only
+//      ever accepted with real coordinate confirmation, never on text
+//      equality alone.
 export async function matchStation(station, extraCandidates = []) {
   const { base, qualifier } = splitNaptanName(station.name);
-  const candidates = [...buildCandidates(base, qualifier), ...extraCandidates];
+  const specificCandidates = [...buildCandidates(base, qualifier), ...extraCandidates];
   const normalizedBase = normalizeForCompare(base);
   let weakCandidate = null;
   const triedNotes = [];
+  const allCandidatesTried = [...specificCandidates];
 
-  for (const candidate of candidates) {
+  for (const candidate of specificCandidates) {
     const summary = await fetchSummary(candidate);
     await sleep(REQUEST_DELAY_MS);
+    if (summary === null) { triedNotes.push(`"${candidate}": no page`); continue; }
+    if (summary.error) { triedNotes.push(`"${candidate}": ${summary.error}`); continue; }
 
-    if (summary === null) {
-      triedNotes.push(`"${candidate}": no page`);
-      continue;
-    }
-    if (summary.error) {
-      triedNotes.push(`"${candidate}": ${summary.error}`);
-      continue;
-    }
-    if (summary.type === 'disambiguation') {
-      triedNotes.push(`"${candidate}": disambiguation page, skipped`);
-      continue;
-    }
+    const result = evaluateSummary(summary, normalizedBase, station, false);
+    if (result.accepted) return toMatchResult(summary, candidate, result.confidence);
+    if (result.weak && !weakCandidate) weakCandidate = { candidate, ...result.weak };
+    triedNotes.push(`"${candidate}" → "${summary.title || '?'}": ${result.reason}`);
+  }
 
-    const titleMatch = normalizeForCompare(summary.title) === normalizedBase;
-    let geoOk = null;
-    if (summary.coordinates && station.lat != null && station.lon != null) {
-      const dist = haversineKm(station.lat, station.lon, summary.coordinates.lat, summary.coordinates.lon);
-      geoOk = dist <= GEO_REJECT_KM;
-      if (!geoOk) {
-        triedNotes.push(`"${candidate}" → "${summary.title}": rejected, ${dist.toFixed(1)}km from station`);
-        continue;
-      }
-    }
+  const searchResult = await searchFallback(base, qualifier, normalizedBase, station);
+  triedNotes.push(...searchResult.notes);
+  if (searchResult.results.length) {
+    const { summary, candidate, confidence } = searchResult.results[0];
+    allCandidatesTried.push(candidate);
+    return toMatchResult(summary, candidate, confidence);
+  }
 
-    if (titleMatch || geoOk === true) {
-      return {
-        status: 'matched',
-        matchedTitle: summary.title,
-        matchedCandidate: candidate,
-        confidence: titleMatch && geoOk === true ? 'title+geo' : titleMatch ? 'title' : 'geo',
-        extractLength: (summary.extract || '').length,
-        extract: summary.extract || '',
-        pageUrl: summary.content_urls?.desktop?.page || null,
-        description: summary.description || null,
-      };
-    }
+  for (const candidate of buildLastResortCandidates(base, qualifier)) {
+    allCandidatesTried.push(candidate);
+    const summary = await fetchSummary(candidate);
+    await sleep(REQUEST_DELAY_MS);
+    if (summary === null) { triedNotes.push(`"${candidate}" (bare): no page`); continue; }
+    if (summary.error) { triedNotes.push(`"${candidate}" (bare): ${summary.error}`); continue; }
 
-    // Real, non-disambiguation page, but neither title nor geo confirms it —
-    // keep as a fallback candidate, don't accept, keep trying the rest.
-    if (!weakCandidate) {
-      weakCandidate = { candidate, title: summary.title, extractLength: (summary.extract || '').length, hasCoordinates: !!summary.coordinates };
-    }
-    triedNotes.push(`"${candidate}" → "${summary.title}": unverified (no title/geo match)`);
+    const result = evaluateSummary(summary, normalizedBase, station, true);
+    if (result.accepted) return toMatchResult(summary, candidate, result.confidence);
+    if (result.weak && !weakCandidate) weakCandidate = { candidate, ...result.weak };
+    triedNotes.push(`"${candidate}" (bare) → "${summary.title || '?'}": ${result.reason}`);
   }
 
   return {
@@ -231,7 +401,7 @@ export async function matchStation(station, extraCandidates = []) {
       ? `Found a page ("${weakCandidate.title}") but couldn't confirm it's the right one — title doesn't match and ${weakCandidate.hasCoordinates ? 'coordinates were too far' : 'no coordinates to check'}.`
       : `No Wikipedia page found for any candidate title.`,
     weakCandidate,
-    candidatesTried: candidates,
+    candidatesTried: allCandidatesTried,
     notes: triedNotes,
   };
 }
