@@ -450,6 +450,11 @@
      attribution string, so a curator can't accidentally type a vaguer line. */
   .db-photo-credit { font-size: 11px; color: var(--ink); margin-top: 4px; }
   .db-photo-credit a { color: var(--ink); text-decoration: underline; }
+  /* Google Map + Source: Wikipedia now render paired on one row at the
+     BOTTOM of the panel (2026-07-17, per the approved mockup — was Google
+     Map alone near the top, a leftover pre-Phase-D position; see
+     dbBottomLinksHtml()). .db-links stays the shared flex-row container for
+     both. */
   .db-links { display: flex; gap: 16px; }
   .db-links a { font-family: var(--font-mono); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--t); }
   .db-chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
@@ -458,16 +463,15 @@
      detail-panel chips (services, fleet, regions) go white per the color
      pass, since here they're content, not a filter control. */
   .db-chip-row .filter-chip { color: var(--ink-primary); }
-  .db-wiki-link { display: block; padding: 10px 16px; font-family: var(--font-mono); font-size: 11px;
-    letter-spacing: 1px; text-transform: uppercase; color: var(--t); }
   /* Non-linked variant — used only for the settlement-article case (see
      dbWikipediaAttributionHtml()'s sourceType check): the matched article is
      about the town/village the station sits in, not a dedicated station
-     page, so this deliberately does NOT link out or imply one exists.
-     Same position/weight as .db-wiki-link, muted ink instead of turquoise
-     link color, no arrow. */
-  .db-source-plain { display: block; padding: 10px 16px; font-family: var(--font-mono); font-size: 11px;
-    letter-spacing: 1px; text-transform: uppercase; color: var(--ink); }
+     page, so this deliberately does NOT link out or imply one exists. Sits
+     inline in the same .db-links row as a real link would (hence no
+     display:block/padding of its own any more — the row's .db-field
+     wrapper provides that) — muted ink instead of turquoise link color is
+     what visually marks it as non-interactive. */
+  .db-links .db-source-plain { font-family: var(--font-mono); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--ink); }
   .db-empty { padding: 16px; }
   .db-empty .db-label { margin-bottom: 8px; }
   .db-empty p { font-size: 13px; color: var(--ink); line-height: 1.5; }
@@ -2197,6 +2201,18 @@
   // wikipedia_title alone, which can be set by a curator before any fetch
   // has run — that shouldn't imply Wikipedia content is showing yet.
   //
+  // 2026-07-17: plain "Source: Wikipedia" now, no article-title/CC-BY-SA
+  // suffix — was inconsistent across operators, since the suffix used the
+  // MATCHED ARTICLE'S title (entry._wikipedia.title), not the entity's own
+  // curated name, and those diverge for some operators (e.g. West Midlands
+  // Railway's matched article is literally titled "West Midlands Trains" —
+  // confirmed live this is exactly why that one operator alone rendered
+  // "Source: Wikipedia — West Midlands Trains (CC BY-SA) →" while most
+  // others, where article title happens to equal the entity name, looked
+  // plain). Returns a bare fragment now (no wrapping div/data-anim-row of
+  // its own) — see dbBottomLinksHtml() below, which wraps it together with
+  // the Google Map link in one row.
+  //
   // sourceType: 'settlement-article' (2026-07-16 station panel rework) —
   // set by fetch-wikipedia-facts.mjs's NO_DEEP_LINK_KEYS handling for a
   // geo-confidence match whose article turned out to be about the town/
@@ -2205,17 +2221,30 @@
   // — the bucket is empty as of the 2026-07-16 matching-bug fix, but the
   // mechanism stays live for any future genuine case). Renders as plain,
   // non-linked text — no deep-link to a page that isn't really about the
-  // station, and the wording says which place the source actually covers
-  // rather than implying a dedicated article ("Source: Wikipedia
-  // (Armadale, West Lothian)", not "Source: Wikipedia — Armadale railway
-  // station (Scotland) (CC BY-SA) →").
+  // station. Deliberately KEEPS the place-name qualifier here (unlike the
+  // plain-link case above) — the whole point of this branch is to disclose
+  // which place the source actually covers, since it isn't the station
+  // itself; dropping that would defeat the reason it exists.
   function dbWikipediaAttributionHtml(entry) {
     var wiki = entry && entry._wikipedia;
     if (!wiki || !wiki.url) return '';
     if (wiki.sourceType === 'settlement-article') {
-      return '<span class="db-source-plain" data-anim-row>Source: Wikipedia (' + escapeAttr(wiki.title || '') + ')</span>';
+      return '<span class="db-source-plain">Source: Wikipedia (' + escapeAttr(wiki.title || '') + ')</span>';
     }
-    return '<a class="db-wiki-link" data-anim-row href="' + escapeAttr(wiki.url) + '" target="_blank" rel="noopener">Source: Wikipedia — ' + escapeAttr(wiki.title || '') + ' (CC BY-SA) →</a>';
+    return '<a href="' + escapeAttr(wiki.url) + '" target="_blank" rel="noopener">Source: Wikipedia</a>';
+  }
+
+  // Google Map + Source: Wikipedia, paired on one row at the bottom of the
+  // panel (2026-07-17, per the approved mockup — Google Map alone used to
+  // render near the top, a leftover pre-Phase-D position). Shared by both
+  // the station panel (which has coords) and the operator panel (which
+  // doesn't — mapLink is simply omitted there, same "absent if not
+  // applicable" convention as every other field here).
+  function dbBottomLinksHtml(entry, coords) {
+    var mapLink = coords ? '<a href="https://www.google.com/maps/search/?api=1&query=' + coords[1] + ',' + coords[0] + '" target="_blank" rel="noopener">Google Map</a>' : '';
+    var wikiLink = dbWikipediaAttributionHtml(entry);
+    if (!mapLink && !wikiLink) return '';
+    return '<div class="db-field" data-anim-row><div class="db-links">' + mapLink + wikiLink + '</div></div>';
   }
 
   // Exact-attribution photo credit — see .db-photo-credit's CSS comment for
@@ -2297,15 +2326,11 @@
     }
     html += dbHeadlineHtml(s.headline);
     html += dbFieldHtml('Location', s.location);
-    // Google Map isn't stored — constructed at render time from lat/lon,
-    // per stations-content.json's own _notes. Street View link removed
-    // (2026-07-16, per the approved mockup).
-    var coords = coordsForCrs(crs);
-    if (coords) {
-      html += '<div class="db-field" data-anim-row><div class="db-links">' +
-        '<a href="https://www.google.com/maps/search/?api=1&query=' + coords[1] + ',' + coords[0] + '" target="_blank" rel="noopener">Google Map</a>' +
-        '</div></div>';
-    }
+    // Station code (2026-07-17) — the CRS code itself, already in scope as
+    // `crs` (selectedStationCrs), needs no lookup/data-source of its own —
+    // available for all 2,637 stations regardless of Wikipedia tier, unlike
+    // most of the fields below it.
+    html += dbFieldHtml('Station code', crs);
     html += dbFieldHtml('Platforms', s.platforms);
     html += dbFieldHtml('Opened', s.opened_year);
     html += dbFieldHtml('Listed status', s.listed_status);
@@ -2315,7 +2340,12 @@
         '</div></div>';
     }
     html += notableFeaturesHtml(s.notable_features);
-    html += dbWikipediaAttributionHtml(s);
+    // Google Map + Source: Wikipedia, bottom of panel, paired on one row —
+    // moved 2026-07-17, see dbBottomLinksHtml(). Google Map isn't stored —
+    // constructed at render time from lat/lon, per stations-content.json's
+    // own _notes. Street View link removed (2026-07-16, per the approved
+    // mockup).
+    html += dbBottomLinksHtml(s, coordsForCrs(crs));
     return html || dbComingSoonHtml(s.name);
   }
   function wireStationDatabaseDetail() {
@@ -2353,7 +2383,9 @@
         '<div class="db-value">No direct train transport currently mapped for this route. ' +
         'Multi-leg journey routing is planned for a future update.</div></div>';
     }
-    html += dbWikipediaAttributionHtml(r);
+    // No coords for a route (it's a line, not a point) — dbBottomLinksHtml
+    // just omits the Google Map half and renders Source: Wikipedia alone.
+    html += dbBottomLinksHtml(r, null);
     return html || dbComingSoonHtml(r.name);
   }
   function wireRouteDetail() {
@@ -2398,7 +2430,9 @@
     }
     html += dbFieldHtml('Stations operated', o.stations_operated);
     html += notableFeaturesHtml(o.notable_features);
-    html += dbWikipediaAttributionHtml(o);
+    // No coords for an operator (it isn't a point on the map) — dbBottomLinksHtml
+    // just omits the Google Map half and renders Source: Wikipedia alone.
+    html += dbBottomLinksHtml(o, null);
     return html || dbComingSoonHtml(o.name);
   }
   // Fleet-class chips are plain, unlinked text — investigated linking each
