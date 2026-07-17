@@ -188,6 +188,16 @@ consistently without duplicating the table.
   file changed. This is expected human behavior — don't re-investigate it;
   just note it in passing if relevant and move on.
 
+## Parked future ideas (not in scope, don't build without being asked)
+- Full postal-address coverage for `location` across all 2,637 stations,
+  regardless of Wikipedia tier — currently `location` only ever populates
+  for the ~478 dedicated-content-tier stations (via
+  scripts/fetch-wikipedia-facts.mjs, sourced from the Wikipedia infobox,
+  itself inconsistent — usually a place/borough description, not a full
+  address). Site-wide coverage would need a separate reverse-geocoding
+  pipeline (e.g. Nominatim/OSM from NaPTAN's existing lat/lon in
+  station-list.json) — flagged 2026-07-17, deliberately not built.
+
 ## What NOT to do
 - Never show jargon to users: no STANOX, CRS codes (internal only), headcodes
 - Never hardcode hex colours — use the CSS vars defined in :root

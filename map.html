@@ -2326,10 +2326,17 @@
     }
     html += dbHeadlineHtml(s.headline);
     html += dbFieldHtml('Location', s.location);
+    // Managed by (2026-07-17) — the organisation managing the station
+    // itself, distinct from Services below (the TOCs whose trains call
+    // there) — e.g. Manchester Piccadilly: Managed by = Network Rail,
+    // Services = Avanti West Coast/CrossCountry/etc. Wikipedia-infobox-
+    // tier-dependent, same as Opened — see scripts/fetch-wikipedia-facts.mjs's
+    // STATION_FIELD_SPECS.managed_by.
+    html += dbFieldHtml('Managed by', s.managed_by);
     // Station code (2026-07-17) — the CRS code itself, already in scope as
     // `crs` (selectedStationCrs), needs no lookup/data-source of its own —
     // available for all 2,637 stations regardless of Wikipedia tier, unlike
-    // most of the fields below it.
+    // most of the fields around it.
     html += dbFieldHtml('Station code', crs);
     html += dbFieldHtml('Platforms', s.platforms);
     html += dbFieldHtml('Opened', s.opened_year);

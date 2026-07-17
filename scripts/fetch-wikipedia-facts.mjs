@@ -85,30 +85,84 @@ const FILES = {
 //   ONLY_KIND=stations node scripts/fetch-wikipedia-facts.mjs
 const ONLY_KIND = process.env.ONLY_KIND;
 
-// 2026-07-16 tiered content rollout: every substantive-tier + geo-match-
-// town-article station from scripts/output/wikipedia-coverage-report.json's
-// tierCrsLists, minus any CRS that already has notable_features populated
-// (BHM, from an earlier pass — re-running it would just waste a call on an
-// idempotent no-op). Loaded programmatically from the report file, rather
-// than hand-copied into a literal array, specifically so this list is
-// guaranteed to match the report exactly (~478 entries — too large and
-// error-prone to transcribe by hand without risking a silent mismatch).
-// wikipedia_title was pre-seeded on each of these directly in
-// stations-content.json from the coverage report's already-verified
-// matchedTitle (see scripts/scope-wikipedia-coverage.mjs's Phase 1
-// matching — title/geo confirmed, or NO_DEEP_LINK_KEYS-flagged town-article
-// matches, see below) rather than re-resolved here — this script's own
-// resolveWikipediaTitle() only does title-text matching, not the
-// coordinate-based matching that found the 6 NO_DEEP_LINK_KEYS entries, so
-// letting it re-resolve those from scratch here would likely fail them.
+// Fields safe to request on their own for a station that's ALREADY been
+// through a full extraction pass (has notable_features) — declared up here
+// (not down by STATION_FIELD_SPECS, which needs the rest of the schema
+// machinery already in scope) purely so loadStationsRolloutJob() below can
+// reference it — plain module-scope `const` isn't hoisted, so this has to
+// exist before that function runs at JOBS-init time. See
+// STATION_INCREMENTAL_FIELDS's full comment further down, where
+// STATION_FIELD_SPECS itself is defined, for the actual field specs.
+const STATION_INCREMENTAL_FIELDS = ['managed_by', 'location'];
+
+// Which STATION_INCREMENTAL_FIELDS keys a station still genuinely needs —
+// NOT simply `!(f in existing)`. Bug found live 2026-07-17: mergeWikipediaFields()
+// only ever writes a key when Claude returned a non-empty value for it
+// (isEmptyExtractedValue filtering), so a field the source article legitimately
+// doesn't state (e.g. no "managed by" sentence at all) never gets written —
+// meaning "key absent" is ambiguous between "never asked" and "asked, source
+// had nothing." Without tracking which fields were actually REQUESTED,
+// every re-run would re-query Claude for the same confirmed-empty field on
+// every station, forever (confirmed live: 177 of the first 446 successful
+// stations in the initial managed_by/location run got only one of the two
+// fields written, since the other came back null — without this fix, a
+// second run's job list ballooned to 310 stations instead of the ~64 that
+// genuinely still needed something). _wikipedia.incrementalFieldsAttempted
+// (written below, in processEntry()) is the record of "already asked, don't
+// ask again" — a field only counts as still-needed if it's neither present
+// on the entry NOR already recorded as attempted.
+function stationMissingIncrementalFields(existing) {
+  const attempted = (existing && existing._wikipedia && existing._wikipedia.incrementalFieldsAttempted) || [];
+  return STATION_INCREMENTAL_FIELDS.filter((f) => !(f in existing) && !attempted.includes(f));
+}
+
+// 2026-07-16 tiered content rollout, extended 2026-07-17 for incremental
+// fields: every substantive-tier + geo-match-town-article station from
+// scripts/output/wikipedia-coverage-report.json's tierCrsLists, MINUS any
+// CRS that's both (a) already fully populated (has notable_features) AND
+// (b) not missing any STATION_INCREMENTAL_FIELDS key either — i.e. this
+// still includes a station that needs its first full extraction pass, AND
+// a station that's already complete except for a newly-added field like
+// managed_by/location, but skips one that's genuinely done with nothing
+// left to add (BHM, from an earlier pass, when this JOB list doesn't need
+// to touch it at all — re-running it would waste a call on a no-op).
+// Loaded programmatically from the report file, rather than hand-copied
+// into a literal array, specifically so this list is guaranteed to match
+// the report exactly (~478 entries — too large and error-prone to
+// transcribe by hand without risking a silent mismatch). wikipedia_title
+// was pre-seeded on each of these directly in stations-content.json from
+// the coverage report's already-verified matchedTitle (see scripts/scope-
+// wikipedia-coverage.mjs's Phase 1 matching — title/geo confirmed, or
+// NO_DEEP_LINK_KEYS-flagged town-article matches, see below) rather than
+// re-resolved here — this script's own resolveWikipediaTitle() only does
+// title-text matching, not the coordinate-based matching that found the 6
+// NO_DEEP_LINK_KEYS entries, so letting it re-resolve those from scratch
+// here would likely fail them.
 function loadStationsRolloutJob() {
   const reportPath = path.join(ROOT, 'scripts', 'output', 'wikipedia-coverage-report.json');
   const report = JSON.parse(readFileSync(reportPath, 'utf8'));
   const stationsContent = JSON.parse(readFileSync(FILES.stations, 'utf8'));
-  const target = [...report.tierCrsLists.substantive, ...report.tierCrsLists['geo-match-town-article']];
+  const tierTarget = [...report.tierCrsLists.substantive, ...report.tierCrsLists['geo-match-town-article']];
+  // ALSO include any station with genuine extracted Wikipedia content
+  // (notable_features or headline) even if it's not in the current tier
+  // lists above — confirmed live 2026-07-17: report.json's tierCrsLists can
+  // drift stale relative to stations-content.json's real state (10
+  // stations — e.g. Stirling, Armadale — got reclassified from substantive
+  // to stub tier by the 2026-07-16 matching-bug fix, since their real
+  // dedicated article turned out shorter than the ones wrongly matched
+  // before, but they still have a real wikipedia_title and real extracted
+  // content sitting in stations-content.json). Without this, those 10 would
+  // silently never receive incremental fields like managed_by/location,
+  // despite genuinely having a dedicated infobox to extract them from.
+  const alreadyExtracted = Object.keys(stationsContent).filter((crs) => {
+    const e = stationsContent[crs];
+    return e && ((e.notable_features && e.notable_features.length) || e.headline);
+  });
+  const target = [...new Set([...tierTarget, ...alreadyExtracted])];
   return target.filter((crs) => {
     const existing = stationsContent[crs];
-    return !(existing && existing.notable_features && existing.notable_features.length);
+    if (!existing || !existing.notable_features || !existing.notable_features.length) return true; // needs a first full pass
+    return stationMissingIncrementalFields(existing).length > 0; // needs incremental fields only
   });
 }
 
@@ -239,9 +293,35 @@ async function resolveWikipediaTitle(kind, name) {
 // of a full paragraph.
 const HEADLINE_SPEC = 'headline (a punchy ONE-SENTENCE headline, 8-12 words, news-headline style and tone — e.g. "Britain\'s busiest station outside London, rebuilt three times since 1854" — grounded in a specific fact the article states, not a generic description)';
 
+// Per-field specs for stations (2026-07-17: split out of one flat string so
+// an incremental run — see STATION_INCREMENTAL_FIELDS below — can compose a
+// prompt asking for just the newly-added fields on a station that already
+// has headline/opened_year/notable_features, instead of re-extracting
+// everything and re-spending Claude tokens on facts already captured.
+const STATION_FIELD_SPECS = {
+  headline: HEADLINE_SPEC,
+  opened_year: 'opened_year (the year the CURRENT/notable station building or service first opened — a string, e.g. "1854" or "1967 (rebuilt)")',
+  notable_features: 'notable_features (array of short phrase strings — architectural, historical, or record-holding facts, e.g. "Britain\'s busiest station outside London")',
+  // managed_by/location added 2026-07-17 — both come from the Wikipedia UK
+  // station infobox's top section (confirmed live across the standard,
+  // London-specific, and Scotland-qualified "Infobox station" template
+  // variants: "Managed by" and "Location" are the actual rendered row
+  // labels in all three, backed by a `manager=`/infobox-location wikitext
+  // field respectively), and both are also typically restated in plain
+  // prose (e.g. "...is managed by Network Rail"), so they're reliably
+  // extractable from the plain-text article body this script already
+  // fetches — no infobox-wikitext fetching needed for these two.
+  managed_by: 'managed_by (string — the organisation that manages/operates the STATION ITSELF, distinct from the train operating companies whose SERVICES call there — e.g. a station\'s "managed_by" might be "Network Rail" or "ScotRail" even when several different companies\' trains stop there. The article usually states this plainly, e.g. "...is managed by Network Rail" — extract that organisation\'s name; null if not stated)',
+  location: 'location (string — the station\'s location as Wikipedia\'s infobox states it at the top, under "Location" — usually a place/borough/county description, e.g. "Redcliffe, Bristol, England" or just "Victoria" or "Stirling, Stirling, Scotland" — occasionally a full street address with postcode if the article states one, e.g. "302 Elder Gate, Milton Keynes, MK9 1LA". Extract whatever level of detail the article actually gives, do not pad it out; null if not stated)',
+};
+// STATION_INCREMENTAL_FIELDS itself is declared earlier in the file (near
+// loadStationsRolloutJob(), which needs it before this point) — this is
+// just the "add a new field? update that array too" reminder living next
+// to STATION_FIELD_SPECS, where it's most likely to be seen.
+
 const EXTRACTION_SCHEMAS = {
   stations: {
-    fields: `${HEADLINE_SPEC}, opened_year (the year the CURRENT/notable station building or service first opened — a string, e.g. "1854" or "1967 (rebuilt)"), notable_features (array of short phrase strings — architectural, historical, or record-holding facts, e.g. "Britain\'s busiest station outside London")`,
+    fields: Object.values(STATION_FIELD_SPECS).join(', '),
   },
   routes: {
     fields: `${HEADLINE_SPEC}, opened_year (year the line first opened, string), operating_since (year the CURRENT operator/franchise began running it, string — distinct from opened_year, which is about the line\'s original construction)`,
@@ -251,8 +331,8 @@ const EXTRACTION_SCHEMAS = {
   },
 };
 
-function buildPrompt(kind, name, text) {
-  const { fields } = EXTRACTION_SCHEMAS[kind];
+function buildPrompt(kind, name, text, fieldsOverride) {
+  const fields = fieldsOverride || EXTRACTION_SCHEMAS[kind].fields;
   return `You are extracting facts from a Wikipedia article for a UK rail information site. EXTRACT only — do not invent, infer, or use outside knowledge. If the article does not clearly state a fact, set that field to null (or an empty array for list fields) rather than guessing.
 
 Subject: ${name}
@@ -353,7 +433,37 @@ async function processEntry(kind, key, content, report) {
     return;
   }
   const name = (entry && entry.name) || key;
-  const prompt = buildPrompt(kind, name, page.text);
+  // Incremental mode (2026-07-17): a station that's already been through a
+  // full extraction pass (has notable_features) only gets asked for
+  // whichever STATION_INCREMENTAL_FIELDS keys it's still missing — e.g.
+  // adding managed_by/location to the schema shouldn't mean re-spending
+  // Claude tokens re-generating headline/opened_year/notable_features for
+  // 478 already-complete stations. The article is still re-fetched (a free
+  // Wikipedia API call, not cached from the original run) since the text
+  // itself was never persisted to disk. Only applies to kind==='stations' —
+  // routes/operators don't have this incremental-fields concept yet.
+  let fieldsOverride;
+  // requestedIncrementalFields: which STATION_INCREMENTAL_FIELDS keys THIS
+  // call is asking about, regardless of path — defaults to "all of them"
+  // for a first-time full pass (they're part of the full field list too),
+  // narrowed to just `missing` for an incremental-only pass. Recorded into
+  // _wikipedia.incrementalFieldsAttempted below either way, so a field
+  // Claude legitimately returns null for (source doesn't state it) is
+  // remembered as "asked, empty" rather than indistinguishable from "never
+  // asked" — see stationMissingIncrementalFields()'s comment for the bug
+  // this fixes.
+  let requestedIncrementalFields = kind === 'stations' ? STATION_INCREMENTAL_FIELDS : [];
+  if (kind === 'stations' && entry && entry.notable_features && entry.notable_features.length) {
+    const missing = stationMissingIncrementalFields(entry);
+    if (!missing.length) {
+      console.log(`  ${key}: already fully populated, nothing incremental to add — skipped`);
+      report.push({ key, status: 'ok', resolvedTitle: null });
+      return;
+    }
+    fieldsOverride = missing.map((f) => STATION_FIELD_SPECS[f]).join(', ');
+    requestedIncrementalFields = missing;
+  }
+  const prompt = buildPrompt(kind, name, page.text, fieldsOverride);
   const extracted = await callClaude(prompt);
   const gotNothing = Object.values(extracted).every((v) => v == null || (Array.isArray(v) && v.length === 0));
 
@@ -374,12 +484,16 @@ async function processEntry(kind, key, content, report) {
 
   content[key] = mergeWikipediaFields(entry, extracted);
   if (resolvedTitle) content[key].wikipedia_title = resolvedTitle.title; // only field this script writes outside mergeWikipediaFields's schema — see header comment
+  const priorAttempted = (entry && entry._wikipedia && entry._wikipedia.incrementalFieldsAttempted) || [];
   content[key]._wikipedia = {
     fetched_at: new Date().toISOString(),
     title: page.title,
     url: page.url,
     license: 'CC BY-SA 4.0',
   };
+  if (kind === 'stations' && requestedIncrementalFields.length) {
+    content[key]._wikipedia.incrementalFieldsAttempted = [...new Set([...priorAttempted, ...requestedIncrementalFields])];
+  }
   let noDeepLinkNote = '';
   if (kind === 'stations' && NO_DEEP_LINK_KEYS.has(key)) {
     delete content[key].wikipedia_title; // matched article is about the settlement, not a dedicated station page — see NO_DEEP_LINK_KEYS comment above
