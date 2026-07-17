@@ -438,8 +438,26 @@
   .db-field { padding: 10px 16px; }
   .db-field .db-label { margin-bottom: 4px; }
   .db-value { font-size: 13px; color: var(--ink-primary); line-height: 1.5; }
-  .db-photo { padding: 0 16px 10px; }
-  .db-photo img { width: 100%; border-radius: 10px; display: block; aspect-ratio: 16/10; object-fit: cover; }
+  .db-photo { padding: 10px 16px; }
+  .db-photo .db-label { margin-bottom: 4px; }
+  /* .db-photo-frame mirrors database.html's TrainImage() component exactly
+     (2026-07-17 — "check the locomotive no-image-available pattern first")
+     — same border-radius/aspect-ratio/border/gradient-tint container, so a
+     station panel and a rolling-stock card read as the same design system
+     rather than two different photo treatments. */
+  .db-photo-frame { position: relative; border-radius: 12px; overflow: hidden; aspect-ratio: 16/10;
+    border: 1px solid rgba(var(--line-rgb),0.08);
+    background: linear-gradient(135deg, rgba(var(--color-accent-turquoise-rgb),0.06), rgba(var(--line-rgb),0.02)); }
+  .db-photo-frame img { width: 100%; height: 100%; display: block; object-fit: cover; }
+  /* "no image available" — ported verbatim from database.html's TrainImage()
+     placeholder state: same ink-mute/mono/11px/letterspacing-2/uppercase
+     text treatment, same 45°-diagonal-stripe background tint. Rolling stock
+     uses a per-category accent color for the stripe tint; stations have no
+     equivalent category concept, so this always uses the site's primary
+     turquoise accent instead. */
+  .db-photo-placeholder { display: flex; align-items: center; justify-content: center; height: 100%;
+    color: var(--ink-mute); font-family: var(--font-mono); font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+    background-image: repeating-linear-gradient(45deg, rgba(var(--color-accent-turquoise-rgb),0.06) 0 10px, transparent 10px 20px); }
   /* Exact-attribution format (2026-07-16 station panel rework) — never a
      generic "Image via Wikipedia" line (that pattern lives in database.html
      for the fleet spotlight and was deliberately NOT reused here): always
@@ -447,7 +465,10 @@
      from Manchester, England – Flickr – CC BY 2.0". See dbPhotoCreditHtml()
      — the three parts are rendered separately, from stations-content.json's
      photo.photographer/photo.source/photo.license, never from one free-typed
-     attribution string, so a curator can't accidentally type a vaguer line. */
+     attribution string, so a curator can't accidentally type a vaguer line.
+     Absent entirely (not "Not available") when there's no photo at all —
+     the placeholder box above already communicates that, a second "no
+     credit" line under it would be redundant chrome. */
   .db-photo-credit { font-size: 11px; color: var(--ink); margin-top: 4px; }
   .db-photo-credit a { color: var(--ink); text-decoration: underline; }
   /* Google Map + Source: Wikipedia now render paired on one row at the
@@ -2183,6 +2204,16 @@
     if (valueHtml === null || valueHtml === undefined || valueHtml === '') return '';
     return '<div class="db-field" data-anim-row><div class="db-label">' + label + '</div><div class="db-value">' + valueHtml + '</div></div>';
   }
+  // "Always show the label, placeholder text if empty" variant (2026-07-17)
+  // — used for Managed by/Location (and Photo's own label, see
+  // dbPhotoBlockHtml()) so a stub-tier station's panel visibly shows what
+  // COULD be there rather than silently omitting the field, distinct from
+  // dbFieldHtml() above which still hides entirely when empty (Platforms/
+  // Opened/Listed status/Notable features etc. — unchanged for now).
+  function dbFieldOrPlaceholderHtml(label, valueHtml) {
+    var value = (valueHtml === null || valueHtml === undefined || valueHtml === '') ? 'Not available' : valueHtml;
+    return '<div class="db-field" data-anim-row><div class="db-label">' + label + '</div><div class="db-value">' + value + '</div></div>';
+  }
   function dbComingSoonHtml(title) {
     return '<div class="db-empty" data-anim-row><div class="db-label">' + escapeAttr(title || '') + '</div>' +
       '<p>No database entry yet — content coming soon.</p></div>';
@@ -2191,6 +2222,18 @@
   // headline is a punchy 8-12 word sentence from scripts/fetch-wikipedia-
   // facts.mjs (replaced an earlier full-paragraph "synopsis" field) — see
   // that script's header for the OSM/Wikipedia field-ownership split.
+  //
+  // 2026-07-18: reverted back to hide-entirely-when-absent (briefly tried
+  // an always-shown "no headline available" placeholder the same day —
+  // decided against it per direct feedback: a one-sentence headline should
+  // be extractable from nearly any article with real prose (confirmed by
+  // the full-article-length research literally the same day — see
+  // scripts/output/full-article-length-research.json), so a genuinely
+  // missing headline is the rare real exception, not a routine gap worth
+  // permanently occupying panel space for. "Not available" placeholders
+  // are reserved for core single-value database fields (Location, Managed
+  // by) — headline/Notable features are narrative content, not a fact
+  // slot, and skip silently when extraction has nothing.
   function dbHeadlineHtml(headline) {
     return headline ? '<p class="db-headline" data-anim-row>' + escapeAttr(headline) + '</p>' : '';
   }
@@ -2240,8 +2283,19 @@
   // the station panel (which has coords) and the operator panel (which
   // doesn't — mapLink is simply omitted there, same "absent if not
   // applicable" convention as every other field here).
+  //
+  // Prefers entry._google.placeId (scripts/fetch-station-place-ids.mjs,
+  // added 2026-07-17 — a Places API Text Search match, deep-links straight
+  // to the correct map entry) over the plain lat/lon query link, since a
+  // raw coordinate search can land on the wrong nearby POI when several
+  // places share a location (station forecourt shops, adjacent bus stops).
+  // Falls back to the coords query link when no placeId has been fetched
+  // yet, so the link never disappears mid-rollout.
   function dbBottomLinksHtml(entry, coords) {
-    var mapLink = coords ? '<a href="https://www.google.com/maps/search/?api=1&query=' + coords[1] + ',' + coords[0] + '" target="_blank" rel="noopener">Google Map</a>' : '';
+    var placeId = entry && entry._google && entry._google.placeId;
+    var mapLink = placeId
+      ? '<a href="https://www.google.com/maps/place/?q=place_id:' + encodeURIComponent(placeId) + '" target="_blank" rel="noopener">Google Map</a>'
+      : (coords ? '<a href="https://www.google.com/maps/search/?api=1&query=' + coords[1] + ',' + coords[0] + '" target="_blank" rel="noopener">Google Map</a>' : '');
     var wikiLink = dbWikipediaAttributionHtml(entry);
     if (!mapLink && !wikiLink) return '';
     return '<div class="db-field" data-anim-row><div class="db-links">' + mapLink + wikiLink + '</div></div>';
@@ -2261,9 +2315,26 @@
     return '<div class="db-photo-credit">' + text + '</div>';
   }
 
+  // Always-shown Photo block (2026-07-17) — "Photo" label + frame render
+  // unconditionally now, same "always show the label" principle as
+  // dbFieldOrPlaceholderHtml() above, instead of the whole block vanishing
+  // when there's no photo.photo.url. The "no image available" placeholder
+  // state mirrors database.html's TrainImage() component exactly — see
+  // .db-photo-placeholder's CSS comment.
+  function dbPhotoBlockHtml(photo, altName) {
+    var frame = (photo && photo.url)
+      ? '<img src="' + escapeAttr(photo.url) + '" alt="' + escapeAttr(altName || '') + '" loading="lazy" />'
+      : '<div class="db-photo-placeholder">no image available</div>';
+    return '<div class="db-photo" data-anim-row><div class="db-label">Photo</div><div class="db-photo-frame">' + frame + '</div>' +
+      dbPhotoCreditHtml(photo) + '</div>';
+  }
+
   // Bulleted notable-features list — shared by stations and operators (both
   // populate the same notable_features shape from scripts/fetch-wikipedia-
-  // facts.mjs). Absent entirely when empty/missing, never an empty header.
+  // facts.mjs). Reverted to hide-entirely-when-absent 2026-07-18 — same
+  // reasoning as dbHeadlineHtml() above (narrative content, not a fact
+  // slot; "Not available" reserved for core single-value fields like
+  // Location/Managed by).
   function notableFeaturesHtml(features) {
     if (!features || !features.length) return '';
     return '<div class="db-field" data-anim-row><div class="db-label">Notable features</div><ul class="db-notable-list">' +
@@ -2315,24 +2386,25 @@
     var s = stationsContent[crs];
     if (!s) return dbComingSoonHtml(selectedStationName || crs);
     var html = '';
-    // Only rendered where a real photo exists — most stations (stub-tier,
-    // no-article-tier, and the pending disambiguation-only bucket) won't
-    // have one yet, since photo is manual/curated-only (see
-    // stations-content.json's _notes) and this block is a pure no-op until
-    // a human adds one.
-    if (s.photo && s.photo.url) {
-      html += '<div class="db-photo" data-anim-row><img src="' + escapeAttr(s.photo.url) + '" alt="' + escapeAttr(s.name || '') + '" loading="lazy" />' +
-        dbPhotoCreditHtml(s.photo) + '</div>';
-    }
+    // Photo (2026-07-17: always shown now, "no image available" placeholder
+    // when absent — see dbPhotoBlockHtml() and its CSS comment for the
+    // database.html TrainImage() parity this mirrors). photo is populated
+    // by scripts/fetch-station-photos.mjs when available (deterministic
+    // Wikipedia/Commons lookup, requires wikipedia_title already set —
+    // never guesses one) or set manually; either way this renders the
+    // placeholder until one exists, most stations (stub-tier, no-article-
+    // tier, and the pending disambiguation-only bucket) won't have one yet.
+    html += dbPhotoBlockHtml(s.photo, s.name);
     html += dbHeadlineHtml(s.headline);
-    html += dbFieldHtml('Location', s.location);
-    // Managed by (2026-07-17) — the organisation managing the station
-    // itself, distinct from Services below (the TOCs whose trains call
-    // there) — e.g. Manchester Piccadilly: Managed by = Network Rail,
-    // Services = Avanti West Coast/CrossCountry/etc. Wikipedia-infobox-
-    // tier-dependent, same as Opened — see scripts/fetch-wikipedia-facts.mjs's
-    // STATION_FIELD_SPECS.managed_by.
-    html += dbFieldHtml('Managed by', s.managed_by);
+    // Location/Managed by (2026-07-17: always shown now, "Not available"
+    // placeholder when absent — see dbFieldOrPlaceholderHtml()). Managed by
+    // is the organisation managing the station itself, distinct from
+    // Services below (the TOCs whose trains call there) — e.g. Manchester
+    // Piccadilly: Managed by = Network Rail, Services = Avanti West Coast/
+    // CrossCountry/etc. Both are Wikipedia-infobox-tier-dependent, same as
+    // Opened — see scripts/fetch-wikipedia-facts.mjs's STATION_FIELD_SPECS.
+    html += dbFieldOrPlaceholderHtml('Location', s.location);
+    html += dbFieldOrPlaceholderHtml('Managed by', s.managed_by);
     // Station code (2026-07-17) — the CRS code itself, already in scope as
     // `crs` (selectedStationCrs), needs no lookup/data-source of its own —
     // available for all 2,637 stations regardless of Wikipedia tier, unlike
@@ -2348,10 +2420,10 @@
     }
     html += notableFeaturesHtml(s.notable_features);
     // Google Map + Source: Wikipedia, bottom of panel, paired on one row —
-    // moved 2026-07-17, see dbBottomLinksHtml(). Google Map isn't stored —
-    // constructed at render time from lat/lon, per stations-content.json's
-    // own _notes. Street View link removed (2026-07-16, per the approved
-    // mockup).
+    // moved 2026-07-17, see dbBottomLinksHtml(). Google Map prefers the
+    // stored _google.placeId (scripts/fetch-station-place-ids.mjs), falling
+    // back to a lat/lon-constructed link when no placeId is set yet. Street
+    // View link removed (2026-07-16, per the approved mockup).
     html += dbBottomLinksHtml(s, coordsForCrs(crs));
     return html || dbComingSoonHtml(s.name);
   }
@@ -2414,10 +2486,22 @@
           '<span class="db-franchise-dates">' + escapeAttr(f.start || '') + ' – ' + escapeAttr(f.end || 'present') + '</span></li>';
       }).join('') + '</ul></div>';
   }
+  // 2026-07-18: always renders now — "Not available" placeholder chip-row
+  // when empty, same "core database value" treatment as Location/Managed
+  // by (confirmed 2026-07-18: "Service Region" = these Main/Other regions
+  // fields specifically). NOTE for a future reconsideration, not acted on
+  // now: "Other regions" empty is semantically different from Main
+  // regions empty — it can genuinely mean "this operator has no secondary
+  // coverage" (a real, known fact) rather than "we haven't extracted
+  // this" (a data gap) — so "Not available" reads slightly differently
+  // there than it does for Location/Managed by, where absence always
+  // means the latter. Flagging rather than second-guessing the explicit
+  // instruction to treat both the same.
   function operatorRegionChipsHtml(label, regions) {
-    if (!regions || !regions.length) return '';
-    return '<div class="db-field" data-anim-row><div class="db-label">' + label + '</div><div class="db-chip-row">' +
-      regions.map(function (r) { return '<span class="filter-chip">' + escapeAttr(r) + '</span>'; }).join('') + '</div></div>';
+    var chips = (regions && regions.length)
+      ? regions.map(function (r) { return '<span class="filter-chip">' + escapeAttr(r) + '</span>'; }).join('')
+      : '<span class="db-value">Not available</span>';
+    return '<div class="db-field" data-anim-row><div class="db-label">' + label + '</div><div class="db-chip-row">' + chips + '</div></div>';
   }
   function operatorDetailSkeletonHtml() {
     var o = selection.code && operatorsContent[selection.code];
@@ -2427,9 +2511,6 @@
     html += dbFieldHtml('Parent company', o.parent_company);
     html += operatorFranchiseListHtml(o.franchises);
     html += operatorRegionChipsHtml('Main regions', o.regions_served && o.regions_served.main);
-    // Other regions is omitted entirely when empty, not shown as an empty
-    // section — see mockup-routes.png, which only has a Main regions block
-    // for operators with no secondary coverage.
     html += operatorRegionChipsHtml('Other regions', o.regions_served && o.regions_served.other);
     if (o.fleet_classes && o.fleet_classes.length) {
       html += '<div class="db-field" data-anim-row><div class="db-label">Fleet</div><div class="db-chip-row">' +

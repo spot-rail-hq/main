@@ -142,7 +142,22 @@ function loadStationsRolloutJob() {
   const reportPath = path.join(ROOT, 'scripts', 'output', 'wikipedia-coverage-report.json');
   const report = JSON.parse(readFileSync(reportPath, 'utf8'));
   const stationsContent = JSON.parse(readFileSync(FILES.stations, 'utf8'));
-  const tierTarget = [...report.tierCrsLists.substantive, ...report.tierCrsLists['geo-match-town-article']];
+  // 2026-07-18: extended to the FULL stub tier (2,107 stations), not just
+  // substantive + geo-match-town-article — confirmed via
+  // scripts/research-full-article-lengths.mjs that ~99% of stub-tier
+  // stations have substantial full-article content (the "stub" label was
+  // only ever measuring the Wikipedia REST summary's short LEAD paragraph,
+  // not the full article this script actually extracts from — see that
+  // research script's header for the full reasoning, e.g. Stalybridge: a
+  // 280-char lead but an 11,427-char full article with real facts). Every
+  // stub-tier station's wikipedia_title was pre-seeded from the checkpoint's
+  // confirmed matchedTitle ahead of this run (2026-07-18), so none of them
+  // hit the auto-resolve fallback path (which is unreliable here — most
+  // stub-tier entries have no `name` field, so a bare-CRS-code search is
+  // exactly the bug already caught and fixed once this session — see
+  // fetch-wikipedia-facts.mjs's 2026-07-16 incident notes elsewhere in this
+  // file).
+  const tierTarget = [...report.tierCrsLists.substantive, ...report.tierCrsLists['geo-match-town-article'], ...report.tierCrsLists.stub];
   // ALSO include any station with genuine extracted Wikipedia content
   // (notable_features or headline) even if it's not in the current tier
   // lists above — confirmed live 2026-07-17: report.json's tierCrsLists can
@@ -161,7 +176,16 @@ function loadStationsRolloutJob() {
   const target = [...new Set([...tierTarget, ...alreadyExtracted])];
   return target.filter((crs) => {
     const existing = stationsContent[crs];
-    if (!existing || !existing.notable_features || !existing.notable_features.length) return true; // needs a first full pass
+    if (!existing) return true;
+    // "needs a first full pass" — but ONLY if one hasn't already been
+    // genuinely attempted (see fullPassAttempted's comment in
+    // processEntry() for the bug this fixes: a station whose article has
+    // no notable_features to extract is legitimately empty, not
+    // unattempted, and re-querying it forever wastes a call for the same
+    // negative answer every time).
+    if (!existing.notable_features || !existing.notable_features.length) {
+      return !(existing._wikipedia && existing._wikipedia.fullPassAttempted);
+    }
     return stationMissingIncrementalFields(existing).length > 0; // needs incremental fields only
   });
 }
@@ -493,6 +517,19 @@ async function processEntry(kind, key, content, report) {
   };
   if (kind === 'stations' && requestedIncrementalFields.length) {
     content[key]._wikipedia.incrementalFieldsAttempted = [...new Set([...priorAttempted, ...requestedIncrementalFields])];
+  }
+  // fullPassAttempted (2026-07-18) — set whenever this was a FULL-schema
+  // request (fieldsOverride undefined, i.e. not an incremental-only call),
+  // regardless of what came back. Bug found live: loadStationsRolloutJob()'s
+  // "needs a first full pass" check only looked at whether notable_features
+  // was populated — a station whose article genuinely has no notable facts
+  // (real, legitimate empty result — e.g. BAG/Bagshot got headline/
+  // managed_by/location fine, just no notable_features) looked identical to
+  // "never attempted," so every future run would re-query it forever for no
+  // reason. This marker breaks that ambiguity, same fix in spirit as
+  // incrementalFieldsAttempted above.
+  if (kind === 'stations' && !fieldsOverride) {
+    content[key]._wikipedia.fullPassAttempted = true;
   }
   let noDeepLinkNote = '';
   if (kind === 'stations' && NO_DEEP_LINK_KEYS.has(key)) {
