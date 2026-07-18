@@ -1737,6 +1737,30 @@
     } else {
       map.setPaintProperty('operator-lines', 'line-color', operatorLineColorExpression(rc));
     }
+    // Invisible, generously-wide hit layer over the exact same (offset)
+    // geometry as the visible line above — hover/click are wired against
+    // THIS layer, not 'operator-lines' itself, since the real line only
+    // renders 1.3-2.6px wide (see operatorLineWidthExpression) and MapLibre
+    // hit-tests against actual rendered width, not some built-in tolerance.
+    // A precise cursor sitting a couple of px off the thin line otherwise
+    // never registers as a hover at all, which is what was producing the
+    // "grab cursor even directly over a route" symptom. Same source +
+    // source-layer + promoteId as 'operator-lines', so feature-state set via
+    // a feature id read from THIS layer still correctly drives the visible
+    // layer's own hover-based paint (line-width bump, hover-glow opacity) —
+    // feature-state is keyed by source/id, not by which layer queried it.
+    if (!map.getLayer('operator-lines-hit')) {
+      map.addLayer({
+        id: 'operator-lines-hit', type: 'line', source: 'operator-vector', 'source-layer': 'operators',
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: {
+          'line-color': '#000000',
+          'line-opacity': 0,
+          'line-width': 18,
+          'line-offset': operatorLineOffsetExpression(),
+        },
+      });
+    }
     if (!operatorLineInteractionsWired) { wireOperatorLineInteractions(); operatorLineInteractionsWired = true; }
 
     // stationsData is built once by the Promise.all() below (station-list.json
@@ -1786,24 +1810,66 @@
   // endpoint — see setSelectedStationPoints()) at 200% of the base circle
   // size, same zoom-scaling shape as stationsCirclePaint() so it stays
   // proportionally consistent at every zoom rather than a fixed pixel
-  // size that would look right at one zoom and wrong at others. Radius AND
-  // stroke-width both doubled (7,2.8->5.6 / 12,4.0->8.0; stroke 1.5->3.0)
-  // for a uniform 2x scale, not just a bigger circle with the same-weight
-  // outline. No hover feature-state here (unlike stationsCirclePaint) —
-  // this layer isn't wired for mouse hover, so those case branches would
-  // just be permanently-dead code.
+  // size that would look right at one zoom and wrong at others. Radius
+  // doubled (7,2.8->5.6 / 12,4.0->8.0), same 2x scale as before. Solid
+  // turquoise fill with no stroke (previous version used the dark
+  // stationFill + turquoise stroke combo shared with the regular unselected
+  // dots — deliberately dropped here so a SELECTED station reads as an
+  // unambiguous solid turquoise mark, not just "a regular dot with a
+  // thicker ring"). circle-opacity is driven imperatively (see
+  // setSelectedStationPoints/syncSelectedMarkerLayers below), not by a
+  // feature-state case here — this layer only ever holds 0-2 features, all
+  // sharing the same selected/not-yet-visible state at any moment, so a
+  // plain constant + `-transition` is all that's needed for a smooth
+  // fade rather than an instant pop when a station is selected/deselected.
+  // No hover feature-state here (unlike stationsCirclePaint) — this layer
+  // isn't wired for mouse hover, so those case branches would just be
+  // permanently-dead code.
   function selectedStationCirclePaint() {
     var c = themeColors();
     return {
       'circle-radius': ['interpolate', ['linear'], ['zoom'], 7, 5.6, 12, 8.0],
-      'circle-color': c.stationFill,
-      'circle-stroke-width': 3.0,
-      'circle-stroke-color': c.accent,
+      'circle-color': c.accent,
+      'circle-stroke-width': 0,
+      'circle-opacity': 0,
+      'circle-opacity-transition': { duration: 320 },
+    };
+  }
+  // Soft halo behind the solid dot above — same source/points, added as its
+  // own layer (BELOW the dot in addLayer's stacking order, so the dot
+  // renders on top of its own glow) rather than folded into one layer,
+  // since it needs its own independent radius/opacity/blur that the solid
+  // dot doesn't share. circle-blur softens the edge into a genuine glow
+  // rather than a second hard-edged ring. Baseline opacity (0.55) and
+  // radius sit mid-way through the pulse's own range (see
+  // startSelectedMarkerPulse) so the very first frame after a fade-in
+  // already looks like "mid-breath" rather than starting at an extreme.
+  var SELECTED_GLOW_BASE_OPACITY = 0.55;
+  function selectedStationGlowPaint() {
+    var c = themeColors();
+    return {
+      'circle-radius': ['interpolate', ['linear'], ['zoom'], 7, 10, 12, 14],
+      'circle-color': c.accent,
+      'circle-blur': 0.7,
+      'circle-opacity': 0,
+      'circle-opacity-transition': { duration: 320 },
+      'circle-radius-transition': { duration: 320 },
     };
   }
   var MAJOR_FILTER = ['==', ['get', 'tier'], 'major'];
   var MID_FILTER = ['==', ['get', 'tier'], 'mid'];
   var MINOR_FILTER = ['==', ['get', 'tier'], 'minor'];
+  // Invisible, generously-sized hit circle sitting on top of each visible
+  // tier's real dot (2.8-4.0px radius, see stationsCirclePaint) — same
+  // "too small to hit-test precisely" problem as the thin route lines
+  // above, same fix shape. Hover/click are wired against these three
+  // layers instead of the visible stations-circle-* ones (see
+  // wireStationInteractions) — feature-state is still set against the
+  // shared 'stations' source/id, so it correctly drives the visible dot's
+  // own hover paint regardless of which layer the pointer actually hit.
+  function stationsHitPaint() {
+    return { 'circle-radius': 14, 'circle-color': '#000000', 'circle-opacity': 0, 'circle-stroke-width': 0 };
+  }
 
   function addStationsLayer(gj) {
     var c = themeColors();
@@ -1824,6 +1890,15 @@
     }
     if (!map.getLayer('stations-circle-minor')) {
       map.addLayer({ id: 'stations-circle-minor', type: 'circle', source: 'stations', filter: MINOR_FILTER, minzoom: MINOR_STATION_MINZOOM, paint: stationsCirclePaint() });
+    }
+    if (!map.getLayer('stations-circle-major-hit')) {
+      map.addLayer({ id: 'stations-circle-major-hit', type: 'circle', source: 'stations', filter: MAJOR_FILTER, paint: stationsHitPaint() });
+    }
+    if (!map.getLayer('stations-circle-mid-hit')) {
+      map.addLayer({ id: 'stations-circle-mid-hit', type: 'circle', source: 'stations', filter: MID_FILTER, minzoom: MID_STATION_MINZOOM, paint: stationsHitPaint() });
+    }
+    if (!map.getLayer('stations-circle-minor-hit')) {
+      map.addLayer({ id: 'stations-circle-minor-hit', type: 'circle', source: 'stations', filter: MINOR_FILTER, minzoom: MINOR_STATION_MINZOOM, paint: stationsHitPaint() });
     }
     // Major labels share minzoom with mid (the earliest-appearing non-major
     // tier) rather than a flat value of their own — otherwise, once mid dots
@@ -1965,6 +2040,7 @@
     selectFromTo(from, to);
   };
   window.srhqDebugSelection = function () { return selection; }; // read-only, same debug-hook convention as above
+  window.srhqDebugMap = function () { return map; }; // read-only handle to the live MapLibre instance, same convention
   window.srhqSelectStation = function (crs) { flyToAndSelectStation(crs); }; // same convention — single-station select (Phase 7)
   document.getElementById('siteThemeToggle').addEventListener('click', toggleTheme);
   applyHeaderLogo();
@@ -2013,7 +2089,7 @@
   // identically for a major, mid, or minor marker; a mid/minor marker
   // simply isn't hit-testable at all below its own minzoom since MapLibre's
   // per-layer minzoom excludes it from the layer entirely at that zoom.
-  var STATION_MARKER_LAYERS = ['stations-circle-major', 'stations-circle-mid', 'stations-circle-minor'];
+  var STATION_MARKER_LAYERS = ['stations-circle-major-hit', 'stations-circle-mid-hit', 'stations-circle-minor-hit'];
   function wireStationInteractions() {
     STATION_MARKER_LAYERS.forEach(function (layerId) {
       map.on('mousemove', layerId, function (e) {
@@ -2062,7 +2138,10 @@
   }
   function wireOperatorLineInteractions() {
     var hoveredFeatureId = null;
-    map.on('mousemove', 'operator-lines', function (e) {
+    // Wired against 'operator-lines-hit' (the invisible wide hit layer added
+    // alongside 'operator-lines' above), not the thin visible line itself —
+    // see that layer's comment for why.
+    map.on('mousemove', 'operator-lines-hit', function (e) {
       map.getCanvas().style.cursor = 'pointer';
       if (!e.features.length) return;
       var f = e.features[0];
@@ -2075,7 +2154,7 @@
       }
       showHoverTooltip(e.lngLat, resolveOperatorDisplayName(f.properties.operators));
     });
-    map.on('mouseleave', 'operator-lines', function () {
+    map.on('mouseleave', 'operator-lines-hit', function () {
       map.getCanvas().style.cursor = '';
       if (hoveredFeatureId !== null) {
         map.setFeatureState({ source: 'operator-vector', sourceLayer: 'operators', id: hoveredFeatureId }, { hover: false });
@@ -2939,7 +3018,9 @@
   // addMapLayers() after every theme toggle, same pattern as the route
   // highlight polyline below.
   var SELECTED_STATIONS_SOURCE_ID = 'selected-stations', SELECTED_STATIONS_LAYER_ID = 'selected-stations-circle';
+  var SELECTED_STATIONS_GLOW_LAYER_ID = 'selected-stations-glow';
   var selectedStationPoints = []; // [{lon, lat}]
+  var selectedMarkerVisible = false; // current fade state, so addMapLayers()'s theme-toggle re-apply can restore it below
   // Bugfix (found via a headless theme-toggle check while verifying Phase
   // 7): this used to also require map.isStyleLoaded(), unlike every other
   // layer-adding call in addMapLayers() (railway-lines/operator-lines/
@@ -2963,13 +3044,122 @@
     } else {
       map.getSource(SELECTED_STATIONS_SOURCE_ID).setData(gj);
     }
+    // Glow added first so it stacks BELOW the solid dot layer.
+    if (!map.getLayer(SELECTED_STATIONS_GLOW_LAYER_ID)) {
+      map.addLayer({ id: SELECTED_STATIONS_GLOW_LAYER_ID, type: 'circle', source: SELECTED_STATIONS_SOURCE_ID, paint: selectedStationGlowPaint() });
+    }
     if (!map.getLayer(SELECTED_STATIONS_LAYER_ID)) {
       map.addLayer({ id: SELECTED_STATIONS_LAYER_ID, type: 'circle', source: SELECTED_STATIONS_SOURCE_ID, paint: selectedStationCirclePaint() });
     }
+    // A theme toggle tears down and recreates both layers above from
+    // scratch (setStyle({diff:false})), which resets their paint back to
+    // selectedStationCirclePaint()/selectedStationGlowPaint()'s own
+    // circle-opacity:0 default regardless of whether a station is actually
+    // selected right now — this re-asserts the correct resting opacity
+    // immediately after (re)creation so a selection surviving a theme
+    // toggle doesn't silently go invisible. Uses setPaintProperty, not a
+    // fresh addLayer paint object, so it still benefits from the
+    // `-transition` already baked into that paint (a near-instant one here
+    // since there's nothing to animate from right after creation).
+    if (selectedMarkerVisible) {
+      map.setPaintProperty(SELECTED_STATIONS_LAYER_ID, 'circle-opacity', 1);
+      map.setPaintProperty(SELECTED_STATIONS_GLOW_LAYER_ID, 'circle-opacity', SELECTED_GLOW_BASE_OPACITY);
+    }
   }
+
+  // ── Selected-marker glow pulse ─────────────────────────────────────────────
+  // Deliberately NOT a 60fps requestAnimationFrame loop — a slow alternating
+  // setInterval (every PULSE_HALF_MS) leaning on the glow layer's own
+  // circle-opacity-transition/circle-radius-transition to do the actual
+  // interpolation between the two endpoints is just as smooth for a slow
+  // "breathing" cadence and is a couple of setPaintProperty calls a second
+  // instead of ~60 — cheap regardless, since this layer only ever holds the
+  // 1-2 currently-selected features (never the full ~2,600-station
+  // dataset), but there's no reason to spend more than that for an
+  // intentionally subtle, ambient effect.
+  var PULSE_HALF_MS = 1400; // ~2.8s full up-down cycle — slow/ambient, not flashy
+  var PULSE_LOW_OPACITY = 0.42, PULSE_HIGH_OPACITY = 0.68; // within the requested ~40-70% range
+  var PULSE_LOW_RADIUS_DELTA = -1.5, PULSE_HIGH_RADIUS_DELTA = 1.5; // +/- a couple of px, kept tight per instruction
+  var selectedMarkerPulseTimer = null;
+  var selectedMarkerPulseHigh = false;
+  function glowRadiusExpr(delta) {
+    return ['interpolate', ['linear'], ['zoom'], 7, 10 + delta, 12, 14 + delta];
+  }
+  function tickSelectedMarkerPulse() {
+    if (!map || !map.getLayer(SELECTED_STATIONS_GLOW_LAYER_ID)) return;
+    selectedMarkerPulseHigh = !selectedMarkerPulseHigh;
+    map.setPaintProperty(SELECTED_STATIONS_GLOW_LAYER_ID, 'circle-opacity', selectedMarkerPulseHigh ? PULSE_HIGH_OPACITY : PULSE_LOW_OPACITY);
+    map.setPaintProperty(SELECTED_STATIONS_GLOW_LAYER_ID, 'circle-radius', glowRadiusExpr(selectedMarkerPulseHigh ? PULSE_HIGH_RADIUS_DELTA : PULSE_LOW_RADIUS_DELTA));
+  }
+  function startSelectedMarkerPulse() {
+    if (selectedMarkerPulseTimer) return; // already running
+    selectedMarkerPulseHigh = false;
+    selectedMarkerPulseTimer = setInterval(tickSelectedMarkerPulse, PULSE_HALF_MS);
+  }
+  function stopSelectedMarkerPulse() {
+    if (!selectedMarkerPulseTimer) return;
+    clearInterval(selectedMarkerPulseTimer);
+    selectedMarkerPulseTimer = null;
+    if (map && map.getLayer(SELECTED_STATIONS_GLOW_LAYER_ID)) {
+      map.setPaintProperty(SELECTED_STATIONS_GLOW_LAYER_ID, 'circle-radius', glowRadiusExpr(0));
+    }
+  }
+
+  // Select/deselect state machine — fades the dot+glow pair out/in instead
+  // of an instant pop, and (since a point's lon/lat itself can't be
+  // animated the way a paint property can) treats "selection changed to a
+  // DIFFERENT station while already visible" as a quick fade-out, silent
+  // position swap while invisible, fade-in — a short cross-fade rather than
+  // a visible teleport. `selectionSeq` (already bumped by every selection
+  // entry point before calling this) is reused as the race-guard token, same
+  // pattern as playEntranceStagger — a rapid second selection abandons any
+  // in-flight fade from the first.
+  var SELECTED_MARKER_SWAP_FADE_MS = 160;
   function setSelectedStationPoints(points) {
-    selectedStationPoints = points || [];
-    renderSelectedStationMarkers();
+    var mySeq = selectionSeq;
+    var next = points || [];
+    var wasVisible = selectedMarkerVisible;
+    var willBeVisible = next.length > 0;
+
+    function applyPoints() {
+      selectedStationPoints = next;
+      renderSelectedStationMarkers();
+    }
+    function fadeTo(visible) {
+      selectedMarkerVisible = visible;
+      if (!map) return;
+      if (visible) {
+        map.setPaintProperty(SELECTED_STATIONS_LAYER_ID, 'circle-opacity', 1);
+        map.setPaintProperty(SELECTED_STATIONS_GLOW_LAYER_ID, 'circle-opacity', SELECTED_GLOW_BASE_OPACITY);
+        startSelectedMarkerPulse();
+      } else {
+        stopSelectedMarkerPulse();
+        map.setPaintProperty(SELECTED_STATIONS_LAYER_ID, 'circle-opacity', 0);
+        map.setPaintProperty(SELECTED_STATIONS_GLOW_LAYER_ID, 'circle-opacity', 0);
+      }
+    }
+
+    if (!wasVisible && !willBeVisible) {
+      applyPoints(); // still nothing selected — nothing to animate
+    } else if (!wasVisible && willBeVisible) {
+      applyPoints(); // safe to move immediately — currently invisible
+      fadeTo(true);
+    } else if (wasVisible && !willBeVisible) {
+      fadeTo(false); // fade out in place, THEN clear the geometry once it can't be seen
+      setTimeout(function () {
+        if (mySeq !== selectionSeq) return; // superseded by a newer selection — let that one own the data
+        applyPoints();
+      }, SELECTED_MARKER_SWAP_FADE_MS);
+    } else {
+      // Already visible, moving to a different station/pair — quick
+      // cross-fade rather than a teleport.
+      fadeTo(false);
+      setTimeout(function () {
+        if (mySeq !== selectionSeq) return;
+        applyPoints();
+        fadeTo(true);
+      }, SELECTED_MARKER_SWAP_FADE_MS);
+    }
   }
 
   function flyToAndSelectStation(crs) {
@@ -2978,6 +3168,7 @@
     selectStation(stationNameForCrs(crs), crs);
   }
   var ROUTE_LAYER_ID = 'route-highlight-layer', ROUTE_SOURCE_ID = 'route-highlight';
+  var ROUTE_HIT_LAYER_ID = 'route-highlight-hit-layer'; // invisible wide hit layer, see drawMagentaHighlightGeometry
   var routeHandlersWired = false; // click/hover are wired ONCE, ever — see comment below
   var currentRouteId = null; // whichever route is currently drawn; read live by the click handler instead of a per-call closure
 
@@ -3028,6 +3219,19 @@
     } else {
       map.setLayoutProperty(ROUTE_LAYER_ID, 'visibility', 'visible');
     }
+    // Same invisible-wide-hit-layer treatment as operator-lines-hit above —
+    // this highlight only renders 1.5-4px wide, too thin to hit-test
+    // reliably. Hover/click are wired against this instead of ROUTE_LAYER_ID
+    // itself, below.
+    if (!map.getLayer(ROUTE_HIT_LAYER_ID)) {
+      map.addLayer({
+        id: ROUTE_HIT_LAYER_ID, type: 'line', source: ROUTE_SOURCE_ID,
+        layout: { 'line-cap': 'round', 'line-join': 'round', visibility: 'visible' },
+        paint: { 'line-color': '#000000', 'line-opacity': 0, 'line-width': 18 },
+      });
+    } else {
+      map.setLayoutProperty(ROUTE_HIT_LAYER_ID, 'visibility', 'visible');
+    }
     if (!routeHandlersWired) {
       // map.on(event, layerId, handler) listeners live on the Map instance,
       // not the layer — they survive the layer itself being torn down and
@@ -3037,11 +3241,11 @@
       // case (selectRoute) — harmless no-op when a From/To path is what's
       // actually showing, since the condition below already requires
       // selection.type/id to match a route specifically.
-      map.on('click', ROUTE_LAYER_ID, function () {
+      map.on('click', ROUTE_HIT_LAYER_ID, function () {
         if (currentRouteId && (selection.type !== 'route' || selection.id !== currentRouteId)) selectRoute(currentRouteId);
       });
-      map.on('mouseenter', ROUTE_LAYER_ID, function () { map.getCanvas().style.cursor = 'pointer'; });
-      map.on('mouseleave', ROUTE_LAYER_ID, function () { map.getCanvas().style.cursor = ''; });
+      map.on('mouseenter', ROUTE_HIT_LAYER_ID, function () { map.getCanvas().style.cursor = 'pointer'; });
+      map.on('mouseleave', ROUTE_HIT_LAYER_ID, function () { map.getCanvas().style.cursor = ''; });
       routeHandlersWired = true;
     }
     return true;
@@ -3081,6 +3285,7 @@
   function clearRoutePolyline() {
     currentRouteId = null;
     if (map && map.getLayer(ROUTE_LAYER_ID)) map.setLayoutProperty(ROUTE_LAYER_ID, 'visibility', 'none');
+    if (map && map.getLayer(ROUTE_HIT_LAYER_ID)) map.setLayoutProperty(ROUTE_HIT_LAYER_ID, 'visibility', 'none');
   }
 
   // ── Header: mode switching (Live / Database) ─────────────────────────────
