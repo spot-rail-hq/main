@@ -466,26 +466,39 @@ async function processEntry(kind, key, content, report) {
   // Wikipedia API call, not cached from the original run) since the text
   // itself was never persisted to disk. Only applies to kind==='stations' —
   // routes/operators don't have this incremental-fields concept yet.
+  //
+  // Bug found live 2026-07-19 (166 stations affected): the "only ask for
+  // still-missing fields" narrowing above used to ONLY apply on a station's
+  // SECOND+ pass (the `entry.notable_features.length` gate) — a station on
+  // its FIRST full pass got the complete, un-narrowed field list requested
+  // regardless of whether location/managed_by were already populated from
+  // a different, better source (e.g. fetch-station-addresses.mjs's OSM
+  // full postcode address, which typically runs before this script ever
+  // touches a given station). mergeWikipediaFields() then silently
+  // overwrote that better value with Wikipedia's own (often much vaguer —
+  // "Town, County, Country" with no postcode) infobox text, since it has
+  // no "don't overwrite an existing value" guard of its own — it only
+  // guards against writing an EMPTY new one. Fixed by excluding any
+  // already-populated STATION_INCREMENTAL_FIELDS key from what's requested
+  // on EVERY pass, not just the second one — a first-time pass still asks
+  // for the core fields (headline/opened_year/notable_features) as before,
+  // just never re-asks for an incremental field this station already has.
+  const missingIncremental = stationMissingIncrementalFields(entry || {}); // STATION_INCREMENTAL_FIELDS keys genuinely still needed — NOT already present, NOT already attempted
+  let requestedIncrementalFields = kind === 'stations' ? missingIncremental : [];
   let fieldsOverride;
-  // requestedIncrementalFields: which STATION_INCREMENTAL_FIELDS keys THIS
-  // call is asking about, regardless of path — defaults to "all of them"
-  // for a first-time full pass (they're part of the full field list too),
-  // narrowed to just `missing` for an incremental-only pass. Recorded into
-  // _wikipedia.incrementalFieldsAttempted below either way, so a field
-  // Claude legitimately returns null for (source doesn't state it) is
-  // remembered as "asked, empty" rather than indistinguishable from "never
-  // asked" — see stationMissingIncrementalFields()'s comment for the bug
-  // this fixes.
-  let requestedIncrementalFields = kind === 'stations' ? STATION_INCREMENTAL_FIELDS : [];
   if (kind === 'stations' && entry && entry.notable_features && entry.notable_features.length) {
-    const missing = stationMissingIncrementalFields(entry);
-    if (!missing.length) {
+    if (!missingIncremental.length) {
       console.log(`  ${key}: already fully populated, nothing incremental to add — skipped`);
       report.push({ key, status: 'ok', resolvedTitle: null });
       return;
     }
-    fieldsOverride = missing.map((f) => STATION_FIELD_SPECS[f]).join(', ');
-    requestedIncrementalFields = missing;
+    fieldsOverride = missingIncremental.map((f) => STATION_FIELD_SPECS[f]).join(', ');
+  } else if (kind === 'stations') {
+    // First full pass — still request the core (non-incremental) fields
+    // unconditionally, PLUS only whichever incremental fields are still
+    // genuinely missing, instead of the full un-narrowed schema.
+    const coreFields = Object.keys(STATION_FIELD_SPECS).filter((f) => !STATION_INCREMENTAL_FIELDS.includes(f));
+    fieldsOverride = [...coreFields, ...missingIncremental].map((f) => STATION_FIELD_SPECS[f]).join(', ');
   }
   const prompt = buildPrompt(kind, name, page.text, fieldsOverride);
   const extracted = await callClaude(prompt);

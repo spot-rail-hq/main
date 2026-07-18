@@ -4,8 +4,9 @@
  * ─────────────────────────────────────────────────────────────────────────
  * Fallback address source for stations scripts/fetch-station-addresses.mjs
  * (OSM node addr:* tags) and scripts/fetch-wikipedia-facts.mjs (Wikipedia
- * infobox location) couldn't cover — deterministic API lookup, no AI:
- * Google's Geocoding API (reverse geocode, lat/lon -> address).
+ * infobox location) couldn't cover with a FULL postal address (postcode
+ * included) — deterministic API lookup, no AI: Google's Geocoding API
+ * (reverse geocode, lat/lon -> address).
  *
  * SAFETY FILTER (the whole reason this needs its own script rather than a
  * naive reverse-geocode call): confirmed live 2026-07-18 that Google's
@@ -28,16 +29,28 @@
  * rejected (no station-typed result available), 0 wrong.
  *
  * Run:
- *   node scripts/fetch-station-addresses-google.mjs
+ *   node scripts/fetch-station-addresses-google.mjs [--limit=N]
+ *
+ * --limit=N processes only the first N eligible stations (in
+ * stations-content.json key order) — for a controlled test batch before
+ * running against everything.
  *
  * Requires GOOGLE_MAPS_API_KEY (Geocoding API enabled on that key/project)
  * — loaded from a local .env file, gitignored, never committed.
  *
  * FIELD OWNERSHIP: shares `location` with scripts/fetch-wikipedia-facts.mjs
- * and scripts/fetch-station-addresses.mjs (OSM). Precedence: only ever
- * writes `location` when the entry doesn't already have one — this is the
- * last-resort fallback in the chain (OSM full address > Wikipedia infobox
- * location > this), never overwrites either of the earlier two.
+ * and scripts/fetch-station-addresses.mjs (OSM). PRECEDENCE CHANGED
+ * 2026-07-19: this used to only run when `location` was entirely absent —
+ * in practice that meant it almost never ran, since Wikipedia's infobox
+ * nearly always yields SOME location text (even a bare "Town, County,
+ * England" with no postcode), which counted as "already covered." Per
+ * explicit preference (Google Maps' own address for a station is trusted
+ * over Wikipedia's infobox description), this now runs whenever the
+ * CURRENT `location` lacks a UK postcode — regardless of source — and
+ * REPLACES it with Google's fuller result when a confident (station-typed)
+ * match is found. Still never touches a `location` that already has a
+ * postcode (whichever source set it, OSM or a prior run of this script),
+ * and still leaves "Not available"/no-match cases alone rather than guess.
  */
 
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
@@ -63,6 +76,13 @@ const API_KEY = process.env.GOOGLE_MAPS_API_KEY;
 const GEOCODE_API = 'https://maps.googleapis.com/maps/api/geocode/json';
 const REQUEST_DELAY_MS = 150;
 const STATION_TYPES = new Set(['train_station', 'transit_station']);
+// Same permissive UK postcode pattern used to audit stations-content.json
+// for this investigation — matches with or without the mid-string space
+// (e.g. "M60 7RA" or "M607RA").
+const POSTCODE_RE = /\b[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}\b/i;
+function hasPostcode(location) {
+  return !!location && POSTCODE_RE.test(location);
+}
 
 function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
@@ -96,8 +116,8 @@ async function processStation(crs, name, lat, lon, content, report) {
     report.push({ crs, status: 'not-found' });
     return;
   }
-  if (entry.location) {
-    console.log(`  ${crs}: already has a location — skipped`);
+  if (hasPostcode(entry.location)) {
+    console.log(`  ${crs}: already has a full postcode address — skipped`);
     report.push({ crs, status: 'skipped-already-set' });
     return;
   }
@@ -107,6 +127,7 @@ async function processStation(crs, name, lat, lon, content, report) {
     return;
   }
 
+  const previousLocation = entry.location || null;
   const { results, error } = await reverseGeocode(lat, lon);
   await sleep(REQUEST_DELAY_MS);
   if (error) {
@@ -116,28 +137,38 @@ async function processStation(crs, name, lat, lon, content, report) {
   }
   const match = pickStationResult(results || []);
   if (!match) {
-    console.log(`  ${crs}: no train_station/transit_station-typed result — left "Not available" rather than guess`);
-    report.push({ crs, status: 'no-confident-match' });
+    console.log(`  ${crs}: no train_station/transit_station-typed result — left "${previousLocation || 'Not available'}" rather than guess`);
+    report.push({ crs, status: 'no-confident-match', previousLocation });
     return;
   }
 
   content[crs].location = match.formatted_address;
   content[crs]._osm = content[crs]._osm || {};
   content[crs]._osm.locationSource = 'google-geocoding-api';
-  console.log(`  ${crs}: location set — ${match.formatted_address}`);
-  report.push({ crs, status: 'ok', address: match.formatted_address });
+  console.log(`  ${crs}: location set — "${match.formatted_address}"${previousLocation ? ` (was: "${previousLocation}")` : ''}`);
+  report.push({ crs, status: 'ok', address: match.formatted_address, previousLocation });
+}
+
+function parseLimitArg() {
+  const arg = process.argv.find((a) => a.startsWith('--limit='));
+  if (!arg) return null;
+  const n = parseInt(arg.split('=')[1], 10);
+  return Number.isFinite(n) && n > 0 ? n : null;
 }
 
 async function main() {
   if (!API_KEY) {
     throw new Error('GOOGLE_MAPS_API_KEY not set — check .env');
   }
+  const limit = parseLimitArg();
   const content = loadJson(STATIONS_PATH);
   const stations = loadJson(STATION_LIST_PATH);
   const byCrs = new Map(stations.map((s) => [s.crs, s]));
-  const keys = Object.keys(content).filter((k) => k !== '_notes' && !content[k].location);
+  let keys = Object.keys(content).filter((k) => k !== '_notes' && !hasPostcode(content[k].location));
+  const totalEligible = keys.length;
+  if (limit) keys = keys.slice(0, limit);
   const report = [];
-  console.log(`Checking Google Geocoding fallback for ${keys.length} stations with no location...`);
+  console.log(`Checking Google Geocoding fallback for ${keys.length} of ${totalEligible} stations lacking a postcode${limit ? ` (--limit=${limit})` : ''}...`);
   let processed = 0;
   for (const crs of keys) {
     const s = byCrs.get(crs);
@@ -159,6 +190,7 @@ async function main() {
   const byStatus = {};
   for (const r of report) byStatus[r.status] = (byStatus[r.status] || 0) + 1;
   console.log(JSON.stringify(byStatus, null, 2));
+  console.log(`\nRemaining eligible (not yet processed): ${totalEligible - keys.length}`);
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {

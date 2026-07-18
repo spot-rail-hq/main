@@ -446,6 +446,13 @@
   .db-field { padding: 10px 16px; }
   .db-field .db-label { margin-bottom: 4px; }
   .db-value { font-size: 13px; color: var(--ink-primary); line-height: 1.5; }
+  /* Managed by/Platforms/Station code/Year opened — always exactly these
+     four, in this order, 2-per-row (row 1: Managed by, Platforms; row 2:
+     Station code, Year opened), per the approved mockup. Each cell reuses
+     the plain .db-field/.db-label/.db-value markup unchanged — only the
+     grid wrapper is new — so they still pick up data-anim-row's stagger
+     like every other field. */
+  .db-field-grid { display: grid; grid-template-columns: 1fr 1fr; }
   .db-photo { padding: 10px 16px; }
   .db-photo .db-label { margin-bottom: 4px; }
   /* .db-photo-frame mirrors database.html's TrainImage() component exactly
@@ -476,9 +483,21 @@
      attribution string, so a curator can't accidentally type a vaguer line.
      Absent entirely (not "Not available") when there's no photo at all —
      the placeholder box above already communicates that, a second "no
-     credit" line under it would be redundant chrome. */
-  .db-photo-credit { font-size: 11px; color: var(--ink); margin-top: 4px; }
-  .db-photo-credit a { color: var(--ink); text-decoration: underline; }
+     credit" line under it would be redundant chrome.
+     POSITIONING fixed 2026-07-19: this used to be its own line rendered
+     BELOW .db-photo-frame — inconsistent with database.html's TrainImage()
+     component, which overlays its credit directly on the image itself via
+     an absolutely-positioned, gradient-faded strip. Same fix here: this is
+     now a child of .db-photo-frame (still built by the same
+     dbPhotoCreditHtml(), only the CSS/nesting changed, not the text logic),
+     positioned/gradiented identically to TrainImage()'s own credit strip —
+     same --bg-rgb/font-mono/letter-spacing tokens, so a station panel and a
+     rolling-stock card now read as the same treatment, not two different
+     ones. */
+  .db-photo-credit { position: absolute; bottom: 0; left: 0; right: 0; padding: 14px 12px 8px;
+    background: linear-gradient(to top, rgba(var(--bg-rgb),0.92), transparent);
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.6px; color: var(--ink-mute); }
+  .db-photo-credit a { color: var(--ink-dim); text-decoration: underline; }
   /* Leftmost link (Google Map, or Official website for operators/routes) +
      Wikipedia now render paired on one row at the BOTTOM of the panel
      (2026-07-17, per the approved mockup — was Google Map alone near the
@@ -564,8 +583,19 @@
   .filter-row { display: flex; gap: 6px; overflow-x: auto; padding: 10px 16px; scrollbar-width: none;
     -webkit-overflow-scrolling: touch; }
   .filter-row::-webkit-scrollbar { display: none; }
-  .filter-chip { font-size: 13px; padding: 6px 13px; border-radius: 99px; border: 0.5px solid var(--br); color: var(--ink); white-space: nowrap; flex-shrink: 0; }
+  .filter-chip { font-size: 13px; padding: 6px 13px; border-radius: 99px; border: 0.5px solid var(--br); color: var(--ink); white-space: nowrap; flex-shrink: 0;
+    transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease; }
   .filter-chip.active { background: rgba(64,224,208,0.1); border-color: var(--t); color: var(--t); }
+  /* Hover fill (2026-07-19) — every chip built on this base class (region-
+     jump map chips, Live Updates filter chips, the entity chip, Services
+     chips, Main/Other Regions chips, fleet chips) fades in the same
+     turquoise-wash "filled" look on hover that the entity chip's own .active
+     state already uses (see the reference screenshot: the solid-looking
+     "Manchester Piccadilly" chip on the Live Updates page) — smoothed by
+     the transition above instead of an instant color snap. Deliberately on
+     the shared base class rather than duplicated per chip type, so "any
+     other similar clickable box chip" gets this for free too. */
+  .filter-chip:hover { background: rgba(64,224,208,0.22); border-color: var(--t); color: var(--t); }
   /* Entity filter chip (selected station/route) — sits left of "All",
      permanently turquoise-tinted (not just on .active) so it reads as
      distinct from the plain region chips even when it isn't the active
@@ -2548,8 +2578,11 @@
     var frame = (photo && photo.url)
       ? '<img src="' + escapeAttr(photo.url) + '" alt="' + escapeAttr(altName || '') + '" loading="lazy" />'
       : '<div class="db-photo-placeholder">no image available</div>';
-    return '<div class="db-photo" data-anim-row><div class="db-label">Photo</div><div class="db-photo-frame">' + frame + '</div>' +
-      dbPhotoCreditHtml(photo) + '</div>';
+    // Credit is now a CHILD of .db-photo-frame (overlaid on the image, not
+    // a separate line after it — see .db-photo-credit's CSS comment) —
+    // only rendered when there's an actual photo, same as before.
+    var credit = (photo && photo.url) ? dbPhotoCreditHtml(photo) : '';
+    return '<div class="db-photo" data-anim-row><div class="db-label">Photo</div><div class="db-photo-frame">' + frame + credit + '</div></div>';
   }
 
   // Bulleted notable-features list — shared by stations and operators (both
@@ -2627,14 +2660,23 @@
     // CrossCountry/etc. Both are Wikipedia-infobox-tier-dependent, same as
     // Opened — see scripts/fetch-wikipedia-facts.mjs's STATION_FIELD_SPECS.
     html += dbFieldOrPlaceholderHtml('Location', s.location);
-    html += dbFieldOrPlaceholderHtml('Managed by', s.managed_by);
-    // Station code (2026-07-17) — the CRS code itself, already in scope as
-    // `crs` (selectedStationCrs), needs no lookup/data-source of its own —
-    // available for all 2,637 stations regardless of Wikipedia tier, unlike
-    // most of the fields around it.
-    html += dbFieldHtml('Station code', crs);
-    html += dbFieldHtml('Platforms', s.platforms);
-    html += dbFieldHtml('Opened', s.opened_year);
+    // Managed by/Platforms/Station code/Year opened — standardized into one
+    // 2-column grid, this exact order, across every station regardless of
+    // tier (2026-07-19). All four now use the "always show the label,
+    // 'Not available' placeholder if empty" treatment Managed by/Location
+    // already had — Platforms/Opened used to hide entirely when empty
+    // (dbFieldHtml), which meant a stub-tier station could silently drop to
+    // a lopsided 1 or 3-field grid instead of a consistent 2x2. Station
+    // code (the CRS itself, already in scope as `crs`) never actually needs
+    // the placeholder in practice — it's available for all 2,637 stations
+    // regardless of Wikipedia tier — but uses the same helper for a
+    // consistent grid cell regardless.
+    html += '<div class="db-field-grid">' +
+      dbFieldOrPlaceholderHtml('Managed by', s.managed_by) +
+      dbFieldOrPlaceholderHtml('Platforms', s.platforms) +
+      dbFieldOrPlaceholderHtml('Station code', crs) +
+      dbFieldOrPlaceholderHtml('Year opened', s.opened_year) +
+      '</div>';
     html += dbFieldHtml('Listed status', s.listed_status);
     if (s.operators && s.operators.length) {
       html += '<div class="db-field" data-anim-row><div class="db-label">Services</div><div class="db-chip-row" id="db-operator-chips">' +
