@@ -193,14 +193,13 @@ function loadStationsRolloutJob() {
 const JOBS = {
   stations: loadStationsRolloutJob(),
   routes: [],
-  // 2026-07-14 UI/content pass (mockup-routes.png): re-running every
-  // operator to backfill the new regions_served/notable_features fields
-  // (see EXTRACTION_SCHEMAS.operators) — a re-run is safe/idempotent per
-  // this script's shallow-merge discipline, and ES (Eurostar) still has no
-  // wikipedia_title set, so this also exercises the auto-resolve path for it
-  // (bare "Eurostar" verified live beforehand as a clean, non-ambiguous
-  // direct match).
-  operators: ['WMR', 'VT', 'GR', 'XC', 'EM', 'LN', 'GW', 'SW', 'SE', 'SN', 'TL', 'GX', 'GN', 'CC', 'CH', 'LE', 'NT', 'TP', 'ME', 'SR', 'CS', 'GC', 'HT', 'LD', 'HX', 'XR', 'AW', 'IL', 'WR', 'ES'],
+  // Empty by default — the 2026-07-14 full-roster backfill and the
+  // 2026-07-19 GW wikipedia_title fix (see git history for that one-off
+  // run: it was pointing at the HISTORIC 1833-1947 Great Western Railway
+  // article, not the modern operator's "Great Western Railway (train
+  // operating company)" article) are both done. Set this to specific
+  // operator keys for a future one-off pass, same convention as JOBS.routes.
+  operators: [],
 };
 
 // 2026-07-16: geo-confidence matches whose article is about the town/

@@ -262,51 +262,73 @@
   },
   "GW": {
     "name": "Great Western Railway",
-    "headline": "Only British railway to keep its name through the 1921 grouping",
-    "parent_company": "FirstGroup",
-    "franchises": [
-      {
-        "name": "Great Western Railway",
-        "start": 2015,
-        "end": null
-      }
-    ],
-    "wikipedia_title": "Great Western Railway",
-    "_wikipedia": {
-      "fetched_at": "2026-07-14T11:44:37.692Z",
-      "title": "Great Western Railway",
-      "url": "https://en.wikipedia.org/wiki/Great_Western_Railway",
-      "license": "CC BY-SA 4.0"
-    },
+    "wikipedia_title": "Great Western Railway (train operating company)",
     "aliases": [
       "GWR",
       "First Great Western",
       "Great Western Railways"
     ],
     "stations_operated": 237,
-    "notable_features": [
-      "Engineered by Isambard Kingdom Brunel using his 7 ft broad gauge track",
-      "Only company to keep its identity through the Railways Act 1921 grouping",
-      "Installed the world's first commercial telegraph line, from Paddington to West Drayton in 1839",
-      "Became the largest docks operator in the world after the Railways Act 1921",
-      "Ran the first vacuum-braked general goods train in Britain in 1905",
-      "Introduced Britain's first railway-operated bus ('road motor') service in 1903",
-      "Box Tunnel was the longest railway tunnel driven at the time of its construction",
-      "The Cheltenham Spa Express ('Cheltenham Flyer') was once the fastest scheduled train in the world"
+    "headline": "GWR's battery train set a 200.5-mile world distance record",
+    "parent_company": "FirstGroup",
+    "franchises": [
+      {
+        "name": "Great Western Trains",
+        "start": "February 1996",
+        "end": "December 1998"
+      },
+      {
+        "name": "First Great Western",
+        "start": "December 1998",
+        "end": "April 2006"
+      },
+      {
+        "name": "Greater Western franchise (First Great Western)",
+        "start": "April 2006",
+        "end": "September 2015"
+      },
+      {
+        "name": "Great Western Railway",
+        "start": "September 2015",
+        "end": null
+      }
     ],
     "regions_served": {
       "main": [
-        "Greater London",
-        "South West England",
-        "West Midlands",
-        "Wales"
+        "West of England",
+        "South Wales",
+        "Thames Valley",
+        "West London"
       ],
-      "other": []
+      "other": [
+        "South coast of England",
+        "Wiltshire",
+        "Bristol",
+        "Cornwall",
+        "Gloucestershire",
+        "Herefordshire"
+      ]
+    },
+    "notable_features": [
+      "Operated the largest InterCity 125 (HST) fleet in Britain",
+      "Runs the Night Riviera sleeper between London and Penzance, once including the UK's last Motorail service",
+      "Class 230 battery train set a record of 200.5 miles on a single charge, the longest for any BEMU",
+      "Operates the Heathrow Express service and serves Gatwick via the North Downs Line",
+      "Introduced Class 800/802 Intercity Express Trains, gradually replacing the InterCity 125 fleet from 2017",
+      "Still offers Pullman Dining restaurant cars on some West Country and Wales services",
+      "Manages 198 stations across a 1,997 km network carrying 89 million passenger journeys a year"
+    ],
+    "_wikipedia": {
+      "fetched_at": "2026-07-18T05:40:15.725Z",
+      "title": "Great Western Railway (train operating company)",
+      "url": "https://en.wikipedia.org/wiki/Great_Western_Railway_(train_operating_company)",
+      "license": "CC BY-SA 4.0"
     },
     "_wikidata": {
-      "fetched_at": "2026-07-17T22:20:32.822Z",
-      "qid": "Q843251"
-    }
+      "fetched_at": "2026-07-18T05:40:33.933Z",
+      "qid": "Q1419438"
+    },
+    "website": "https://www.gwr.com/"
   },
   "SW": {
     "name": "South Western Railway",
