@@ -810,6 +810,7 @@
         <div class="sb-search-modes" id="sb-search-modes">
           <button class="sb-search-mode-tab active" id="sb-mode-station" data-mode="station">Station</button>
           <button class="sb-search-mode-tab" id="sb-mode-fromto" data-mode="fromto">Destination</button>
+          <button class="sb-search-mode-tab" id="sb-mode-operator" data-mode="operator">Operator</button>
         </div>
         <div class="sb-station-field open" id="sb-station-field-wrap">
           <div class="sb-ac-wrap">
@@ -825,6 +826,12 @@
           <div class="sb-ac-wrap">
             <input id="sb-to-input" class="sb-search-field" type="text" placeholder="To" aria-label="To station" autocomplete="off" />
             <div class="sb-ac-list" id="sb-ac-to"></div>
+          </div>
+        </div>
+        <div class="sb-station-field" id="sb-operator-field-wrap">
+          <div class="sb-ac-wrap">
+            <input id="sb-operator-input" class="sb-search-field" type="text" placeholder="Operator" aria-label="Search operators" autocomplete="off" />
+            <div class="sb-ac-list" id="sb-ac-operator"></div>
           </div>
         </div>
       </div>
@@ -1020,6 +1027,30 @@
     Object.keys(operatorsContent).forEach(function (code) {
       if (operatorsContent[code] && operatorsContent[code].name) operatorNameToCode[operatorsContent[code].name] = code;
     });
+  }
+  // Same substring/starts-with ranking as searchStations, over operatorsContent
+  // instead of the station list. Matches against both `name` and `aliases` (a
+  // hit via an alias still returns the canonical `name`/`code` so the picked
+  // result and the operator detail view it opens are never out of sync), and
+  // de-dupes so an operator with multiple matching aliases only appears once.
+  function searchOperators(query, limit) {
+    query = (query || '').trim().toLowerCase();
+    if (!query) return [];
+    var seen = {}, matches = [];
+    Object.keys(operatorsContent).forEach(function (code) {
+      var o = operatorsContent[code];
+      if (!o || !o.name || seen[code]) return;
+      var haystacks = [o.name].concat(o.aliases || []);
+      var hit = haystacks.some(function (h) { return h.toLowerCase().indexOf(query) !== -1; });
+      if (hit) { seen[code] = true; matches.push({ name: o.name, code: code }); }
+    });
+    matches.sort(function (a, b) {
+      var aStarts = a.name.toLowerCase().indexOf(query) === 0 ? 0 : 1;
+      var bStarts = b.name.toLowerCase().indexOf(query) === 0 ? 0 : 1;
+      if (aStarts !== bStarts) return aStarts - bStarts;
+      return a.name.length - b.name.length;
+    });
+    return matches.slice(0, limit || 7);
   }
   // Returns the same cleaned-data promise it feeds onLoaded with, so a
   // caller that needs to wait on it (e.g. the station-marker tiering below,
@@ -3272,18 +3303,23 @@
   var fromToRow = document.getElementById('sb-fromto-row');
   var fromInput = document.getElementById('sb-from-input');
   var toInput = document.getElementById('sb-to-input');
+  var operatorFieldWrap = document.getElementById('sb-operator-field-wrap');
+  var operatorInput = document.getElementById('sb-operator-input');
   var searchMode = 'station';
 
   function setSearchMode(m) {
     searchMode = m;
     document.getElementById('sb-mode-station').classList.toggle('active', m === 'station');
     document.getElementById('sb-mode-fromto').classList.toggle('active', m === 'fromto');
+    document.getElementById('sb-mode-operator').classList.toggle('active', m === 'operator');
     stationFieldWrap.classList.toggle('open', m === 'station');
     fromToRow.classList.toggle('open', m === 'fromto');
-    if (m === 'station') searchInput.focus(); else fromInput.focus();
+    operatorFieldWrap.classList.toggle('open', m === 'operator');
+    if (m === 'station') searchInput.focus(); else if (m === 'fromto') fromInput.focus(); else operatorInput.focus();
   }
   document.getElementById('sb-mode-station').addEventListener('click', function () { setSearchMode('station'); });
   document.getElementById('sb-mode-fromto').addEventListener('click', function () { setSearchMode('fromto'); });
+  document.getElementById('sb-mode-operator').addEventListener('click', function () { setSearchMode('operator'); });
 
   searchBtn.addEventListener('click', function () {
     var opening = !searchPanel.classList.contains('open');
@@ -3298,7 +3334,8 @@
   // {name,crs,lat,lon} record to onPick. Typing after a pick invalidates it
   // (onPick(null)) until the user picks again or presses Enter, which falls
   // back to the top current match.
-  function wireAutocomplete(inputEl, dropdownEl, onPick) {
+  function wireAutocomplete(inputEl, dropdownEl, onPick, searchFn) {
+    searchFn = searchFn || searchStations;
     var currentMatches = [];
     function closeDropdown() {
       currentMatches = [];
@@ -3323,7 +3360,7 @@
     }
     inputEl.addEventListener('input', function () {
       onPick(null);
-      currentMatches = searchStations(inputEl.value, 7);
+      currentMatches = searchFn(inputEl.value, 7);
       renderDropdown();
     });
     inputEl.addEventListener('keydown', function (e) {
@@ -3379,6 +3416,22 @@
   });
   fromInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') toInput.focus(); });
   toInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') trySubmitFromTo(); });
+
+  // Operator search — same wireAutocomplete/pick-on-Enter pattern as Station
+  // above, just backed by searchOperators and handed off to the existing
+  // selectOperator() (Task 1's route/operator selection), not a map flyTo —
+  // an operator isn't a single point on the map.
+  var operatorPick = null;
+  function submitOperatorPick(picked) { selectOperator(picked.code); }
+  wireAutocomplete(operatorInput, document.getElementById('sb-ac-operator'), function (picked) {
+    operatorPick = picked;
+    if (picked) submitOperatorPick(picked);
+  }, searchOperators);
+  operatorInput.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter') return;
+    var picked = operatorPick || searchOperators(operatorInput.value, 1)[0];
+    if (picked) submitOperatorPick(picked);
+  });
 
   // ── Sidebar minimise (tablet/mobile only — see CSS) ───────────────────────
   document.getElementById('sb-min-btn').addEventListener('click', function () {
