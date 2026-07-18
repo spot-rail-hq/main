@@ -1839,25 +1839,31 @@
       'circle-opacity-transition': { duration: 320 },
     };
   }
-  // Soft halo behind the solid dot above — same source/points, added as its
-  // own layer (BELOW the dot in addLayer's stacking order, so the dot
-  // renders on top of its own glow) rather than folded into one layer,
-  // since it needs its own independent radius/opacity/blur that the solid
-  // dot doesn't share. circle-blur softens the edge into a genuine glow
-  // rather than a second hard-edged ring. Baseline opacity (0.55) and
-  // radius sit mid-way through the pulse's own range (see
-  // startSelectedMarkerPulse) so the very first frame after a fade-in
-  // already looks like "mid-breath" rather than starting at an extreme.
-  var SELECTED_GLOW_BASE_OPACITY = 0.55;
+  // Ring behind the solid dot above — same source/points, added as its own
+  // layer (BELOW the dot in addLayer's stacking order, so the dot renders
+  // on top of its own ring) rather than folded into one layer, since it
+  // needs its own independent radius/opacity/blur the solid dot doesn't
+  // share. circle-blur softens the edge into a genuine glow rather than a
+  // hard-edged ring outline. radius/opacity start at 0 here and are driven
+  // entirely by tickSelectedMarkerRing's per-frame animation loop below —
+  // deliberately NO circle-radius-transition/circle-opacity-transition on
+  // this layer (unlike the dot layer just below it): the ring computes an
+  // exact value every animation frame itself, and a built-in MapLibre paint
+  // transition layered on top of that would fight/lag the deliberately
+  // abrupt reset-to-start-of-cycle moment (ring snaps back to the dot's
+  // edge at full opacity, then starts expanding again), producing a
+  // stutter instead of a clean repeating ripple. The dot layer's own
+  // opacity transition already carries the "smooth, not instant" select/
+  // deselect feel on its own — the ring is a separate ambient effect on
+  // top of that, so its own instantaneous start/stop isn't relied on for
+  // that requirement.
   function selectedStationGlowPaint() {
     var c = themeColors();
     return {
-      'circle-radius': ['interpolate', ['linear'], ['zoom'], 7, 10, 12, 14],
+      'circle-radius': ['interpolate', ['linear'], ['zoom'], 7, 5.6, 12, 8.0],
       'circle-color': c.accent,
-      'circle-blur': 0.7,
+      'circle-blur': 0.55,
       'circle-opacity': 0,
-      'circle-opacity-transition': { duration: 320 },
-      'circle-radius-transition': { duration: 320 },
     };
   }
   var MAJOR_FILTER = ['==', ['get', 'tier'], 'major'];
@@ -1874,6 +1880,24 @@
   function stationsHitPaint() {
     return { 'circle-radius': 14, 'circle-color': '#000000', 'circle-opacity': 0, 'circle-stroke-width': 0 };
   }
+  // Plain static hover glow — NOT the selected-marker's animated ring above,
+  // and independent of it: this fires from feature-state 'hover' on the
+  // regular (possibly unselected) station dots, so hovering some OTHER
+  // station while a different one is selected shows this static halo on
+  // the hovered dot while the selected dot keeps its own separate ripple
+  // untouched. A quick opacity transition (160ms) just smooths the
+  // appear/disappear snap — it is not a loop/pulse, the value is a single
+  // constant while hovering, unlike the ring's continuous per-frame drive.
+  function stationsHoverGlowPaint() {
+    var c = themeColors();
+    return {
+      'circle-radius': ['interpolate', ['linear'], ['zoom'], 7, 7, 12, 9.5],
+      'circle-color': c.accent,
+      'circle-blur': 0.6,
+      'circle-opacity': ['case', ['boolean', ['feature-state', 'hover'], false], 0.4, 0],
+      'circle-opacity-transition': { duration: 160 },
+    };
+  }
 
   function addStationsLayer(gj) {
     var c = themeColors();
@@ -1881,6 +1905,19 @@
       map.addSource('stations', { type: 'geojson', data: gj });
     } else {
       map.getSource('stations').setData(gj);
+    }
+    // Hover-glow layers added BEFORE (so they stack below) their matching
+    // visible dot layer just below — same filter/minzoom pairing per tier
+    // as the dots themselves, so this halo only renders/evaluates within
+    // the same zoom range its own tier's dot is even visible in.
+    if (!map.getLayer('stations-hover-glow-major')) {
+      map.addLayer({ id: 'stations-hover-glow-major', type: 'circle', source: 'stations', filter: MAJOR_FILTER, paint: stationsHoverGlowPaint() });
+    }
+    if (!map.getLayer('stations-hover-glow-mid')) {
+      map.addLayer({ id: 'stations-hover-glow-mid', type: 'circle', source: 'stations', filter: MID_FILTER, minzoom: MID_STATION_MINZOOM, paint: stationsHoverGlowPaint() });
+    }
+    if (!map.getLayer('stations-hover-glow-minor')) {
+      map.addLayer({ id: 'stations-hover-glow-minor', type: 'circle', source: 'stations', filter: MINOR_FILTER, minzoom: MINOR_STATION_MINZOOM, paint: stationsHoverGlowPaint() });
     }
     if (!map.getLayer('stations-circle-major')) {
       map.addLayer({ id: 'stations-circle-major', type: 'circle', source: 'stations', filter: MAJOR_FILTER, paint: stationsCirclePaint() });
@@ -3059,53 +3096,69 @@
     // scratch (setStyle({diff:false})), which resets their paint back to
     // selectedStationCirclePaint()/selectedStationGlowPaint()'s own
     // circle-opacity:0 default regardless of whether a station is actually
-    // selected right now — this re-asserts the correct resting opacity
-    // immediately after (re)creation so a selection surviving a theme
-    // toggle doesn't silently go invisible. Uses setPaintProperty, not a
-    // fresh addLayer paint object, so it still benefits from the
-    // `-transition` already baked into that paint (a near-instant one here
-    // since there's nothing to animate from right after creation).
+    // selected right now — this re-asserts the dot's correct resting
+    // opacity immediately after (re)creation so a selection surviving a
+    // theme toggle doesn't silently go invisible. The ring layer needs no
+    // equivalent resync: as long as selectedMarkerRingRaf is still running
+    // (it isn't tied to layer existence — see tickSelectedMarkerRing's own
+    // guard), its very next animation frame recomputes and re-applies the
+    // correct radius/opacity on whatever layer instance currently exists.
     if (selectedMarkerVisible) {
       map.setPaintProperty(SELECTED_STATIONS_LAYER_ID, 'circle-opacity', 1);
-      map.setPaintProperty(SELECTED_STATIONS_GLOW_LAYER_ID, 'circle-opacity', SELECTED_GLOW_BASE_OPACITY);
     }
   }
 
-  // ── Selected-marker glow pulse ─────────────────────────────────────────────
-  // Deliberately NOT a 60fps requestAnimationFrame loop — a slow alternating
-  // setInterval (every PULSE_HALF_MS) leaning on the glow layer's own
-  // circle-opacity-transition/circle-radius-transition to do the actual
-  // interpolation between the two endpoints is just as smooth for a slow
-  // "breathing" cadence and is a couple of setPaintProperty calls a second
-  // instead of ~60 — cheap regardless, since this layer only ever holds the
-  // 1-2 currently-selected features (never the full ~2,600-station
-  // dataset), but there's no reason to spend more than that for an
-  // intentionally subtle, ambient effect.
-  var PULSE_HALF_MS = 1400; // ~2.8s full up-down cycle — slow/ambient, not flashy
-  var PULSE_LOW_OPACITY = 0.42, PULSE_HIGH_OPACITY = 0.68; // within the requested ~40-70% range
-  var PULSE_LOW_RADIUS_DELTA = -1.5, PULSE_HIGH_RADIUS_DELTA = 1.5; // +/- a couple of px, kept tight per instruction
-  var selectedMarkerPulseTimer = null;
-  var selectedMarkerPulseHigh = false;
-  function glowRadiusExpr(delta) {
-    return ['interpolate', ['linear'], ['zoom'], 7, 10 + delta, 12, 14 + delta];
+  // ── Selected-marker ring ("radar ping") ────────────────────────────────────
+  // A single expanding-and-fading ring, looping continuously while a
+  // station is selected — same idea as Google Maps' current-location pulse,
+  // kept deliberately tight (radius only grows to RING_MAX_SCALE times the
+  // dot's own radius, not a dramatic sweep) and slow (~1.7s/cycle). Unlike
+  // the earlier "breathing halo in place" version, an expanding ring is a
+  // genuine one-directional ramp-then-reset (a sawtooth), not a symmetric
+  // back-and-forth — that can't be approximated well by alternating between
+  // two endpoints and leaning on MapLibre's own paint transitions (the
+  // instant reset-to-start-of-cycle moment would itself animate under a
+  // transition, producing a stutter). So this IS a per-frame
+  // requestAnimationFrame loop rather than a low-frequency setInterval —
+  // still cheap, since it only ever touches the 1-2 currently-selected
+  // features' own tiny overlay layer (never the ~2,600-station dataset),
+  // the same "single feature, not the whole dataset" cost bar as before,
+  // just paid at a higher (but still trivial) call frequency.
+  var RING_CYCLE_MS = 1700; // within the requested ~1.5-2s per cycle
+  var RING_MAX_SCALE = 1.4; // ring grows from 1x to 1.4x the dot's own radius — matches Google Maps-style pulse, kept tight per instruction
+  var RING_PEAK_OPACITY = 0.5; // starts here, eases to 0 as it expands
+  var selectedMarkerRingRaf = null;
+  var selectedMarkerRingStart = null;
+  function zoomInterpLinear(zoom, z1, v1, z2, v2) {
+    if (zoom <= z1) return v1;
+    if (zoom >= z2) return v2;
+    return v1 + (v2 - v1) * (zoom - z1) / (z2 - z1);
   }
-  function tickSelectedMarkerPulse() {
-    if (!map || !map.getLayer(SELECTED_STATIONS_GLOW_LAYER_ID)) return;
-    selectedMarkerPulseHigh = !selectedMarkerPulseHigh;
-    map.setPaintProperty(SELECTED_STATIONS_GLOW_LAYER_ID, 'circle-opacity', selectedMarkerPulseHigh ? PULSE_HIGH_OPACITY : PULSE_LOW_OPACITY);
-    map.setPaintProperty(SELECTED_STATIONS_GLOW_LAYER_ID, 'circle-radius', glowRadiusExpr(selectedMarkerPulseHigh ? PULSE_HIGH_RADIUS_DELTA : PULSE_LOW_RADIUS_DELTA));
+  function tickSelectedMarkerRing(ts) {
+    if (!map || !map.getLayer(SELECTED_STATIONS_GLOW_LAYER_ID)) {
+      selectedMarkerRingRaf = requestAnimationFrame(tickSelectedMarkerRing);
+      return;
+    }
+    if (selectedMarkerRingStart == null) selectedMarkerRingStart = ts;
+    var t = ((ts - selectedMarkerRingStart) % RING_CYCLE_MS) / RING_CYCLE_MS; // 0..1, sawtooth
+    var eased = 1 - (1 - t) * (1 - t); // ease-out — fast start, slow finish; radius growth and opacity fade share this so they stay visually paired
+    var baseRadius = zoomInterpLinear(map.getZoom(), 7, 5.6, 12, 8.0); // same shape as the dot's own radius (selectedStationCirclePaint)
+    map.setPaintProperty(SELECTED_STATIONS_GLOW_LAYER_ID, 'circle-radius', baseRadius * (1 + (RING_MAX_SCALE - 1) * eased));
+    map.setPaintProperty(SELECTED_STATIONS_GLOW_LAYER_ID, 'circle-opacity', RING_PEAK_OPACITY * (1 - eased));
+    selectedMarkerRingRaf = requestAnimationFrame(tickSelectedMarkerRing);
   }
   function startSelectedMarkerPulse() {
-    if (selectedMarkerPulseTimer) return; // already running
-    selectedMarkerPulseHigh = false;
-    selectedMarkerPulseTimer = setInterval(tickSelectedMarkerPulse, PULSE_HALF_MS);
+    if (selectedMarkerRingRaf) return; // already running
+    selectedMarkerRingStart = null; // restart the cycle cleanly from the dot's edge
+    selectedMarkerRingRaf = requestAnimationFrame(tickSelectedMarkerRing);
   }
   function stopSelectedMarkerPulse() {
-    if (!selectedMarkerPulseTimer) return;
-    clearInterval(selectedMarkerPulseTimer);
-    selectedMarkerPulseTimer = null;
+    if (!selectedMarkerRingRaf) return;
+    cancelAnimationFrame(selectedMarkerRingRaf);
+    selectedMarkerRingRaf = null;
+    selectedMarkerRingStart = null;
     if (map && map.getLayer(SELECTED_STATIONS_GLOW_LAYER_ID)) {
-      map.setPaintProperty(SELECTED_STATIONS_GLOW_LAYER_ID, 'circle-radius', glowRadiusExpr(0));
+      map.setPaintProperty(SELECTED_STATIONS_GLOW_LAYER_ID, 'circle-opacity', 0);
     }
   }
 
@@ -3134,12 +3187,10 @@
       if (!map) return;
       if (visible) {
         map.setPaintProperty(SELECTED_STATIONS_LAYER_ID, 'circle-opacity', 1);
-        map.setPaintProperty(SELECTED_STATIONS_GLOW_LAYER_ID, 'circle-opacity', SELECTED_GLOW_BASE_OPACITY);
-        startSelectedMarkerPulse();
+        startSelectedMarkerPulse(); // ring's own first frame sets its opacity/radius — no separate set needed here
       } else {
-        stopSelectedMarkerPulse();
+        stopSelectedMarkerPulse(); // also zeroes the ring's opacity
         map.setPaintProperty(SELECTED_STATIONS_LAYER_ID, 'circle-opacity', 0);
-        map.setPaintProperty(SELECTED_STATIONS_GLOW_LAYER_ID, 'circle-opacity', 0);
       }
     }
 
