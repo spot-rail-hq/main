@@ -1807,14 +1807,20 @@
       // 2026-07-18: hover used to be a translucent stationHoverFill wash
       // (rgba turquoise at low opacity) with a thicker turquoise stroke —
       // itself a variant of the same "ring with a barely-there center"
-      // look that the selected marker had. Hover now switches to the exact
-      // same solid c.accent fill (no stroke) the selected marker uses, at
-      // this layer's own normal (not 200%-enlarged) radius — an
-      // unambiguous solid dot on hover, matching selectedStationCirclePaint
-      // in everything except size. Resting (non-hover) state is untouched:
-      // dark fill + turquoise stroke, per CLAUDE.md's marker spec.
+      // look that the selected marker had. Hover now switches to a solid
+      // c.accent fill at this layer's own normal (not 200%-enlarged)
+      // radius — an unambiguous solid dot on hover, not the old translucent
+      // wash. The stroke stays on for hover too (bumped to 2.2, same width
+      // as before this pass) — dropping it entirely made the hover dot
+      // read as noticeably smaller despite the separate hover-glow halo
+      // behind it; since stroke draws OUTSIDE circle-radius (total visual
+      // size = radius + stroke-width) and is the same accent color as the
+      // fill, it reads as one solid, slightly larger dot rather than a
+      // visible ring — same fill/stroke color, just no longer a hollow
+      // center underneath it. Resting (non-hover) state is untouched: dark
+      // fill + turquoise stroke, per CLAUDE.md's marker spec.
       'circle-color': ['case', hoverExpr, c.accent, c.stationFill],
-      'circle-stroke-width': ['case', hoverExpr, 0, 1.5],
+      'circle-stroke-width': ['case', hoverExpr, 2.2, 1.5],
       'circle-stroke-color': c.accent,
     };
   }
