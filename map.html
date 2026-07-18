@@ -1816,17 +1816,30 @@
   // proportionally consistent at every zoom rather than a fixed pixel
   // size that would look right at one zoom and wrong at others. Radius
   // doubled (7,2.8->5.6 / 12,4.0->8.0), same 2x scale as before. Solid
-  // turquoise fill with no stroke (previous version used the dark
+  // turquoise fill (c.accent), no stroke (previous version used the dark
   // stationFill + turquoise stroke combo shared with the regular unselected
-  // dots — deliberately dropped here so a SELECTED station reads as an
-  // unambiguous solid turquoise mark, not just "a regular dot with a
-  // thicker ring"). circle-opacity is driven imperatively (see
+  // dots — dropped here so a SELECTED station reads as an unambiguous
+  // solid mark, not just "a regular dot with a thicker ring"). 2026-07-18:
+  // briefly tried c.stationFill (dark-in-dark-theme/light-in-light-theme
+  // neutral) here instead, on the theory that a same-hue dot+ring combo was
+  // what made the marker look hollow in a screenshot — reverted immediately
+  // after confirming live in dark theme that c.stationFill is
+  // rgba(7,9,12,0.9), i.e. nearly the exact color of the dark basemap
+  // itself, which made the dot genuinely disappear against the map and
+  // reproduced an even more literal version of the same hollow-ring look
+  // (just a thin ring outline, near-invisible center) — a real regression,
+  // not a fix. c.accent already renders as a solid, fully opaque disc (see
+  // this session's own earlier verification screenshots) — whatever caused
+  // the hollow look in that report, a same-hue dot+glow wasn't it; the
+  // stroke-based old design (before this feature existed at all) is the
+  // more likely source of what that screenshot was actually showing.
+  // circle-opacity is driven imperatively (see
   // setSelectedStationPoints/syncSelectedMarkerLayers below), not by a
   // feature-state case here — this layer only ever holds 0-2 features, all
   // sharing the same selected/not-yet-visible state at any moment, so a
-  // plain constant + `-transition` is all that's needed for a smooth
-  // fade rather than an instant pop when a station is selected/deselected.
-  // No hover feature-state here (unlike stationsCirclePaint) — this layer
+  // plain constant + `-transition` is all that's needed for a smooth fade
+  // rather than an instant pop when a station is selected/deselected. No
+  // hover feature-state here (unlike stationsCirclePaint) — this layer
   // isn't wired for mouse hover, so those case branches would just be
   // permanently-dead code.
   function selectedStationCirclePaint() {
@@ -1862,7 +1875,12 @@
     return {
       'circle-radius': ['interpolate', ['linear'], ['zoom'], 7, 5.6, 12, 8.0],
       'circle-color': c.accent,
-      'circle-blur': 0.55,
+      // 2026-07-18: was 0.55 — read as too faint/washed-out to notice live
+      // once the ring's own radius growth was widened to 2.5x (more blur
+      // spread over a bigger area reads as even softer, not stronger).
+      // Lower blur keeps the expanding band's edge crisp enough to actually
+      // register as "a ring," not just a vague halo.
+      'circle-blur': 0.2,
       'circle-opacity': 0,
     };
   }
@@ -3125,8 +3143,11 @@
   // the same "single feature, not the whole dataset" cost bar as before,
   // just paid at a higher (but still trivial) call frequency.
   var RING_CYCLE_MS = 1700; // within the requested ~1.5-2s per cycle
-  var RING_MAX_SCALE = 1.4; // ring grows from 1x to 1.4x the dot's own radius — matches Google Maps-style pulse, kept tight per instruction
-  var RING_PEAK_OPACITY = 0.5; // starts here, eases to 0 as it expands
+  // 2026-07-18 follow-up: 1.4x read as barely-noticeable live (the growth
+  // was on the same order as the dot's own 200%-of-base-circle enlargement,
+  // so it never visibly cleared the dot) — widened to 2.5x per feedback.
+  var RING_MAX_SCALE = 2.5; // ring grows from 1x to 2.5x the dot's own radius
+  var RING_PEAK_OPACITY = 0.65; // starts here, eases to 0 as it expands (was 0.5 — bumped alongside the lower blur above for visibility)
   var selectedMarkerRingRaf = null;
   var selectedMarkerRingStart = null;
   function zoomInterpLinear(zoom, z1, v1, z2, v2) {
