@@ -193,12 +193,13 @@ function loadStationsRolloutJob() {
 const JOBS = {
   stations: loadStationsRolloutJob(),
   routes: [],
-  // Empty by default — the 2026-07-14 full-roster backfill and the
-  // 2026-07-19 GW wikipedia_title fix (see git history for that one-off
-  // run: it was pointing at the HISTORIC 1833-1947 Great Western Railway
-  // article, not the modern operator's "Great Western Railway (train
-  // operating company)" article) are both done. Set this to specific
-  // operator keys for a future one-off pass, same convention as JOBS.routes.
+  // Empty by default — see git history for the two 2026-07-19 one-off runs
+  // this scoped (GW: wikipedia_title was pointing at the historic 1833-1947
+  // Great Western Railway company, not the modern operator; AW: was pointing
+  // at "Transport for Wales", the Welsh Government's overall transport body,
+  // not the "Transport for Wales Rail" train operating company). Set this to
+  // specific operator keys for a future one-off pass, same convention as
+  // JOBS.routes.
   operators: [],
 };
 

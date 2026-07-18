@@ -1,5 +1,5 @@
 {
-  "_notes": "Keyed by a short operator code (your own convention — GWR, AWC, etc). 2026-07-13: seeded 28 new entries from api/incidents.js's TOC_REGION_TABLE, using that table's own 2-letter ATOC-style codes (VT, GR, XC, ...) as the key — name only, awaiting Wikipedia/manual enrichment like any other entry. RESOLVED: WMR (West Midlands Railway) predates that seed and keeps its own, longer code on purpose — TOC_REGION_TABLE's WM is a real-world ATOC operator code required for matching the live Darwin incident feed in api/incidents.js, not an arbitrary internal choice, so it is NOT changed to WMR for internal consistency; do not add a WM entry here. 2026-07-13 canonicalization pass (see chat): `aliases` (array of strings) is a new manual/curated field — OSM-tagged naming variants (spelling, casing, historical franchise/legal names) that should be treated as the same operator as this entry's `name`; also added to matching stations-content.json entries' `operators` arrays, replacing the variant string with the canonical `name`. `legal_entity` (string) is a separate new manual/curated field for a DIFFERENT real entity behind a brand (e.g. the group company operating it) — deliberately NOT folded into `aliases`/station data, since equating a legal entity with its brand would be wrong, not just imprecise. 2026-07-14: SE (Southeastern)'s wikipedia_title set to \"Southeastern (train operating company)\" — verified live against Wikipedia's API as a real, non-disambiguation page, exact match. GN (Great Northern)'s wikipedia_title set to \"Greater Thameslink Railway\", NOT its own article — bare \"Great Northern\" is a disambiguation page and no \"Great Northern (train operating company)\" article exists; Wikipedia confirms Thameslink Southern Great Northern Ltd, trading as Greater Thameslink Railway (GTR), took over Govia Thameslink Railway's services on 31 May 2026 and runs Gatwick Express/Great Northern/Southern/Thameslink as sub-brands with no separate per-brand articles post-merger, so GTR's article is genuinely the correct/only source for Great Northern content today. This is a deliberate exception to the usual \"wikipedia_title points to the entity's own article\" rule — flagged here so it isn't mistaken for a mis-resolution later. 2026-07-14 follow-up: swept SN/TL/GX/GN (the four Greater Thameslink Railway sub-brands) for stale \"Govia Thameslink Railway\" references. SN's headline/parent_company updated to \"Greater Thameslink Railway\". TL and GX already had it correctly recorded as history (a franchises entry ending 31 May 2026, TL also has the new \"Greater Thameslink Railway\" entry starting then) — left untouched, that's accurate history not a stale current-parent field. GN had no Govia reference to begin with (freshly set this session). NOTE left unresolved: TL's parent_company is \"Govia\" (not \"Govia Thameslink Railway\") — a different, narrower string referring to the private-sector parent group; didn't touch it since it wasn't the string asked about, but it's arguably equally stale post-nationalization and may need its own follow-up. 2026-07-14: \"Southern Railway\" folded into SN/Southern as a 19th alias (added to its `aliases` array; 15 stations' operators arrays updated) — after the membership-checking extraction switch this string reappeared as a genuinely stop-verified (not proximity) OSM tag, always co-occurring with \"Southern\" at the same stations, confirming it's a stale/duplicate relation tag for the same brand rather than the historic 1923–1947 Southern Railway company or proximity noise. By contrast \"Greater Thameslink Railway\" (which also reappeared under membership-checking, co-occurring with Thameslink/Southern/Gatwick Express/Great Northern) was deliberately NOT folded anywhere — it's the real current legal successor entity (GTR, since 31 May 2026) that Southern/Thameslink/Great Northern/Gatwick Express now operate under as sub-brands, confirmed via its own Wikipedia article; equating it with any one sub-brand would be wrong, same reasoning as `legal_entity`. fleet_classes store the EXACT display label as it should appear (not a bare number + assumed 'Class ' prefix) — this covers cases like Manchester Metrolink's M5000 that don't follow the 'Class NN' pattern. 'id' is used to link through to that vehicle's entry on the database page; 'display' is shown verbatim, no reformatting. franchises is the full history; sidebar should show the current one as a simple 'Operating since {start}' line by default, with the full array available as an expandable detail. FIELD OWNERSHIP (see scripts/ for the population scripts): headline/parent_company/franchises are written by scripts/fetch-wikipedia-facts.mjs (Wikipedia, narrative/historical — Claude extracts, never invents; headline is a punchy 8-12 word sentence, not a paragraph; a franchise entry only appears if the article states its dates). schema_jsonld is written by scripts/build-schema-jsonld.mjs (template assembly from the fields above, no new facts, no API calls). 2026-07-14 UI/content pass (mockup-routes.png/mockup-station.png): `stations_operated` is now computed by scripts/compute-operator-stats.mjs — a plain count of stations-content.json entries listing this operator's `name`/`aliases`, i.e. it inherits fetch-osm-facts.mjs's route-relation membership-verification standard rather than being a fresh guess. A genuine 0 (no verified station found — HT/Hull Trains, HX/Heathrow Express, XR/Elizabeth line as of this run) is left unset rather than written as literal 0, since 0 would misleadingly render as \"no stations\" for operators that plainly have real coverage; OSM just doesn't have a stop-verified route relation for them under these names yet. `regions_served` (main/other) and `notable_features` are now written by scripts/fetch-wikipedia-facts.mjs, same grounded-extraction discipline as headline/parent_company/franchises (never invented; omitted if the article doesn't state it) — see that script's header. `fleet_classes` remains manual/curated only — extracting specific class numbers from prose carries a higher hallucination risk than the other fields and needs the structured id/display shape below; not automated in this pass. name/wikipedia_title are manual/curated only. _wikipedia is provenance metadata written by the Wikipedia script (no _osm block here — OSM doesn't own any operator-level field in this design; the OSM-derived operator name lives on the station/route entries that reference it, via their own operator/operators fields). 2026-07-13 follow-up: `sub_brands` (array of strings, on LE/Greater Anglia so far) is a named service brand under this operator that intentionally does NOT get its own operators-content.json entry and is NOT folded into `aliases`/station data — distinct from both a naming variant (aliases) and a different legal entity (legal_entity). `welsh_name` (string, on AW/Transport for Wales so far) is the official bilingual Welsh-language name — kept as its own field rather than merged into `aliases` because it's a live, still-used official name, not a deprecated/historical variant; station-content.json's \"Trafnidiaeth Cymru\" tags are deliberately left as-is, not replaced with \"Transport for Wales\". website (added 2026-07-19) is the operator's official corporate website URL, written by scripts/fetch-official-websites.mjs — deterministic, no AI (Wikipedia article title -> connected Wikidata item -> its official-website/P856 claim), NOT fetch-wikipedia-facts.mjs: confirmed live that plain-text article extraction cannot see infobox fields like this at all (0/30 operators extracted via that pathway before this script was built). Provenance under _wikidata (fetched_at, qid) — a separate namespace from _wikipedia. map.html's bottom link row shows this as the leftmost \"Official website\" link, paired with Wikipedia. KNOWN GAP (not fixed by this pass, flagged for follow-up): GW's wikipedia_title (\"Great Western Railway\") resolves to the HISTORIC 1833-1947 company's article/Wikidata item (Q843251, no website claim), not the modern 2015-present FirstGroup-owned train operating company — a separate, correctly-scoped article (\"Great Western Railway (train operating company)\") exists on Wikipedia and was not previously linked; this also means GW's existing headline/notable_features are mostly historic-company facts, not modern-brand facts, predating this session.",
+  "_notes": "Keyed by a short operator code (your own convention — GWR, AWC, etc). 2026-07-13: seeded 28 new entries from api/incidents.js's TOC_REGION_TABLE, using that table's own 2-letter ATOC-style codes (VT, GR, XC, ...) as the key — name only, awaiting Wikipedia/manual enrichment like any other entry. RESOLVED: WMR (West Midlands Railway) predates that seed and keeps its own, longer code on purpose — TOC_REGION_TABLE's WM is a real-world ATOC operator code required for matching the live Darwin incident feed in api/incidents.js, not an arbitrary internal choice, so it is NOT changed to WMR for internal consistency; do not add a WM entry here. 2026-07-13 canonicalization pass (see chat): `aliases` (array of strings) is a new manual/curated field — OSM-tagged naming variants (spelling, casing, historical franchise/legal names) that should be treated as the same operator as this entry's `name`; also added to matching stations-content.json entries' `operators` arrays, replacing the variant string with the canonical `name`. `legal_entity` (string) is a separate new manual/curated field for a DIFFERENT real entity behind a brand (e.g. the group company operating it) — deliberately NOT folded into `aliases`/station data, since equating a legal entity with its brand would be wrong, not just imprecise. 2026-07-14: SE (Southeastern)'s wikipedia_title set to \"Southeastern (train operating company)\" — verified live against Wikipedia's API as a real, non-disambiguation page, exact match. GN (Great Northern)'s wikipedia_title set to \"Greater Thameslink Railway\", NOT its own article — bare \"Great Northern\" is a disambiguation page and no \"Great Northern (train operating company)\" article exists; Wikipedia confirms Thameslink Southern Great Northern Ltd, trading as Greater Thameslink Railway (GTR), took over Govia Thameslink Railway's services on 31 May 2026 and runs Gatwick Express/Great Northern/Southern/Thameslink as sub-brands with no separate per-brand articles post-merger, so GTR's article is genuinely the correct/only source for Great Northern content today. This is a deliberate exception to the usual \"wikipedia_title points to the entity's own article\" rule — flagged here so it isn't mistaken for a mis-resolution later. 2026-07-14 follow-up: swept SN/TL/GX/GN (the four Greater Thameslink Railway sub-brands) for stale \"Govia Thameslink Railway\" references. SN's headline/parent_company updated to \"Greater Thameslink Railway\". TL and GX already had it correctly recorded as history (a franchises entry ending 31 May 2026, TL also has the new \"Greater Thameslink Railway\" entry starting then) — left untouched, that's accurate history not a stale current-parent field. GN had no Govia reference to begin with (freshly set this session). NOTE left unresolved: TL's parent_company is \"Govia\" (not \"Govia Thameslink Railway\") — a different, narrower string referring to the private-sector parent group; didn't touch it since it wasn't the string asked about, but it's arguably equally stale post-nationalization and may need its own follow-up. 2026-07-14: \"Southern Railway\" folded into SN/Southern as a 19th alias (added to its `aliases` array; 15 stations' operators arrays updated) — after the membership-checking extraction switch this string reappeared as a genuinely stop-verified (not proximity) OSM tag, always co-occurring with \"Southern\" at the same stations, confirming it's a stale/duplicate relation tag for the same brand rather than the historic 1923–1947 Southern Railway company or proximity noise. By contrast \"Greater Thameslink Railway\" (which also reappeared under membership-checking, co-occurring with Thameslink/Southern/Gatwick Express/Great Northern) was deliberately NOT folded anywhere — it's the real current legal successor entity (GTR, since 31 May 2026) that Southern/Thameslink/Great Northern/Gatwick Express now operate under as sub-brands, confirmed via its own Wikipedia article; equating it with any one sub-brand would be wrong, same reasoning as `legal_entity`. fleet_classes store the EXACT display label as it should appear (not a bare number + assumed 'Class ' prefix) — this covers cases like Manchester Metrolink's M5000 that don't follow the 'Class NN' pattern. 'id' is used to link through to that vehicle's entry on the database page; 'display' is shown verbatim, no reformatting. franchises is the full history; sidebar should show the current one as a simple 'Operating since {start}' line by default, with the full array available as an expandable detail. FIELD OWNERSHIP (see scripts/ for the population scripts): headline/parent_company/franchises are written by scripts/fetch-wikipedia-facts.mjs (Wikipedia, narrative/historical — Claude extracts, never invents; headline is a punchy 8-12 word sentence, not a paragraph; a franchise entry only appears if the article states its dates). schema_jsonld is written by scripts/build-schema-jsonld.mjs (template assembly from the fields above, no new facts, no API calls). 2026-07-14 UI/content pass (mockup-routes.png/mockup-station.png): `stations_operated` is now computed by scripts/compute-operator-stats.mjs — a plain count of stations-content.json entries listing this operator's `name`/`aliases`, i.e. it inherits fetch-osm-facts.mjs's route-relation membership-verification standard rather than being a fresh guess. A genuine 0 (no verified station found — HT/Hull Trains, HX/Heathrow Express, XR/Elizabeth line as of this run) is left unset rather than written as literal 0, since 0 would misleadingly render as \"no stations\" for operators that plainly have real coverage; OSM just doesn't have a stop-verified route relation for them under these names yet. `regions_served` (main/other) and `notable_features` are now written by scripts/fetch-wikipedia-facts.mjs, same grounded-extraction discipline as headline/parent_company/franchises (never invented; omitted if the article doesn't state it) — see that script's header. `fleet_classes` remains manual/curated only — extracting specific class numbers from prose carries a higher hallucination risk than the other fields and needs the structured id/display shape below; not automated in this pass. name/wikipedia_title are manual/curated only. _wikipedia is provenance metadata written by the Wikipedia script (no _osm block here — OSM doesn't own any operator-level field in this design; the OSM-derived operator name lives on the station/route entries that reference it, via their own operator/operators fields). 2026-07-13 follow-up: `sub_brands` (array of strings, on LE/Greater Anglia so far) is a named service brand under this operator that intentionally does NOT get its own operators-content.json entry and is NOT folded into `aliases`/station data — distinct from both a naming variant (aliases) and a different legal entity (legal_entity). `welsh_name` (string, on AW so far) is the official bilingual Welsh-language name — kept as its own field rather than merged into `aliases` because it's a live, still-used official name, not a deprecated/historical variant. REVISED 2026-07-19: AW was renamed from \"Transport for Wales\" to \"Transport for Wales Rail\" and wikipedia_title re-pointed to match — \"Transport for Wales\" (Welsh Government's overall multi-modal transport body) and \"Transport for Wales Rail\" (the actual train operating company, abbr AW in its own Wikipedia infobox) are DIFFERENT real entities with separate Wikipedia articles; the AW entry was previously, incorrectly, sourced from the parent body's article. `welsh_name` updated to \"Trafnidiaeth Cymru Trenau\" (the rail company's own official Welsh name per its infobox's other_name field, more specific than the general org's plain \"Trafnidiaeth Cymru\"); \"Transport for Wales\"/\"Trafnidiaeth Cymru\"/\"Trafnidiaeth Cymru Trenau\" are now all aliases. station-content.json's \"Trafnidiaeth Cymru\" operator tags (238 stations) were renamed to \"Transport for Wales Rail\", same canonicalization precedent as every other alias-folding pass in this file — the earlier \"deliberately left as-is\" call is superseded by this correction. website (added 2026-07-19) is the operator's official corporate website URL, written by scripts/fetch-official-websites.mjs — deterministic, no AI (Wikipedia article title -> connected Wikidata item -> its official-website/P856 claim), NOT fetch-wikipedia-facts.mjs: confirmed live that plain-text article extraction cannot see infobox fields like this at all (0/30 operators extracted via that pathway before this script was built). Provenance under _wikidata (fetched_at, qid) — a separate namespace from _wikipedia. map.html's bottom link row shows this as the leftmost \"Official website\" link, paired with Wikipedia. RESOLVED 2026-07-19 (was flagged as a known gap in the previous note): GW's wikipedia_title was pointing at the HISTORIC 1833-1947 company's article (Q843251, no website claim) — re-pointed to \"Great Western Railway (train operating company)\" and headline/parent_company/franchises/regions_served/notable_features fully re-extracted from the correct source. Same class of bug found and fixed the same day on AW (see welsh_name note above). BOTH GW and AW's franchises/regions_served/fleet_classes were then further corrected by hand from each article's raw infobox wikitext (Special:Export-equivalent, prop=revisions&rvprop=content), NOT scripts/fetch-wikipedia-facts.mjs's normal Claude/prose extraction — confirmed live that Claude's prose-based extraction produces a plausible-looking but WRONG approximation of these two fields specifically: it extracts the company's narrated trading-name history (e.g. \"Great Western Trains\" -> \"First Great Western\" -> ...) as if those were franchises, when the infobox's own `franchise=` parameter actually names the two DfT-designated franchise PERIODS (\"InterCity Great Western\" 1996-2006, \"Greater Western\" 2006-2026) — a different, more official categorization entirely invisible to plain-text extraction. `fleet_classes` (previously empty for every operator — \"not automated in this pass\" per the field's own definition above) was populated for GW/AW only, from the same verified infobox `fleet=` parameter — NOT rolled out to the other 28 operators in this pass; flagged as a good candidate for a dedicated infobox-wikitext extraction script if the same treatment is wanted site-wide, rather than hand-verifying each one. KNOWN DIVERGENCE (not a bug, left as-is both places): GW/AW's Wikipedia-infobox-stated `stationsop` (198 / 248) differs from this file's own `stations_operated` (237 / 64) — the latter is intentionally a live, independently-computed count (scripts/compute-operator-stats.mjs, OSM route-relation membership) rather than a Wikipedia-stated snapshot; the two fields measure different things by design, see that field's own definition above.",
   "WMR": {
     "name": "West Midlands Railway",
     "wikipedia_title": "West Midlands Trains",
@@ -273,40 +273,26 @@
     "parent_company": "FirstGroup",
     "franchises": [
       {
-        "name": "Great Western Trains",
-        "start": "February 1996",
-        "end": "December 1998"
+        "name": "InterCity Great Western",
+        "start": "4 February 1996",
+        "end": "31 March 2006"
       },
       {
-        "name": "First Great Western",
-        "start": "December 1998",
-        "end": "April 2006"
-      },
-      {
-        "name": "Greater Western franchise (First Great Western)",
-        "start": "April 2006",
-        "end": "September 2015"
-      },
-      {
-        "name": "Great Western Railway",
-        "start": "September 2015",
-        "end": null
+        "name": "Greater Western",
+        "start": "1 April 2006",
+        "end": "13 December 2026"
       }
     ],
     "regions_served": {
       "main": [
-        "West of England",
-        "South Wales",
-        "Thames Valley",
-        "West London"
+        "Greater London",
+        "South East England",
+        "South West England",
+        "South Wales"
       ],
       "other": [
-        "South coast of England",
-        "Wiltshire",
-        "Bristol",
-        "Cornwall",
-        "Gloucestershire",
-        "Herefordshire"
+        "East Midlands",
+        "West Midlands"
       ]
     },
     "notable_features": [
@@ -328,7 +314,53 @@
       "fetched_at": "2026-07-18T05:40:33.933Z",
       "qid": "Q1419438"
     },
-    "website": "https://www.gwr.com/"
+    "website": "https://www.gwr.com/",
+    "fleet_classes": [
+      {
+        "id": "08",
+        "display": "Class 08"
+      },
+      {
+        "id": "57",
+        "display": "Class 57"
+      },
+      {
+        "id": "150",
+        "display": "Class 150"
+      },
+      {
+        "id": "158",
+        "display": "Class 158"
+      },
+      {
+        "id": "165",
+        "display": "Class 165"
+      },
+      {
+        "id": "166",
+        "display": "Class 166"
+      },
+      {
+        "id": "175",
+        "display": "Class 175"
+      },
+      {
+        "id": "230",
+        "display": "Class 230"
+      },
+      {
+        "id": "387",
+        "display": "Class 387"
+      },
+      {
+        "id": "800",
+        "display": "Class 800"
+      },
+      {
+        "id": "802",
+        "display": "Class 802"
+      }
+    ]
   },
   "SW": {
     "name": "South Western Railway",
@@ -1140,48 +1172,91 @@
     "website": "https://tfl.gov.uk/modes/elizabeth-line/"
   },
   "AW": {
-    "name": "Transport for Wales",
-    "headline": "Welsh Government rail body became last-resort operator during COVID-19 pandemic",
-    "parent_company": "Welsh Government",
+    "name": "Transport for Wales Rail",
+    "wikipedia_title": "Transport for Wales Rail",
+    "welsh_name": "Trafnidiaeth Cymru Trenau",
+    "stations_operated": 64,
+    "aliases": [
+      "Transport for Wales",
+      "Trafnidiaeth Cymru",
+      "Trafnidiaeth Cymru Trenau"
+    ],
+    "headline": "Welsh state operator runs unique battery-electric tram-trains on street and rail",
+    "parent_company": "Transport for Wales",
     "franchises": [
       {
         "name": "Wales & Borders",
-        "start": 2018,
+        "start": "7 February 2021",
         "end": null
       }
-    ],
-    "wikipedia_title": "Transport for Wales",
-    "_wikipedia": {
-      "fetched_at": "2026-07-16T12:48:24.168Z",
-      "title": "Transport for Wales",
-      "url": "https://en.wikipedia.org/wiki/Transport_for_Wales",
-      "license": "CC BY-SA 4.0"
-    },
-    "welsh_name": "Trafnidiaeth Cymru",
-    "stations_operated": 64,
-    "notable_features": [
-      "Replaced the Arriva Trains Wales brand on the Wales & Borders franchise from 14 October 2018",
-      "Welsh Government-owned company took over day-to-day franchise operations as an operator of last resort on 7 February 2021 due to COVID-19 pandemic",
-      "Acquired Cardiff-based engineering firm Pullman Rail Ltd from Colas Rail in 2021 to support its Canton depot",
-      "Launched TfW Ffeibr, a full-fibre internet infrastructure company for the South Wales valleys, in November 2024",
-      "Developing the T Network, an integrated multimodal transport network across Wales"
     ],
     "regions_served": {
       "main": [
         "Wales"
       ],
       "other": [
-        "South Wales",
-        "North Wales",
-        "Swansea Bay",
-        "West Wales"
+        "North West England",
+        "West Midlands",
+        "South West England"
       ]
     },
-    "_wikidata": {
-      "fetched_at": "2026-07-17T22:20:46.994Z",
-      "qid": "Q48740007"
+    "notable_features": [
+      "Manages 248 National Rail stations, including all 223 in Wales",
+      "First UK-based train operating company to partner with Payzone for ticket sales",
+      "First British train operator outside London to deploy contactless EMV services",
+      "Operates Class 398 battery-electric tram-trains able to run on both street-level tracks and conventional railway",
+      "Delivering the South Wales Metro, including a new depot at Taff's Well",
+      "Took over as operator of last resort in 2021 after KeolisAmey Wales franchise collapsed"
+    ],
+    "_wikipedia": {
+      "fetched_at": "2026-07-18T05:52:49.036Z",
+      "title": "Transport for Wales Rail",
+      "url": "https://en.wikipedia.org/wiki/Transport_for_Wales_Rail",
+      "license": "CC BY-SA 4.0"
     },
-    "website": "https://tfw.wales/"
+    "_wikidata": {
+      "fetched_at": "2026-07-18T05:52:50.439Z",
+      "qid": "Q104878180"
+    },
+    "website": "https://tfw.wales/",
+    "fleet_classes": [
+      {
+        "id": "67",
+        "display": "Class 67"
+      },
+      {
+        "id": "150",
+        "display": "Class 150"
+      },
+      {
+        "id": "153",
+        "display": "Class 153"
+      },
+      {
+        "id": "158",
+        "display": "Class 158"
+      },
+      {
+        "id": "197",
+        "display": "Class 197"
+      },
+      {
+        "id": "230",
+        "display": "Class 230"
+      },
+      {
+        "id": "231",
+        "display": "Class 231"
+      },
+      {
+        "id": "398",
+        "display": "Class 398"
+      },
+      {
+        "id": "756",
+        "display": "Class 756"
+      }
+    ]
   },
   "IL": {
     "name": "Island Line",
