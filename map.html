@@ -471,13 +471,20 @@
      credit" line under it would be redundant chrome. */
   .db-photo-credit { font-size: 11px; color: var(--ink); margin-top: 4px; }
   .db-photo-credit a { color: var(--ink); text-decoration: underline; }
-  /* Google Map + Source: Wikipedia now render paired on one row at the
-     BOTTOM of the panel (2026-07-17, per the approved mockup — was Google
-     Map alone near the top, a leftover pre-Phase-D position; see
-     dbBottomLinksHtml()). .db-links stays the shared flex-row container for
-     both. */
-  .db-links { display: flex; gap: 16px; }
+  /* Leftmost link (Google Map, or Official website for operators/routes) +
+     Wikipedia now render paired on one row at the BOTTOM of the panel
+     (2026-07-17, per the approved mockup — was Google Map alone near the
+     top, a leftover pre-Phase-D position; see dbBottomLinksHtml()).
+     .db-links stays the shared flex-row container for both. gap dropped
+     2026-07-19 (16px -> 8px either side of the new .db-link-sep pipe) now
+     that the pipe itself is a visible glyph providing separation, not just
+     whitespace. */
+  .db-links { display: flex; align-items: center; gap: 8px; }
   .db-links a { font-family: var(--font-mono); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--t); }
+  /* The " | " between the two link-row entries (2026-07-19, per the
+     approved mockup) — dimmed ink, not turquoise, so it reads as a
+     separator rather than a third (non-functional) link. */
+  .db-link-sep { font-family: var(--font-mono); font-size: 11px; color: var(--ink-mute); }
   .db-chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
   /* Scoped override, not a base .filter-chip change — region-jump and news
      filter chips elsewhere keep their grey default; only station/operator
@@ -2268,37 +2275,57 @@
   // plain-link case above) — the whole point of this branch is to disclose
   // which place the source actually covers, since it isn't the station
   // itself; dropping that would defeat the reason it exists.
+  // 2026-07-19: dropped the "Source: " prefix — link text is now just
+  // "Wikipedia" (see the approved link-row mockup), matching the plain
+  // "Wikipedia" label the settlement-article branch below also now uses.
   function dbWikipediaAttributionHtml(entry) {
     var wiki = entry && entry._wikipedia;
     if (!wiki || !wiki.url) return '';
     if (wiki.sourceType === 'settlement-article') {
-      return '<span class="db-source-plain">Source: Wikipedia (' + escapeAttr(wiki.title || '') + ')</span>';
+      return '<span class="db-source-plain">Wikipedia (' + escapeAttr(wiki.title || '') + ')</span>';
     }
-    return '<a href="' + escapeAttr(wiki.url) + '" target="_blank" rel="noopener">Source: Wikipedia</a>';
+    return '<a href="' + escapeAttr(wiki.url) + '" target="_blank" rel="noopener">Wikipedia</a>';
   }
 
-  // Google Map + Source: Wikipedia, paired on one row at the bottom of the
-  // panel (2026-07-17, per the approved mockup — Google Map alone used to
-  // render near the top, a leftover pre-Phase-D position). Shared by both
-  // the station panel (which has coords) and the operator panel (which
-  // doesn't — mapLink is simply omitted there, same "absent if not
-  // applicable" convention as every other field here).
+  // Leftmost link + Wikipedia, paired on one row at the bottom of the panel
+  // (2026-07-17, per the approved mockup — Google Map alone used to render
+  // near the top, a leftover pre-Phase-D position; extended 2026-07-19 to
+  // add Official website as operators' leftmost link). Shared by the
+  // station panel, operator panel, and route panel.
   //
-  // Prefers entry._google.placeId (scripts/fetch-station-place-ids.mjs,
-  // added 2026-07-17 — a Places API Text Search match, deep-links straight
-  // to the correct map entry) over the plain lat/lon query link, since a
-  // raw coordinate search can land on the wrong nearby POI when several
-  // places share a location (station forecourt shops, adjacent bus stops).
-  // Falls back to the coords query link when no placeId has been fetched
-  // yet, so the link never disappears mid-rollout.
+  // Which leftmost link renders is keyed off `coords`, not entity kind
+  // directly — coords is only ever passed for the station panel (routes and
+  // operators always pass null, per their call sites below), so "coords
+  // truthy" IS "this is the station panel" here. That's deliberate: stations
+  // now also have a `website` field (scripts/fetch-official-websites.mjs,
+  // 2026-07-19 — usually a generic National Rail station-details page), but
+  // per the approved mockup stations keep Google Map as their leftmost link
+  // unconditionally — entry.website is simply never consulted when coords is
+  // present, so a station's website value (if any) doesn't leak into this
+  // row. Only the operator/route path (coords null) shows Official website.
+  //
+  // Google Map prefers entry._google.placeId (scripts/fetch-station-place-
+  // ids.mjs, added 2026-07-17 — a Places API Text Search match, deep-links
+  // straight to the correct map entry) over the plain lat/lon query link,
+  // since a raw coordinate search can land on the wrong nearby POI when
+  // several places share a location (station forecourt shops, adjacent bus
+  // stops). Falls back to the coords query link when no placeId has been
+  // fetched yet, so the link never disappears mid-rollout.
   function dbBottomLinksHtml(entry, coords) {
-    var placeId = entry && entry._google && entry._google.placeId;
-    var mapLink = placeId
-      ? '<a href="https://www.google.com/maps/place/?q=place_id:' + encodeURIComponent(placeId) + '" target="_blank" rel="noopener">Google Map</a>'
-      : (coords ? '<a href="https://www.google.com/maps/search/?api=1&query=' + coords[1] + ',' + coords[0] + '" target="_blank" rel="noopener">Google Map</a>' : '');
+    var leftLink;
+    if (coords) {
+      var placeId = entry && entry._google && entry._google.placeId;
+      leftLink = placeId
+        ? '<a href="https://www.google.com/maps/place/?q=place_id:' + encodeURIComponent(placeId) + '" target="_blank" rel="noopener">Google Map</a>'
+        : '<a href="https://www.google.com/maps/search/?api=1&query=' + coords[1] + ',' + coords[0] + '" target="_blank" rel="noopener">Google Map</a>';
+    } else {
+      var website = entry && entry.website;
+      leftLink = website ? '<a href="' + escapeAttr(website) + '" target="_blank" rel="noopener">Official website</a>' : '';
+    }
     var wikiLink = dbWikipediaAttributionHtml(entry);
-    if (!mapLink && !wikiLink) return '';
-    return '<div class="db-field" data-anim-row><div class="db-links">' + mapLink + wikiLink + '</div></div>';
+    var parts = [leftLink, wikiLink].filter(function (p) { return !!p; });
+    if (!parts.length) return '';
+    return '<div class="db-field" data-anim-row><div class="db-links">' + parts.join('<span class="db-link-sep">|</span>') + '</div></div>';
   }
 
   // Exact-attribution photo credit — see .db-photo-credit's CSS comment for
@@ -2419,11 +2446,11 @@
         '</div></div>';
     }
     html += notableFeaturesHtml(s.notable_features);
-    // Google Map + Source: Wikipedia, bottom of panel, paired on one row —
-    // moved 2026-07-17, see dbBottomLinksHtml(). Google Map prefers the
-    // stored _google.placeId (scripts/fetch-station-place-ids.mjs), falling
-    // back to a lat/lon-constructed link when no placeId is set yet. Street
-    // View link removed (2026-07-16, per the approved mockup).
+    // Google Map + Wikipedia, bottom of panel, paired on one row — moved
+    // 2026-07-17, see dbBottomLinksHtml(). Google Map prefers the stored
+    // _google.placeId (scripts/fetch-station-place-ids.mjs), falling back to
+    // a lat/lon-constructed link when no placeId is set yet. Street View
+    // link removed (2026-07-16, per the approved mockup).
     html += dbBottomLinksHtml(s, coordsForCrs(crs));
     return html || dbComingSoonHtml(s.name);
   }
@@ -2463,7 +2490,8 @@
         'Multi-leg journey routing is planned for a future update.</div></div>';
     }
     // No coords for a route (it's a line, not a point) — dbBottomLinksHtml
-    // just omits the Google Map half and renders Source: Wikipedia alone.
+    // shows Official website (routes don't have one — always absent here) if
+    // set, otherwise renders Wikipedia alone.
     html += dbBottomLinksHtml(r, null);
     return html || dbComingSoonHtml(r.name);
   }
@@ -2519,7 +2547,8 @@
     html += dbFieldHtml('Stations operated', o.stations_operated);
     html += notableFeaturesHtml(o.notable_features);
     // No coords for an operator (it isn't a point on the map) — dbBottomLinksHtml
-    // just omits the Google Map half and renders Source: Wikipedia alone.
+    // shows Official website (o.website, scripts/fetch-official-websites.mjs)
+    // as the leftmost link when set, paired with Wikipedia.
     html += dbBottomLinksHtml(o, null);
     return html || dbComingSoonHtml(o.name);
   }
