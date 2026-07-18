@@ -1985,6 +1985,10 @@
       });
     }
     if (!stationInteractionsWired) { wireStationInteractions(); stationInteractionsWired = true; }
+    // This can run AFTER the selected-marker overlay already exists (see
+    // ensureSelectedMarkersOnTop's comment) — re-assert it's still on top
+    // regardless, since this function just added fresh layers of its own.
+    ensureSelectedMarkersOnTop();
   }
 
   // ── Full station marker set (2,637 stations, not just the curated ~50) ───
@@ -3090,6 +3094,35 @@
   // station marker (now Phase 7's 200%-enlarged highlight) missing until
   // some unrelated later action happened to call this again. Dropped to
   // match the rest of the file's pattern.
+  // Real bug found 2026-07-18 (reported as the selected dot still looking
+  // "hollow" after the fill-color fix): renderSelectedStationMarkers() runs
+  // unconditionally inside the very first addMapLayers() call, but
+  // addStationsLayer() only runs there too IF stationsData has already
+  // arrived by then (see the `if (stationsData)` guard around its call) —
+  // otherwise the regular per-tier station dots get added LATER, from the
+  // Promise.all(...).then() handler, as fresh map.addLayer() calls with no
+  // beforeId. A freshly added layer always stacks on TOP of whatever
+  // already exists, so on that (very common — station data is a network
+  // fetch, it essentially never beats the map's own 'load' event) timing
+  // path, the regular dot for the selected station itself — dark fill,
+  // turquoise STROKE (stationsCirclePaint) — ends up drawn OVER the
+  // selected marker's solid turquoise fill, which is exactly a "turquoise
+  // ring with a dark hollow center": not a symptom of the glow/blur at
+  // all, a real z-order race. Same class of race applies to the magenta
+  // route-highlight layer (drawMagentaHighlightGeometry), which can be
+  // created even later still (only once pathfinding/route geometry
+  // resolves). Fixed generally, not just patched for this one ordering, by
+  // re-asserting the selected marker's on-top position from three places
+  // any of these can legitimately run after it: here, at the end of
+  // addStationsLayer(), and at the end of drawMagentaHighlightGeometry().
+  function ensureSelectedMarkersOnTop() {
+    if (!map) return;
+    // Order matters: moving glow first, then dot, leaves the dot as the
+    // final (truly topmost) layer — glow directly beneath it, same
+    // relationship as when they're first created.
+    if (map.getLayer(SELECTED_STATIONS_GLOW_LAYER_ID)) map.moveLayer(SELECTED_STATIONS_GLOW_LAYER_ID);
+    if (map.getLayer(SELECTED_STATIONS_LAYER_ID)) map.moveLayer(SELECTED_STATIONS_LAYER_ID);
+  }
   function renderSelectedStationMarkers() {
     if (!map) return;
     var gj = {
@@ -3110,6 +3143,7 @@
     if (!map.getLayer(SELECTED_STATIONS_LAYER_ID)) {
       map.addLayer({ id: SELECTED_STATIONS_LAYER_ID, type: 'circle', source: SELECTED_STATIONS_SOURCE_ID, paint: selectedStationCirclePaint() });
     }
+    ensureSelectedMarkersOnTop();
     // A theme toggle tears down and recreates both layers above from
     // scratch (setStyle({diff:false})), which resets their paint back to
     // selectedStationCirclePaint()/selectedStationGlowPaint()'s own
@@ -3324,6 +3358,13 @@
       map.on('mouseleave', ROUTE_HIT_LAYER_ID, function () { map.getCanvas().style.cursor = ''; });
       routeHandlersWired = true;
     }
+    // This route highlight is often first drawn well AFTER the selected-
+    // marker overlay already exists (e.g. From/To: setSelectedStationPoints
+    // runs synchronously, this only runs once pathfinding resolves later)
+    // — re-assert the marker's on-top position (see
+    // ensureSelectedMarkersOnTop's comment) now that this may have just
+    // added a fresh layer of its own.
+    ensureSelectedMarkersOnTop();
     return true;
   }
 
