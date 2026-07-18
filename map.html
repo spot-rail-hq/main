@@ -386,7 +386,11 @@
   .sb-ac-list.open { display: block; }
   .sb-ac-list.dropup { top: auto; bottom: calc(100% + 4px); }
   .sb-ac-item { display: block; width: 100%; text-align: left; padding: 9px 14px; font-size: 13px; color: var(--ink-primary); }
-  .sb-ac-item:hover { background: rgba(64,224,208,0.08); color: var(--t); }
+  /* .active is the keyboard-highlighted suggestion (arrow keys) — mouse
+     hover sets the exact same class via JS (see wireAutocomplete), so the
+     two input methods always agree on one shared highlight rather than
+     drifting out of sync with separate visual states. */
+  .sb-ac-item.active, .sb-ac-item:hover { background: rgba(64,224,208,0.08); color: var(--t); }
 
   /* Selected station/route/network row — star sits inline between the name
      and the close (×) icon, replacing the old separate "Saved routes" list.
@@ -3539,27 +3543,77 @@
   // {name,crs,lat,lon} record to onPick. Typing after a pick invalidates it
   // (onPick(null)) until the user picks again or presses Enter, which falls
   // back to the top current match.
+  //
+  // Standard combobox keyboard behavior (ArrowDown/ArrowUp move a single
+  // shared `highlightedIndex`, Enter selects it, Escape closes with no
+  // selection), plus the WAI-ARIA combobox roles (role="combobox" on the
+  // input, role="listbox"/"option" on the list/items, aria-activedescendant
+  // tracking the highlight) — this one function is literally shared by
+  // every search field on the site (station, from, to, operator, and the
+  // mobile floating search bar all call this), so fixing it here covers all
+  // of them at once rather than needing a per-field patch.
   function wireAutocomplete(inputEl, dropdownEl, onPick, searchFn) {
     searchFn = searchFn || searchStations;
     var currentMatches = [];
+    var highlightedIndex = -1; // -1 = nothing highlighted yet
+
+    inputEl.setAttribute('role', 'combobox');
+    inputEl.setAttribute('aria-autocomplete', 'list');
+    inputEl.setAttribute('aria-expanded', 'false');
+    inputEl.setAttribute('aria-controls', dropdownEl.id);
+    dropdownEl.setAttribute('role', 'listbox');
+
+    function optionId(i) { return dropdownEl.id + '-opt-' + i; }
+
     function closeDropdown() {
       currentMatches = [];
+      highlightedIndex = -1;
       dropdownEl.classList.remove('open');
       dropdownEl.innerHTML = '';
+      inputEl.setAttribute('aria-expanded', 'false');
+      inputEl.removeAttribute('aria-activedescendant');
+    }
+    // Applies `highlightedIndex` to the already-rendered DOM (both the CSS
+    // class driving the visual highlight and the ARIA bits screen readers
+    // read) — called on every arrow-key move AND on mouse hover, so the two
+    // input methods always agree on exactly one highlighted item instead of
+    // keeping separate keyboard/mouse visual states that could disagree.
+    function applyHighlight() {
+      Array.prototype.forEach.call(dropdownEl.querySelectorAll('.sb-ac-item'), function (btn, i) {
+        var active = i === highlightedIndex;
+        btn.classList.toggle('active', active);
+        btn.setAttribute('aria-selected', active ? 'true' : 'false');
+        if (active) btn.scrollIntoView({ block: 'nearest' });
+      });
+      if (highlightedIndex >= 0) inputEl.setAttribute('aria-activedescendant', optionId(highlightedIndex));
+      else inputEl.removeAttribute('aria-activedescendant');
+    }
+    function pick(idx) {
+      var picked = currentMatches[idx];
+      if (!picked) return;
+      inputEl.value = picked.name;
+      closeDropdown();
+      onPick(picked);
     }
     function renderDropdown() {
       if (!currentMatches.length) { closeDropdown(); return; }
+      highlightedIndex = -1;
       dropdownEl.innerHTML = currentMatches.map(function (s, i) {
-        return '<button type="button" class="sb-ac-item" data-idx="' + i + '">' + s.name + '</button>';
+        return '<button type="button" class="sb-ac-item" id="' + optionId(i) + '" role="option" aria-selected="false">' + s.name + '</button>';
       }).join('');
       dropdownEl.classList.add('open');
-      Array.prototype.forEach.call(dropdownEl.querySelectorAll('.sb-ac-item'), function (btn) {
+      inputEl.setAttribute('aria-expanded', 'true');
+      Array.prototype.forEach.call(dropdownEl.querySelectorAll('.sb-ac-item'), function (btn, i) {
         btn.addEventListener('mousedown', function (e) {
           e.preventDefault();
-          var picked = currentMatches[parseInt(btn.dataset.idx, 10)];
-          inputEl.value = picked.name;
-          closeDropdown();
-          onPick(picked);
+          pick(i);
+        });
+        // Keeps mouse and keyboard highlight in sync — moving the pointer
+        // over a suggestion re-points the same highlightedIndex the arrow
+        // keys use, rather than tracking hover separately.
+        btn.addEventListener('mouseenter', function () {
+          highlightedIndex = i;
+          applyHighlight();
         });
       });
     }
@@ -3569,7 +3623,32 @@
       renderDropdown();
     });
     inputEl.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape') closeDropdown();
+      if (e.key === 'Escape') { closeDropdown(); return; }
+      if (e.key === 'ArrowDown') {
+        if (!currentMatches.length) return;
+        e.preventDefault();
+        highlightedIndex = highlightedIndex < currentMatches.length - 1 ? highlightedIndex + 1 : 0;
+        applyHighlight();
+        return;
+      }
+      if (e.key === 'ArrowUp') {
+        if (!currentMatches.length) return;
+        e.preventDefault();
+        highlightedIndex = highlightedIndex > 0 ? highlightedIndex - 1 : currentMatches.length - 1;
+        applyHighlight();
+        return;
+      }
+      if (e.key === 'Enter' && highlightedIndex >= 0) {
+        // A suggestion is actively highlighted — Enter selects IT, same as
+        // a click, taking priority over this field's own separate Enter
+        // listener (registered right after this call, elsewhere — the
+        // top-match/focus-next fallback used when nothing is highlighted).
+        // stopImmediatePropagation so that other listener doesn't also fire
+        // for the same keypress.
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        pick(highlightedIndex);
+      }
     });
     inputEl.addEventListener('blur', function () {
       setTimeout(closeDropdown, 120); // delay lets the mousedown above register first
