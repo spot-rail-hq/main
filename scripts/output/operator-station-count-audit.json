@@ -1,0 +1,264 @@
+[
+  {
+    "key": "WMR",
+    "name": "West Midlands Railway",
+    "wikipedia_title": "West Midlands Trains",
+    "ourCount": 119,
+    "wikipediaStationsop": "146",
+    "infoboxAbbr": "LM",
+    "scopeMatches": "mismatch-or-different-entity"
+  },
+  {
+    "key": "VT",
+    "name": "Avanti West Coast",
+    "wikipedia_title": "Avanti West Coast",
+    "ourCount": 42,
+    "wikipediaStationsop": "16",
+    "infoboxAbbr": "VT",
+    "scopeMatches": "match"
+  },
+  {
+    "key": "GR",
+    "name": "LNER",
+    "wikipedia_title": "LNER",
+    "status": "fetch-error",
+    "error": "no infobox template found on page"
+  },
+  {
+    "key": "XC",
+    "name": "CrossCountry",
+    "wikipedia_title": "CrossCountry",
+    "ourCount": 103,
+    "wikipediaStationsop": null,
+    "infoboxAbbr": "XC",
+    "scopeMatches": "match"
+  },
+  {
+    "key": "EM",
+    "name": "East Midlands Railway",
+    "wikipedia_title": "East Midlands Railway",
+    "ourCount": 119,
+    "wikipediaStationsop": null,
+    "infoboxAbbr": "EM",
+    "scopeMatches": "match"
+  },
+  {
+    "key": "LN",
+    "name": "London Northwestern Railway",
+    "wikipedia_title": "West Midlands Trains",
+    "ourCount": 57,
+    "wikipediaStationsop": "146",
+    "infoboxAbbr": "LM",
+    "scopeMatches": "mismatch-or-different-entity"
+  },
+  {
+    "key": "GW",
+    "name": "Great Western Railway",
+    "wikipedia_title": "Great Western Railway (train operating company)",
+    "ourCount": 237,
+    "wikipediaStationsop": "198",
+    "infoboxAbbr": "GW",
+    "scopeMatches": "match"
+  },
+  {
+    "key": "SW",
+    "name": "South Western Railway",
+    "wikipedia_title": "South Western Railway",
+    "ourCount": 185,
+    "wikipediaStationsop": null,
+    "infoboxAbbr": "SW",
+    "scopeMatches": "match"
+  },
+  {
+    "key": "SE",
+    "name": "Southeastern",
+    "wikipedia_title": "Southeastern (train operating company)",
+    "ourCount": 162,
+    "wikipediaStationsop": "164",
+    "infoboxAbbr": "SE",
+    "scopeMatches": "match"
+  },
+  {
+    "key": "SN",
+    "name": "Southern",
+    "wikipedia_title": "Southern",
+    "status": "fetch-error",
+    "error": "no infobox template found on page"
+  },
+  {
+    "key": "TL",
+    "name": "Thameslink",
+    "wikipedia_title": "Thameslink",
+    "ourCount": 141,
+    "wikipediaStationsop": null,
+    "infoboxAbbr": null,
+    "scopeMatches": "unknown"
+  },
+  {
+    "key": "GX",
+    "name": "Gatwick Express",
+    "wikipedia_title": "Gatwick Express",
+    "ourCount": 7,
+    "wikipediaStationsop": "1",
+    "infoboxAbbr": "GX",
+    "scopeMatches": "match"
+  },
+  {
+    "key": "GN",
+    "name": "Great Northern",
+    "wikipedia_title": "Greater Thameslink Railway",
+    "ourCount": 56,
+    "wikipediaStationsop": "238",
+    "infoboxAbbr": "GN, GX, SN, TL",
+    "scopeMatches": "shared-with-others"
+  },
+  {
+    "key": "CC",
+    "name": "c2c",
+    "wikipedia_title": "C2c",
+    "ourCount": 26,
+    "wikipediaStationsop": "25",
+    "infoboxAbbr": "CC",
+    "scopeMatches": "match"
+  },
+  {
+    "key": "CH",
+    "name": "Chiltern Railways",
+    "wikipedia_title": "Chiltern Railways",
+    "ourCount": 48,
+    "wikipediaStationsop": null,
+    "infoboxAbbr": null,
+    "scopeMatches": "unknown"
+  },
+  {
+    "key": "LE",
+    "name": "Greater Anglia",
+    "wikipedia_title": "Greater Anglia",
+    "ourCount": 93,
+    "wikipediaStationsop": "134",
+    "infoboxAbbr": "LE",
+    "scopeMatches": "match"
+  },
+  {
+    "key": "NT",
+    "name": "Northern",
+    "wikipedia_title": "Northern Trains",
+    "ourCount": 459,
+    "wikipediaStationsop": "468 (2025)",
+    "infoboxAbbr": "NT",
+    "scopeMatches": "match"
+  },
+  {
+    "key": "TP",
+    "name": "TransPennine Express",
+    "wikipedia_title": "TransPennine Express",
+    "ourCount": 98,
+    "wikipediaStationsop": "19",
+    "infoboxAbbr": "TP",
+    "scopeMatches": "match"
+  },
+  {
+    "key": "ME",
+    "name": "Merseyrail",
+    "wikipedia_title": "Merseyrail",
+    "ourCount": 69,
+    "wikipediaStationsop": null,
+    "infoboxAbbr": null,
+    "scopeMatches": "unknown"
+  },
+  {
+    "key": "SR",
+    "name": "ScotRail",
+    "wikipedia_title": "ScotRail",
+    "ourCount": 363,
+    "wikipediaStationsop": null,
+    "infoboxAbbr": "SR",
+    "scopeMatches": "match"
+  },
+  {
+    "key": "CS",
+    "name": "Caledonian Sleeper",
+    "wikipedia_title": "Caledonian Sleeper",
+    "ourCount": 51,
+    "wikipediaStationsop": null,
+    "infoboxAbbr": "CS",
+    "scopeMatches": "match"
+  },
+  {
+    "key": "GC",
+    "name": "Grand Central",
+    "wikipedia_title": "Grand Central",
+    "status": "fetch-error",
+    "error": "no infobox template found on page"
+  },
+  {
+    "key": "HT",
+    "name": "Hull Trains",
+    "wikipedia_title": "Hull Trains",
+    "ourCount": null,
+    "wikipediaStationsop": null,
+    "infoboxAbbr": "HT",
+    "scopeMatches": "match"
+  },
+  {
+    "key": "LD",
+    "name": "Lumo",
+    "wikipedia_title": "Lumo (train operating company)",
+    "ourCount": 67,
+    "wikipediaStationsop": null,
+    "infoboxAbbr": null,
+    "scopeMatches": "unknown"
+  },
+  {
+    "key": "HX",
+    "name": "Heathrow Express",
+    "wikipedia_title": "Heathrow Express",
+    "ourCount": null,
+    "wikipediaStationsop": null,
+    "infoboxAbbr": "HX",
+    "scopeMatches": "match"
+  },
+  {
+    "key": "XR",
+    "name": "Elizabeth line",
+    "wikipedia_title": "Elizabeth line",
+    "ourCount": null,
+    "wikipediaStationsop": null,
+    "infoboxAbbr": null,
+    "scopeMatches": "unknown"
+  },
+  {
+    "key": "AW",
+    "name": "Transport for Wales Rail",
+    "wikipedia_title": "Transport for Wales Rail",
+    "ourCount": 271,
+    "wikipediaStationsop": "248",
+    "infoboxAbbr": "AW",
+    "scopeMatches": "match"
+  },
+  {
+    "key": "IL",
+    "name": "Island Line",
+    "wikipedia_title": "Island Line",
+    "status": "fetch-error",
+    "error": "no infobox template found on page"
+  },
+  {
+    "key": "WR",
+    "name": "West Coast Railways",
+    "wikipedia_title": "West Coast Railways",
+    "ourCount": 3,
+    "wikipediaStationsop": null,
+    "infoboxAbbr": null,
+    "scopeMatches": "unknown"
+  },
+  {
+    "key": "ES",
+    "name": "Eurostar",
+    "wikipedia_title": "Eurostar",
+    "ourCount": 4,
+    "wikipediaStationsop": null,
+    "infoboxAbbr": "ES",
+    "scopeMatches": "match"
+  }
+]

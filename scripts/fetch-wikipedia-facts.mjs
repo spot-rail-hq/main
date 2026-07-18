@@ -193,13 +193,13 @@ function loadStationsRolloutJob() {
 const JOBS = {
   stations: loadStationsRolloutJob(),
   routes: [],
-  // Empty by default — see git history for the two 2026-07-19 one-off runs
-  // this scoped (GW: wikipedia_title was pointing at the historic 1833-1947
-  // Great Western Railway company, not the modern operator; AW: was pointing
-  // at "Transport for Wales", the Welsh Government's overall transport body,
-  // not the "Transport for Wales Rail" train operating company). Set this to
-  // specific operator keys for a future one-off pass, same convention as
-  // JOBS.routes.
+  // Empty by default — see git history for the 2026-07-19 one-off runs this
+  // scoped: GW/AW (wikipedia_title pointing at a wrong/broader entity's
+  // article) and GR/SN/GC/IL (wikipedia_title pointing at a DISAMBIGUATION
+  // page — confirmed via a full 30-operator pageprops.disambiguation sweep;
+  // see operators-content.json's own _notes for the full root-cause writeup
+  // of both bug classes). Set this to specific operator keys for a future
+  // one-off pass, same convention as JOBS.routes.
   operators: [],
 };
 
