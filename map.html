@@ -404,6 +404,10 @@
   #sb-star-btn.starred i::before { content: "\f6a6"; } /* ti-star-filled — was "\ea78", which renders as ⌘ in this webfont */
   #sb-saved-toggle[aria-pressed="true"] i::before { content: "\f6a6"; }
   #sb-clear-btn { font-size: 18px; line-height: 1; padding: 2px 4px; }
+  /* Brief "copied" confirmation flash on the share button (clipboard-copy
+     fallback path only — the native share-sheet path has its own OS-level
+     confirmation, this is never shown there). */
+  #sb-share-btn.copied { color: var(--t); }
 
   /* overflow-x is explicit (not left as default "visible") on purpose: per
      the CSS overflow spec, an element with overflow-y set but overflow-x left
@@ -805,6 +809,8 @@
         <button class="header-tab" id="sb-tab-database" aria-label="Database mode" aria-pressed="false">Database</button>
       </div>
       <div class="sb-top-actions">
+        <button class="ghost-btn" id="sb-back-btn" aria-label="Back"><i class="ti ti-chevron-left"></i></button>
+        <button class="ghost-btn" id="sb-forward-btn" aria-label="Forward"><i class="ti ti-chevron-right"></i></button>
         <button class="ghost-btn" id="sb-saved-toggle" aria-label="Show saved stations" aria-pressed="false"><i class="ti ti-star"></i></button>
         <button class="ghost-btn" id="sb-search-btn" aria-label="Search stations"><i class="ti ti-search"></i></button>
       </div>
@@ -844,6 +850,7 @@
 
   <div class="sb-selection">
     <span class="sb-selection-title" id="sb-selection-title"></span>
+    <button class="ghost-btn" id="sb-share-btn" aria-label="Share this"><i class="ti ti-share-3"></i></button>
     <button class="ghost-btn" id="sb-star-btn" aria-label="Save this station"><i class="ti ti-star"></i></button>
     <button class="ghost-btn" id="sb-clear-btn" aria-label="Clear selection">×</button>
   </div>
@@ -1076,12 +1083,12 @@
     stationsContent = d;
     if (mode === 'database' && selectedStationCrs) rebuildSidebarContent();
   });
-  loadJsonContent('/routes-content.json', function (d) {
+  var routesContentPromise = loadJsonContent('/routes-content.json', function (d) {
     routesContent = d;
     if (selection.type === 'route') rebuildSidebarContent();
     else if (mode === 'database' && !selectedStationCrs && selection.type === 'none') rebuildSidebarContent();
   });
-  loadJsonContent('/operators-content.json', function (d) {
+  var operatorsContentPromise = loadJsonContent('/operators-content.json', function (d) {
     operatorsContent = d;
     rebuildOperatorNameIndex();
     if (selection.type === 'operator') rebuildSidebarContent();
@@ -2890,6 +2897,118 @@
     if (btn) btn.addEventListener('click', refreshDepartureBoard);
   }
 
+  // ── Navigation history (back/forward + shareable links) ──────────────────
+  // One history entry per meaningful entity change (station/route/operator/
+  // from-to selection, or a Live<->Database tab switch) — NOT for
+  // micro-interactions like typing in search or hovering, which never call
+  // any of this at all (there's simply nothing here for them to trigger).
+  // suppressHistoryPush guards the one case that legitimately calls these
+  // same selection functions WITHOUT wanting a new entry: restoring state
+  // from the URL on load or in response to a popstate (back/forward, native
+  // OR the visible sb-back-btn/sb-forward-btn below) — those already ARE
+  // the navigation, re-pushing would corrupt the stack (every back tap
+  // would re-push the entry you just navigated to, making forward
+  // impossible). buildStateUrl() covers exactly the four selectable entity
+  // types (station/route/operator/fromto) — 'saved' is a browse view, not
+  // a specific entity, and deliberately left out (falls through to "no
+  // entity" instead, same as `selection.type === 'none'` with nothing
+  // selected).
+  var suppressHistoryPush = false;
+  function buildStateUrl() {
+    var params = new URLSearchParams();
+    if (mode === 'database') params.set('mode', 'database');
+    if (selection.type === 'route' && selection.id) {
+      params.set('route', selection.id);
+    } else if (selection.type === 'operator' && selection.code) {
+      params.set('operator', selection.code);
+    } else if (selection.type === 'fromto') {
+      params.set('from', selection.fromCrs);
+      params.set('to', selection.toCrs);
+    } else if (selection.type === 'none' && selectedStationCrs) {
+      params.set('station', selectedStationCrs);
+    }
+    var qs = params.toString();
+    return location.pathname + (qs ? '?' + qs : '');
+  }
+  function pushHistoryForCurrentState() {
+    if (suppressHistoryPush) return;
+    history.pushState({ srhq: true }, '', buildStateUrl());
+  }
+  // Parses the current URL and drives the same selection functions used for
+  // real interaction — so restoring a link and clicking your way there by
+  // hand produce identical state. Only called once station-list.json and
+  // routes/operators-content.json have all resolved (see the Promise.all
+  // below) and the map itself has fired 'load', so CRS/route-id/operator-
+  // code lookups and any map-dependent drawing (route polyline, selected-
+  // marker points) all have real data to work with instead of racing it.
+  function restoreStateFromUrl() {
+    suppressHistoryPush = true;
+    try {
+      var params = new URLSearchParams(location.search);
+      var urlMode = params.get('mode') === 'database' ? 'database' : 'live';
+      if (urlMode !== mode) setMode(urlMode);
+      var routeId = params.get('route');
+      var operatorCode = params.get('operator');
+      var fromCrs = params.get('from'), toCrs = params.get('to');
+      var stationCrs = params.get('station');
+      if (routeId && routesContent[routeId]) {
+        selectRoute(routeId);
+      } else if (operatorCode) {
+        selectOperator(operatorCode);
+      } else if (fromCrs && toCrs) {
+        var list = getStationList();
+        var from = list.filter(function (s) { return s.crs === fromCrs; })[0];
+        var to = list.filter(function (s) { return s.crs === toCrs; })[0];
+        if (from && to) selectFromTo(from, to); else clearSelection();
+      } else if (stationCrs) {
+        selectStation(stationNameForCrs(stationCrs), stationCrs);
+      } else {
+        clearSelection();
+      }
+    } finally {
+      suppressHistoryPush = false;
+    }
+  }
+  window.addEventListener('popstate', restoreStateFromUrl);
+  Promise.all([stationListPromise, routesContentPromise, operatorsContentPromise]).then(function () {
+    if (map && map.loaded()) restoreStateFromUrl();
+    else if (map) map.once('load', restoreStateFromUrl);
+  });
+  // Visible back/forward — wired to the browser's own session-history
+  // stack (same one popstate above listens to), not a separate parallel
+  // mechanism, so they stay correct alongside native browser back/forward,
+  // swipe gestures, etc. This just gives that same mechanism an always-
+  // visible affordance instead of relying solely on the browser chrome.
+  document.getElementById('sb-back-btn').addEventListener('click', function () { history.back(); });
+  document.getElementById('sb-forward-btn').addEventListener('click', function () { history.forward(); });
+  // Share — copies (or hands off to the OS share sheet, where available)
+  // a link built from the exact same buildStateUrl() used for history, so
+  // "share this" and "the URL you'd get by navigating here yourself" are
+  // always identical.
+  var shareBtn = document.getElementById('sb-share-btn');
+  function shareCurrentSelection() {
+    var url = location.origin + buildStateUrl();
+    var title = (selTitleEl && selTitleEl.textContent) || 'SpotRail HQ';
+    if (navigator.share) {
+      navigator.share({ title: title, url: url }).catch(function () {}); // user-cancelled share sheet — not an error
+      return;
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(function () { flashShareCopied(); });
+      return;
+    }
+    window.prompt('Copy this link:', url); // last-resort fallback, no Clipboard API available
+  }
+  function flashShareCopied() {
+    if (!shareBtn) return;
+    var icon = shareBtn.querySelector('i');
+    var original = icon.className;
+    icon.className = 'ti ti-check';
+    shareBtn.classList.add('copied');
+    setTimeout(function () { icon.className = original; shareBtn.classList.remove('copied'); }, 1400);
+  }
+  if (shareBtn) shareBtn.addEventListener('click', shareCurrentSelection);
+
   // Sets the ONE shared "selected station" (Task 4) — both Live and Database
   // rendering read selectedStationCrs/Name directly, so this single call is
   // enough for either tab to show it, now or after a later tab switch.
@@ -2904,6 +3023,7 @@
     if (mode === 'live') loadDepartureBoard(crs, mySeq);
     var coords = coordsForCrs(crs);
     setSelectedStationPoints(coords ? [{ lon: coords[0], lat: coords[1] }] : []);
+    pushHistoryForCurrentState();
   }
 
   // Does any curated route in routes-content.json cover this station pair
@@ -2965,6 +3085,7 @@
     } else {
       setSelectedStationPoints([]);
     }
+    pushHistoryForCurrentState(); // the from/to pair is the entity change — doesn't wait on the async pathfinding tail below
 
     // Real pathfinding, resolved once routing-graph.json is available (it's
     // fetched once, up front — usually already resolved by the time a user
@@ -3033,6 +3154,7 @@
     renderSelectionChrome();
     animateSidebarTransition();
     setSelectedStationPoints([]);
+    pushHistoryForCurrentState();
   }
   document.getElementById('sb-clear-btn').addEventListener('click', clearSelection);
 
@@ -3051,6 +3173,7 @@
     animateSidebarTransition();
     setSelectedStationPoints([]); // this selection type draws its own polyline, not station-marker dots
     drawRoutePolyline(id);
+    pushHistoryForCurrentState();
   }
   function selectOperator(identifier) {
     ++selectionSeq;
@@ -3060,6 +3183,7 @@
     expandSidebarIfCollapsed();
     animateSidebarTransition();
     setSelectedStationPoints([]);
+    pushHistoryForCurrentState();
   }
 
   // ── Route highlight polyline (Task 2) ─────────────────────────────────────
@@ -3455,6 +3579,7 @@
     if (mode === 'live' && selection.type === 'none' && selectedStationCrs) {
       loadDepartureBoard(selectedStationCrs, mySeq);
     }
+    pushHistoryForCurrentState();
   }
   tabLive.addEventListener('click', function () { setMode('live'); });
   tabDb.addEventListener('click', function () { setMode('database'); });
