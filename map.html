@@ -484,20 +484,16 @@
      Absent entirely (not "Not available") when there's no photo at all —
      the placeholder box above already communicates that, a second "no
      credit" line under it would be redundant chrome.
-     POSITIONING fixed 2026-07-19: this used to be its own line rendered
-     BELOW .db-photo-frame — inconsistent with database.html's TrainImage()
-     component, which overlays its credit directly on the image itself via
-     an absolutely-positioned, gradient-faded strip. Same fix here: this is
-     now a child of .db-photo-frame (still built by the same
-     dbPhotoCreditHtml(), only the CSS/nesting changed, not the text logic),
-     positioned/gradiented identically to TrainImage()'s own credit strip —
-     same --bg-rgb/font-mono/letter-spacing tokens, so a station panel and a
-     rolling-stock card now read as the same treatment, not two different
-     ones. */
-  .db-photo-credit { position: absolute; bottom: 0; left: 0; right: 0; padding: 14px 12px 8px;
-    background: linear-gradient(to top, rgba(var(--bg-rgb),0.92), transparent);
-    font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.6px; color: var(--ink-mute); }
-  .db-photo-credit a { color: var(--ink-dim); text-decoration: underline; }
+     2026-07-19: briefly tried overlaying this on the image itself
+     (database.html's TrainImage() treatment) — reverted per feedback, read
+     as messy at this sidebar's narrower width. Back to its own line below
+     the frame, still inside .db-photo's own box (so the gap down to the
+     NEXT field — Location — is governed by .db-photo's own 10px bottom
+     padding + Location's 10px top padding, the same 20px every other
+     field-to-field gap uses, regardless of this margin-top). No underline
+     on the link either, per the same feedback. */
+  .db-photo-credit { font-size: 11px; color: var(--ink); margin-top: 4px; }
+  .db-photo-credit a { color: var(--ink); text-decoration: none; }
   /* Leftmost link (Google Map, or Official website for operators/routes) +
      Wikipedia now render paired on one row at the BOTTOM of the panel
      (2026-07-17, per the approved mockup — was Google Map alone near the
@@ -2116,8 +2112,32 @@
         };
       }),
     };
-    if (map && map.isStyleLoaded()) addStationsLayer(stationsData);
+    tryAddStationsLayer();
   });
+  // Bug found live 2026-07-19 (reported as "station dots sometimes don't
+  // appear until I reload or toggle the theme twice"): the single
+  // `if (map && map.isStyleLoaded()) addStationsLayer(...)` check this used
+  // to be only ever runs ONCE, the moment this Promise.all resolves — the
+  // exact same MapLibre gap documented elsewhere in this file (style.load
+  // firing does not guarantee isStyleLoaded() returns true immediately, see
+  // verifyInitialCameraPosition's comment) could make it silently fail with
+  // no second chance: map.on('load', addMapLayers) may have ALREADY fired
+  // and found stationsData still null (a network fetch racing the map's
+  // own style load), so addMapLayers() itself won't add the layer either —
+  // the ONLY thing that could still trigger it was a theme toggle (which
+  // re-runs addMapLayers() from scratch), matching exactly what "toggle the
+  // theme to fix it" was papering over. Bounded retry (same shape as
+  // verifyInitialCameraPosition/tryResolveGeometry elsewhere in this file)
+  // instead of a one-shot check — also safely covers `map` not existing yet
+  // at all (this Promise.all can resolve before initMap()'s `map = new
+  // maplibregl.Map(...)` line runs, if the JSON fetches happen to beat it).
+  function tryAddStationsLayer(attempt) {
+    attempt = attempt || 1;
+    if (!stationsData) return; // Promise.all hasn't resolved yet — nothing to add
+    if (map && map.isStyleLoaded()) { addStationsLayer(stationsData); return; }
+    if (attempt >= 20) return; // ~3s total — give up quietly, same as the other bounded retries in this file
+    setTimeout(function () { tryAddStationsLayer(attempt + 1); }, 150);
+  }
 
   // ── Theme toggle ──────────────────────────────────────────────────────────
   var THEME_KEY = 'srhq-theme';
@@ -2568,21 +2588,22 @@
     return '<div class="db-photo-credit">' + text + '</div>';
   }
 
-  // Always-shown Photo block (2026-07-17) — "Photo" label + frame render
-  // unconditionally now, same "always show the label" principle as
-  // dbFieldOrPlaceholderHtml() above, instead of the whole block vanishing
-  // when there's no photo.photo.url. The "no image available" placeholder
-  // state mirrors database.html's TrainImage() component exactly — see
-  // .db-photo-placeholder's CSS comment.
+  // Always-shown Photo block (2026-07-17) — frame renders unconditionally
+  // now, same "always show something" principle as dbFieldOrPlaceholderHtml()
+  // above, instead of the whole block vanishing when there's no photo.url.
+  // The "no image available" placeholder state mirrors database.html's
+  // TrainImage() component exactly — see .db-photo-placeholder's CSS
+  // comment. No "Photo" label above it (2026-07-19 feedback — redundant,
+  // the image is self-evidently a photo) — credit renders as its own line
+  // BELOW the frame (2026-07-19: briefly tried overlaying it on the image
+  // like database.html's TrainImage(), reverted — read as messy at this
+  // sidebar's narrower width, see .db-photo-credit's CSS comment).
   function dbPhotoBlockHtml(photo, altName) {
     var frame = (photo && photo.url)
       ? '<img src="' + escapeAttr(photo.url) + '" alt="' + escapeAttr(altName || '') + '" loading="lazy" />'
       : '<div class="db-photo-placeholder">no image available</div>';
-    // Credit is now a CHILD of .db-photo-frame (overlaid on the image, not
-    // a separate line after it — see .db-photo-credit's CSS comment) —
-    // only rendered when there's an actual photo, same as before.
     var credit = (photo && photo.url) ? dbPhotoCreditHtml(photo) : '';
-    return '<div class="db-photo" data-anim-row><div class="db-label">Photo</div><div class="db-photo-frame">' + frame + credit + '</div></div>';
+    return '<div class="db-photo" data-anim-row><div class="db-photo-frame">' + frame + '</div>' + credit + '</div>';
   }
 
   // Bulleted notable-features list — shared by stations and operators (both
@@ -2642,16 +2663,18 @@
     var s = stationsContent[crs];
     if (!s) return dbComingSoonHtml(selectedStationName || crs);
     var html = '';
-    // Photo (2026-07-17: always shown now, "no image available" placeholder
-    // when absent — see dbPhotoBlockHtml() and its CSS comment for the
-    // database.html TrainImage() parity this mirrors). photo is populated
-    // by scripts/fetch-station-photos.mjs when available (deterministic
+    // Headline now renders BEFORE the photo (2026-07-19 feedback — directly
+    // under the title, ahead of the image). Photo (2026-07-17: always shown
+    // now, "no image available" placeholder when absent — see
+    // dbPhotoBlockHtml() and its CSS comment for the database.html
+    // TrainImage() parity this mirrors). photo is populated by
+    // scripts/fetch-station-photos.mjs when available (deterministic
     // Wikipedia/Commons lookup, requires wikipedia_title already set —
     // never guesses one) or set manually; either way this renders the
     // placeholder until one exists, most stations (stub-tier, no-article-
     // tier, and the pending disambiguation-only bucket) won't have one yet.
-    html += dbPhotoBlockHtml(s.photo, s.name);
     html += dbHeadlineHtml(s.headline);
+    html += dbPhotoBlockHtml(s.photo, s.name);
     // Location/Managed by (2026-07-17: always shown now, "Not available"
     // placeholder when absent — see dbFieldOrPlaceholderHtml()). Managed by
     // is the organisation managing the station itself, distinct from
