@@ -137,7 +137,7 @@
   .maplibregl-popup-close-button { display: none; }
 
   .pill { background: var(--sf); border: 0.5px solid var(--brh); border-radius: 99px; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
-  .icon-btn { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 6px; color: var(--ink); font-size: 14px; background: var(--sf); border: 0.5px solid var(--brh); }
+  .icon-btn { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 6px; color: var(--ink); font-size: 14px; background: var(--sf); border: 0.5px solid var(--brh); }
   /* Hover only hints (border), it never recolors the icon — otherwise a
      toggled-OFF button (aria-pressed=false) still LOOKS "on" while hovered,
      which is exactly the confusion reported. Only aria-pressed=true (the
@@ -145,6 +145,25 @@
      never visually impersonate it. */
   .icon-btn:hover { border-color: var(--t); }
   .icon-btn[aria-pressed="true"] { color: var(--t); border-color: var(--t); }
+  /* Plain-language function tooltip on hover/focus (2026-07-21 feedback —
+     icon-only controls aren't self-explanatory for non-technical users).
+     Reads from data-tooltip rather than aria-label so wording can differ
+     slightly (aria-label describes the control for screen readers, this is
+     a short human-facing hint) without double-announcing the same string
+     twice. Sits to the LEFT of the button (map-controls is a top-right
+     stack) so it opens toward the map canvas, never off-screen past the
+     viewport edge. A generated ::after isn't exposed in the accessibility
+     tree the way real DOM text would be — aria-label already covers the
+     a11y name, this is purely a sighted-hover convenience layered on top. */
+  .icon-btn::after {
+    content: attr(data-tooltip);
+    position: absolute; right: calc(100% + 8px); top: 50%; transform: translateY(-50%);
+    white-space: nowrap; font-family: var(--font-body); font-size: 10px; font-weight: 500;
+    color: var(--ink-primary); background: var(--sf); border: 0.5px solid var(--brh); border-radius: 6px;
+    padding: 4px 8px; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    opacity: 0; pointer-events: none; transition: opacity 0.15s ease; z-index: 20;
+  }
+  .icon-btn:hover::after, .icon-btn:focus-visible::after { opacity: 1; }
   .ghost-btn { display: inline-flex; align-items: center; justify-content: center; color: var(--ink); background: transparent; border: none; width: auto; height: auto; padding: 4px; }
   .ghost-btn:hover { color: var(--t); }
   .ghost-btn[aria-pressed="true"] { color: var(--t); }
@@ -797,10 +816,10 @@
 </div>
 <div id="control-cluster">
   <div class="map-controls">
-    <button class="icon-btn" id="zoom-in" aria-label="Zoom in"><i class="ti ti-plus"></i></button>
-    <button class="icon-btn" id="zoom-out" aria-label="Zoom out"><i class="ti ti-minus"></i></button>
-    <button class="icon-btn" id="layers-btn" aria-label="Toggle railway infrastructure overlay" aria-pressed="true"><i class="ti ti-layers-intersect"></i></button>
-    <button class="icon-btn" id="my-location" aria-label="Find my location"><i class="ti ti-current-location"></i></button>
+    <button class="icon-btn" id="zoom-in" aria-label="Zoom in" data-tooltip="Zoom in"><i class="ti ti-plus"></i></button>
+    <button class="icon-btn" id="zoom-out" aria-label="Zoom out" data-tooltip="Zoom out"><i class="ti ti-minus"></i></button>
+    <button class="icon-btn" id="layers-btn" aria-label="Toggle rail network overlay" aria-pressed="false" data-tooltip="Show rail network overlay"><i class="ti ti-layers-intersect"></i></button>
+    <button class="icon-btn" id="my-location" aria-label="Find my location" data-tooltip="Find my location"><i class="ti ti-current-location"></i></button>
   </div>
 </div>
 
@@ -984,7 +1003,12 @@
   var incidents = [];
   var activeFilter = 'all';
   var mode = 'live';
-  var ormVisible = true;
+  // Hidden by default (2026-07-21 feedback — the base rail network reads as
+  // "busy" and competes with the operator-colored routes users actually
+  // interact with) — still toggleable back on via #layers-btn, just an
+  // opt-in now instead of opt-out. Scope unchanged: still railway-lines/
+  // railway-lines-closed only, not the operator-colored layers.
+  var ormVisible = false;
   var currentStadiaKey = '';
 
   // ── Station list (autocomplete + map markers) ─────────────────────────────
@@ -1390,11 +1414,43 @@
   }
 
   var STADIA_STYLE_NAMES = { dark: 'alidade_smooth_dark', light: 'alidade_smooth' };
+  // Root-cause fix for the green-landcover flash on cold/hard-refresh loads
+  // (and on every theme toggle, which reloads this same style) — verified by
+  // fetching Stadia's actual style JSON: park_fill/landcover_wood/
+  // landcover_park really do ship with a green fill-color (hsl hue 109-120 in
+  // dark, a faint green-tinted rgb in light); Stadia's OWN railway/
+  // railway_service line layers are already grey (#545353/#7f7d7e) — the
+  // flash was never a route/line-color issue, it's these landcover fills.
+  // greyOutLandcover() (below) used to be the ONLY fix, applied via
+  // setPaintProperty on map.on('load') — genuinely after the original style
+  // (fetched by MapLibre itself from a bare URL) had already rendered at
+  // least one real frame, so there was a true green flash to see on a cold
+  // load, and identically on every setStyle() theme toggle. Fetching and
+  // patching the style JSON ourselves, BEFORE it's ever handed to MapLibre,
+  // means the grey color is the only thing that ever paints — nothing to
+  // flash away from. greyOutLandcover() is kept as-is as a defensive no-op
+  // backstop (e.g. if Stadia adds another green layer we haven't patched
+  // here), not removed.
+  function fetchPatchedStadiaStyle(theme, stadiaKey) {
+    var url = 'https://tiles.stadiamaps.com/styles/' + STADIA_STYLE_NAMES[theme] + '.json?api_key=' + stadiaKey;
+    return fetch(url)
+      .then(function (r) { if (!r.ok) throw new Error('Stadia style fetch failed: ' + r.status); return r.json(); })
+      .then(function (style) {
+        var overrides = GREY_LANDCOVER[theme];
+        (style.layers || []).forEach(function (l) {
+          if (overrides[l.id] && l.paint) l.paint['fill-color'] = overrides[l.id];
+        });
+        return style;
+      })
+      // Fetching/patching ourselves loses MapLibre's own built-in retry
+      // behavior for a style URL — fall back to the plain (unpatched) URL
+      // rather than leaving the map with no style at all on a network blip.
+      // The flash returns in this one fallback case, same as before this fix.
+      .catch(function (e) { console.warn('Stadia style patch failed, falling back to unpatched URL', e); return url; });
+  }
   function buildMapStyle(theme, stadiaKey) {
-    if (stadiaKey) {
-      return 'https://tiles.stadiamaps.com/styles/' + STADIA_STYLE_NAMES[theme] + '.json?api_key=' + stadiaKey;
-    }
-    return {
+    if (stadiaKey) return fetchPatchedStadiaStyle(theme, stadiaKey);
+    return Promise.resolve({
       version: 8,
       sources: {
         'fallback-osm': {
@@ -1415,7 +1471,7 @@
         // whole tile as a best-effort compromise when no Stadia key is set.
         paint: { 'raster-opacity': theme === 'light' ? 1.0 : 0.12, 'raster-saturation': -0.5 },
       }],
-    };
+    });
   }
 
   var map;
@@ -1436,7 +1492,7 @@
 
     map = new maplibregl.Map({
       container: 'map',
-      style: buildMapStyle(currentTheme(), currentStadiaKey),
+      style: await buildMapStyle(currentTheme(), currentStadiaKey),
       center: initCenter,
       zoom: initZoom,
       maxZoom: 18,
@@ -2165,8 +2221,14 @@
     if (!map) return;
     // diff:false forces a full teardown/rebuild of the style instead of
     // MapLibre's default diffing — see the comment in addMapLayers() for why.
-    map.setStyle(buildMapStyle(next, currentStadiaKey), { diff: false });
-    map.once('style.load', addMapLayers);
+    // buildMapStyle() is async (fetches + patches the green landcover fills
+    // before handing the style to MapLibre, see its own comment) — every
+    // toggle reloads this same style, so this needed the same fix as the
+    // initial cold load, not just a one-off there.
+    buildMapStyle(next, currentStadiaKey).then(function (style) {
+      map.setStyle(style, { diff: false });
+      map.once('style.load', addMapLayers);
+    });
   }
   window.srhqToggleMapTheme = toggleTheme;
   // Same debug/test-hook convention as the line above — selectFromTo is a
@@ -3683,6 +3745,10 @@
       map.setLayoutProperty('railway-lines-closed', 'visibility', ormVisible ? 'visible' : 'none');
     }
     layersBtn.setAttribute('aria-pressed', String(ormVisible));
+    // Keep the hover tooltip's wording matched to what the next click will
+    // actually do, not a static label — same reasoning as the aria-pressed
+    // update just above.
+    layersBtn.setAttribute('data-tooltip', ormVisible ? 'Hide rail network overlay' : 'Show rail network overlay');
   });
   document.getElementById('my-location').addEventListener('click', function () {
     if (!navigator.geolocation) return;

@@ -584,7 +584,22 @@ function App() {
     if (!hash.startsWith('#fleet-')) return;
     requestAnimationFrame(() => {
       const el = document.getElementById(hash.slice(1));
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (!el) return;
+      // Expand the class's row (if not already open) before scrolling to it
+      // — expanding changes the row's height, so scrolling first would land
+      // in the wrong place once the resulting re-render lands (2026-07-21
+      // feedback). Reuses Row()'s own toggle button/local state rather than
+      // adding a controlled-open prop — a real .click() goes through the
+      // exact same code path a user click would.
+      if (!el.querySelector('.row-expanded')) {
+        var toggleBtn = el.querySelector('button');
+        if (toggleBtn) toggleBtn.click();
+      }
+      // Second rAF: waits for the click's state update to actually commit
+      // and paint (the row is now taller) before measuring scroll position.
+      requestAnimationFrame(() => {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
     });
   }, [data]);
 
