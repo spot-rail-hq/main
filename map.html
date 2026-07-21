@@ -150,18 +150,22 @@
      Reads from data-tooltip rather than aria-label so wording can differ
      slightly (aria-label describes the control for screen readers, this is
      a short human-facing hint) without double-announcing the same string
-     twice. Sits to the LEFT of the button (map-controls is a top-right
-     stack) so it opens toward the map canvas, never off-screen past the
-     viewport edge. A generated ::after isn't exposed in the accessibility
-     tree the way real DOM text would be — aria-label already covers the
-     a11y name, this is purely a sighted-hover convenience layered on top. */
+     twice. Sits to the RIGHT of the button, opening into the open map
+     canvas. Bugfix (2026-07-21): #control-cluster actually sits just right
+     of the sidebar (left: var(--sidebar-edge)), NOT top-right as first
+     assumed — a leftward tooltip landed back UNDER the sidebar itself,
+     which has a higher z-index (70 vs. #control-cluster's 55), so it
+     rendered completely hidden behind it. A generated ::after isn't exposed
+     in the accessibility tree the way real DOM text would be — aria-label
+     already covers the a11y name, this is purely a sighted-hover
+     convenience layered on top. */
   .icon-btn::after {
     content: attr(data-tooltip);
-    position: absolute; right: calc(100% + 8px); top: 50%; transform: translateY(-50%);
+    position: absolute; left: calc(100% + 8px); top: 50%; transform: translateY(-50%);
     white-space: nowrap; font-family: var(--font-body); font-size: 10px; font-weight: 500;
     color: var(--ink-primary); background: var(--sf); border: 0.5px solid var(--brh); border-radius: 6px;
     padding: 4px 8px; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-    opacity: 0; pointer-events: none; transition: opacity 0.15s ease; z-index: 20;
+    opacity: 0; pointer-events: none; transition: opacity 0.15s ease; z-index: 60;
   }
   .icon-btn:hover::after, .icon-btn:focus-visible::after { opacity: 1; }
   /* Smooths the needle's rotate() updates driven by the map's 'rotate' event
@@ -387,6 +391,14 @@
   .sb-search-panel.open { display: block; }
   .sb-search-modes { display: flex; align-items: center; gap: 20px; padding-bottom: 12px; }
   .sb-search-mode-tab { font-family: var(--font-body); font-size: 14px; font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase; color: var(--ink); }
+  /* Operator search only makes sense in Database mode (2026-07-21 bugfix) —
+     an operator has no live/departures-style data of its own, and
+     setMode()'s own dbOnly logic already treats an operator selection as
+     Database-only. Hidden here rather than removed outright so it stays
+     reachable where it's actually meaningful — see submitOperatorPick()'s
+     mode guard for the other half of this fix (stops the selection from
+     ever being created while Live, not just hides the button). */
+  body:not(.mode-database) #sb-mode-operator, body:not(.mode-database) #sb-operator-field-wrap { display: none !important; }
   /* Explicit close for the search panel itself (2026-07-21 feedback) — the
      search icon in .sb-top-actions already toggles it open/closed, but a
      dedicated X on the mode-tabs row (far right, same treatment as
@@ -2974,7 +2986,7 @@
   // stopping-station rows or its map polyline, an operator via the chips in
   // a station's Services list — this only removes the default-view list.
   function databaseDefaultSkeletonHtml() {
-    return '<div class="db-hint" data-anim-row>Tap a station or route on the map for more detail.</div>';
+    return '<div class="db-hint" data-anim-row>Tap a station on the map, or search for a station, route, or operator above.</div>';
   }
   function wireDatabaseDefault() {} // nothing to wire — see comment above
 
@@ -3762,6 +3774,13 @@
     tabLive.setAttribute('aria-pressed', mode === 'live');
     tabDb.classList.toggle('db-on', mode === 'database');
     tabDb.setAttribute('aria-pressed', mode === 'database');
+    // Operator search is hidden in Live (see its CSS) — if it was the active
+    // search sub-mode when the user switches away from Database, reset back
+    // to Station rather than leaving the search panel on a now-hidden tab
+    // with no visible field. setSearchMode/searchMode are declared later in
+    // this same script but that's fine — both are only ever called after
+    // the whole script has parsed (user interaction), never during it.
+    if (mode === 'live' && searchMode === 'operator') setSearchMode('station');
     // The sidebar is top-anchored on every breakpoint now, so it no longer
     // competes with the bottom-anchored Database-mode legend/history stack —
     // no auto-collapse needed here any more (it used to, back when the
@@ -4186,7 +4205,17 @@
   // selectOperator() (Task 1's route/operator selection), not a map flyTo —
   // an operator isn't a single point on the map.
   var operatorPick = null;
-  function submitOperatorPick(picked) { selectOperator(picked.code); }
+  // Guard, not just the hidden-in-Live tab below: setMode() already treats
+  // an 'operator' selection as Database-only (drops it if mode flips to
+  // Live while one's active — see its dbOnly comment) but nothing stopped
+  // one from being CREATED while already in Live, which is exactly how you
+  // could search an operator from the Live tab and see the Database-style
+  // detail card render there (2026-07-21 bugfix). This is the actual root
+  // fix; hiding the tab in Live is the visible half of it.
+  function submitOperatorPick(picked) {
+    if (mode !== 'database') return;
+    selectOperator(picked.code);
+  }
   wireAutocomplete(operatorInput, document.getElementById('sb-ac-operator'), function (picked) {
     operatorPick = picked;
     if (picked) submitOperatorPick(picked);
