@@ -164,6 +164,9 @@
     opacity: 0; pointer-events: none; transition: opacity 0.15s ease; z-index: 20;
   }
   .icon-btn:hover::after, .icon-btn:focus-visible::after { opacity: 1; }
+  /* Smooths the needle's rotate() updates driven by the map's 'rotate' event
+     (wireBearingIcon()) instead of snapping instantly on every drag frame. */
+  #reset-bearing-icon { display: inline-block; transition: transform 0.2s ease; }
   .ghost-btn { display: inline-flex; align-items: center; justify-content: center; color: var(--ink); background: transparent; border: none; width: auto; height: auto; padding: 4px; }
   .ghost-btn:hover { color: var(--t); }
   .ghost-btn[aria-pressed="true"] { color: var(--t); }
@@ -675,6 +678,25 @@
      transform are set inline per-cycle since rows are freshly re-mounted,
      not persistent nodes with toggled classes). */
   .sb-content-block { display: flex; flex-direction: column; }
+  /* Live tab — hard 50/50 split between departures and the news feed
+     (2026-07-21 feedback: one continuous scroll felt cluttered/busy).
+     .sb-content-block gets a definite height ONLY in Live mode — Database
+     mode's content (station/operator/route detail, saved list) never
+     contains .sb-dep-pane/.sb-news-pane, so this scoping is what keeps its
+     original single-continuous-scroll-inside-#sb-body behavior intact;
+     without the :not(.mode-database) guard, capping .sb-content-block's
+     height here would clip that content instead of leaving it scrollable,
+     since #sb-body itself would no longer see an overflow to scroll (its
+     child would no longer report a natural size taller than it). */
+  body:not(.mode-database) .sb-content-block { height: 100%; }
+  /* flex: 1 1 50% on BOTH panes — equal grow AND equal shrink from an equal
+     50% basis — is what makes the split exactly 50/50 regardless of actual
+     content amount (a short departure list still gets the full 50% height,
+     empty space and all, per instruction) rather than sizing to content.
+     min-height: 0 is required on a flex item for its own overflow-y:auto to
+     actually clip/scroll instead of the item just growing to fit content. */
+  .sb-dep-pane, .sb-news-pane { flex: 1 1 50%; min-height: 0; overflow-y: auto; overflow-x: hidden; }
+  .sb-news-pane { border-top: 0.5px solid var(--br); }
 
   /* ── History panel (Database mode) ────────────────────────────────────────
      Floats independently of the sidebar, bottom-center of the visible map
@@ -820,6 +842,7 @@
     <button class="icon-btn" id="zoom-out" aria-label="Zoom out" data-tooltip="Zoom out"><i class="ti ti-minus"></i></button>
     <button class="icon-btn" id="layers-btn" aria-label="Toggle rail network overlay" aria-pressed="false" data-tooltip="Show rail network overlay"><i class="ti ti-layers-intersect"></i></button>
     <button class="icon-btn" id="my-location" aria-label="Find my location" data-tooltip="Find my location"><i class="ti ti-current-location"></i></button>
+    <button class="icon-btn" id="reset-bearing" aria-label="Reset map orientation" data-tooltip="Reset north &amp; flatten tilt"><i class="ti ti-navigation" id="reset-bearing-icon"></i></button>
   </div>
 </div>
 
@@ -972,6 +995,7 @@
   var stationsData = null;   // parsed /data/stations.geojson, ids assigned
   var stationInteractionsWired = false;
   var operatorLineInteractionsWired = false;
+  var bearingIconWired = false;
   var initialCameraVerified = false; // see verifyInitialCameraPosition() below
 
   // A real, if intermittent, MapLibre race confirmed via headless testing
@@ -1860,6 +1884,7 @@
       });
     }
     if (!operatorLineInteractionsWired) { wireOperatorLineInteractions(); operatorLineInteractionsWired = true; }
+    if (!bearingIconWired) { wireBearingIcon(); bearingIconWired = true; }
 
     // stationsData is built once by the Promise.all() below (station-list.json
     // + the major-station set both need to resolve first) — if it beat the
@@ -2339,6 +2364,21 @@
     if (operatorsContent[key] && operatorsContent[key].name) return operatorsContent[key].name;
     return key; // metro/heritage/TfL-line keys are already human-readable canonical names
   }
+  // Rotates #reset-bearing-icon (the ti-navigation needle) to visually track
+  // the map's current bearing, the same convention as MapLibre's own
+  // NavigationControl compass icon (rotate = -bearing, so the icon keeps
+  // pointing at true north regardless of how the map itself has spun) — see
+  // the reset-bearing click handler for why we built a custom button instead
+  // of using that control directly. Registered once — the 'rotate' listener
+  // lives on the Map instance itself, which survives setStyle()/theme
+  // toggles, unlike sources/layers.
+  function wireBearingIcon() {
+    var icon = document.getElementById('reset-bearing-icon');
+    if (!icon) return;
+    function update() { icon.style.transform = 'rotate(' + (-map.getBearing()) + 'deg)'; }
+    map.on('rotate', update);
+    update();
+  }
   function wireOperatorLineInteractions() {
     var hoveredFeatureId = null;
     // Wired against 'operator-lines-hit' (the invisible wide hit layer added
@@ -2486,8 +2526,16 @@
       '<span id="sb-count">0 of 0</span>' +
       '</div>';
   }
+  // Wraps the departures-side and news-side markup in the two hard-50/50
+  // scroll panes (see .sb-dep-pane/.sb-news-pane CSS) — every Live-mode
+  // skeleton function below goes through this, so the split is never
+  // accidentally skipped for one state (station selected / from-to / empty).
+  function liveSplitPanesHtml(depHtml, newsHtml) {
+    return '<div class="sb-dep-pane" id="sb-dep-pane">' + depHtml + '</div>' +
+      '<div class="sb-news-pane" id="sb-news-pane">' + newsHtml + '</div>';
+  }
   function stationLiveSkeletonHtml() {
-    return depBoardHtml('Departures') + liveNewsBlockHtml();
+    return liveSplitPanesHtml(depBoardHtml('Departures'), liveNewsBlockHtml());
   }
   // Phase 6: this used to check selection.directRouteId (a CURATED named-
   // route lookup against routes-content.json, which is empty bar its
@@ -2509,10 +2557,10 @@
     // normally even when there's no connected route for this pair — this
     // note is purely about the map's route highlight, not whether live
     // services exist.
-    return depBoardHtml('Next trains') + fromToNoRouteNoteHtml() + liveNewsBlockHtml();
+    return liveSplitPanesHtml(depBoardHtml('Next trains') + fromToNoRouteNoteHtml(), liveNewsBlockHtml());
   }
   function liveDefaultSkeletonHtml() {
-    return emptyDepBoardHtml() + liveNewsBlockHtml();
+    return liveSplitPanesHtml(emptyDepBoardHtml(), liveNewsBlockHtml());
   }
 
   // ── Database-mode content (Task 3) ────────────────────────────────────────
@@ -3755,6 +3803,16 @@
     navigator.geolocation.getCurrentPosition(function (pos) {
       map.flyTo({ center: [pos.coords.longitude, pos.coords.latitude], zoom: 12 });
     });
+  });
+  // Right-click drag can rotate (bearing) and tilt (pitch) the map into 3D
+  // (kept — this button is the way back, not a reason to disable that).
+  // Same easeTo({pitch:0,bearing:0}) MapLibre's own built-in NavigationControl
+  // compass button calls internally when visualizePitch is on — not using
+  // that control directly since its default styling (white/light, fixed
+  // size) doesn't match this page's custom dark icon-btn stack, but the
+  // reset behavior itself is identical.
+  document.getElementById('reset-bearing').addEventListener('click', function () {
+    map.easeTo({ pitch: 0, bearing: 0 });
   });
 
   // ── Region jump ───────────────────────────────────────────────────────────
