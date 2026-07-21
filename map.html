@@ -846,11 +846,11 @@
 </div>
 <div id="control-cluster">
   <div class="map-controls">
-    <button class="icon-btn" id="zoom-in" aria-label="Zoom in" data-tooltip="Zoom in"><i class="ti ti-plus"></i></button>
-    <button class="icon-btn" id="zoom-out" aria-label="Zoom out" data-tooltip="Zoom out"><i class="ti ti-minus"></i></button>
-    <button class="icon-btn" id="layers-btn" aria-label="Toggle rail network overlay" aria-pressed="false" data-tooltip="Show rail network"><i class="ti ti-layers-intersect"></i></button>
-    <button class="icon-btn" id="my-location" aria-label="Find my location" data-tooltip="My location"><i class="ti ti-current-location"></i></button>
-    <button class="icon-btn" id="reset-bearing" aria-label="Reset map orientation" data-tooltip="Reset north"><i class="ti ti-navigation" id="reset-bearing-icon"></i></button>
+    <button class="icon-btn" id="zoom-in" aria-label="Zoom in" data-tooltip="Zoom In"><i class="ti ti-plus"></i></button>
+    <button class="icon-btn" id="zoom-out" aria-label="Zoom out" data-tooltip="Zoom Out"><i class="ti ti-minus"></i></button>
+    <button class="icon-btn" id="layers-btn" aria-label="Toggle base rail network overlay" aria-pressed="false" data-tooltip="Show Base Rail Network"><i class="ti ti-layers-intersect"></i></button>
+    <button class="icon-btn" id="my-location" aria-label="Find my location" data-tooltip="My Location"><i class="ti ti-current-location"></i></button>
+    <button class="icon-btn" id="reset-bearing" aria-label="Reset map orientation" data-tooltip="Reset North"><i class="ti ti-navigation" id="reset-bearing-icon"></i></button>
   </div>
 </div>
 
@@ -3805,7 +3805,7 @@
     // Keep the hover tooltip's wording matched to what the next click will
     // actually do, not a static label — same reasoning as the aria-pressed
     // update just above.
-    layersBtn.setAttribute('data-tooltip', ormVisible ? 'Hide rail network' : 'Show rail network');
+    layersBtn.setAttribute('data-tooltip', ormVisible ? 'Hide Base Rail Network' : 'Show Base Rail Network');
   });
   document.getElementById('my-location').addEventListener('click', function () {
     if (!navigator.geolocation) return;
