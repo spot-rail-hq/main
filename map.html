@@ -1017,6 +1017,13 @@
   var stationInteractionsWired = false;
   var operatorLineInteractionsWired = false;
   var bearingIconWired = false;
+  // ── Reverse color-reveal (Phase 2, 2026-07-21) ────────────────────────────
+  // lockedOperatorHighlight persists across mouseleave (click/tap, or a
+  // Regions chip click); hoveredOperatorHighlight is the transient desktop
+  // hover-only signal, cleared on mouseleave. Locked always wins when both
+  // are set — see activeHighlightOperator().
+  var lockedOperatorHighlight = null;
+  var hoveredOperatorHighlight = null;
   var initialCameraVerified = false; // see verifyInitialCameraPosition() below
 
   // A real, if intermittent, MapLibre race confirmed via headless testing
@@ -1207,12 +1214,17 @@
   loadJsonContent('/data/operator-colors.json', function (d) {
     operatorColorsData = d;
     operatorColorLookupCache = {};
-    // Same late-arrival re-color pattern as every other runtime paint
+    // Same late-arrival re-apply pattern as every other runtime paint
     // property in this file — if the operator-lines layer already exists
-    // (map loaded faster than this fetch), recolor it now instead of
-    // leaving it stuck on the neutral fallback.
+    // (map loaded faster than this fetch), refresh it now instead of
+    // leaving it stuck on the neutral fallback. Goes through
+    // applyOperatorHighlightPaint() (Phase 2), NOT operatorLineColorExpression()
+    // directly — the grey-default/highlight-on-hover state lives in that
+    // function now; calling operatorLineColorExpression() straight here
+    // would have unconditionally recolored every line the moment this JSON
+    // arrived, undoing the grey default the instant real colors loaded.
     if (map && map.isStyleLoaded() && map.getLayer('operator-lines')) {
-      map.setPaintProperty('operator-lines', 'line-color', operatorLineColorExpression(themeColors()));
+      applyOperatorHighlightPaint();
     }
   });
 
@@ -1634,14 +1646,17 @@
   // build-operator-tiles-geojson.mjs now emits one tile feature PER
   // OPERATOR PER SEGMENT — identical geometry, single `operators` value
   // each — instead of one feature per segment with a comma-joined string.
-  // The color expression below needed no shape change (every feature's
-  // `operators` was always exact-match-able; a multi-operator segment used
-  // to produce ONE feature whose joined value never matched anything,
-  // falling to the neutral default below — now it produces N features that
-  // each match their own operator exactly). The neutral fallback stays,
-  // but only as a genuine defensive fallback (operator-colors.json still
-  // loading, or a truly unrecognized key), not as "the multi-operator
-  // treatment" — it should rarely if ever be hit once data has loaded.
+  // Per-feature `operators` matching needed no shape change for fan-out
+  // (every feature's `operators` was always exact-match-able; a
+  // multi-operator segment used to produce ONE feature whose joined value
+  // never matched anything — now it produces N features that each match
+  // their own operator exactly). NOTE: colors are no longer always-on per
+  // operator at all — see applyOperatorHighlightPaint() (Phase 2, below):
+  // default is a single grey for every line, real per-operator color only
+  // shows for whichever operator is currently hovered/locked.
+  // MULTI_OPERATOR_NEUTRAL is still a genuine defensive fallback (an
+  // unrecognized operator key while highlighted), not "the multi-operator
+  // treatment" — should rarely if ever be hit once data has loaded.
   // line-offset (see operatorLineOffsetExpression below) is what actually
   // replaces the old neutral-color treatment: a `lane_offset` tile property
   // positions each operator's line as a thin parallel offset from the real
@@ -1675,15 +1690,43 @@
     return lookup;
   }
 
-  function operatorLineColorExpression(rc) {
+  // ── Reverse color-reveal (Phase 2) ─────────────────────────────────────────
+  // Default state is a single neutral grey for every operator line (matches
+  // railwayMain, the same "other rail" grey token the base railway-lines
+  // layer already uses, for visual consistency) — real per-operator color
+  // only appears for whichever operator is currently hovered/locked, and it
+  // applies to that operator's FULL route (every feature sharing its
+  // `operators` key), not just the single feature under the cursor. This is
+  // deliberately NOT per-feature MapLibre feature-state (which would need
+  // setFeatureState called on every one of a busy operator's hundreds of
+  // features) — it's one shared paint EXPRESSION comparing `operators`
+  // against a plain JS variable, re-applied via setPaintProperty() whenever
+  // that variable changes.
+  function activeHighlightOperator() {
+    return lockedOperatorHighlight || hoveredOperatorHighlight;
+  }
+  function applyOperatorHighlightPaint() {
+    if (!map || !map.getLayer('operator-lines')) return;
     var theme = currentTheme();
+    var rc = themeColors();
+    var active = activeHighlightOperator();
+    var grey = rc.railwayMain;
+    if (!active) {
+      map.setPaintProperty('operator-lines', 'line-color', grey);
+      map.setPaintProperty('operator-lines-hover-glow', 'line-opacity', 0);
+      return;
+    }
     var lookup = buildOperatorColorLookup(theme);
-    var expr = ['match', ['get', 'operators']];
-    Object.keys(lookup).forEach(function (key) {
-      expr.push(key, lookup[key]);
-    });
-    expr.push(MULTI_OPERATOR_NEUTRAL[theme]); // defensive fallback only now — see comment above
-    return expr;
+    var activeColor = lookup[active] || MULTI_OPERATOR_NEUTRAL[theme];
+    map.setPaintProperty('operator-lines', 'line-color',
+      ['case', ['==', ['get', 'operators'], active], activeColor, grey]);
+    // Glow is "same color" as the highlighted line per spec, not the old
+    // fixed white/dark neutral halo — see operator-lines-hover-glow's
+    // addLayer comment for the line-blur perf note (untested live, no
+    // browser in this environment).
+    map.setPaintProperty('operator-lines-hover-glow', 'line-color', activeColor);
+    map.setPaintProperty('operator-lines-hover-glow', 'line-opacity',
+      ['case', ['==', ['get', 'operators'], active], 0.5, 0]);
   }
 
   // Zoom-interpolated per-lane width (thicker at low/zoomed-out, thinner at
@@ -1856,43 +1899,47 @@
         attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors',
       });
     }
-    // Hover "glow" — a wider, theme-appropriate-neutral halo drawn BEHIND
-    // the real colored line, opacity driven entirely by feature-state, so
-    // hovering brightens/emphasizes a line WITHOUT introducing a new hue —
-    // turquoise is reserved for UI-only meaning (links, the future Phase 6
-    // From/To path highlight) and every other design-token color already
-    // carries other meaning (magenta=urgent/Live, amber=warnings,
-    // lime=heritage), so this deliberately stays achromatic rather than
-    // picking one of them. FLAGGED FOR REVIEW along with the multi-operator
-    // neutral-color choice above — this is a discretionary call, not a
-    // spec'd requirement.
+    // Hover/lock "glow" — a wider halo drawn BEHIND the real colored line,
+    // SAME color as whichever operator is currently highlighted (Phase 2,
+    // 2026-07-21 — was a fixed achromatic white/dark neutral before, driven
+    // by per-feature feature-state; both replaced by applyOperatorHighlightPaint()
+    // now, see its own comment). line-blur is new here too — untested at
+    // real ~9,268-feature scale in an actual browser (no browser in this
+    // environment); if it turns out to cost meaningful frame rate, the
+    // fallback is dropping line-blur and relying on line-width alone for
+    // the "glow" (a plain wider solid stroke, no blur) — everything else
+    // (opacity gating, color) stays the same either way.
     if (!map.getLayer('operator-lines-hover-glow')) {
       map.addLayer({
         id: 'operator-lines-hover-glow', type: 'line', source: 'operator-vector', 'source-layer': 'operators',
         layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
-          'line-color': currentTheme() === 'dark' ? '#FFFFFF' : '#14141E',
+          'line-color': MULTI_OPERATOR_NEUTRAL[currentTheme()], // placeholder until applyOperatorHighlightPaint() runs below — never visible since opacity starts at 0
           'line-width': operatorLineWidthExpression(2.4),
+          'line-blur': 3,
           'line-offset': operatorLineOffsetExpression(),
-          'line-opacity': ['case', ['boolean', ['feature-state', 'hover'], false], 0.5, 0],
+          'line-opacity': 0,
         },
       });
-    } else {
-      map.setPaintProperty('operator-lines-hover-glow', 'line-color', currentTheme() === 'dark' ? '#FFFFFF' : '#14141E');
     }
     if (!map.getLayer('operator-lines')) {
       map.addLayer({
         id: 'operator-lines', type: 'line', source: 'operator-vector', 'source-layer': 'operators',
         layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
-          'line-color': operatorLineColorExpression(rc),
-          'line-width': operatorLineWidthExpression(['case', ['boolean', ['feature-state', 'hover'], false], 1.35, 1]),
+          'line-color': rc.railwayMain, // grey default — placeholder until applyOperatorHighlightPaint() runs below
+          'line-width': operatorLineWidthExpression(1),
           'line-offset': operatorLineOffsetExpression(),
         },
       });
-    } else {
-      map.setPaintProperty('operator-lines', 'line-color', operatorLineColorExpression(rc));
     }
+    // Re-applies grey-default-or-highlighted paint on every addMapLayers()
+    // run (first load AND every theme toggle, since setStyle wipes and
+    // re-adds these layers) — reads currentTheme()/themeColors() fresh each
+    // time, and re-asserts whatever's currently hovered/locked (Phase 2
+    // highlight state lives in JS vars, not the wiped-per-toggle style, so
+    // it survives a theme switch unlike the old feature-state approach).
+    applyOperatorHighlightPaint();
     // Invisible, generously-wide hit layer over the exact same (offset)
     // geometry as the visible line above — hover/click are wired against
     // THIS layer, not 'operator-lines' itself, since the real line only
@@ -2414,31 +2461,78 @@
     map.on('rotate', update);
     update();
   }
+  // Reverse color-reveal interactions (Phase 2). Wired against
+  // 'operator-lines-hit' (the invisible wide hit layer added alongside
+  // 'operator-lines' above), not the thin visible line itself — see that
+  // layer's comment for why. No more per-feature MapLibre feature-state
+  // here (that only ever highlighted the ONE feature under the cursor) —
+  // hoveredOperatorHighlight/lockedOperatorHighlight (plain JS vars) plus
+  // applyOperatorHighlightPaint() drive an entire operator's full route at
+  // once, see that function's own comment.
   function wireOperatorLineInteractions() {
-    var hoveredFeatureId = null;
-    // Wired against 'operator-lines-hit' (the invisible wide hit layer added
-    // alongside 'operator-lines' above), not the thin visible line itself —
-    // see that layer's comment for why.
     map.on('mousemove', 'operator-lines-hit', function (e) {
       map.getCanvas().style.cursor = 'pointer';
       if (!e.features.length) return;
-      var f = e.features[0];
-      if (hoveredFeatureId !== f.id) {
-        if (hoveredFeatureId !== null) {
-          map.setFeatureState({ source: 'operator-vector', sourceLayer: 'operators', id: hoveredFeatureId }, { hover: false });
-        }
-        hoveredFeatureId = f.id;
-        map.setFeatureState({ source: 'operator-vector', sourceLayer: 'operators', id: hoveredFeatureId }, { hover: true });
+      var op = e.features[0].properties.operators;
+      if (hoveredOperatorHighlight !== op) {
+        hoveredOperatorHighlight = op;
+        applyOperatorHighlightPaint();
       }
-      showHoverTooltip(e.lngLat, resolveOperatorDisplayName(f.properties.operators));
+      showHoverTooltip(e.lngLat, resolveOperatorDisplayName(op));
     });
     map.on('mouseleave', 'operator-lines-hit', function () {
       map.getCanvas().style.cursor = '';
-      if (hoveredFeatureId !== null) {
-        map.setFeatureState({ source: 'operator-vector', sourceLayer: 'operators', id: hoveredFeatureId }, { hover: false });
+      if (hoveredOperatorHighlight !== null) {
+        hoveredOperatorHighlight = null;
+        applyOperatorHighlightPaint();
       }
-      hoveredFeatureId = null;
       hideHoverTooltip();
+    });
+    // Click/tap LOCKS the highlight (persists across mouseleave) — a second
+    // click on the SAME operator's route toggles it back off. Spec called
+    // this out explicitly for mobile ("tap again on same route... clears")
+    // but only listed "different route" / "empty space" for desktop's
+    // unlock triggers — tried distinguishing via
+    // e.originalEvent.pointerType==='touch' first, but that can't be
+    // verified without a real touch device/browser (not available in this
+    // environment) and risks silently never firing if MapLibre's tap
+    // handling doesn't surface pointerType the way assumed. Using the same
+    // same-route-toggles-off rule for both is a deliberate, lower-risk
+    // simplification — flagging this explicitly rather than shipping
+    // unverified device-sniffing: a toggle is a harmless, commonly-expected
+    // affordance on desktop too (nothing in the spec forbids it, only
+    // doesn't require it), so worst case this is a small, safe deviation
+    // to revisit after live testing, not a guess that could silently break.
+    // selectOperator() (click-through to the operator panel) only fires on
+    // the LOCK-ON transition, not lock-OFF — toggling a highlight off
+    // shouldn't also re-trigger a panel navigation. Gated to Database mode
+    // only, same as submitOperatorPick()'s guard on the search bar's
+    // Operator tab (2026-07-21 bugfix, same underlying cause: selectOperator()
+    // itself doesn't check mode, so calling it unconditionally from Live
+    // would reproduce that exact bug — the Database-style operator card
+    // rendering while the Live tab is still active). The highlight itself
+    // (color-reveal on the map) is NOT mode-gated — operator-lines renders
+    // in both modes identically, only the PANEL navigation is Database-only.
+    map.on('click', 'operator-lines-hit', function (e) {
+      if (!e.features.length) return;
+      var op = e.features[0].properties.operators;
+      var wasLocked = lockedOperatorHighlight === op;
+      lockedOperatorHighlight = wasLocked ? null : op;
+      applyOperatorHighlightPaint();
+      if (!wasLocked && mode === 'database') selectOperator(op);
+    });
+    // Clears the lock on an empty-map-space click. The layer-specific click
+    // above already fires for on-route clicks (registered first, so it
+    // runs first) — re-querying the same point here rather than relying on
+    // handler ordering is what actually makes this safe: if a route WAS
+    // under the click, do nothing (leave whatever the handler above just
+    // set), only clear when genuinely nothing was hit.
+    map.on('click', function (e) {
+      if (!lockedOperatorHighlight) return;
+      var hits = map.queryRenderedFeatures(e.point, { layers: ['operator-lines-hit'] });
+      if (hits.length) return;
+      lockedOperatorHighlight = null;
+      applyOperatorHighlightPaint();
     });
     map.on('zoomstart', hideHoverTooltip);
     map.on('dragstart', hideHoverTooltip);
@@ -2986,6 +3080,17 @@
       btn.addEventListener('click', function () {
         var region = regionsData[btn.dataset.region];
         if (region) map.flyTo({ center: region.center, zoom: region.zoom, duration: 800 });
+        // Phase 2 integration: also LOCKS this operator's highlight, same as
+        // clicking one of its lines directly on the map — region chips only
+        // ever render when selection.code is a valid operators-content.json
+        // key (operatorDetailSkeletonHtml() falls back to the "coming soon"
+        // view otherwise, with no region chips at all), and that key set
+        // matches the tile `operators` values 1:1 for every real TOC, so
+        // this is safe to use directly without a name->code lookup.
+        if (selection.code) {
+          lockedOperatorHighlight = selection.code;
+          applyOperatorHighlightPaint();
+        }
       });
     });
   }
