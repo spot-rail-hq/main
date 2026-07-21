@@ -434,6 +434,14 @@ function TrainImage({ commonsUrl, cls, name, accent }) {
   );
 }
 
+// Must stay byte-for-byte identical to map.html's fleetClassSlug() — that's
+// how a Fleet chip's operators-content.json fleet_classes[].id (e.g. "390"
+// or "01/5") is turned into the #fleet-{slug} anchor a row's id below must
+// match for the new-tab jump to land (2026-07-21 chip-interactivity pass).
+function fleetClassSlug(id) {
+  return String(id).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+
 // ——— Row ————————————————————————————————————————————————————
 function Row({ cat, header, row }) {
   const [open, setOpen] = React.useState(false);
@@ -445,7 +453,7 @@ function Row({ cat, header, row }) {
   const opFirst = (operators || '').split(';')[0].trim();
 
   return (
-    <div style={{ borderBottom: `1px solid ${SRHQ.line}` }}>
+    <div id={`fleet-${fleetClassSlug(cls)}`} style={{ borderBottom: `1px solid ${SRHQ.line}` }}>
       <button onClick={() => setOpen(o => !o)} className="row-hover row-grid" style={{
         width: '100%', textAlign: 'left', cursor: 'pointer',
         background: 'transparent', border: 'none', color: SRHQ.ink,
@@ -564,6 +572,21 @@ function App() {
   const [active, setActive] = React.useState('all');
   const [query, setQuery] = React.useState('');
   const [traction, setTraction] = React.useState('All');
+
+  // A #fleet-{slug} link (map.html's Fleet chips) arrives before data/
+  // site-data.json has loaded, so the browser's native on-load fragment
+  // scroll fires too early and finds nothing — do it ourselves once the
+  // matching row has actually rendered. rAF (not a plain effect) waits for
+  // the just-committed DOM paint before scrollIntoView.
+  React.useEffect(() => {
+    if (!data) return;
+    const hash = window.location.hash;
+    if (!hash.startsWith('#fleet-')) return;
+    requestAnimationFrame(() => {
+      const el = document.getElementById(hash.slice(1));
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  }, [data]);
 
   if (err) {
     return (

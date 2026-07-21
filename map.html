@@ -1120,6 +1120,11 @@
     if (selection.type === 'operator') rebuildSidebarContent();
     else if (mode === 'database' && !selectedStationCrs && selection.type === 'none') rebuildSidebarContent();
   });
+  // Main/Other Regions chips (operator panel) — region display name -> flyTo
+  // target, see data/regions.json's own _notes for why keys are literal
+  // curated strings rather than a canonicalized region list.
+  var regionsData = {};
+  loadJsonContent('/data/regions.json', function (d) { regionsData = d; });
 
   // ── Operator line colors (Phase 5) ─────────────────────────────────────────
   // data/operator-colors.json's toc/metro/tfl_lines/heritage sections, merged
@@ -2788,7 +2793,7 @@
   // instruction to treat both the same.
   function operatorRegionChipsHtml(label, regions) {
     var chips = (regions && regions.length)
-      ? regions.map(function (r) { return '<span class="filter-chip">' + escapeAttr(r) + '</span>'; }).join('')
+      ? regions.map(function (r) { return '<button type="button" class="filter-chip db-region-chip" data-region="' + escapeAttr(r) + '">' + escapeAttr(r) + '</button>'; }).join('')
       : '<span class="db-value">Not available</span>';
     return '<div class="db-field" data-anim-row><div class="db-label">' + label + '</div><div class="db-chip-row">' + chips + '</div></div>';
   }
@@ -2802,8 +2807,8 @@
     html += operatorRegionChipsHtml('Main regions', o.regions_served && o.regions_served.main);
     html += operatorRegionChipsHtml('Other regions', o.regions_served && o.regions_served.other);
     if (o.fleet_classes && o.fleet_classes.length) {
-      html += '<div class="db-field" data-anim-row><div class="db-label">Fleet</div><div class="db-chip-row">' +
-        o.fleet_classes.map(function (c) { return '<span class="filter-chip">' + escapeAttr(c.display) + '</span>'; }).join('') + '</div></div>';
+      html += '<div class="db-field" data-anim-row><div class="db-label">Fleet</div><div class="db-chip-row" id="db-fleet-chips">' +
+        o.fleet_classes.map(function (c) { return '<button type="button" class="filter-chip db-fleet-chip" data-class-id="' + escapeAttr(c.id) + '">' + escapeAttr(c.display) + '</button>'; }).join('') + '</div></div>';
     }
     html += dbFieldHtml('Stations operated', o.stations_operated);
     html += notableFeaturesHtml(o.notable_features);
@@ -2813,15 +2818,32 @@
     html += dbBottomLinksHtml(o, null);
     return html || dbComingSoonHtml(o.name);
   }
-  // Fleet-class chips are plain, unlinked text — investigated linking each
-  // to its entry on database.html and it's not straightforward right now:
-  // that page is a separate React app rendering straight from
-  // data/site-data.json (class number per row, e.g. "43"), with no anchor
-  // id per class and no shared identifier with fleet_classes' own `id`
-  // field here. Doing this properly needs database.html to expose stable
-  // per-class anchors first — flagging rather than building a fragile
-  // number-matching link in the meantime.
-  function wireOperatorDetail() {}
+  // Fleet chips open database.html in a new tab, jumped to that class's row
+  // via #fleet-{slug} (database.html's Row() now renders a matching id on
+  // every row — 2026-07-21). Interim fix per instruction: no dedicated
+  // locomotive subpages here, just the anchor jump.
+  // Main/Other Regions chips flyTo that region on the live map — same
+  // map.flyTo({center, zoom, duration: 800}) call flyToAndSelectStation()
+  // already uses for station selection, no custom easing, so it reads as
+  // the same animation everywhere in the app. Looked up in regionsData
+  // (data/regions.json) by the chip's own literal text — see that file's
+  // _notes for why some curated strings deliberately don't canonicalize.
+  function wireOperatorDetail() {
+    var fleetEl = document.getElementById('db-fleet-chips');
+    if (fleetEl) {
+      Array.prototype.forEach.call(fleetEl.querySelectorAll('.db-fleet-chip'), function (btn) {
+        btn.addEventListener('click', function () {
+          window.open('database.html#fleet-' + fleetClassSlug(btn.dataset.classId), '_blank', 'noopener');
+        });
+      });
+    }
+    Array.prototype.forEach.call(contentBlock.querySelectorAll('.db-region-chip'), function (btn) {
+      btn.addEventListener('click', function () {
+        var region = regionsData[btn.dataset.region];
+        if (region) map.flyTo({ center: region.center, zoom: region.zoom, duration: 800 });
+      });
+    });
+  }
 
   // A full "browse all routes/operators" list was here, generated straight
   // from routes/operators-content.json — with the schema still only holding
@@ -4165,6 +4187,17 @@
 
   function escapeAttr(str) {
     return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  // Must stay byte-for-byte identical to database.html's fleetClassSlug() —
+  // this is how a Fleet chip's data-class-id (operators-content.json's
+  // fleet_classes[].id, e.g. "390" or "01/5") turns into the #fleet-{slug}
+  // anchor database.html's Row() component renders (2026-07-21 investigation:
+  // 70/82 ids match a rolling-stock row exactly today; the other 12 are real
+  // content gaps — classes not yet in data/site-data.json — and just land on
+  // an unmatched fragment, which is a harmless no-op, not an error).
+  function fleetClassSlug(id) {
+    return String(id).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
   }
 
   // Restyled to match departures.html's row conventions: a leading status
