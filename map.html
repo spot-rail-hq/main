@@ -1643,10 +1643,17 @@
   // loading, or a truly unrecognized key), not as "the multi-operator
   // treatment" — it should rarely if ever be hit once data has loaded.
   // line-offset (see operatorLineOffsetExpression below) is what actually
-  // replaces the old neutral-color treatment: `operator_index`/
-  // `operator_total` (new tile properties) position each operator's line
-  // as a thin parallel offset from the real track, centered on 0 so the
-  // fan is symmetric regardless of how many operators share that stretch.
+  // replaces the old neutral-color treatment: a `lane_offset` tile property
+  // positions each operator's line as a thin parallel offset from the real
+  // track. This used to be derived client-side from `operator_index`/
+  // `operator_total` (LOCAL to one segment — centered on (total-1)/2), which
+  // caused a real, frequent visual bug (an operator's offset jogged
+  // sideways almost every junction, since total/index are both purely local
+  // — see operatorLineOffsetExpression's own comment). `lane_offset` is now
+  // precomputed at build time by a graph-aware, corridor-stable algorithm
+  // (assignStableLanes()/relaxLanes() in build-operator-tiles-geojson.mjs)
+  // and is already a plain, mean-centered number — map.html just scales it
+  // by zoom.
   var MULTI_OPERATOR_NEUTRAL = { dark: '#9AA4B2', light: '#444444' }; // == THEME_COLORS labelColor ("dimmed ink") — defensive fallback only, see above
 
   function buildOperatorColorLookup(theme) {
@@ -1710,17 +1717,23 @@
     ];
   }
 
-  // Fan-out offset: operator_index centered on (operator_total-1)/2, so
-  // e.g. 3 operators -> offset UNITS -1, 0, +1; 6 operators -> -2.5, -1.5,
-  // -0.5, +0.5, +1.5, +2.5 — always symmetric around the real track (offset
-  // 0), never biased to one side. Lane spacing (the multiplier applied to
-  // those units) widens with zoom for the same reason width does: more
-  // screen room at high zoom to usefully separate lanes, tighter/more
-  // overlapping at low zoom where showing every lane separately isn't
-  // legible anyway. Same top-level-zoom-expression constraint as width
-  // above, same fix shape.
+  // Fan-out offset (2026-07-21 rewrite — see build-operator-tiles-geojson.mjs's
+  // assignStableLanes()/relaxLanes() for where lane_offset actually comes
+  // from now). Used to be computed client-side from operator_index centered
+  // on (operator_total-1)/2 — both purely LOCAL to one segment, which meant
+  // the SAME operator's absolute offset swung every time the set of
+  // co-runners changed (nearly every junction — measured 28-47% of
+  // same-operator adjacent-segment boundaries actually changing offset,
+  // visibly "jogging" sideways at busy corridors like Doncaster). lane_offset
+  // is now precomputed at BUILD time from a graph-aware, corridor-stable
+  // per-operator lane number (mean-centered once per connected component,
+  // not per segment) — already a plain number in real "lane width" units,
+  // this just scales it by zoom the same way width does (more screen room
+  // at high zoom to usefully separate lanes, tighter at low zoom where
+  // showing every lane separately isn't legible anyway). Same
+  // top-level-zoom-expression constraint as width above, same fix shape.
   function operatorLineOffsetExpression() {
-    var offsetUnits = ['-', ['get', 'operator_index'], ['/', ['-', ['get', 'operator_total'], 1], 2]];
+    var offsetUnits = ['get', 'lane_offset'];
     function stopValue(laneWidth) {
       return ['*', offsetUnits, laneWidth];
     }
@@ -2375,8 +2388,9 @@
   // features anywhere, not just the one under the cursor). That remains a
   // deliberate scope reduction, flagged as before. What DID change with true
   // fan-out: each operator now has its OWN feature with its OWN unique id
-  // (segment_id * 10 + operator_index, see build-operator-tiles-geojson.mjs)
-  // instead of one shared-geometry feature per segment, so hovering one lane
+  // (segment_id * 10 + a plain per-segment enumeration index — unrelated to
+  // the lane_offset value, see build-operator-tiles-geojson.mjs) instead of
+  // one shared-geometry feature per segment, so hovering one lane
   // of a fanned-out junction now correctly highlights ONLY that lane — no
   // more risk of a shared id lighting up every operator sharing that track.
   // Name resolution is simpler too: `operators` is always a single key now,

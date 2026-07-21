@@ -196,25 +196,66 @@ The 94 unsnapped break into two categories — read
 
 ---
 
-## Task 5 — Build the operators vector tile layer (2026-07-15, tested working)
+## Task 5 — Build the operators vector tile layer (2026-07-21, current schema)
 
 `line-segments.json` (39.4MB raw / 6.2MB gzipped) hit the original plan's own
 stated trigger for falling back to vector tiles ("only if the real file size
 says otherwise") — for comparison, the largest existing plain-fetched JSON in
 the repo (`stations-content.json`) is 1.1MB. Rather than a flat-JSON fetch
-that blocks first paint, this is now tiled the same way `gb-railways.pmtiles`
+that blocks first paint, this is tiled the same way `gb-railways.pmtiles`
 already is:
 
 ```bash
 bash tile-generation/build-operator-tiles.sh
 ```
 
-Runs `scripts/build-operator-tiles-geojson.mjs` (converts
-`line-segments.json` into newline-delimited GeoJSON — one Feature per
-segment, `operators` as a comma-joined string since MVT feature properties
-are scalar-only, no native array type, plus `operator_count` as a number so
-Phase 5's zoom-adaptive bundling doesn't need to re-split the string just to
-count) then `tippecanoe` to tile it.
+Runs `scripts/build-operator-tiles-geojson.mjs`, then `tippecanoe` to tile
+its output. This script has been rewritten twice since first written
+(2026-07-15) — the schema below is the CURRENT one; see the script's own
+header comments for the full history if tracing an older tileset:
+
+1. **v1 (superseded)**: one feature per SEGMENT, `operators` a comma-joined
+   string (MVT properties are scalar-only), `operator_count` as a number.
+   Multi-operator track rendered as a single neutral-grey line — couldn't
+   show more than one color per physical corridor.
+2. **v2, "true fan-out" (2026-07-15)**: one feature PER OPERATOR PER
+   SEGMENT — a 6-operator segment becomes 6 identical-geometry features,
+   each with a single `operators` key, `operator_index` (alphabetical
+   position within that segment's own operator list) and `operator_total`.
+   map.html rendered each as its own thin parallel `line-offset` lane,
+   centered as `operator_index - (operator_total-1)/2`.
+3. **v3, lane-continuity (2026-07-21, CURRENT)**: v2 looked fanned-out
+   correctly in isolation but had a real, frequent visual defect — since
+   `operator_index`/`operator_total` are both purely LOCAL to one segment,
+   the same operator's absolute lane position swung every time the set of
+   co-runners changed, which happens at nearly every junction (measured:
+   28-47% of same-operator adjacent-segment-boundary pairs actually
+   changed offset, across the Doncaster/LNER and Glasgow-checkpoint/
+   ScotRail corridors — a visible sideways "jog", not a rare edge case).
+   Root cause was RE-CENTERING by a per-segment total, not the ordering
+   itself (alphabetical order between any two operators IS already globally
+   consistent). Fixed by `assignStableLanes()` + `relaxLanes()` in the
+   script: a BFS over the segment adjacency graph (segments sharing an OSM
+   endpoint node) propagates one FIXED lane number per operator along each
+   physically-connected corridor, with a bounded number of relaxation
+   passes (8, chosen empirically — the algorithm does NOT reliably converge
+   to a fixed point, a handful of segments at genuinely ambiguous
+   multi-way junctions keep flip-flopping past ~pass 15, so a fixed count
+   is used for determinism instead of "run until stable") to resolve
+   conflicts from BFS visit order. The per-segment render value
+   (`lane_offset`) then mean-centers using ONE fixed value per connected
+   component, not per segment, so an operator's rendered offset only
+   changes when its own lane genuinely had to be reassigned, not every time
+   an unrelated neighbor joins/leaves. Verified: nationwide jog rate
+   dropped to 0.6-3.6% across every checked operator (LNER, Southern,
+   CrossCountry, Avanti West Coast, GWR, South Western Railway, Northern),
+   down from 28-47%.
+
+Current tile fields: `id` (unique per fan-out feature, `segment_id * 10 +`
+enumeration index — unrelated to the lane number, only needs uniqueness for
+map.html's `promoteId` hover feature-state), `segment_id`, `operators`
+(single key), `lane_offset` (a plain number, already mean-centered — map.html
+just scales it by zoom, no index/total math client-side anymore), `length_m`.
 
 **Not built with `tilemaker`, deliberately** — `tilemaker` v3.1.0's `--input`
 only accepts a raw `.osm.pbf` file (confirmed via `--help`, no GeoJSON
@@ -229,41 +270,36 @@ format, same R2/CORS/MapLibre pattern as `gb-railways.pmtiles`, just a
 different generator for this one layer. `brew install tippecanoe` (v2.79.0
 verified working).
 
-**Verified, not just built:**
-- Output: `tile-generation/operators.pmtiles`, **7.55MB** — smaller than
-  even the gzipped flat-JSON alternative, and (unlike a flat fetch)
-  progressively loaded by viewport/zoom.
-- tippecanoe's own summary confirms all 6,126 input features made it into
-  the tiles (no silent drops): `6126 features, 1938936 bytes of geometry
-  and attributes...`.
-- Header/metadata read back correctly via the `pmtiles` npm package: 22,068
-  tiles, zoom 5–14, GB bbox, `vector_layers` reports the `operators` layer
-  with exactly the 4 expected fields (`id`/`operators`/`operator_count`/
-  `length_m`).
-- **Round-trip integrity spot-check**: pulled 3 of the 16 six-operator
-  segments (the hardest case — most properties to mangle) back out of the
-  actual tiles and diffed against `line-segments.json`. All 3 matched
-  exactly, e.g. segment 1708: tile property `operators` =
-  `"AW,EM,NT,TP,VT,XC"`, `operator_count` = `6` — identical to source, no
-  truncation, no reordering.
-- **Loads in a real MapLibre instance**: `tile-generation/test-operators-tiles.html`
-  (throwaway test page, not for production) — headless Chrome run confirmed
-  `map.addSource`/`map.addLayer` succeeded with zero errors and
-  `querySourceFeatures` returned features with correct properties. Needs a
-  Range-request-capable local server to test locally — **Python's
-  `http.server` does NOT support Range requests** (returns 200 full-file
-  instead of 206 partial, which breaks PMTiles' byte-range fetching); `npx
-  http-server --cors` does.
+**Verified, not just built (2026-07-21 rebuild):**
+- Output: `tile-generation/operators.pmtiles`, **9.33MB**.
+- tippecanoe's own summary confirms all 9,268 fan-out features made it into
+  the tiles (no silent drops): `9268 features, 3012721 bytes of geometry...`.
+- Header/metadata read back correctly via the `pmtiles` npm package (a small
+  Node script using `PMTiles`/a custom file-backed source, no CLI needed):
+  22,068 tiles, zoom 5–14, GB bbox, `vector_layers` reports the `operators`
+  layer with exactly the 5 current fields (`id`/`segment_id`/`operators`/
+  `lane_offset`/`length_m`), tilestats layer count 9,268 — matches the
+  fan-out math exactly (4,259 single-operator segments + 1,089×2 + 419×3 +
+  237×4 + 106×5 + 16×6 = 9,268).
+- **A live R2-hosted check the same session found the PREVIOUS deploy was
+  stale** — fetching the actual production `operators.pmtiles` URL's
+  metadata directly showed it was still v1 (6,126 features, no
+  `operator_index`/`operator_total`/`lane_offset` at all) despite v2's code
+  having existed locally since 2026-07-15 — i.e. Task 6 below had
+  genuinely never been done, not just gone undocumented. Worth re-checking
+  the live URL's metadata the same way after any future "is this actually
+  deployed" doubt, rather than assuming a locally-built file made it to R2.
 
 ## Task 6 — Host on R2 (OPEN — needs your Cloudflare access)
 
-Same steps as `PROMPT3-TILES-RUNBOOK.md` Task 2 — upload
-`tile-generation/operators.pmtiles` to the same R2 bucket already hosting
-`gb-railways.pmtiles`, same CORS policy (already scoped to `srhq.uk`/
-`www.srhq.uk`, no changes needed there), get the public URL, that's the only
-remaining step before Phase 5 can add the real `pmtiles://` source to
-`map.html`. No Cloudflare account access from here, same limitation as the
-original tiles runbook noted.
+Same steps as `PROMPT3-TILES-RUNBOOK.md` Task 2 — upload the CURRENT
+`tile-generation/operators.pmtiles` (v3, lane-continuity — see Task 5) to the
+same R2 bucket already hosting `gb-railways.pmtiles`, same CORS policy
+(already scoped to `srhq.uk`/`www.srhq.uk`, no changes needed there),
+**replacing** whatever's currently there. No Cloudflare account access from
+here, same limitation as the original tiles runbook noted — every rebuild
+of this file needs a human to actually push it to R2, this runbook can't do
+that step for you.
 
 `operator-colors.json` at 68KB needs no format decision — same pattern as
 every other `data/*.json` file already committed directly to the repo.
