@@ -385,8 +385,16 @@
      than the filter-chip pill style used elsewhere. */
   .sb-search-panel { display: none; margin-top: 10px; }
   .sb-search-panel.open { display: block; }
-  .sb-search-modes { display: flex; gap: 20px; padding-bottom: 12px; }
+  .sb-search-modes { display: flex; align-items: center; gap: 20px; padding-bottom: 12px; }
   .sb-search-mode-tab { font-family: var(--font-body); font-size: 14px; font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase; color: var(--ink); }
+  /* Explicit close for the search panel itself (2026-07-21 feedback) — the
+     search icon in .sb-top-actions already toggles it open/closed, but a
+     dedicated X on the mode-tabs row (far right, same treatment as
+     #sb-clear-btn's ×) is a clearer, more discoverable "I'm done searching"
+     affordance than expecting a user to re-find/re-click the same magnifying
+     glass icon they used to open it. margin-left:auto pins it to the far
+     right without disturbing the three tabs' own left-aligned flow. */
+  #sb-search-close-btn { margin-left: auto; font-size: 18px; line-height: 1; padding: 2px 4px; }
   .sb-search-mode-tab.active { color: var(--t); }
 
   /* Rounded field + its autocomplete dropdown. Each field/dropdown pair sits
@@ -840,9 +848,9 @@
   <div class="map-controls">
     <button class="icon-btn" id="zoom-in" aria-label="Zoom in" data-tooltip="Zoom in"><i class="ti ti-plus"></i></button>
     <button class="icon-btn" id="zoom-out" aria-label="Zoom out" data-tooltip="Zoom out"><i class="ti ti-minus"></i></button>
-    <button class="icon-btn" id="layers-btn" aria-label="Toggle rail network overlay" aria-pressed="false" data-tooltip="Show rail network overlay"><i class="ti ti-layers-intersect"></i></button>
-    <button class="icon-btn" id="my-location" aria-label="Find my location" data-tooltip="Find my location"><i class="ti ti-current-location"></i></button>
-    <button class="icon-btn" id="reset-bearing" aria-label="Reset map orientation" data-tooltip="Reset north &amp; flatten tilt"><i class="ti ti-navigation" id="reset-bearing-icon"></i></button>
+    <button class="icon-btn" id="layers-btn" aria-label="Toggle rail network overlay" aria-pressed="false" data-tooltip="Show rail network"><i class="ti ti-layers-intersect"></i></button>
+    <button class="icon-btn" id="my-location" aria-label="Find my location" data-tooltip="My location"><i class="ti ti-current-location"></i></button>
+    <button class="icon-btn" id="reset-bearing" aria-label="Reset map orientation" data-tooltip="Reset north"><i class="ti ti-navigation" id="reset-bearing-icon"></i></button>
   </div>
 </div>
 
@@ -889,6 +897,7 @@
           <button class="sb-search-mode-tab active" id="sb-mode-station" data-mode="station">Station</button>
           <button class="sb-search-mode-tab" id="sb-mode-fromto" data-mode="fromto">Destination</button>
           <button class="sb-search-mode-tab" id="sb-mode-operator" data-mode="operator">Operator</button>
+          <button class="ghost-btn" id="sb-search-close-btn" aria-label="Close search">×</button>
         </div>
         <div class="sb-station-field open" id="sb-station-field-wrap">
           <div class="sb-ac-wrap">
@@ -3796,7 +3805,7 @@
     // Keep the hover tooltip's wording matched to what the next click will
     // actually do, not a static label — same reasoning as the aria-pressed
     // update just above.
-    layersBtn.setAttribute('data-tooltip', ormVisible ? 'Hide rail network overlay' : 'Show rail network overlay');
+    layersBtn.setAttribute('data-tooltip', ormVisible ? 'Hide rail network' : 'Show rail network');
   });
   document.getElementById('my-location').addEventListener('click', function () {
     if (!navigator.geolocation) return;
@@ -3999,6 +4008,12 @@
     var opening = !searchPanel.classList.contains('open');
     searchPanel.classList.toggle('open', opening);
     if (opening) setSearchMode(searchMode);
+  });
+  // Explicit close (far right of the mode-tabs row) — same end state as
+  // clicking the search icon again while open, just a more discoverable
+  // affordance than expecting the user to re-find that icon.
+  document.getElementById('sb-search-close-btn').addEventListener('click', function () {
+    searchPanel.classList.remove('open');
   });
 
   // ── Autocomplete (shared by every search field — desktop + mobile) ───────
