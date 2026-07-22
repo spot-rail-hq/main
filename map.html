@@ -1792,7 +1792,7 @@
   // makes a per-feature CASE expression cheap here even with line-blur on.
   var NO_OPERATOR_FILTER = ['==', ['get', 'operators'], '__no_operator_selected__']; // matches nothing — blanks operator-lines-active/-hover-glow when nothing is active
   var GLOW_OPACITY = 1; // was 0.5 — doubled per 2026-07-22 "can't see the glow" feedback, see GLOW_WIDTH_MULTIPLIER below too
-  var GLOW_WIDTH_MULTIPLIER = 4.8; // was 2.4 — doubled alongside opacity, same feedback
+  var GLOW_WIDTH_MULTIPLIER = 3.6; // was 2.4, then 4.8 (doubled) — tuned down to 3.6 per follow-up feedback
   function applyOperatorHighlightPaint() {
     if (!map || !map.getLayer('operator-lines') || !map.getLayer('operator-lines-active')) return;
     var theme = currentTheme();
@@ -2647,6 +2647,18 @@
     // here.
     map.on('click', 'operator-lines-hit', function (e) {
       if (!e.features.length) return;
+      // Stations sit ON the rail line, and this hit layer is a generously
+      // wide (18px) invisible strip specifically so a real click near a
+      // thin rendered line still registers — which means it always also
+      // overlaps whichever station marker sits on that same track. Without
+      // this guard, MapLibre fires BOTH this handler and the station
+      // marker's own click handler (wireStationInteractions(), below) for
+      // the exact same click, so clicking a station also locked/highlighted
+      // the route running under it and forced a jump into Database mode
+      // (2026-07-22 bug report). Stations are the more specific target
+      // here — if one is also under this exact point, let selectStation()
+      // own the click and skip the route entirely.
+      if (map.queryRenderedFeatures(e.point, { layers: STATION_MARKER_LAYERS }).length) return;
       var op = e.features[0].properties.operators;
       var wasLocked = lockedOperatorHighlight === op;
       lockedOperatorHighlight = wasLocked ? null : op;
@@ -3552,7 +3564,7 @@
     if (fromCoord && toCoord) {
       var bounds = new maplibregl.LngLatBounds(fromCoord, fromCoord);
       bounds.extend(toCoord);
-      map.fitBounds(bounds, { padding: FROMTO_FIT_PADDING, duration: 800 });
+      flyToBoundsZoomedOut(bounds, FROMTO_FIT_PADDING, FROMTO_ZOOM_OUT, 800);
       setSelectedStationPoints([{ lon: from.lon, lat: from.lat }, { lon: to.lon, lat: to.lat }]);
     } else {
       setSelectedStationPoints([]);
@@ -3586,7 +3598,7 @@
           if (!pathBounds) pathBounds = new maplibregl.LngLatBounds(c, c); else pathBounds.extend(c);
         });
       });
-      if (pathBounds) map.fitBounds(pathBounds, { padding: FROMTO_FIT_PADDING, duration: 800 });
+      if (pathBounds) flyToBoundsZoomedOut(pathBounds, FROMTO_FIT_PADDING, FROMTO_ZOOM_OUT, 800);
 
       // Bugfix, found via a headless check on a real long route (KGX->EDB,
       // 93 edges): a single map.once('idle', ...) is NOT reliable here.
@@ -4131,6 +4143,21 @@
   // bit more" breathing room the sidebar offset itself doesn't need to be
   // part of.
   var FROMTO_FIT_PADDING = 100;
+  // 2026-07-22 request: Destination (From/To) results should land noticeably
+  // more zoomed out than fitBounds' own tightest-fit zoom — everywhere else
+  // (route/operator selection) is fine as-is, so this is a separate helper
+  // rather than a change to fitBounds' padding math above, which stays a
+  // request specifically scoped to the fromto camera calls. fitBounds()
+  // itself has no "zoom out N levels" option, so this computes the same
+  // camera fitBounds() would (via cameraForBounds(), the exact function
+  // fitBounds() calls internally) and then flies there with `zoomOut`
+  // subtracted, instead of handing bounds straight to fitBounds().
+  function flyToBoundsZoomedOut(bounds, padding, zoomOut, duration) {
+    var cam = map.cameraForBounds(bounds, { padding: padding });
+    if (!cam) { map.fitBounds(bounds, { padding: padding, duration: duration }); return; } // shouldn't happen (only returns undefined if the bounds can't fit at all), fall back to the normal path just in case
+    map.flyTo({ center: cam.center, zoom: Math.max(0, cam.zoom - zoomOut), duration: duration });
+  }
+  var FROMTO_ZOOM_OUT = 2;
   var regionJumpBtns = document.querySelectorAll('#region-jump button[data-lng]');
   Array.prototype.forEach.call(regionJumpBtns, function (btn) {
     btn.addEventListener('click', function () {
