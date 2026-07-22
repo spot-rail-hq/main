@@ -3385,17 +3385,15 @@
           '<span class="db-franchise-dates">' + escapeAttr(f.start || '') + ' – ' + escapeAttr(f.end || 'present') + '</span></li>';
       }).join('') + '</ul></div>';
   }
-  // 2026-07-18: always renders now — "Not available" placeholder chip-row
-  // when empty, same "core database value" treatment as Location/Managed
-  // by (confirmed 2026-07-18: "Service Region" = these Main/Other regions
-  // fields specifically). NOTE for a future reconsideration, not acted on
-  // now: "Other regions" empty is semantically different from Main
-  // regions empty — it can genuinely mean "this operator has no secondary
-  // coverage" (a real, known fact) rather than "we haven't extracted
-  // this" (a data gap) — so "Not available" reads slightly differently
-  // there than it does for Location/Managed by, where absence always
-  // means the latter. Flagging rather than second-guessing the explicit
-  // instruction to treat both the same.
+  // 2026-07-18: renders even when empty — "Not available" placeholder chip-
+  // row, same "core database value" treatment as Location/Managed by
+  // (confirmed 2026-07-18: "Service Region" = these Main/Other regions
+  // fields specifically). This is for a genuine DATA GAP (we haven't
+  // extracted this yet) — see operatorDetailSkeletonHtml()'s own comment
+  // for the separate case where "Other regions" doesn't apply AT ALL
+  // (a single-city Underground line), which skips calling this function
+  // for that field entirely rather than showing a placeholder for a
+  // question that isn't meaningful to ask.
   function operatorRegionChipsHtml(label, regions) {
     var chips = (regions && regions.length)
       ? regions.map(function (r) { return '<button type="button" class="filter-chip db-region-chip" data-region="' + escapeAttr(r) + '">' + escapeAttr(r) + '</button>'; }).join('')
@@ -3410,7 +3408,24 @@
     html += dbFieldHtml('Parent company', o.parent_company);
     html += operatorFranchiseListHtml(o.franchises);
     html += operatorRegionChipsHtml('Main regions', o.regions_served && o.regions_served.main);
-    html += operatorRegionChipsHtml('Other regions', o.regions_served && o.regions_served.other);
+    // 2026-07-23: "Other regions" is skipped entirely (not even a "Not
+    // available" placeholder) when o.single_region is explicitly set —
+    // deliberately an OPT-IN flag rather than inferring this from
+    // regions_served.other being absent, since several real TOCs (LN, TL,
+    // HT, LD, HX, ES) already have no regions_served data at all yet (a
+    // genuine gap, not "doesn't apply") and still correctly show "Not
+    // available" for both Main and Other regions — that's honest about
+    // the gap and shouldn't change. single_region is for entities where
+    // the field is genuinely meaningless, not just unfilled — e.g. a
+    // London Underground line only ever serves London, so there's no
+    // "other regions" question to ask in the first place. Same reasoning
+    // for Fleet just below: Underground rolling stock isn't in this
+    // database yet, so tube-line entries simply omit fleet_classes and
+    // the existing `if (o.fleet_classes && o.fleet_classes.length)` guard
+    // already skips rendering it — no separate flag needed there.
+    if (!o.single_region) {
+      html += operatorRegionChipsHtml('Other regions', o.regions_served && o.regions_served.other);
+    }
     if (o.fleet_classes && o.fleet_classes.length) {
       html += '<div class="db-field" data-anim-row><div class="db-label">Fleet</div><div class="db-chip-row" id="db-fleet-chips">' +
         o.fleet_classes.map(function (c) { return '<button type="button" class="filter-chip db-fleet-chip" data-class-id="' + escapeAttr(c.id) + '">' + escapeAttr(c.display) + '</button>'; }).join('') + '</div></div>';

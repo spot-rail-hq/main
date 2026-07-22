@@ -1869,5 +1869,269 @@
         "display": "TGV PBKA"
       }
     ]
+  },
+  "Bakerloo": {
+    "name": "Bakerloo line",
+    "headline": "Brown line linking Harrow & Wealdstone to Elephant & Castle via the West End, opened 1906",
+    "parent_company": "Transport for London",
+    "wikipedia_title": "Bakerloo line",
+    "_wikipedia": {
+      "fetched_at": "2026-07-23T00:00:00.000Z",
+      "title": "Bakerloo line",
+      "url": "https://en.wikipedia.org/wiki/Bakerloo_line",
+      "license": "CC BY-SA 4.0"
+    },
+    "stations_operated": 25,
+    "notable_features": [
+      "25 stations over 23.2 km, of which 15 are underground",
+      "Runs partly on the surface and partly through deep-level tube tunnels",
+      "One of the original deep-tube lines, opened 10 March 1906"
+    ],
+    "regions_served": {
+      "main": [
+        "London"
+      ]
+    },
+    "single_region": true
+  },
+  "Central": {
+    "name": "Central line",
+    "headline": "The network's longest line — 49 stations over 74 km, from Ealing/West Ruislip to Epping/Woodford",
+    "parent_company": "Transport for London",
+    "wikipedia_title": "Central line (London Underground)",
+    "_wikipedia": {
+      "fetched_at": "2026-07-23T00:00:00.000Z",
+      "title": "Central line (London Underground)",
+      "url": "https://en.wikipedia.org/wiki/Central_line_(London_Underground)",
+      "license": "CC BY-SA 4.0"
+    },
+    "stations_operated": 49,
+    "notable_features": [
+      "Longest line on the Underground network at 74 km (46 miles)",
+      "One of only two lines that cross the Greater London boundary, with the Metropolitan line",
+      "Deep-level tube line — trains are smaller than British main-line stock"
+    ],
+    "regions_served": {
+      "main": [
+        "London"
+      ]
+    },
+    "single_region": true
+  },
+  "Circle": {
+    "name": "Circle line",
+    "headline": "A spiral, not a circle — loops from Hammersmith around central London and back to Edgware Road",
+    "parent_company": "Transport for London",
+    "wikipedia_title": "Circle line (London Underground)",
+    "_wikipedia": {
+      "fetched_at": "2026-07-23T00:00:00.000Z",
+      "title": "Circle line (London Underground)",
+      "url": "https://en.wikipedia.org/wiki/Circle_line_(London_Underground)",
+      "license": "CC BY-SA 4.0"
+    },
+    "stations_operated": 36,
+    "notable_features": [
+      "36 stations over 27 km, serving most of London's main-line termini",
+      "Track and stations almost entirely shared with the District, Hammersmith & City and Metropolitan lines",
+      "Formed a complete loop in 1884; the current spiral shape dates from 2009"
+    ],
+    "regions_served": {
+      "main": [
+        "London"
+      ]
+    },
+    "single_region": true
+  },
+  "District": {
+    "name": "District line",
+    "headline": "London's most branched line — six termini across Upminster, Wimbledon, Kensington, Richmond and Ealing Broadway",
+    "parent_company": "Transport for London",
+    "wikipedia_title": "District line",
+    "_wikipedia": {
+      "fetched_at": "2026-07-23T00:00:00.000Z",
+      "title": "District line",
+      "url": "https://en.wikipedia.org/wiki/District_line",
+      "license": "CC BY-SA 4.0"
+    },
+    "stations_operated": 60,
+    "notable_features": [
+      "60 stations over 64 km — one of the network's largest lines",
+      "Splits into multiple branches at Earl's Court and again at Turnham Green",
+      "Opened 24 December 1868, one of the original Metropolitan District Railway lines"
+    ],
+    "regions_served": {
+      "main": [
+        "London"
+      ]
+    },
+    "single_region": true
+  },
+  "Hammersmith & City": {
+    "name": "Hammersmith & City line",
+    "headline": "Pink line from Hammersmith to Barking, skirting the City of London between Farringdon and Aldgate East",
+    "parent_company": "Transport for London",
+    "wikipedia_title": "Hammersmith & City line",
+    "_wikipedia": {
+      "fetched_at": "2026-07-23T00:00:00.000Z",
+      "title": "Hammersmith & City line",
+      "url": "https://en.wikipedia.org/wiki/Hammersmith_%26_City_line",
+      "license": "CC BY-SA 4.0"
+    },
+    "stations_operated": 29,
+    "notable_features": [
+      "29 stations over 25.5 km; shallow-tunnel construction, similar gauge to main-line trains",
+      "Almost all track and stations shared with the Circle, District and Metropolitan lines",
+      "Over 141 million passenger journeys a year, combined with the Circle line"
+    ],
+    "regions_served": {
+      "main": [
+        "London"
+      ]
+    },
+    "single_region": true
+  },
+  "Jubilee": {
+    "name": "Jubilee line",
+    "headline": "The newest Underground line — opened 1979, though some track dates back to 1932",
+    "parent_company": "Transport for London",
+    "wikipedia_title": "Jubilee line",
+    "_wikipedia": {
+      "fetched_at": "2026-07-23T00:00:00.000Z",
+      "title": "Jubilee line",
+      "url": "https://en.wikipedia.org/wiki/Jubilee_line",
+      "license": "CC BY-SA 4.0"
+    },
+    "stations_operated": 27,
+    "notable_features": [
+      "27 stations over 36.2 km, from Stanmore to Stratford via the West End and Docklands",
+      "Newest line on the network — opened 1 May 1979",
+      "Some sections of track date back to 1932 and some stations to 1879"
+    ],
+    "regions_served": {
+      "main": [
+        "London"
+      ]
+    },
+    "single_region": true
+  },
+  "Metropolitan": {
+    "name": "Metropolitan line",
+    "headline": "The 'Met' — London's most far-flung line, reaching Amersham and Chesham in Buckinghamshire",
+    "parent_company": "Transport for London",
+    "wikipedia_title": "Metropolitan line",
+    "_wikipedia": {
+      "fetched_at": "2026-07-23T00:00:00.000Z",
+      "title": "Metropolitan line",
+      "url": "https://en.wikipedia.org/wiki/Metropolitan_line",
+      "license": "CC BY-SA 4.0"
+    },
+    "stations_operated": 34,
+    "notable_features": [
+      "34 stations over 66.7 km, with branches to Watford and Uxbridge",
+      "Mostly shallow cut-and-cover tunnels between Aldgate and Finchley Road; above ground beyond that",
+      "Almost 94 million passenger journeys in 2019"
+    ],
+    "regions_served": {
+      "main": [
+        "London"
+      ]
+    },
+    "single_region": true
+  },
+  "Northern": {
+    "name": "Northern line",
+    "headline": "The busiest Underground line — around 340 million journeys a year, with two routes through central London",
+    "parent_company": "Transport for London",
+    "wikipedia_title": "Northern line",
+    "_wikipedia": {
+      "fetched_at": "2026-07-23T00:00:00.000Z",
+      "title": "Northern line",
+      "url": "https://en.wikipedia.org/wiki/Northern_line",
+      "license": "CC BY-SA 4.0"
+    },
+    "stations_operated": 52,
+    "notable_features": [
+      "52 stations over 58 km — busiest line on the network (about 340 million journeys in 2019)",
+      "Only line with two separate routes through central London (via Bank and via Charing Cross)",
+      "Despite the name, serves the network's southernmost station, Morden"
+    ],
+    "regions_served": {
+      "main": [
+        "London"
+      ]
+    },
+    "single_region": true
+  },
+  "Piccadilly": {
+    "name": "Piccadilly line",
+    "headline": "Heathrow's Tube link — 53 stations from Uxbridge/Heathrow to Cockfosters via central London",
+    "parent_company": "Transport for London",
+    "wikipedia_title": "Piccadilly line",
+    "_wikipedia": {
+      "fetched_at": "2026-07-23T00:00:00.000Z",
+      "title": "Piccadilly line",
+      "url": "https://en.wikipedia.org/wiki/Piccadilly_line",
+      "license": "CC BY-SA 4.0"
+    },
+    "stations_operated": 53,
+    "notable_features": [
+      "53 stations over 74 km — serves all Heathrow Airport terminals",
+      "Splits into two western branches at Acton Town (Heathrow and Uxbridge)",
+      "Sixth-busiest line on the network — nearly 218 million journeys in 2019"
+    ],
+    "regions_served": {
+      "main": [
+        "London"
+      ]
+    },
+    "single_region": true
+  },
+  "Victoria": {
+    "name": "Victoria line",
+    "headline": "One of only two fully-underground lines, linking Brixton to Walthamstow Central",
+    "parent_company": "Transport for London",
+    "wikipedia_title": "Victoria line",
+    "_wikipedia": {
+      "fetched_at": "2026-07-23T00:00:00.000Z",
+      "title": "Victoria line",
+      "url": "https://en.wikipedia.org/wiki/Victoria_line",
+      "license": "CC BY-SA 4.0"
+    },
+    "stations_operated": 16,
+    "notable_features": [
+      "16 stations over 21 km, from Brixton to Walthamstow Central via the West End",
+      "One of only two Underground lines that run completely underground, with the Waterloo & City line",
+      "Opened 1 September 1968"
+    ],
+    "regions_served": {
+      "main": [
+        "London"
+      ]
+    },
+    "single_region": true
+  },
+  "Waterloo & City": {
+    "name": "Waterloo & City line",
+    "headline": "'The Drain' — a two-station shuttle between Waterloo and Bank for City commuters",
+    "parent_company": "Transport for London",
+    "wikipedia_title": "Waterloo & City line",
+    "_wikipedia": {
+      "fetched_at": "2026-07-23T00:00:00.000Z",
+      "title": "Waterloo & City line",
+      "url": "https://en.wikipedia.org/wiki/Waterloo_%26_City_line",
+      "license": "CC BY-SA 4.0"
+    },
+    "stations_operated": 2,
+    "notable_features": [
+      "Just 2 stations, Waterloo and Bank, with no intermediate stops",
+      "Weekdays only — historically closed Sundays and public holidays",
+      "The only entirely underground tube line, including its depot (unlike the Victoria line's ground-level depot)"
+    ],
+    "regions_served": {
+      "main": [
+        "London"
+      ]
+    },
+    "single_region": true
   }
 }
