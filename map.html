@@ -1802,7 +1802,7 @@
   // 1). Two separate constants now so this distinction can't get
   // re-conflated the way it did the first time.
   var ROUTE_BASE_WIDTH_MULTIPLIER = 1;
-  var ROUTE_ACTIVE_WIDTH_MULTIPLIER = 2.4;
+  var ROUTE_ACTIVE_WIDTH_MULTIPLIER = 1.8; // was 2.4
 
   // ── Multi-ring glow (2026-07-22 rewrite) ──────────────────────────────────
   // A single glow layer's line-opacity is one flat value across its whole
@@ -1830,9 +1830,9 @@
   // drawn) BEFORE operator-lines-active, so the solid stroke ends up on top
   // of all of them, not the other way round.
   var GLOW_RINGS = [
-    { widthMultiplier: 3.6, opacity: 0.40, blurPx: 2 },
-    { widthMultiplier: 5.0, opacity: 0.22, blurPx: 3 },
-    { widthMultiplier: 7.0, opacity: 0.10, blurPx: 4.5 },
+    { widthMultiplier: 3.6, opacity: 0.40, blurPx: 1.6 }, // blurPx was 2, -20%
+    { widthMultiplier: 5.0, opacity: 0.22, blurPx: 2.4 }, // blurPx was 3, -20%
+    { widthMultiplier: 7.0, opacity: 0.10, blurPx: 3.6 }, // blurPx was 4.5, -20%
   ];
 
   // ── Route reveal tiers (2026-07-22) ─────────────────────────────────────
