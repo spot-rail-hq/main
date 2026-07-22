@@ -1518,7 +1518,14 @@
       // site-wide light-theme turquoise) — was a slightly different, one-off
       // shade (#0AABA0) before.
       accent: '#1A9E8F', stationFill: '#FFFFFF', stationHoverFill: 'rgba(26,158,143,0.15)', labelColor: '#444444', labelHalo: 'rgba(255,255,255,0.85)',
-      railwayMain: 'rgba(68,68,68,0.6)', railwaySecondary: 'rgba(68,68,68,0.38)', railwayClosed: 'rgba(68,68,68,0.26)',
+      // 2026-07-22: rgb was (68,68,68) — read as "very dark" for the default
+      // (unhighlighted) network in light mode, since railwayMain doubles as
+      // BOTH the Database-mode base overlay AND operator-lines' default
+      // grey (see applyOperatorHighlightPaint()'s `grey = rc.railwayMain`).
+      // Lightened ~50% toward white (68 + (255-68)*0.5 ≈ 162), same opacity
+      // steps kept as-is since those already differentiate main/secondary/
+      // closed from each other.
+      railwayMain: 'rgba(162,162,162,0.6)', railwaySecondary: 'rgba(162,162,162,0.38)', railwayClosed: 'rgba(162,162,162,0.26)',
     },
   };
   function themeColors() { return THEME_COLORS[currentTheme()]; }
@@ -1830,9 +1837,9 @@
   // drawn) BEFORE operator-lines-active, so the solid stroke ends up on top
   // of all of them, not the other way round.
   var GLOW_RINGS = [
-    { widthMultiplier: 3.6, opacity: 0.40, blurPx: 1 },    // blurPx was 1.12
-    { widthMultiplier: 5.0, opacity: 0.22, blurPx: 1.5 },  // blurPx was 1.68
-    { widthMultiplier: 7.0, opacity: 0.10, blurPx: 2.25 }, // blurPx was 2.52
+    { widthMultiplier: 3.6, opacity: 0.40, blurPx: 1 },    // unchanged
+    { widthMultiplier: 5.0, opacity: 0.22, blurPx: 1.25 }, // blurPx was 1.5
+    { widthMultiplier: 7.0, opacity: 0.10, blurPx: 1.75 }, // blurPx was 2.25
   ];
 
   // ── Route reveal tiers (2026-07-22) ─────────────────────────────────────
@@ -4374,6 +4381,44 @@
     map.flyTo({ center: cam.center, zoom: Math.max(0, cam.zoom - zoomOut), duration: duration });
   }
   var FROMTO_ZOOM_OUT = 2;
+
+  // 2026-07-22 request: searching for an OPERATOR (not clicking one on the
+  // map, and not a region chip — both of those already have their own
+  // appropriate camera behavior) should highlight its network and fly to
+  // fit it, same "zoom out a bit for breathing room" treatment as the
+  // Destination search above. Unlike Destination (where the two endpoints'
+  // coordinates are already known before any camera move), an operator's
+  // true network extent isn't known until its tiles are actually queried —
+  // querySourceFeatures() only sees currently-loaded tiles, and an
+  // operator can run the length of the country regardless of where the
+  // camera happened to be sitting before this search. Same bounded-retry
+  // shape as resolveFromToGeometry()/tryResolveGeometry() elsewhere in this
+  // file: keep asking until real bounds come back or give up quietly.
+  var OPERATOR_FIT_PADDING = FROMTO_FIT_PADDING;
+  var OPERATOR_ZOOM_OUT = FROMTO_ZOOM_OUT;
+  function flyToOperatorNetwork(code, mySeq, attempt) {
+    attempt = attempt || 1;
+    if (mySeq !== selectionSeq) return; // a newer selection superseded this one — abandon
+    if (!map || !map.getSource('operator-vector')) {
+      if (attempt < 15) setTimeout(function () { flyToOperatorNetwork(code, mySeq, attempt + 1); }, 300);
+      return;
+    }
+    var feats = map.querySourceFeatures('operator-vector', { sourceLayer: 'operators', filter: ['==', ['get', 'operators'], code] });
+    var bounds = null;
+    feats.forEach(function (f) {
+      var coords = f.geometry && f.geometry.coordinates;
+      if (!coords) return;
+      coords.forEach(function (c) {
+        if (!bounds) bounds = new maplibregl.LngLatBounds(c, c); else bounds.extend(c);
+      });
+    });
+    if (!bounds) {
+      if (attempt < 15) setTimeout(function () { flyToOperatorNetwork(code, mySeq, attempt + 1); }, 300);
+      return; // give up quietly after 15 attempts (~4.5s) — same tolerance as this file's other bounded retries
+    }
+    flyToBoundsZoomedOut(bounds, OPERATOR_FIT_PADDING, OPERATOR_ZOOM_OUT, 800);
+  }
+
   var regionJumpBtns = document.querySelectorAll('#region-jump button[data-lng]');
   Array.prototype.forEach.call(regionJumpBtns, function (btn) {
     btn.addEventListener('click', function () {
@@ -4732,6 +4777,25 @@
   function submitOperatorPick(picked) {
     if (mode !== 'database') return;
     selectOperator(picked.code);
+    // Highlight + fly to the network, search-specific (not folded into
+    // selectOperator() itself, which is also called from clicking a route
+    // directly on the map — that already shows the operator's line right
+    // where the user clicked, so flying away and back would be a
+    // disorienting, unrequested camera move there; a region-chip click
+    // inside the detail panel already has its own curated flyTo too).
+    // Only a from-search pick needs this: the user has no idea where the
+    // network even is yet. jumpTo (instant, no animation) to the standard
+    // "All UK" view first forces broad tile loading regardless of the
+    // camera's current position, so flyToOperatorNetwork's tile query has
+    // something to find — the user only ever sees ONE animated camera
+    // move (the flyTo inside flyToOperatorNetwork), not a visible jump-to-
+    // wrong-place-then-fly-to-right-place.
+    if (picked.code) {
+      lockedOperatorHighlight = picked.code;
+      applyOperatorHighlightPaint();
+      map.jumpTo({ center: mapInitCenter, zoom: mapInitZoom, padding: regionJumpFlyToPadding() });
+      flyToOperatorNetwork(picked.code, selectionSeq);
+    }
   }
   wireAutocomplete(operatorInput, document.getElementById('sb-ac-operator'), function (picked) {
     operatorPick = picked;
