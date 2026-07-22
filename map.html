@@ -301,7 +301,12 @@
   #rj-scroll { display: flex; align-items: center; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 0 21px 0 0; }
   #rj-scroll::-webkit-scrollbar { display: none; }
   #region-jump .rj-label { font-family: var(--font-body); font-size: 14px; font-weight: 500; color: var(--ink-mute); padding: 0 0 0 21px; margin-right: 14px; flex-shrink: 0; }
-  body.mode-database #region-jump { display: none; }
+  /* Used to be Live-only (display:none in Database mode) — 2026-07-22
+     request extends it to Database too, jumping straight to a city's
+     detailed network rather than only working from the whole-UK Live view.
+     No layout conflict to guard against: Database mode's own extra chrome
+     (the history slider + legend) is bottom-anchored, and the sidebar this
+     bar sits beside on desktop is present in both modes already. */
 
   #control-cluster { position: absolute; top: calc(var(--nav-h) + 10px); left: 10px; z-index: 55; }
   .map-controls { display: flex; flex-direction: column; gap: 3px; }
@@ -851,8 +856,11 @@
       <button class="filter-chip" data-lng="-0.1278" data-lat="51.5074" data-zoom="11">London</button>
       <button class="filter-chip" data-lng="-1.9" data-lat="52.4778" data-zoom="11">Birmingham</button>
       <button class="filter-chip" data-lng="-2.2307" data-lat="53.4775" data-zoom="11">Manchester</button>
+      <!-- UK's top 5 cities for rail connectivity/passenger volume, per
+           2026-07-22 request — Leeds in, Edinburgh out, in that ranked
+           order (London, Birmingham, Manchester, Leeds, Glasgow). -->
+      <button class="filter-chip" data-lng="-1.5491" data-lat="53.8008" data-zoom="11">Leeds</button>
       <button class="filter-chip" data-lng="-4.2579" data-lat="55.8586" data-zoom="11">Glasgow</button>
-      <button class="filter-chip" data-lng="-3.1883" data-lat="55.9521" data-zoom="11">Edinburgh</button>
     </div>
   </div>
 </div>
@@ -1020,8 +1028,11 @@
   // ── Reverse color-reveal (Phase 2, 2026-07-21) ────────────────────────────
   // lockedOperatorHighlight persists across mouseleave (click/tap, or a
   // Regions chip click); hoveredOperatorHighlight is the transient desktop
-  // hover-only signal, cleared on mouseleave. Locked always wins when both
-  // are set — see activeHighlightOperator().
+  // hover-only signal, cleared on mouseleave. Both can be active
+  // simultaneously and are colored independently (2026-07-22 — see
+  // applyOperatorHighlightPaint()'s comment) rather than locked always
+  // winning, so hovering a different route while one is locked previews it
+  // too instead of doing nothing.
   var lockedOperatorHighlight = null;
   var hoveredOperatorHighlight = null;
   var initialCameraVerified = false; // see verifyInitialCameraPosition() below
@@ -1361,6 +1372,64 @@
   // null, caller retries) since silently straight-lining a longer gap could
   // visibly cut a corner a real train doesn't.
   var MAX_BRIDGEABLE_GAP_M = 300;
+  function coordDist(a, b) { return Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]); }
+  // A LineString feature that crosses a tile boundary comes back from
+  // querySourceFeatures() as one SEPARATE feature object PER TILE it's
+  // currently loaded in (standard MapLibre/Mapbox GL vector-tile behavior —
+  // each tile clips its own fragment of the geometry, all sharing the same
+  // segment_id/properties). resolveFromToGeometry() used to read only
+  // feats[0], silently using whichever single tile's fragment happened to
+  // come back first — for any segment long enough to span multiple tiles
+  // (the common case for a real, non-trivial edge) that fragment covers
+  // only PART of the segment, so the rendered highlight just stopped
+  // partway with no error and no retry, reverting to the plain grey base
+  // line for the rest (2026-07-22 bugfix — reported as "only part of the
+  // route highlighted", occasional/racy because it depends on which tile
+  // happened to be loaded/ordered first). Stitches every returned fragment
+  // back into one continuous line by greedily chaining whichever remaining
+  // fragment's nearest endpoint is closest to the current chain's open end
+  // (reversing that fragment first if its far end is actually the closer
+  // one). Cheap — a real segment realistically spans a small handful of
+  // tiles, never dozens.
+  function mergeTileClippedFragments(feats) {
+    var frags = [];
+    for (var i = 0; i < feats.length; i++) {
+      var c = feats[i].geometry.coordinates;
+      if (c && c.length >= 2) frags.push(c);
+    }
+    if (!frags.length) return null;
+    if (frags.length === 1) return frags[0];
+    var chain = frags.shift();
+    while (frags.length) {
+      var chainStart = chain[0], chainEnd = chain[chain.length - 1];
+      var bestI = -1, bestScore = Infinity, bestAppendToEnd = true, bestReverse = false;
+      for (var fi = 0; fi < frags.length; fi++) {
+        var f = frags[fi], fStart = f[0], fEnd = f[f.length - 1];
+        var candidates = [
+          { score: coordDist(chainEnd, fStart), appendToEnd: true, reverse: false },
+          { score: coordDist(chainEnd, fEnd), appendToEnd: true, reverse: true },
+          { score: coordDist(chainStart, fEnd), appendToEnd: false, reverse: false },
+          { score: coordDist(chainStart, fStart), appendToEnd: false, reverse: true },
+        ];
+        for (var ci = 0; ci < candidates.length; ci++) {
+          if (candidates[ci].score < bestScore) {
+            bestScore = candidates[ci].score; bestI = fi;
+            bestAppendToEnd = candidates[ci].appendToEnd; bestReverse = candidates[ci].reverse;
+          }
+        }
+      }
+      var picked = frags.splice(bestI, 1)[0];
+      if (bestReverse) picked = picked.slice().reverse();
+      if (bestAppendToEnd) {
+        if (picked[0][0] === chain[chain.length - 1][0] && picked[0][1] === chain[chain.length - 1][1]) picked = picked.slice(1);
+        chain = chain.concat(picked);
+      } else {
+        if (picked[picked.length - 1][0] === chain[0][0] && picked[picked.length - 1][1] === chain[0][1]) picked = picked.slice(0, -1);
+        chain = picked.concat(chain);
+      }
+    }
+    return chain;
+  }
   function resolveFromToGeometry(edges) {
     var coordsOut = [];
     for (var i = 0; i < edges.length; i++) {
@@ -1378,11 +1447,11 @@
         sourceLayer: 'operators',
         filter: ['==', ['get', 'segment_id'], info.segment_id],
       });
-      if (!feats.length) {
+      var full = feats.length ? mergeTileClippedFragments(feats) : null;
+      if (!full) {
         if (edges[i].length_m !== undefined && edges[i].length_m <= MAX_BRIDGEABLE_GAP_M) continue; // bridge with a straight line to the next resolvable point, see comment above
         return null; // a real gap, not a negligible one — caller should retry, not silently draw a misleading shortcut
       }
-      var full = feats[0].geometry.coordinates;
       var slice = info.type === 'segment' ? full : full.slice(Math.min(info.from_index, info.to_index), Math.max(info.from_index, info.to_index) + 1);
       if (slice.length < 2) continue;
       // Orient this slice from `edges[i].from` -> `edges[i].to` — compare
@@ -1694,39 +1763,69 @@
   // Default state is a single neutral grey for every operator line (matches
   // railwayMain, the same "other rail" grey token the base railway-lines
   // layer already uses, for visual consistency) — real per-operator color
-  // only appears for whichever operator is currently hovered/locked, and it
-  // applies to that operator's FULL route (every feature sharing its
-  // `operators` key), not just the single feature under the cursor. This is
-  // deliberately NOT per-feature MapLibre feature-state (which would need
-  // setFeatureState called on every one of a busy operator's hundreds of
-  // features) — it's one shared paint EXPRESSION comparing `operators`
-  // against a plain JS variable, re-applied via setPaintProperty() whenever
-  // that variable changes.
-  function activeHighlightOperator() {
-    return lockedOperatorHighlight || hoveredOperatorHighlight;
-  }
+  // only appears for whichever operator(s) are currently hovered/locked, and
+  // it applies to that operator's FULL route (every feature sharing its
+  // `operators` key), not just the single feature under the cursor.
+  //
+  // 2026-07-22 rewrite — two reported bugs, same root cause. (1) Locked and
+  // hover used to collapse to one "winner" (locked always beat hover), so
+  // hovering a DIFFERENT operator while one was locked did nothing visible
+  // — "can't preview other routes while one is highlighted". (2) the
+  // highlighted color used to be a plain paint-property CASE expression on
+  // the SAME 'operator-lines' layer that every OTHER (grey) feature also
+  // renders on — a single layer draws its features in vector-tile order,
+  // not by paint value, so at a busy junction where several operators'
+  // lanes physically converge, an unrelated grey feature could paint OVER
+  // the highlighted one purely by draw order, making the highlight look
+  // "cut" right at that junction (reported near a popup at a Nottingham
+  // junction — a rendering-order issue, not something specific to that
+  // spot or to the popup itself).
+  //
+  // Fix for both: locked and hover are tracked and colored independently
+  // (never collapsed to one), and whichever operator(s) are active are
+  // drawn by 'operator-lines-active' + 'operator-lines-hover-glow' — two
+  // small layers FILTERED down to just the active operator(s) and added
+  // AFTER (so, on top of) the always-grey 'operator-lines' base layer,
+  // guaranteeing an active route always paints above every unrelated grey
+  // one regardless of tile draw order. The filter also means these two
+  // layers only ever hold a handful of features at a time, which is what
+  // makes a per-feature CASE expression cheap here even with line-blur on.
+  var NO_OPERATOR_FILTER = ['==', ['get', 'operators'], '__no_operator_selected__']; // matches nothing — blanks operator-lines-active/-hover-glow when nothing is active
+  var GLOW_OPACITY = 1; // was 0.5 — doubled per 2026-07-22 "can't see the glow" feedback, see GLOW_WIDTH_MULTIPLIER below too
+  var GLOW_WIDTH_MULTIPLIER = 4.8; // was 2.4 — doubled alongside opacity, same feedback
   function applyOperatorHighlightPaint() {
-    if (!map || !map.getLayer('operator-lines')) return;
+    if (!map || !map.getLayer('operator-lines') || !map.getLayer('operator-lines-active')) return;
     var theme = currentTheme();
     var rc = themeColors();
-    var active = activeHighlightOperator();
     var grey = rc.railwayMain;
-    if (!active) {
-      map.setPaintProperty('operator-lines', 'line-color', grey);
-      map.setPaintProperty('operator-lines-hover-glow', 'line-opacity', 0);
+    map.setPaintProperty('operator-lines', 'line-color', grey);
+
+    var locked = lockedOperatorHighlight;
+    var hovered = (hoveredOperatorHighlight && hoveredOperatorHighlight !== locked) ? hoveredOperatorHighlight : null;
+    if (!locked && !hovered) {
+      map.setFilter('operator-lines-active', NO_OPERATOR_FILTER);
+      map.setFilter('operator-lines-hover-glow', NO_OPERATOR_FILTER);
       return;
     }
+
     var lookup = buildOperatorColorLookup(theme);
-    var activeColor = lookup[active] || MULTI_OPERATOR_NEUTRAL[theme];
-    map.setPaintProperty('operator-lines', 'line-color',
-      ['case', ['==', ['get', 'operators'], active], activeColor, grey]);
-    // Glow is "same color" as the highlighted line per spec, not the old
-    // fixed white/dark neutral halo — see operator-lines-hover-glow's
-    // addLayer comment for the line-blur perf note (untested live, no
-    // browser in this environment).
-    map.setPaintProperty('operator-lines-hover-glow', 'line-color', activeColor);
-    map.setPaintProperty('operator-lines-hover-glow', 'line-opacity',
-      ['case', ['==', ['get', 'operators'], active], 0.5, 0]);
+    var lockedColor = locked ? (lookup[locked] || MULTI_OPERATOR_NEUTRAL[theme]) : null;
+    var hoveredColor = hovered ? (lookup[hovered] || MULTI_OPERATOR_NEUTRAL[theme]) : null;
+    var activeOps = locked && hovered ? [locked, hovered] : [locked || hovered];
+    var filter = ['in', ['get', 'operators'], ['literal', activeOps]];
+    // Only two possible active operators at once (locked + hover), so a
+    // plain two-way case is enough — no need for a lookup-driven match.
+    var colorExpr = (locked && hovered)
+      ? ['case', ['==', ['get', 'operators'], locked], lockedColor, hoveredColor]
+      : (lockedColor || hoveredColor);
+
+    map.setFilter('operator-lines-active', filter);
+    map.setPaintProperty('operator-lines-active', 'line-color', colorExpr);
+    // Glow is "same color" as the highlighted line per spec, not a fixed
+    // white/dark neutral halo.
+    map.setFilter('operator-lines-hover-glow', filter);
+    map.setPaintProperty('operator-lines-hover-glow', 'line-color', colorExpr);
+    map.setPaintProperty('operator-lines-hover-glow', 'line-opacity', GLOW_OPACITY);
   }
 
   // Zoom-interpolated per-lane width (thicker at low/zoomed-out, thinner at
@@ -1912,13 +2011,20 @@
     if (!map.getLayer('operator-lines-hover-glow')) {
       map.addLayer({
         id: 'operator-lines-hover-glow', type: 'line', source: 'operator-vector', 'source-layer': 'operators',
+        // Filtered down to (usually) zero features until applyOperatorHighlightPaint()
+        // sets a real filter below — see that function's comment for why
+        // this is filtered rather than just left at opacity 0 like before:
+        // it also keeps this off the render path entirely for the ~9,268
+        // un-highlighted features rather than paying for a blurred line on
+        // all of them at zero opacity.
+        filter: NO_OPERATOR_FILTER,
         layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
-          'line-color': MULTI_OPERATOR_NEUTRAL[currentTheme()], // placeholder until applyOperatorHighlightPaint() runs below — never visible since opacity starts at 0
-          'line-width': operatorLineWidthExpression(2.4),
+          'line-color': MULTI_OPERATOR_NEUTRAL[currentTheme()], // placeholder until applyOperatorHighlightPaint() runs below
+          'line-width': operatorLineWidthExpression(GLOW_WIDTH_MULTIPLIER),
           'line-blur': 3,
           'line-offset': operatorLineOffsetExpression(),
-          'line-opacity': 0,
+          'line-opacity': GLOW_OPACITY,
         },
       });
     }
@@ -1927,7 +2033,25 @@
         id: 'operator-lines', type: 'line', source: 'operator-vector', 'source-layer': 'operators',
         layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
-          'line-color': rc.railwayMain, // grey default — placeholder until applyOperatorHighlightPaint() runs below
+          'line-color': rc.railwayMain, // always flat grey now — see applyOperatorHighlightPaint()'s comment
+          'line-width': operatorLineWidthExpression(1),
+          'line-offset': operatorLineOffsetExpression(),
+        },
+      });
+    }
+    // Crisp, real-color line for whichever operator(s) are active, filtered
+    // down to just those features and added AFTER 'operator-lines' so it
+    // always draws on top of every grey feature regardless of tile order —
+    // see applyOperatorHighlightPaint()'s comment for the junction-coverage
+    // bug this fixes. Same width/offset as the base layer, only line-color
+    // (and the filter) are ever touched afterward.
+    if (!map.getLayer('operator-lines-active')) {
+      map.addLayer({
+        id: 'operator-lines-active', type: 'line', source: 'operator-vector', 'source-layer': 'operators',
+        filter: NO_OPERATOR_FILTER,
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: {
+          'line-color': rc.railwayMain, // placeholder, applyOperatorHighlightPaint() below sets the real color before anything can match the filter
           'line-width': operatorLineWidthExpression(1),
           'line-offset': operatorLineOffsetExpression(),
         },
@@ -2505,21 +2629,32 @@
     // to revisit after live testing, not a guess that could silently break.
     // selectOperator() (click-through to the operator panel) only fires on
     // the LOCK-ON transition, not lock-OFF — toggling a highlight off
-    // shouldn't also re-trigger a panel navigation. Gated to Database mode
-    // only, same as submitOperatorPick()'s guard on the search bar's
-    // Operator tab (2026-07-21 bugfix, same underlying cause: selectOperator()
-    // itself doesn't check mode, so calling it unconditionally from Live
-    // would reproduce that exact bug — the Database-style operator card
-    // rendering while the Live tab is still active). The highlight itself
-    // (color-reveal on the map) is NOT mode-gated — operator-lines renders
-    // in both modes identically, only the PANEL navigation is Database-only.
+    // shouldn't also re-trigger a panel navigation.
+    // 2026-07-22: this used to also gate selectOperator() to Database mode
+    // only (same guard as submitOperatorPick()'s Operator search tab),
+    // because calling it unconditionally from Live reproduced a real bug —
+    // the Database-style operator card rendering while the Live tab was
+    // still visually active. Reported behavior with that gate in place:
+    // clicking a route while Live had a From/To search open "doesn't have
+    // any reaction" (the map highlight still applied, but nothing else
+    // did) — so instead of leaving Live's panel alone, selecting a route
+    // now always jumps INTO Database mode first (a no-op if already
+    // there), which resolves the original mismatch a different way: there's
+    // no more Live/Database inconsistency to guard against, because the
+    // mode itself follows the selection. The highlight itself (color-reveal
+    // on the map) was never mode-gated — operator-lines renders in both
+    // modes identically, only the panel navigation + mode switch happen
+    // here.
     map.on('click', 'operator-lines-hit', function (e) {
       if (!e.features.length) return;
       var op = e.features[0].properties.operators;
       var wasLocked = lockedOperatorHighlight === op;
       lockedOperatorHighlight = wasLocked ? null : op;
       applyOperatorHighlightPaint();
-      if (!wasLocked && mode === 'database') selectOperator(op);
+      if (!wasLocked) {
+        if (mode !== 'database') setMode('database');
+        selectOperator(op);
+      }
     });
     // Clears the lock on an empty-map-space click. The layer-specific click
     // above already fires for on-route clicks (registered first, so it
@@ -3417,7 +3552,7 @@
     if (fromCoord && toCoord) {
       var bounds = new maplibregl.LngLatBounds(fromCoord, fromCoord);
       bounds.extend(toCoord);
-      map.fitBounds(bounds, { padding: fromToFitPadding(120), duration: 800 });
+      map.fitBounds(bounds, { padding: FROMTO_FIT_PADDING, duration: 800 });
       setSelectedStationPoints([{ lon: from.lon, lat: from.lat }, { lon: to.lon, lat: to.lat }]);
     } else {
       setSelectedStationPoints([]);
@@ -3451,7 +3586,7 @@
           if (!pathBounds) pathBounds = new maplibregl.LngLatBounds(c, c); else pathBounds.extend(c);
         });
       });
-      if (pathBounds) map.fitBounds(pathBounds, { padding: fromToFitPadding(120), duration: 800 });
+      if (pathBounds) map.fitBounds(pathBounds, { padding: FROMTO_FIT_PADDING, duration: 800 });
 
       // Bugfix, found via a headless check on a real long route (KGX->EDB,
       // 93 edges): a single map.once('idle', ...) is NOT reliable here.
@@ -3977,20 +4112,25 @@
     return { left: regionJumpEl.getBoundingClientRect().left, top: 0, right: 0, bottom: 0 };
   }
 
-  // Same sidebar-offset reasoning as regionJumpFlyToPadding() above, but for
-  // selectFromTo()'s fitBounds() calls — those used a flat padding on all
-  // four sides, which doesn't account for the sidebar covering the map's
-  // left edge. A from/to pair whose straight-line (or resolved-path) bounds
-  // span most of the window then lands with one endpoint nearly hidden
-  // behind the sidebar and the other pinned right up against the opposite
-  // edge (reported: Solihull/Leamington Spa fromto search — both endpoints
-  // "almost invisible" against the panel/viewport edges). `base` is also the
-  // requested "zoom out a bit" breathing room, applied on every side
-  // including the sidebar-adjusted left.
-  function fromToFitPadding(base) {
-    if (window.innerWidth <= 768) return base;
-    return { left: regionJumpEl.getBoundingClientRect().left + base, top: base, right: base, bottom: base };
-  }
+  // 2026-07-22 bugfix (was fromToFitPadding(), which added ITS OWN sidebar-
+  // width left offset on top of this): map.transform.padding is STICKY, not
+  // a one-shot argument — jumpTo/flyTo's padding option (see
+  // regionJumpFlyToPadding() above, and the matching map.jumpTo() at init)
+  // sets it PERSISTENTLY, and MapLibre's renderer already keeps whatever
+  // `center` a later camera call computes anchored at the middle of that
+  // padded (sidebar-clear) area on every frame from then on — confirmed by
+  // reading maplibre-gl's own Transform#centerPoint / EdgeInsets#getCenter
+  // source (no browser available here to verify live, so this was checked
+  // against the library source directly instead). fitBounds()'s own
+  // `padding` option is a SEPARATE, ADDITIONAL amount layered on top of
+  // that persistent padding for ITS zoom-fit math, not a replacement for
+  // it — passing our own sidebar-width value there double-counted the
+  // sidebar (once via the already-active ambient padding, again via this
+  // option), which is what was pushing fromto results off-center to the
+  // right. A flat, symmetric number here is genuinely just the "zoom out a
+  // bit more" breathing room the sidebar offset itself doesn't need to be
+  // part of.
+  var FROMTO_FIT_PADDING = 100;
   var regionJumpBtns = document.querySelectorAll('#region-jump button[data-lng]');
   Array.prototype.forEach.call(regionJumpBtns, function (btn) {
     btn.addEventListener('click', function () {
@@ -4116,14 +4256,14 @@
     if (mobile && jumpVisible) {
       regionJumpEl.style.top = (sidebarEl.getBoundingClientRect().bottom + 10) + 'px';
     } else {
-      regionJumpEl.style.top = ''; // desktop, or hidden in Database mode — CSS default applies
+      regionJumpEl.style.top = ''; // desktop — CSS default applies. (jumpVisible is now effectively always true — region-jump used to be Database-mode-hidden via CSS, no longer is, per 2026-07-22 — kept as a guard in case a future mode/breakpoint hides it again)
     }
     if (jumpVisible) {
       controlClusterEl.style.top = (regionJumpEl.getBoundingClientRect().bottom + 10) + 'px';
     } else if (mobile) {
       controlClusterEl.style.top = (sidebarEl.getBoundingClientRect().bottom + 10) + 'px';
     } else {
-      controlClusterEl.style.top = ''; // desktop, region-jump hidden — CSS default applies
+      controlClusterEl.style.top = ''; // desktop — CSS default applies
     }
   }
   new ResizeObserver(positionFloatingClusters).observe(sidebarEl);
