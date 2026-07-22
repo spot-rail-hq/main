@@ -1827,6 +1827,23 @@
     map.setPaintProperty('operator-lines-hover-glow', 'line-color', colorExpr);
     map.setPaintProperty('operator-lines-hover-glow', 'line-opacity', GLOW_OPACITY);
   }
+  // 2026-07-22: selecting a station or a From/To pair (or a different
+  // curated route) used to leave a previously locked/hovered operator
+  // highlight sitting on the map untouched — reported as "I select a
+  // route, then click a station or search a destination, and the route is
+  // still highlighted". Those selections don't own the operator-highlight
+  // state at all (only the click/hover handlers on operator-lines-hit and
+  // the region-chip click do), so nothing was ever clearing it on their
+  // behalf. Called from selectStation()/selectFromTo()/selectRoute()/
+  // clearSelection() — everywhere the sidebar moves on to a DIFFERENT kind
+  // of selection that isn't itself an operator pick. Cheap no-op guard so
+  // it doesn't force a repaint when there was nothing to clear.
+  function clearOperatorHighlight() {
+    if (!lockedOperatorHighlight && !hoveredOperatorHighlight) return;
+    lockedOperatorHighlight = null;
+    hoveredOperatorHighlight = null;
+    applyOperatorHighlightPaint();
+  }
 
   // Zoom-interpolated per-lane width (thicker at low/zoomed-out, thinner at
   // high/zoomed-in, per the Prompt 2 scoping — illustrative stops, exact
@@ -3507,6 +3524,7 @@
     if (mode === 'live') loadDepartureBoard(crs, mySeq);
     var coords = coordsForCrs(crs);
     setSelectedStationPoints(coords ? [{ lon: coords[0], lat: coords[1] }] : []);
+    clearOperatorHighlight();
     pushHistoryForCurrentState();
   }
 
@@ -3555,6 +3573,7 @@
     // either the new pair's real path replaces it once resolved, or (no
     // route found) it just stays hidden, never a stale previous route.
     clearRoutePolyline();
+    clearOperatorHighlight(); // a locked operator-lines highlight from a previous Database selection doesn't belong to this fromto search either — see clearOperatorHighlight()'s comment
     expandSidebarIfCollapsed();
     animateSidebarTransition();
     loadDepartureBoard(from.crs, mySeq, to.crs);
@@ -3638,6 +3657,7 @@
     renderSelectionChrome();
     animateSidebarTransition();
     setSelectedStationPoints([]);
+    clearOperatorHighlight();
     pushHistoryForCurrentState();
   }
   document.getElementById('sb-clear-btn').addEventListener('click', clearSelection);
@@ -3657,6 +3677,7 @@
     animateSidebarTransition();
     setSelectedStationPoints([]); // this selection type draws its own polyline, not station-marker dots
     drawRoutePolyline(id);
+    clearOperatorHighlight();
     pushHistoryForCurrentState();
   }
   function selectOperator(identifier) {
