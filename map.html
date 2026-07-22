@@ -3417,7 +3417,7 @@
     if (fromCoord && toCoord) {
       var bounds = new maplibregl.LngLatBounds(fromCoord, fromCoord);
       bounds.extend(toCoord);
-      map.fitBounds(bounds, { padding: 80, duration: 800 });
+      map.fitBounds(bounds, { padding: fromToFitPadding(120), duration: 800 });
       setSelectedStationPoints([{ lon: from.lon, lat: from.lat }, { lon: to.lon, lat: to.lat }]);
     } else {
       setSelectedStationPoints([]);
@@ -3451,7 +3451,7 @@
           if (!pathBounds) pathBounds = new maplibregl.LngLatBounds(c, c); else pathBounds.extend(c);
         });
       });
-      if (pathBounds) map.fitBounds(pathBounds, { padding: 80, duration: 800 });
+      if (pathBounds) map.fitBounds(pathBounds, { padding: fromToFitPadding(120), duration: 800 });
 
       // Bugfix, found via a headless check on a real long route (KGX->EDB,
       // 93 edges): a single map.once('idle', ...) is NOT reliable here.
@@ -3975,6 +3975,21 @@
   function regionJumpFlyToPadding() {
     if (window.innerWidth <= 768) return undefined;
     return { left: regionJumpEl.getBoundingClientRect().left, top: 0, right: 0, bottom: 0 };
+  }
+
+  // Same sidebar-offset reasoning as regionJumpFlyToPadding() above, but for
+  // selectFromTo()'s fitBounds() calls — those used a flat padding on all
+  // four sides, which doesn't account for the sidebar covering the map's
+  // left edge. A from/to pair whose straight-line (or resolved-path) bounds
+  // span most of the window then lands with one endpoint nearly hidden
+  // behind the sidebar and the other pinned right up against the opposite
+  // edge (reported: Solihull/Leamington Spa fromto search — both endpoints
+  // "almost invisible" against the panel/viewport edges). `base` is also the
+  // requested "zoom out a bit" breathing room, applied on every side
+  // including the sidebar-adjusted left.
+  function fromToFitPadding(base) {
+    if (window.innerWidth <= 768) return base;
+    return { left: regionJumpEl.getBoundingClientRect().left + base, top: base, right: base, bottom: base };
   }
   var regionJumpBtns = document.querySelectorAll('#region-jump button[data-lng]');
   Array.prototype.forEach.call(regionJumpBtns, function (btn) {
