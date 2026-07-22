@@ -1226,15 +1226,18 @@
     operatorColorsData = d;
     operatorColorLookupCache = {};
     // Same late-arrival re-apply pattern as every other runtime paint
-    // property in this file — if the operator-lines layer already exists
-    // (map loaded faster than this fetch), refresh it now instead of
-    // leaving it stuck on the neutral fallback. Goes through
+    // property in this file — if the operator-lines layers already exist
+    // (map loaded faster than this fetch), refresh them now instead of
+    // leaving them stuck on the neutral fallback. Goes through
     // applyOperatorHighlightPaint() (Phase 2), NOT operatorLineColorExpression()
     // directly — the grey-default/highlight-on-hover state lives in that
     // function now; calling operatorLineColorExpression() straight here
     // would have unconditionally recolored every line the moment this JSON
     // arrived, undoing the grey default the instant real colors loaded.
-    if (map && map.isStyleLoaded() && map.getLayer('operator-lines')) {
+    // computeRouteTierFilters() is the equivalent late-arrival re-apply for
+    // the route CATEGORY (reveal-tier) filters, which this same JSON feeds.
+    computeRouteTierFilters();
+    if (map && map.isStyleLoaded() && map.getLayer('operator-lines-trunk')) {
       applyOperatorHighlightPaint();
     }
   });
@@ -1792,13 +1795,81 @@
   // makes a per-feature CASE expression cheap here even with line-blur on.
   var NO_OPERATOR_FILTER = ['==', ['get', 'operators'], '__no_operator_selected__']; // matches nothing — blanks operator-lines-active/-hover-glow when nothing is active
   var GLOW_OPACITY = 1; // was 0.5 — doubled per 2026-07-22 "can't see the glow" feedback, see GLOW_WIDTH_MULTIPLIER below too
-  var GLOW_WIDTH_MULTIPLIER = 3.6; // was 2.4, then 4.8 (doubled) — tuned down to 3.6 per follow-up feedback
+  var GLOW_WIDTH_MULTIPLIER = 3.6 * 3; // was 2.4, then 4.8, then 3.6 — 3x'd again per follow-up "3x the glow" feedback
+  var ROUTE_WIDTH_MULTIPLIER = 3; // was 1 — "make the routes weight...to 3" feedback (2026-07-22)
+
+  // ── Route reveal tiers (2026-07-22) ─────────────────────────────────────
+  // Same "reduce network clutter at low zoom" goal as STATION_TIERS above,
+  // but for operator-lines — that layer used to render its full ~9,268
+  // segments from the very first "All UK" frame, every category at once.
+  // Reuses operator-colors.json's EXISTING toc/metro/tfl_lines/heritage
+  // category buckets (already fetched for coloring) rather than inventing
+  // a separate importance dataset — and it turns out those categories
+  // already group geographically the way "same-level networks should
+  // appear together" asks for: tfl_lines is ALL London Underground +
+  // Overground and nothing else, so revealing that whole bucket at once
+  // really does mean "all of London's Tube/Overground appears together".
+  // metro's other entries (Manchester Metrolink, Tyne & Wear Metro, West
+  // Midlands Metro, ...) are each their own single-city system too, just
+  // larger/less dense than TfL's network, so they get an earlier tier.
+  //   trunk      — real national TOC operators (31 keys) — the backbone,
+  //                visible from the start, unchanged from before.
+  //   regional   — metro/tram/subway systems (minus HYPERLOCAL_METRO_EXTRA
+  //                below) + heritage lines.
+  //   hyperlocal — tfl_lines' 20 keys + HYPERLOCAL_METRO_EXTRA.
+  // HYPERLOCAL_METRO_EXTRA is the extensibility point requested explicitly:
+  // "TfL is just a sample... in case we include other smaller railways
+  // like Glasgow subway, we can apply the same rule" — Glasgow Subway is
+  // tiny and dense enough (one of the smallest metro systems in the world)
+  // to deserve TfL's treatment rather than sharing a tier with much larger
+  // systems like Metrolink, even though operator-colors.json currently
+  // files it under the same 'metro' bucket. Add more operator-colors.json
+  // metro-bucket keys here as more small city systems come up — that's the
+  // whole point of keeping this an explicit, manually-curated list rather
+  // than something inferred from data we don't have (no real network-extent
+  // property exists per system).
+  var HYPERLOCAL_METRO_EXTRA = ['Glasgow Subway'];
+  var ROUTE_TIERS = [
+    { id: 'trunk', minzoom: undefined },
+    { id: 'regional', minzoom: 7.5 },
+    { id: 'hyperlocal', minzoom: 10 },
+  ];
+  // Default: everything is 'trunk' (i.e. the old "show everything, always"
+  // behavior) until operatorColorsData has loaded and computeRouteTierFilters()
+  // below can build the real category filters — graceful degrade on a slow/
+  // failed fetch rather than hiding regional/hyperlocal networks by default.
+  var routeTierFilterById = { trunk: ['==', 1, 1], regional: NO_OPERATOR_FILTER, hyperlocal: NO_OPERATOR_FILTER };
+  function computeRouteTierFilters() {
+    if (!operatorColorsData) return;
+    var hyperlocalKeys = Object.keys(operatorColorsData.tfl_lines || {}).concat(HYPERLOCAL_METRO_EXTRA);
+    var regionalKeys = Object.keys(operatorColorsData.metro || {})
+      .filter(function (k) { return HYPERLOCAL_METRO_EXTRA.indexOf(k) === -1; })
+      .concat(['Heritage']);
+    var regionalFilter = ['in', ['get', 'operators'], ['literal', regionalKeys]];
+    var hyperlocalFilter = ['in', ['get', 'operators'], ['literal', hyperlocalKeys]];
+    routeTierFilterById = {
+      // Anything NOT recognized as regional/hyperlocal defaults to trunk —
+      // a real TOC key, or (defensively) an unrecognized future key, both
+      // stay always-visible rather than risk silently hiding an uncategorized
+      // segment.
+      trunk: ['!', ['any', regionalFilter, hyperlocalFilter]],
+      regional: regionalFilter,
+      hyperlocal: hyperlocalFilter,
+    };
+    if (map) {
+      ROUTE_TIERS.forEach(function (t) {
+        if (map.getLayer('operator-lines-' + t.id)) map.setFilter('operator-lines-' + t.id, routeTierFilterById[t.id]);
+        if (map.getLayer('operator-lines-hit-' + t.id)) map.setFilter('operator-lines-hit-' + t.id, routeTierFilterById[t.id]);
+      });
+    }
+  }
+
   function applyOperatorHighlightPaint() {
-    if (!map || !map.getLayer('operator-lines') || !map.getLayer('operator-lines-active')) return;
+    if (!map || !map.getLayer('operator-lines-trunk') || !map.getLayer('operator-lines-active')) return;
     var theme = currentTheme();
     var rc = themeColors();
     var grey = rc.railwayMain;
-    map.setPaintProperty('operator-lines', 'line-color', grey);
+    ROUTE_TIERS.forEach(function (t) { map.setPaintProperty('operator-lines-' + t.id, 'line-color', grey); });
 
     var locked = lockedOperatorHighlight;
     var hovered = (hoveredOperatorHighlight && hoveredOperatorHighlight !== locked) ? hoveredOperatorHighlight : null;
@@ -2045,23 +2116,37 @@
         },
       });
     }
-    if (!map.getLayer('operator-lines')) {
-      map.addLayer({
-        id: 'operator-lines', type: 'line', source: 'operator-vector', 'source-layer': 'operators',
+    // One grey layer PER route tier (trunk/regional/hyperlocal — see
+    // ROUTE_TIERS's comment) instead of a single always-visible
+    // 'operator-lines' layer, so each category gets its own minzoom.
+    // Filtered by routeTierFilterById, which starts as "trunk shows
+    // everything, regional/hyperlocal show nothing" until
+    // computeRouteTierFilters() (called from the operator-colors.json
+    // loader, and again below in case that already resolved before this
+    // first run) replaces it with the real category split.
+    ROUTE_TIERS.forEach(function (t) {
+      addLayerOnce({
+        id: 'operator-lines-' + t.id, type: 'line', source: 'operator-vector', 'source-layer': 'operators',
+        filter: routeTierFilterById[t.id],
         layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
           'line-color': rc.railwayMain, // always flat grey now — see applyOperatorHighlightPaint()'s comment
-          'line-width': operatorLineWidthExpression(1),
+          'line-width': operatorLineWidthExpression(ROUTE_WIDTH_MULTIPLIER),
           'line-offset': operatorLineOffsetExpression(),
         },
-      });
-    }
+      }, t.minzoom);
+    });
     // Crisp, real-color line for whichever operator(s) are active, filtered
-    // down to just those features and added AFTER 'operator-lines' so it
-    // always draws on top of every grey feature regardless of tile order —
-    // see applyOperatorHighlightPaint()'s comment for the junction-coverage
-    // bug this fixes. Same width/offset as the base layer, only line-color
-    // (and the filter) are ever touched afterward.
+    // down to just those features and added AFTER every 'operator-lines-*'
+    // tier layer so it always draws on top of every grey feature regardless
+    // of tile order — see applyOperatorHighlightPaint()'s comment for the
+    // junction-coverage bug this fixes. Deliberately NOT split by route
+    // tier like the grey layers above (no minzoom of its own) — once a
+    // highlight is locked, keeping it visible across the whole zoom range
+    // reads as "show me where this route goes," not a bug; only its own
+    // grey/context layer disappearing below its tier's minzoom is tier-
+    // gated. Same width/offset as the base layers, only line-color (and
+    // the filter) are ever touched afterward.
     if (!map.getLayer('operator-lines-active')) {
       map.addLayer({
         id: 'operator-lines-active', type: 'line', source: 'operator-vector', 'source-layer': 'operators',
@@ -2069,7 +2154,7 @@
         layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
           'line-color': rc.railwayMain, // placeholder, applyOperatorHighlightPaint() below sets the real color before anything can match the filter
-          'line-width': operatorLineWidthExpression(1),
+          'line-width': operatorLineWidthExpression(ROUTE_WIDTH_MULTIPLIER),
           'line-offset': operatorLineOffsetExpression(),
         },
       });
@@ -2083,19 +2168,23 @@
     applyOperatorHighlightPaint();
     // Invisible, generously-wide hit layer over the exact same (offset)
     // geometry as the visible line above — hover/click are wired against
-    // THIS layer, not 'operator-lines' itself, since the real line only
-    // renders 1.3-2.6px wide (see operatorLineWidthExpression) and MapLibre
+    // THIS layer, not 'operator-lines-*' itself, since the real line only
+    // renders a few px wide (see operatorLineWidthExpression) and MapLibre
     // hit-tests against actual rendered width, not some built-in tolerance.
     // A precise cursor sitting a couple of px off the thin line otherwise
     // never registers as a hover at all, which is what was producing the
     // "grab cursor even directly over a route" symptom. Same source +
-    // source-layer + promoteId as 'operator-lines', so feature-state set via
-    // a feature id read from THIS layer still correctly drives the visible
-    // layer's own hover-based paint (line-width bump, hover-glow opacity) —
-    // feature-state is keyed by source/id, not by which layer queried it.
-    if (!map.getLayer('operator-lines-hit')) {
-      map.addLayer({
-        id: 'operator-lines-hit', type: 'line', source: 'operator-vector', 'source-layer': 'operators',
+    // source-layer + promoteId as 'operator-lines-*', so feature-state set
+    // via a feature id read from THIS layer still correctly drives the
+    // visible layer's own hover-based paint — feature-state is keyed by
+    // source/id, not by which layer queried it. One per route tier too, and
+    // with the SAME minzoom as its matching grey layer — otherwise a
+    // not-yet-revealed regional/hyperlocal line would still register clicks
+    // in empty-looking space, which is worse than just not being visible.
+    ROUTE_TIERS.forEach(function (t) {
+      addLayerOnce({
+        id: 'operator-lines-hit-' + t.id, type: 'line', source: 'operator-vector', 'source-layer': 'operators',
+        filter: routeTierFilterById[t.id],
         layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
           'line-color': '#000000',
@@ -2103,8 +2192,8 @@
           'line-width': 18,
           'line-offset': operatorLineOffsetExpression(),
         },
-      });
-    }
+      }, t.minzoom);
+    });
     if (!operatorLineInteractionsWired) { wireOperatorLineInteractions(); operatorLineInteractionsWired = true; }
     if (!bearingIconWired) { wireBearingIcon(); bearingIconWired = true; }
 
@@ -2241,9 +2330,29 @@
       'circle-opacity': 0,
     };
   }
-  var MAJOR_FILTER = ['==', ['get', 'tier'], 'major'];
-  var MID_FILTER = ['==', ['get', 'tier'], 'mid'];
-  var MINOR_FILTER = ['==', ['get', 'tier'], 'minor'];
+  // 2026-07-22 rewrite (was 3 tiers: major/mid/minor by platform count only)
+  // — see computeStationTiers() below for why platform count alone isn't a
+  // great proxy for "should this reveal early." STATION_TIERS is the single
+  // ordered source of truth every station-layer-adding loop reads from:
+  // earliest-revealing tier first, 'major' always has minzoom undefined
+  // (always visible, unchanged from before).
+  var STATION_TIERS = [
+    { id: 'major', minzoom: undefined },
+    { id: 'large', minzoom: 6 },
+    { id: 'medium', minzoom: 7.5 },
+    { id: 'small', minzoom: 9 },
+    { id: 'dense', minzoom: 11 },
+  ];
+  function stationTierFilter(tierId) { return ['==', ['get', 'tier'], tierId]; }
+  // Shared by both the station tiers and the route category tiers below —
+  // conditionally includes minzoom only when defined (MapLibre treats an
+  // explicit minzoom:undefined the same as omitting it, but building the
+  // object without the key at all is clearer to read than relying on that).
+  function addLayerOnce(def, minzoom, beforeId) {
+    if (map.getLayer(def.id)) return;
+    if (minzoom !== undefined) def.minzoom = minzoom;
+    map.addLayer(def, beforeId);
+  }
   // Invisible, generously-sized hit circle sitting on top of each visible
   // tier's real dot (2.8-4.0px radius, see stationsCirclePaint) — same
   // "too small to hit-test precisely" problem as the thin route lines
@@ -2281,66 +2390,34 @@
     } else {
       map.getSource('stations').setData(gj);
     }
-    // Hover-glow layers added BEFORE (so they stack below) their matching
-    // visible dot layer just below — same filter/minzoom pairing per tier
-    // as the dots themselves, so this halo only renders/evaluates within
-    // the same zoom range its own tier's dot is even visible in.
-    if (!map.getLayer('stations-hover-glow-major')) {
-      map.addLayer({ id: 'stations-hover-glow-major', type: 'circle', source: 'stations', filter: MAJOR_FILTER, paint: stationsHoverGlowPaint() });
-    }
-    if (!map.getLayer('stations-hover-glow-mid')) {
-      map.addLayer({ id: 'stations-hover-glow-mid', type: 'circle', source: 'stations', filter: MID_FILTER, minzoom: MID_STATION_MINZOOM, paint: stationsHoverGlowPaint() });
-    }
-    if (!map.getLayer('stations-hover-glow-minor')) {
-      map.addLayer({ id: 'stations-hover-glow-minor', type: 'circle', source: 'stations', filter: MINOR_FILTER, minzoom: MINOR_STATION_MINZOOM, paint: stationsHoverGlowPaint() });
-    }
-    if (!map.getLayer('stations-circle-major')) {
-      map.addLayer({ id: 'stations-circle-major', type: 'circle', source: 'stations', filter: MAJOR_FILTER, paint: stationsCirclePaint() });
-    }
-    // minzoom is a plain per-layer property here (not a zoom expression
-    // inside paint) — MapLibre culls the whole layer below it natively, so
-    // this is also the performance-friendly way to keep the mid/minor
-    // points out of both rendering AND hit-testing below their thresholds.
-    if (!map.getLayer('stations-circle-mid')) {
-      map.addLayer({ id: 'stations-circle-mid', type: 'circle', source: 'stations', filter: MID_FILTER, minzoom: MID_STATION_MINZOOM, paint: stationsCirclePaint() });
-    }
-    if (!map.getLayer('stations-circle-minor')) {
-      map.addLayer({ id: 'stations-circle-minor', type: 'circle', source: 'stations', filter: MINOR_FILTER, minzoom: MINOR_STATION_MINZOOM, paint: stationsCirclePaint() });
-    }
-    if (!map.getLayer('stations-circle-major-hit')) {
-      map.addLayer({ id: 'stations-circle-major-hit', type: 'circle', source: 'stations', filter: MAJOR_FILTER, paint: stationsHitPaint() });
-    }
-    if (!map.getLayer('stations-circle-mid-hit')) {
-      map.addLayer({ id: 'stations-circle-mid-hit', type: 'circle', source: 'stations', filter: MID_FILTER, minzoom: MID_STATION_MINZOOM, paint: stationsHitPaint() });
-    }
-    if (!map.getLayer('stations-circle-minor-hit')) {
-      map.addLayer({ id: 'stations-circle-minor-hit', type: 'circle', source: 'stations', filter: MINOR_FILTER, minzoom: MINOR_STATION_MINZOOM, paint: stationsHitPaint() });
-    }
-    // Major labels share minzoom with mid (the earliest-appearing non-major
-    // tier) rather than a flat value of their own — otherwise, once mid dots
-    // start appearing at MID_STATION_MINZOOM, you'd see large unlabelled
-    // major dots next to already-labelled mid ones, which reads backwards.
-    if (!map.getLayer('stations-label-major')) {
-      map.addLayer({
-        id: 'stations-label-major', type: 'symbol', source: 'stations', minzoom: MID_STATION_MINZOOM, filter: MAJOR_FILTER,
+    // 2026-07-22: was 3 hand-written tiers (major/mid/minor), now driven by
+    // STATION_TIERS so adding/retuning a tier is a one-line config change
+    // instead of four new addLayer blocks. Hover-glow layers are still added
+    // BEFORE (so they stack below) their matching visible dot layer, same
+    // filter/minzoom pairing per tier as the dots themselves, so each halo
+    // only renders/evaluates within the same zoom range its own tier's dot
+    // is even visible in.
+    STATION_TIERS.forEach(function (t) {
+      var filter = stationTierFilter(t.id);
+      addLayerOnce({ id: 'stations-hover-glow-' + t.id, type: 'circle', source: 'stations', filter: filter, paint: stationsHoverGlowPaint() }, t.minzoom);
+      // minzoom is a plain per-layer property here (not a zoom expression
+      // inside paint) — MapLibre culls the whole layer below it natively,
+      // so this is also the performance-friendly way to keep a not-yet-
+      // revealed tier out of both rendering AND hit-testing.
+      addLayerOnce({ id: 'stations-circle-' + t.id, type: 'circle', source: 'stations', filter: filter, paint: stationsCirclePaint() }, t.minzoom);
+      addLayerOnce({ id: 'stations-circle-' + t.id + '-hit', type: 'circle', source: 'stations', filter: filter, paint: stationsHitPaint() }, t.minzoom);
+      // Major's label shares the earliest non-major tier's minzoom rather
+      // than staying unconditionally visible like its own dot — otherwise
+      // you'd see large unlabelled major dots at the very first frame,
+      // before any other tier (or label) exists yet to give the view
+      // context. Every other tier's label just matches its own dot.
+      var labelMinzoom = t.minzoom !== undefined ? t.minzoom : STATION_TIERS[1].minzoom;
+      addLayerOnce({
+        id: 'stations-label-' + t.id, type: 'symbol', source: 'stations', filter: filter,
         layout: { 'text-field': ['get', 'name'], 'text-size': 10, 'text-anchor': 'top', 'text-offset': [0, 0.6] },
         paint: { 'text-color': c.labelColor, 'text-halo-color': c.labelHalo, 'text-halo-width': 1 },
-      });
-    }
-    if (!map.getLayer('stations-label-mid')) {
-      map.addLayer({
-        id: 'stations-label-mid', type: 'symbol', source: 'stations', minzoom: MID_STATION_MINZOOM, filter: MID_FILTER,
-        layout: { 'text-field': ['get', 'name'], 'text-size': 10, 'text-anchor': 'top', 'text-offset': [0, 0.6] },
-        paint: { 'text-color': c.labelColor, 'text-halo-color': c.labelHalo, 'text-halo-width': 1 },
-      });
-    }
-    if (!map.getLayer('stations-label-minor')) {
-      map.addLayer({
-        id: 'stations-label-minor', type: 'symbol', source: 'stations', minzoom: MINOR_STATION_MINZOOM, filter: MINOR_FILTER,
-        layout: { 'text-field': ['get', 'name'], 'text-size': 10, 'text-anchor': 'top', 'text-offset': [0, 0.6] },
-        paint: { 'text-color': c.labelColor, 'text-halo-color': c.labelHalo, 'text-halo-width': 1 },
-      });
-    }
+      }, labelMinzoom);
+    });
     if (!stationInteractionsWired) { wireStationInteractions(); stationInteractionsWired = true; }
     // This can run AFTER the selected-marker overlay already exists (see
     // ensureSelectedMarkersOnTop's comment) — re-assert it's still on top
@@ -2349,30 +2426,87 @@
   }
 
   // ── Full station marker set (2,637 stations, not just the curated ~50) ───
-  // Three tiers, by WHEN they appear (size, see above) and WHAT counts as
-  // each tier:
-  //   major — the exact CRS set /data/stations.geojson has always curated
-  //           (see majorCrsPromise below) — this app's existing "top
-  //           stations" definition, not fetched into stationsData directly
-  //           any more.
-  //   mid   — everything else with stations-content.json's platforms >= 4
-  //           (MID_TIER_MIN_PLATFORMS below). Chosen after checking the
-  //           real distribution live: platform counts are heavily skewed
-  //           toward 1-2 platform stations, so a "6+" guess (the original
-  //           ask) only captured 55 stations against an expected ~450-500;
-  //           4+ was the user's pick after seeing the full breakdown
-  //           (~265 stations). Note 498/2,604 stations (19%) have no
-  //           platforms data at all and default to minor regardless of
-  //           threshold — a real coverage gap, not a tiering bug.
-  //   minor — everything remaining (~2,319 stations).
-  var MID_STATION_MINZOOM = 7;
-  // 2026-07-14: was 11 (matching flyToAndSelectStation's own zoom:11) —
-  // user feedback after seeing it live was that minor stations stayed
-  // hidden for too long while zooming in; lowered to 8, then split into a
-  // mid/minor pair (7/10) once "same size as major, just later" alone still
-  // felt crowded — see the three-tier comment above.
-  var MINOR_STATION_MINZOOM = 10;
-  var MID_TIER_MIN_PLATFORMS = 4;
+  // 2026-07-22 rewrite — was 3 tiers (major/mid/minor) keyed purely on
+  // stations-content.json's platforms field. Real-world check on the "why"
+  // this needed to change: Solihull (a real, standalone town centre
+  // station) has only 2 platforms, the same as Honor Oak Park (one of ~45
+  // closely-spaced inner-London stations within 5km of each other). Pure
+  // platform count put both in the exact same reveal tier — but a station
+  // that's the ONLY one for miles is a much more useful thing to show
+  // early than one of dozens of redundant options in a dense area, and
+  // platform count alone can't tell those two cases apart (54.5% of ALL UK
+  // stations have exactly 2 platforms, so platform count barely
+  // discriminates at all within the bulk of the network). Now blends
+  // platform count with LOCAL DENSITY — how many other stations sit within
+  // 5km — computed purely from lat/lon we already have client-side, no new
+  // data file. See computeStationTiers() below for the actual scoring; this
+  // comment covers the "why," not the "how."
+  //
+  // 'major' is unchanged: the exact CRS set /data/stations.geojson has
+  // always curated (see majorCrsPromise below), always visible regardless
+  // of score. Every other station is ranked and split into 4 tiers by
+  // RANK (not a fixed score threshold), so the reveal proportions stay
+  // stable even as the underlying station count/data drifts over time —
+  // target sizes below were picked to roughly mirror the old plan's
+  // cadence (a small, exclusive top tier down to a long-tail last one),
+  // not an even four-way split.
+  var STATION_TIER_TARGET_COUNTS = { large: 90, medium: 225, small: 1790 }; // 'dense' (the last tier) takes whatever's left
+  // Isolation radius + how strongly it discounts platform count when
+  // ranking — e.g. Solihull (2 platforms, 8 neighbours within 5km) scores
+  // 2 - 8*0.15 = 0.8, ranking well ABOVE Streatham Common (4 platforms, 27
+  // neighbours: 4 - 27*0.15 = -0.05) despite fewer platforms, and far above
+  // Honor Oak Park (2 platforms, 47 neighbours: 2 - 47*0.15 = -5.05) — spot-
+  // checked against real data before picking 0.15, not guessed.
+  var STATION_DENSITY_RADIUS_KM = 5;
+  var STATION_DENSITY_WEIGHT = 0.15;
+  // A station with no platforms data at all (~20% of the network) no
+  // longer auto-defaults to the last tier — that was a defensible fallback
+  // under pure platform-count tiering (nothing else to rank it by), but
+  // isolation alone is still meaningful without platform data, so a
+  // standalone station missing its platform count isn't unfairly buried
+  // just because of a data gap. 2 is the modal real platform count (54.5%
+  // of all stations), used as a neutral stand-in.
+  var STATION_DEFAULT_PLATFORMS = 2;
+  // Cheap PLANAR approximation, not true geodesic distance — fine for
+  // relative local-density ranking (all this feeds is "which tier", not a
+  // displayed distance), and avoids a trig call per pair. GB's whole
+  // latitude range (~50-59°N) only moves the real cos(lat) scale factor
+  // between ~0.63 and ~0.52, which doesn't change which stations rank as
+  // isolated vs. dense for tiering purposes — one reference latitude's
+  // cos() is enough. O(n²) but pure arithmetic: ~2,637² ≈ 7M iterations,
+  // runs once when the station list first loads, not per frame/pan/zoom.
+  function computeStationTiers(list, majorCrs, content) {
+    var COS = Math.cos(54.5 * Math.PI / 180), KM_PER_DEG_LAT = 111;
+    var pts = list.map(function (s) { return { crs: s.crs, x: s.lon * COS * KM_PER_DEG_LAT, y: s.lat * KM_PER_DEG_LAT }; });
+    var n = pts.length;
+    var r2 = STATION_DENSITY_RADIUS_KM * STATION_DENSITY_RADIUS_KM;
+    var nearby = {};
+    for (var i = 0; i < n; i++) {
+      var cnt = 0;
+      for (var j = 0; j < n; j++) {
+        if (i === j) continue;
+        var dx = pts[i].x - pts[j].x, dy = pts[i].y - pts[j].y;
+        if (dx * dx + dy * dy <= r2) cnt++;
+      }
+      nearby[pts[i].crs] = cnt;
+    }
+    var ranked = [];
+    list.forEach(function (s) {
+      if (majorCrs.has(s.crs)) return; // major stays its own always-visible tier, not part of this ranking
+      var entry = content[s.crs];
+      var platforms = (entry && entry.platforms != null) ? entry.platforms : STATION_DEFAULT_PLATFORMS;
+      ranked.push({ crs: s.crs, score: platforms - nearby[s.crs] * STATION_DENSITY_WEIGHT });
+    });
+    ranked.sort(function (a, b) { return b.score - a.score; });
+    var largeEnd = STATION_TIER_TARGET_COUNTS.large;
+    var mediumEnd = largeEnd + STATION_TIER_TARGET_COUNTS.medium;
+    var smallEnd = mediumEnd + STATION_TIER_TARGET_COUNTS.small;
+    var tierByCrs = {};
+    ranked.forEach(function (r, i) {
+      tierByCrs[r.crs] = i < largeEnd ? 'large' : i < mediumEnd ? 'medium' : i < smallEnd ? 'small' : 'dense';
+    });
+    return tierByCrs;
+  }
   // station-list.json's names carry generic NaPTAN suffixes ("Alexandra
   // Palace Rail Station", "Kintore Railway Station", "Newcastle Airport
   // Metro Station") that /data/stations.geojson's curated names never did
@@ -2396,18 +2530,15 @@
   }).then(function (gj) {
     return new Set(gj.features.map(function (f) { return f.properties.crs; }));
   }).catch(function (e) {
-    console.warn('Could not load the major-station list (/data/stations.geojson) — every marker will render as mid/minor tier only', e);
+    console.warn('Could not load the major-station list (/data/stations.geojson) — every marker will render as a ranked non-major tier only', e);
     return new Set();
   });
   Promise.all([stationListPromise, majorCrsPromise, stationsContentPromise]).then(function (results) {
     var list = results[0], majorCrs = results[1], content = results[2] || {};
     if (!list.length) return;
+    var rankedTierByCrs = computeStationTiers(list, majorCrs, content);
     function tierFor(crs) {
-      if (majorCrs.has(crs)) return 'major';
-      var entry = content[crs];
-      var platforms = entry && entry.platforms;
-      if (platforms != null && platforms >= MID_TIER_MIN_PLATFORMS) return 'mid';
-      return 'minor';
+      return majorCrs.has(crs) ? 'major' : rankedTierByCrs[crs];
     }
     stationsData = {
       type: 'FeatureCollection',
@@ -2533,13 +2664,15 @@
 
   // ── Station interactions (click → departure board) ───────────────────────
   var hoveredStationFeatureId = null;
-  // Bound to all three tiers — feature ids are unique across the whole
+  // Bound to every tier — feature ids are unique across the whole
   // 'stations' source regardless of which layer rendered a given point (see
   // the id:i assignment where stationsData is built), so hover/click behave
-  // identically for a major, mid, or minor marker; a mid/minor marker
-  // simply isn't hit-testable at all below its own minzoom since MapLibre's
-  // per-layer minzoom excludes it from the layer entirely at that zoom.
-  var STATION_MARKER_LAYERS = ['stations-circle-major-hit', 'stations-circle-mid-hit', 'stations-circle-minor-hit'];
+  // identically no matter which tier a marker belongs to; a not-yet-revealed
+  // tier simply isn't hit-testable at all below its own minzoom since
+  // MapLibre's per-layer minzoom excludes it from the layer entirely at
+  // that zoom. Derived from STATION_TIERS so a tier added/removed there
+  // doesn't also need updating here.
+  var STATION_MARKER_LAYERS = STATION_TIERS.map(function (t) { return 'stations-circle-' + t.id + '-hit'; });
   function wireStationInteractions() {
     STATION_MARKER_LAYERS.forEach(function (layerId) {
       map.on('mousemove', layerId, function (e) {
@@ -2603,15 +2736,20 @@
     update();
   }
   // Reverse color-reveal interactions (Phase 2). Wired against
-  // 'operator-lines-hit' (the invisible wide hit layer added alongside
-  // 'operator-lines' above), not the thin visible line itself — see that
-  // layer's comment for why. No more per-feature MapLibre feature-state
+  // OPERATOR_HIT_LAYERS (the invisible wide hit layers added alongside each
+  // 'operator-lines-<tier>' above), not the thin visible lines themselves —
+  // see those layers' comment for why. No more per-feature MapLibre feature-state
   // here (that only ever highlighted the ONE feature under the cursor) —
   // hoveredOperatorHighlight/lockedOperatorHighlight (plain JS vars) plus
   // applyOperatorHighlightPaint() drive an entire operator's full route at
   // once, see that function's own comment.
+  // Derived from ROUTE_TIERS — MapLibre's map.on()/queryRenderedFeatures()
+  // both accept an array of layer ids directly, so wiring these three tier-
+  // specific hit layers is a drop-in replacement for the old single
+  // 'operator-lines-hit' string everywhere below.
+  var OPERATOR_HIT_LAYERS = ROUTE_TIERS.map(function (t) { return 'operator-lines-hit-' + t.id; });
   function wireOperatorLineInteractions() {
-    map.on('mousemove', 'operator-lines-hit', function (e) {
+    map.on('mousemove', OPERATOR_HIT_LAYERS, function (e) {
       map.getCanvas().style.cursor = 'pointer';
       if (!e.features.length) return;
       var op = e.features[0].properties.operators;
@@ -2621,7 +2759,7 @@
       }
       showHoverTooltip(e.lngLat, resolveOperatorDisplayName(op));
     });
-    map.on('mouseleave', 'operator-lines-hit', function () {
+    map.on('mouseleave', OPERATOR_HIT_LAYERS, function () {
       map.getCanvas().style.cursor = '';
       if (hoveredOperatorHighlight !== null) {
         hoveredOperatorHighlight = null;
@@ -2662,7 +2800,7 @@
     // on the map) was never mode-gated — operator-lines renders in both
     // modes identically, only the panel navigation + mode switch happen
     // here.
-    map.on('click', 'operator-lines-hit', function (e) {
+    map.on('click', OPERATOR_HIT_LAYERS, function (e) {
       if (!e.features.length) return;
       // Stations sit ON the rail line, and this hit layer is a generously
       // wide (18px) invisible strip specifically so a real click near a
@@ -2693,7 +2831,7 @@
     // set), only clear when genuinely nothing was hit.
     map.on('click', function (e) {
       if (!lockedOperatorHighlight) return;
-      var hits = map.queryRenderedFeatures(e.point, { layers: ['operator-lines-hit'] });
+      var hits = map.queryRenderedFeatures(e.point, { layers: OPERATOR_HIT_LAYERS });
       if (hits.length) return;
       lockedOperatorHighlight = null;
       applyOperatorHighlightPaint();
@@ -3711,13 +3849,13 @@
 
   // ── Selected-station marker(s) ─────────────────────────────────────────────
   // Originally a bugfix for the old curated-top-50-only marker set (every
-  // station now gets a real marker from stations-circle-major/mid/minor,
-  // above — see the map station marker tiering pass). Kept as its own
+  // station now gets a real marker from stations-circle-<tier>, above — see
+  // STATION_TIERS/the map station marker tiering pass). Kept as its own
   // always-on-top source/layer because it still solves a real, separate
-  // problem: a "mid" or "minor" station only renders once the map is zoomed
-  // past that tier's own minzoom (MID_STATION_MINZOOM / MINOR_STATION_
-  // MINZOOM), but a from/to pair's fitBounds() (below) can easily land
-  // below either for two far-apart stations, and a single selectStation()
+  // problem: a non-major station only renders once the map is zoomed past
+  // its own tier's minzoom (STATION_TIERS), but a from/to pair's
+  // fitBounds()-equivalent (flyToBoundsZoomedOut(), below) can easily land
+  // below it for two far-apart stations, and a single selectStation()
   // call doesn't always follow a zoom:11+ flyTo either (e.g. clicking a
   // search result before ever zooming in). This guarantees whatever's
   // currently selected (one point for a single station, two for
