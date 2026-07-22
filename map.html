@@ -1786,27 +1786,14 @@
   //
   // Fix for both: locked and hover are tracked and colored independently
   // (never collapsed to one), and whichever operator(s) are active are
-  // drawn by 'operator-lines-active' + 'operator-lines-hover-glow' — two
-  // small layers FILTERED down to just the active operator(s) and added
-  // AFTER (so, on top of) the always-grey 'operator-lines' base layer,
+  // drawn by 'operator-lines-active' + the GLOW_RINGS glow layers below —
+  // all FILTERED down to just the active operator(s) and added AFTER (so,
+  // on top of) the always-grey 'operator-lines-<tier>' base layers,
   // guaranteeing an active route always paints above every unrelated grey
-  // one regardless of tile draw order. The filter also means these two
-  // layers only ever hold a handful of features at a time, which is what
+  // one regardless of tile draw order. The filter also means these layers
+  // only ever hold a handful of features at a time, which is what
   // makes a per-feature CASE expression cheap here even with line-blur on.
   var NO_OPERATOR_FILTER = ['==', ['get', 'operators'], '__no_operator_selected__']; // matches nothing — blanks operator-lines-active/-hover-glow when nothing is active
-  var GLOW_OPACITY = 1; // was 0.5 — doubled per 2026-07-22 "can't see the glow" feedback, see GLOW_WIDTH_MULTIPLIER below too
-  var GLOW_WIDTH_MULTIPLIER = 2.4; // history: 2.4 -> 4.8 -> 3.6 -> 10.8 -> 3 -> back to 2.4, once it was clear the glow's flat opacity + small blur was reading as a solid block regardless of width, not an actual fade (see GLOW_BLUR_MULTIPLIER below)
-  // Same "1x = operatorLineWidthExpression's own base stops" convention as
-  // GLOW_WIDTH_MULTIPLIER — GLOW_BLUR_BASE_PX is the reference "1x" blur
-  // (in px, MapLibre's line-blur unit), scaled by this multiplier. Was a
-  // flat, unparameterized `line-blur: 3` before. Note this is still just a
-  // Gaussian blur on a flat-opacity stroke, not a true center-to-edge
-  // opacity gradient (MapLibre line layers don't support that in one
-  // layer) — a bigger blur softens the edge further but the stroke's
-  // interior stays fully opaque either way; a real fade would need
-  // several stacked layers at increasing width/decreasing opacity instead.
-  var GLOW_BLUR_BASE_PX = 1;
-  var GLOW_BLUR_MULTIPLIER = 3.6;
   // 2026-07-22 correction: "3x the routes weight" was meant for the
   // HIGHLIGHTED line only (operator-lines-active, the crisp on-top line
   // drawn once something's locked/hovered) — the grey base network
@@ -1815,7 +1802,38 @@
   // 1). Two separate constants now so this distinction can't get
   // re-conflated the way it did the first time.
   var ROUTE_BASE_WIDTH_MULTIPLIER = 1;
-  var ROUTE_ACTIVE_WIDTH_MULTIPLIER = 3;
+  var ROUTE_ACTIVE_WIDTH_MULTIPLIER = 2.4;
+
+  // ── Multi-ring glow (2026-07-22 rewrite) ──────────────────────────────────
+  // A single glow layer's line-opacity is one flat value across its whole
+  // width — MapLibre doesn't support a true center-to-edge opacity gradient
+  // within one line layer, which is why every earlier attempt (bigger
+  // width, bigger blur) still read as a solid block with a faint rim
+  // instead of an actual fade. This fakes the fade the standard way: several
+  // copies of the same line, each WIDER than the last and progressively more
+  // transparent, all drawn BENEATH operator-lines-active (the solid 2.4x
+  // highlighted stroke). Since operator-lines-active is opaque and sits on
+  // top, it fully covers the center of every ring beneath it — what's
+  // actually visible is only each ring's OUTER fringe, which is exactly
+  // "a fading glow outside of the highlighted stroke" as asked for, with no
+  // masking logic needed, just z-order.
+  //
+  // Cost: negligible. Every ring below is filtered to just the 1-2 currently
+  // active operators (a handful of segments), same as the old single glow
+  // layer — stacking 3 more copies of an already-tiny filtered set is not a
+  // meaningful render burden, nothing like the ~9,268-feature base network.
+  //
+  // Draw order AMONG the rings themselves barely matters — they're all the
+  // same translucent color at different opacities, so overlapping them in
+  // either order blends to nearly the same result. The one ordering
+  // constraint that DOES matter: every ring must be added (and therefore
+  // drawn) BEFORE operator-lines-active, so the solid stroke ends up on top
+  // of all of them, not the other way round.
+  var GLOW_RINGS = [
+    { widthMultiplier: 3.6, opacity: 0.40, blurPx: 2 },
+    { widthMultiplier: 5.0, opacity: 0.22, blurPx: 3 },
+    { widthMultiplier: 7.0, opacity: 0.10, blurPx: 4.5 },
+  ];
 
   // ── Route reveal tiers (2026-07-22) ─────────────────────────────────────
   // Same "reduce network clutter at low zoom" goal as STATION_TIERS above,
@@ -1894,7 +1912,7 @@
     var hovered = (hoveredOperatorHighlight && hoveredOperatorHighlight !== locked) ? hoveredOperatorHighlight : null;
     if (!locked && !hovered) {
       map.setFilter('operator-lines-active', NO_OPERATOR_FILTER);
-      map.setFilter('operator-lines-hover-glow', NO_OPERATOR_FILTER);
+      GLOW_RINGS.forEach(function (ring, i) { map.setFilter('operator-lines-hover-glow-' + i, NO_OPERATOR_FILTER); });
       return;
     }
 
@@ -1911,11 +1929,14 @@
 
     map.setFilter('operator-lines-active', filter);
     map.setPaintProperty('operator-lines-active', 'line-color', colorExpr);
-    // Glow is "same color" as the highlighted line per spec, not a fixed
-    // white/dark neutral halo.
-    map.setFilter('operator-lines-hover-glow', filter);
-    map.setPaintProperty('operator-lines-hover-glow', 'line-color', colorExpr);
-    map.setPaintProperty('operator-lines-hover-glow', 'line-opacity', GLOW_OPACITY);
+    // Glow rings are "same color" as the highlighted line per spec, not a
+    // fixed white/dark neutral halo — opacity is NOT touched here, each
+    // ring's own opacity is fixed for its lifetime (set once at creation,
+    // see GLOW_RINGS).
+    GLOW_RINGS.forEach(function (ring, i) {
+      map.setFilter('operator-lines-hover-glow-' + i, filter);
+      map.setPaintProperty('operator-lines-hover-glow-' + i, 'line-color', colorExpr);
+    });
   }
   // 2026-07-22: selecting a station or a From/To pair (or a different
   // curated route) used to leave a previously locked/hovered operator
@@ -2105,19 +2126,21 @@
         attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors',
       });
     }
-    // Hover/lock "glow" — a wider halo drawn BEHIND the real colored line,
-    // SAME color as whichever operator is currently highlighted (Phase 2,
-    // 2026-07-21 — was a fixed achromatic white/dark neutral before, driven
-    // by per-feature feature-state; both replaced by applyOperatorHighlightPaint()
-    // now, see its own comment). line-blur is new here too — untested at
-    // real ~9,268-feature scale in an actual browser (no browser in this
-    // environment); if it turns out to cost meaningful frame rate, the
-    // fallback is dropping line-blur and relying on line-width alone for
-    // the "glow" (a plain wider solid stroke, no blur) — everything else
-    // (opacity gating, color) stays the same either way.
-    if (!map.getLayer('operator-lines-hover-glow')) {
+    // Hover/lock "glow" — GLOW_RINGS' worth of progressively wider, fainter
+    // halos drawn BEHIND the real colored line, SAME color as whichever
+    // operator is currently highlighted (Phase 2, 2026-07-21 — was a fixed
+    // achromatic white/dark neutral before, driven by per-feature
+    // feature-state; both long since replaced by applyOperatorHighlightPaint(),
+    // see its own comment; the single-layer version was replaced by this
+    // multi-ring one on 2026-07-22, see GLOW_RINGS' comment for why). Each
+    // ring's own line-blur is untested at real ~9,268-feature-SOURCE scale
+    // in an actual browser (no browser in this environment) — though since
+    // every ring is filtered down to a couple of features at a time, not
+    // the full source, this isn't expected to cost meaningful frame rate.
+    GLOW_RINGS.forEach(function (ring, i) {
+      if (map.getLayer('operator-lines-hover-glow-' + i)) return;
       map.addLayer({
-        id: 'operator-lines-hover-glow', type: 'line', source: 'operator-vector', 'source-layer': 'operators',
+        id: 'operator-lines-hover-glow-' + i, type: 'line', source: 'operator-vector', 'source-layer': 'operators',
         // Filtered down to (usually) zero features until applyOperatorHighlightPaint()
         // sets a real filter below — see that function's comment for why
         // this is filtered rather than just left at opacity 0 like before:
@@ -2128,13 +2151,23 @@
         layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
           'line-color': MULTI_OPERATOR_NEUTRAL[currentTheme()], // placeholder until applyOperatorHighlightPaint() runs below
-          'line-width': operatorLineWidthExpression(GLOW_WIDTH_MULTIPLIER),
-          'line-blur': GLOW_BLUR_BASE_PX * GLOW_BLUR_MULTIPLIER,
+          'line-width': operatorLineWidthExpression(ring.widthMultiplier),
+          'line-blur': ring.blurPx,
           'line-offset': operatorLineOffsetExpression(),
-          'line-opacity': GLOW_OPACITY,
+          'line-opacity': ring.opacity, // fixed per ring for its whole lifetime — only filter/color change dynamically, see applyOperatorHighlightPaint()
+          // MapLibre paint properties animate by default (~300ms) on every
+          // setPaintProperty() call unless a layer opts out — since
+          // applyOperatorHighlightPaint() calls setPaintProperty('line-color',
+          // ...) on every hover change, that default transition meant hovering
+          // a NEW route visibly cross-faded FROM whatever was previously
+          // shown (the last locked/hovered route's color) TO the new one,
+          // reading as "briefly shows the old route's color first" (2026-07-22
+          // bug report). Zero-duration transition makes color changes
+          // instant instead.
+          'line-color-transition': { duration: 0 },
         },
       });
-    }
+    });
     // One grey layer PER route tier (trunk/regional/hyperlocal — see
     // ROUTE_TIERS's comment) instead of a single always-visible
     // 'operator-lines' layer, so each category gets its own minzoom.
@@ -2176,6 +2209,10 @@
           'line-color': rc.railwayMain, // placeholder, applyOperatorHighlightPaint() below sets the real color before anything can match the filter
           'line-width': operatorLineWidthExpression(ROUTE_ACTIVE_WIDTH_MULTIPLIER),
           'line-offset': operatorLineOffsetExpression(),
+          // Same zero-duration override as operator-lines-hover-glow above,
+          // same reason — this is the layer that actually showed the stale-
+          // color flash on hover, since it's the crisp on-top line.
+          'line-color-transition': { duration: 0 },
         },
       });
     }
