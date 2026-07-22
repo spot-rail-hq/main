@@ -355,35 +355,101 @@ function Toolbar({ query, setQuery, traction, setTraction, count }) {
   );
 }
 
-// ——— Image panel — fetches a Wikipedia lead image via the summary API.
-// Derives a Wikipedia article slug from the Commons Category URL in col 9.
-// Falls back to a striped monospace placeholder if nothing comes back.
-function deriveWikiTitle(commonsUrl, cls, name) {
+// ——— Image panel — resolves col 9 ("Wikimedia Image (CC)") into an actual
+// photo two different ways depending on what kind of Commons link it is:
+//
+//   Category:X — no single curated photo for this row, so this guesses
+//                that X also happens to be a valid EN Wikipedia article
+//                title and fetches THAT article's current lead/thumbnail
+//                image via Wikipedia's summary API. Works by coincidence
+//                whenever the category name matches the article title —
+//                often true, but not always (e.g. "Category:Eurostar_
+//                Class_373" has no article of that exact name, so this
+//                silently produced "no image available" for it — several
+//                rows had this same category/title-mismatch problem,
+//                2026-07-23 bug report).
+//   File:X     — a SPECIFIC curated photo. Fetched directly from that
+//                Commons file's own imageinfo, showing its real
+//                Artist + LicenseShortName as credit instead of a bare
+//                "CC BY-SA" (Commons' extmetadata carries both). This path
+//                didn't exist before this fix — one row (60163) already
+//                had a File: link in the data, but the old regex only
+//                ever matched Category:, so it silently fell through to
+//                "no image available" too, same failure mode as the
+//                category-guess misses above.
+//
+// Falls back to a striped monospace placeholder if nothing comes back
+// either way.
+function parseImageRef(commonsUrl) {
   if (!commonsUrl) return null;
-  // e.g. "commons.wikimedia.org/wiki/Category:British_Rail_Class_390" → "British_Rail_Class_390"
-  const m = String(commonsUrl).match(/Category:([^?#]+)$/);
-  if (m) return m[1];
+  const url = String(commonsUrl);
+  const fileMatch = url.match(/File:([^?#]+)$/);
+  if (fileMatch) return { type: 'file', filename: decodeURIComponent(fileMatch[1]) };
+  const catMatch = url.match(/Category:([^?#]+)$/);
+  if (catMatch) return { type: 'category', title: catMatch[1] };
   return null;
 }
 
 function TrainImage({ commonsUrl, cls, name, accent }) {
-  const [state, setState] = React.useState({ status: 'loading', src: null, credit: null });
-  const title = deriveWikiTitle(commonsUrl, cls, name);
+  const [state, setState] = React.useState({ status: 'loading' });
+  const ref = parseImageRef(commonsUrl);
+  const refKey = ref ? ref.type + ':' + (ref.filename || ref.title) : null;
+
   React.useEffect(() => {
     let cancelled = false;
-    if (!title) { setState({ status: 'none' }); return; }
-    const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`;
-    fetch(url)
-      .then(r => r.ok ? r.json() : Promise.reject(r.status))
-      .then(j => {
-        if (cancelled) return;
-        const src = j.thumbnail?.source || j.originalimage?.source;
-        if (src) setState({ status: 'ok', src, credit: title.replace(/_/g, ' ') });
-        else setState({ status: 'none' });
-      })
-      .catch(() => { if (!cancelled) setState({ status: 'none' }); });
+    if (!ref) { setState({ status: 'none' }); return; }
+    if (ref.type === 'file') {
+      // action=query&prop=imageinfo, NOT the REST summary API — this needs
+      // a SPECIFIC file's own metadata (real photographer/license), which
+      // only the action API's imageinfo/extmetadata exposes. Needs
+      // origin=* for CORS from a browser fetch (the REST API used below
+      // for the Category: path already allows cross-origin without it —
+      // this one, MediaWiki's older action API, does not).
+      const api = 'https://commons.wikimedia.org/w/api.php?action=query&titles=' +
+        encodeURIComponent('File:' + ref.filename) +
+        '&prop=imageinfo&iiprop=url%7Cextmetadata&iiurlwidth=960&format=json&origin=*';
+      fetch(api)
+        .then(r => r.ok ? r.json() : Promise.reject(r.status))
+        .then(j => {
+          if (cancelled) return;
+          const page = Object.values(j.query?.pages || {})[0];
+          const info = page?.imageinfo?.[0];
+          if (!info) { setState({ status: 'none' }); return; }
+          const meta = info.extmetadata || {};
+          // Artist can carry HTML (a linked username) — strip tags for
+          // plain display text. Occasionally genuinely blank (Commons
+          // categorizes these as "no machine-readable author," common for
+          // some Flickr/Geograph imports) — falls back to just the
+          // license rather than fabricating a name.
+          const artist = (meta.Artist?.value || '').replace(/<[^>]+>/g, '').trim();
+          const license = meta.LicenseShortName?.value || 'CC';
+          setState({
+            status: 'ok',
+            src: info.thumburl || info.url,
+            creditText: artist ? `Photo by ${artist} · ${license}` : `Wikimedia Commons · ${license}`,
+            creditHref: info.descriptionurl,
+          });
+        })
+        .catch(() => { if (!cancelled) setState({ status: 'none' }); });
+    } else {
+      const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(ref.title)}`;
+      fetch(url)
+        .then(r => r.ok ? r.json() : Promise.reject(r.status))
+        .then(j => {
+          if (cancelled) return;
+          const src = j.thumbnail?.source || j.originalimage?.source;
+          if (!src) { setState({ status: 'none' }); return; }
+          setState({
+            status: 'ok',
+            src,
+            creditText: `${ref.title.replace(/_/g, ' ')} · CC BY-SA`,
+            creditHref: `https://en.wikipedia.org/wiki/${encodeURIComponent(ref.title)}`,
+          });
+        })
+        .catch(() => { if (!cancelled) setState({ status: 'none' }); });
+    }
     return () => { cancelled = true; };
-  }, [title]);
+  }, [refKey]);
 
   const wrap = {
     position: 'relative', borderRadius: 12, overflow: 'hidden',
@@ -423,12 +489,11 @@ function TrainImage({ commonsUrl, cls, name, accent }) {
         fontFamily: SRHQ.mono, fontSize: 10, letterSpacing: 0.6,
         color: SRHQ.inkMute,
       }}>
-        Image via Wikipedia ·{' '}
-        <a href={`https://en.wikipedia.org/wiki/${encodeURIComponent(title)}`}
+        <a href={state.creditHref}
            target="_blank" rel="noreferrer noopener"
            style={{ color: SRHQ.inkDim, textDecoration: 'underline' }}>
-          {state.credit}
-        </a>{' '}· CC BY-SA
+          {state.creditText}
+        </a>
       </div>
     </div>
   );
