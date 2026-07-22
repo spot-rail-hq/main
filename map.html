@@ -1796,7 +1796,15 @@
   var NO_OPERATOR_FILTER = ['==', ['get', 'operators'], '__no_operator_selected__']; // matches nothing — blanks operator-lines-active/-hover-glow when nothing is active
   var GLOW_OPACITY = 1; // was 0.5 — doubled per 2026-07-22 "can't see the glow" feedback, see GLOW_WIDTH_MULTIPLIER below too
   var GLOW_WIDTH_MULTIPLIER = 3.6 * 3; // was 2.4, then 4.8, then 3.6 — 3x'd again per follow-up "3x the glow" feedback
-  var ROUTE_WIDTH_MULTIPLIER = 3; // was 1 — "make the routes weight...to 3" feedback (2026-07-22)
+  // 2026-07-22 correction: "3x the routes weight" was meant for the
+  // HIGHLIGHTED line only (operator-lines-active, the crisp on-top line
+  // drawn once something's locked/hovered) — the grey base network
+  // (operator-lines-<tier>, what every unselected segment renders as) was
+  // never meant to change and is back to its original width (multiplier
+  // 1). Two separate constants now so this distinction can't get
+  // re-conflated the way it did the first time.
+  var ROUTE_BASE_WIDTH_MULTIPLIER = 1;
+  var ROUTE_ACTIVE_WIDTH_MULTIPLIER = 3;
 
   // ── Route reveal tiers (2026-07-22) ─────────────────────────────────────
   // Same "reduce network clutter at low zoom" goal as STATION_TIERS above,
@@ -2131,7 +2139,7 @@
         layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
           'line-color': rc.railwayMain, // always flat grey now — see applyOperatorHighlightPaint()'s comment
-          'line-width': operatorLineWidthExpression(ROUTE_WIDTH_MULTIPLIER),
+          'line-width': operatorLineWidthExpression(ROUTE_BASE_WIDTH_MULTIPLIER),
           'line-offset': operatorLineOffsetExpression(),
         },
       }, t.minzoom);
@@ -2145,8 +2153,9 @@
     // highlight is locked, keeping it visible across the whole zoom range
     // reads as "show me where this route goes," not a bug; only its own
     // grey/context layer disappearing below its tier's minzoom is tier-
-    // gated. Same width/offset as the base layers, only line-color (and
-    // the filter) are ever touched afterward.
+    // gated. Same offset as the base layers, but its OWN (3x) width — see
+    // ROUTE_ACTIVE_WIDTH_MULTIPLIER's comment — only line-color (and the
+    // filter) are ever touched afterward.
     if (!map.getLayer('operator-lines-active')) {
       map.addLayer({
         id: 'operator-lines-active', type: 'line', source: 'operator-vector', 'source-layer': 'operators',
@@ -2154,7 +2163,7 @@
         layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
           'line-color': rc.railwayMain, // placeholder, applyOperatorHighlightPaint() below sets the real color before anything can match the filter
-          'line-width': operatorLineWidthExpression(ROUTE_WIDTH_MULTIPLIER),
+          'line-width': operatorLineWidthExpression(ROUTE_ACTIVE_WIDTH_MULTIPLIER),
           'line-offset': operatorLineOffsetExpression(),
         },
       });
