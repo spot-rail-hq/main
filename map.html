@@ -1795,7 +1795,18 @@
   // makes a per-feature CASE expression cheap here even with line-blur on.
   var NO_OPERATOR_FILTER = ['==', ['get', 'operators'], '__no_operator_selected__']; // matches nothing — blanks operator-lines-active/-hover-glow when nothing is active
   var GLOW_OPACITY = 1; // was 0.5 — doubled per 2026-07-22 "can't see the glow" feedback, see GLOW_WIDTH_MULTIPLIER below too
-  var GLOW_WIDTH_MULTIPLIER = 3; // was 2.4, then 4.8, then 3.6, then 3.6*3=10.8 — brought down to a flat 3 per follow-up feedback (10.8x read as too heavy/blobby)
+  var GLOW_WIDTH_MULTIPLIER = 2.4; // history: 2.4 -> 4.8 -> 3.6 -> 10.8 -> 3 -> back to 2.4, once it was clear the glow's flat opacity + small blur was reading as a solid block regardless of width, not an actual fade (see GLOW_BLUR_MULTIPLIER below)
+  // Same "1x = operatorLineWidthExpression's own base stops" convention as
+  // GLOW_WIDTH_MULTIPLIER — GLOW_BLUR_BASE_PX is the reference "1x" blur
+  // (in px, MapLibre's line-blur unit), scaled by this multiplier. Was a
+  // flat, unparameterized `line-blur: 3` before. Note this is still just a
+  // Gaussian blur on a flat-opacity stroke, not a true center-to-edge
+  // opacity gradient (MapLibre line layers don't support that in one
+  // layer) — a bigger blur softens the edge further but the stroke's
+  // interior stays fully opaque either way; a real fade would need
+  // several stacked layers at increasing width/decreasing opacity instead.
+  var GLOW_BLUR_BASE_PX = 1;
+  var GLOW_BLUR_MULTIPLIER = 3.6;
   // 2026-07-22 correction: "3x the routes weight" was meant for the
   // HIGHLIGHTED line only (operator-lines-active, the crisp on-top line
   // drawn once something's locked/hovered) — the grey base network
@@ -2118,7 +2129,7 @@
         paint: {
           'line-color': MULTI_OPERATOR_NEUTRAL[currentTheme()], // placeholder until applyOperatorHighlightPaint() runs below
           'line-width': operatorLineWidthExpression(GLOW_WIDTH_MULTIPLIER),
-          'line-blur': 3,
+          'line-blur': GLOW_BLUR_BASE_PX * GLOW_BLUR_MULTIPLIER,
           'line-offset': operatorLineOffsetExpression(),
           'line-opacity': GLOW_OPACITY,
         },
