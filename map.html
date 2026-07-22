@@ -1795,7 +1795,7 @@
   // makes a per-feature CASE expression cheap here even with line-blur on.
   var NO_OPERATOR_FILTER = ['==', ['get', 'operators'], '__no_operator_selected__']; // matches nothing — blanks operator-lines-active/-hover-glow when nothing is active
   var GLOW_OPACITY = 1; // was 0.5 — doubled per 2026-07-22 "can't see the glow" feedback, see GLOW_WIDTH_MULTIPLIER below too
-  var GLOW_WIDTH_MULTIPLIER = 3.6 * 3; // was 2.4, then 4.8, then 3.6 — 3x'd again per follow-up "3x the glow" feedback
+  var GLOW_WIDTH_MULTIPLIER = 3; // was 2.4, then 4.8, then 3.6, then 3.6*3=10.8 — brought down to a flat 3 per follow-up feedback (10.8x read as too heavy/blobby)
   // 2026-07-22 correction: "3x the routes weight" was meant for the
   // HIGHLIGHTED line only (operator-lines-active, the crisp on-top line
   // drawn once something's locked/hovered) — the grey base network
