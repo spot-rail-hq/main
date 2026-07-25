@@ -14,7 +14,10 @@
  *
  * Sole writer of operators-content.json's `stations_operated` field — see
  * fetch-osm-facts.mjs and fetch-wikipedia-facts.mjs headers, neither of
- * which write it.
+ * which write it. EXCEPT for entries flagged `stations_operated_manual`,
+ * which this script deliberately never touches — see the flag's own
+ * comment in the loop below for why (tube lines / tram networks whose
+ * stops aren't in stations-content.json at all).
  */
 
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -30,9 +33,28 @@ const stations = JSON.parse(readFileSync(STATIONS_PATH, 'utf8'));
 const operators = JSON.parse(readFileSync(OPERATORS_PATH, 'utf8'));
 
 const counts = {};
+const skipped = [];
 for (const key of Object.keys(operators)) {
   if (key === '_notes') continue;
   const entry = operators[key];
+  // OPT-OUT: `stations_operated_manual` marks an entry whose stops are not
+  // in stations-content.json AT ALL and never will be — that file is the
+  // National Rail CRS/NaPTAN station database, so a London Underground
+  // line's or a tram network's own stops simply aren't in it. Counting
+  // those the normal way always yields 0, which this script would then
+  // "correctly" treat as a data gap and DELETE the curated Wikipedia-
+  // sourced figure (confirmed 2026-07-25: every one of the 11 tube lines
+  // added in the 2026-07-23 pass would have been silently zeroed by the
+  // next run of this script). That's different from the genuine gaps the
+  // count > 0 check below handles (HT/HX/XR — real National Rail
+  // operators whose stations ARE in the file, just not yet matched by a
+  // stop-verified OSM route relation), so it needs its own explicit flag
+  // rather than a looser heuristic. Skipped entries are neither counted
+  // nor written; their stations_operated stays exactly as curated.
+  if (entry.stations_operated_manual) {
+    skipped.push(key);
+    continue;
+  }
   const names = new Set([entry.name, ...(entry.aliases || [])].filter(Boolean));
   let count = 0;
   for (const crs of Object.keys(stations)) {
@@ -59,4 +81,8 @@ const gaps = Object.entries(counts).filter(([, c]) => c === 0);
 if (gaps.length) {
   console.log('\nFLAGGED — 0 verified stations, field left unset (not written as literal 0):');
   for (const [key] of gaps) console.log(' ', key, operators[key].name);
+}
+if (skipped.length) {
+  console.log('\nSKIPPED — stations_operated_manual set, curated figure left untouched:');
+  for (const key of skipped) console.log(' ', key, operators[key].name, '—', operators[key].stations_operated);
 }
