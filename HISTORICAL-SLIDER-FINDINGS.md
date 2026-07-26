@@ -1547,6 +1547,39 @@ edge-to-edge and sits at `bottom: 70px`, clear of the hint pills.
 
 ---
 
+## CORRECTION (2026-07-26) — the founded/operated gap is the NORMAL case pre-1923
+
+An earlier note in this document reported that "only GWR has a founded/operated gap". **That
+was an artefact of the stub set, not a property of the data, and Phase 2C must not inherit it.**
+
+The other four stubs are 1923 and 1948 creations, which by construction *cannot* have a gap:
+they were incorporated and began operating in the same year. GWR looked exceptional only
+because it is the one pre-1923 company in a set of five.
+
+**For pre-1923 operators a multi-year gap between incorporation, enabling Act, and first
+trains is routine.** GWR: founded 1833 → Act 31 August 1835 → first trains 1838. Three
+distinct dates, five years apart end to end. Expect the same shape for most pre-grouping
+companies as the operator database is populated.
+
+**That gap is exactly where a false landing year hides.** The slider lands on
+`max(map_coverage_start, first_operation_year)`, so putting an incorporation year in the
+operation field silently sends users to a year the company did not run trains — with no error
+and nothing visibly wrong. It happened once already, in this repo, to the person who wrote the
+rule against it.
+
+Two mitigations are now in place:
+- The field is named **`first_operation_year`** (with `last_operation_year`), renamed from
+  `dates_of_operation.start` precisely because the old name invited the founding year.
+  `founded` remains its own separate field. The schema states the distinction inline.
+- The UI label stays "Dates of operation" — the standard term in rail literature and in
+  Wikipedia rail-company infoboxes. Only the stored field names changed.
+
+**For Phase 2C:** treat a pre-1923 entry whose `founded` and `first_operation_year` are equal
+as *suspicious rather than settled* — it usually means only one date was found, not that they
+genuinely coincide.
+
+---
+
 ## What is not done
 
 - **No content at scale** — five stub operators, five reviewed year blurbs, one test fixture.

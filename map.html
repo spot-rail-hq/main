@@ -5073,7 +5073,13 @@
   // ── Historical map layers ────────────────────────────────────────────────
   var HISTORY_TILES_URL = 'https://pub-f3c70a3d45aa443d81dab5db7f762d2a.r2.dev/historical.pmtiles';
   var HIST_LINE_LAYER = 'history-lines';
+  var HIST_LINE_HIT_LAYER = 'history-lines-hit';
+  var HIST_GLOW_PREFIX = 'history-lines-hover-glow-';
   var HIST_STATION_LAYER = 'history-stations';
+  // Matches nothing — blanks the hover-glow rings until a segment is hovered.
+  // Same idiom as NO_OPERATOR_FILTER on the operator layer.
+  var NO_HISTORY_FEATURE_FILTER = ['==', ['get', 'source'], '__no_history_feature__'];
+  var hoveredHistoryFeature = null;
 
   function ensureHistoryLayers() {
     if (!map || historyLayersReady) return;
@@ -5100,6 +5106,28 @@
         },
       });
     }
+    // HOVER GLOW, drawn BEHIND the visible line — same multi-ring line-blur
+    // treatment the operator-coloured rail work uses (GLOW_RINGS), not a new
+    // effect, so History feels like the other tabs. Each ring is filtered to
+    // nothing until a segment is actually hovered, so the ~11,000 unhovered
+    // features never pay for a blurred line.
+    GLOW_RINGS.forEach(function (ring, i) {
+      var id = HIST_GLOW_PREFIX + i;
+      if (map.getLayer(id)) return;
+      map.addLayer({
+        id: id, type: 'line', source: 'history-vector', 'source-layer': 'historical_lines',
+        filter: NO_HISTORY_FEATURE_FILTER,
+        layout: { 'line-cap': 'round', 'line-join': 'round', visibility: 'none' },
+        paint: {
+          'line-color': MULTI_OPERATOR_NEUTRAL[currentTheme()],
+          'line-width': ['interpolate', ['linear'], ['zoom'],
+            5, 0.9 * ring.widthMultiplier, 10, 1.8 * ring.widthMultiplier, 14, 3.2 * ring.widthMultiplier],
+          'line-blur': ring.blurPx,
+          'line-opacity': ring.opacity,
+          'line-color-transition': { duration: 0 },
+        },
+      });
+    });
     if (!map.getLayer(HIST_STATION_LAYER)) {
       map.addLayer({
         id: HIST_STATION_LAYER, type: 'circle', source: 'history-vector', 'source-layer': 'historical_stations',
@@ -5124,10 +5152,24 @@
         },
       });
     }
+    // TRANSPARENT WIDE HIT LAYER, added LAST so it sits on top of everything
+    // it needs to catch. This was missing entirely: History mode was binding
+    // click/hover straight to the visible line, which is 0.9-3.2px wide, so
+    // routes were effectively unclickable. The operator-coloured layer has had
+    // an 18px transparent hit line all along (operator-lines-hit-*) and that is
+    // what makes thin track grabbable there — this is the same idea, same
+    // width, rather than new interaction code.
+    if (!map.getLayer(HIST_LINE_HIT_LAYER)) {
+      map.addLayer({
+        id: HIST_LINE_HIT_LAYER, type: 'line', source: 'history-vector', 'source-layer': 'historical_lines',
+        layout: { 'line-cap': 'round', 'line-join': 'round', visibility: 'none' },
+        paint: { 'line-color': '#000000', 'line-opacity': 0, 'line-width': 18 },
+      });
+    }
     // Guard against exactly the failure above ever recurring silently: if a
     // layer was rejected by style validation it simply will not be there, and
     // every later call against it is a no-op error nobody sees.
-    [HIST_LINE_LAYER, HIST_STATION_LAYER].forEach(function (id) {
+    [HIST_LINE_LAYER, HIST_LINE_HIT_LAYER, HIST_STATION_LAYER].forEach(function (id) {
       if (!map.getLayer(id)) console.error('History layer "' + id + '" was not added — check its paint/layout spec for an undefined value.');
     });
     historyLayersReady = true;
@@ -5169,10 +5211,24 @@
     var y = historyYear;
     // Lines: present if built on or before y and not yet closed. Undated
     // lines were dropped at build time, so there is nothing to exclude here.
-    map.setFilter(HIST_LINE_LAYER, ['all',
+    var lineFilter = ['all',
       ['<=', ['coalesce', ['get', 'start_year'], 9999], y],
       ['any', ['!', ['has', 'end_year']], ['>=', ['coalesce', ['get', 'end_year'], 9999], y]],
-    ]);
+    ];
+    map.setFilter(HIST_LINE_LAYER, lineFilter);
+    // The hit layer MUST carry the identical year filter. Without it the
+    // invisible 18px hit lines would cover every line that ever existed, so
+    // hovering blank map in 1850 would report a route built in 1900 — the
+    // "hover does nothing over empty map" guarantee comes from this, not from
+    // the visible layer.
+    if (map.getLayer(HIST_LINE_HIT_LAYER)) map.setFilter(HIST_LINE_HIT_LAYER, lineFilter);
+    // A hovered segment that just filtered out must stop glowing.
+    if (hoveredHistoryFeature) {
+      GLOW_RINGS.forEach(function (ring, i) {
+        var id = HIST_GLOW_PREFIX + i;
+        if (map.getLayer(id)) map.setFilter(id, ['all', lineFilter, ['==', ['get', 'source'], hoveredHistoryFeature]]);
+      });
+    }
     // Stations: visible if y falls inside ANY period. Uses the FLATTENED
     // p1_start..p5_end scalars, never the `periods` JSON string — MVT cannot
     // query inside a string, which is exactly why 2A emitted both.
@@ -5196,7 +5252,9 @@
     if (!map || !historyLayersReady) return;
     var showHistorical = mode === 'history' && historyYear < HISTORY_MODERN_FROM;
     var showModern = mode === 'history' && historyYear >= HISTORY_MODERN_FROM;
-    [HIST_LINE_LAYER, HIST_STATION_LAYER].forEach(function (id) {
+    var histLayers = [HIST_LINE_LAYER, HIST_LINE_HIT_LAYER, HIST_STATION_LAYER];
+    GLOW_RINGS.forEach(function (ring, i) { histLayers.push(HIST_GLOW_PREFIX + i); });
+    histLayers.forEach(function (id) {
       if (!map.getLayer(id)) return;
       if (mode === 'history') map.setLayoutProperty(id, 'visibility', 'visible');
       else map.setLayoutProperty(id, 'visibility', 'none');
@@ -5204,6 +5262,14 @@
     if (map.getLayer(HIST_LINE_LAYER)) {
       map.setPaintProperty(HIST_LINE_LAYER, 'line-opacity', showHistorical ? 1 : 0);
     }
+    // The hit layer must go with the lines it stands in for. Leaving it live at
+    // 1994+ would put an invisible clickable historical network on top of the
+    // modern one — the same class of leftover as the operator hit layers that
+    // kept firing over an empty pre-1994 map two turns ago.
+    if (map.getLayer(HIST_LINE_HIT_LAYER)) {
+      map.setLayoutProperty(HIST_LINE_HIT_LAYER, 'visibility', showHistorical ? 'visible' : 'none');
+    }
+    if (!showHistorical) clearHistoryHover();
     // STATIONS ARE NOT PART OF THE 1994 SOURCE-SWITCH. That switch exists
     // because there are two competing LINE datasets; there is only one station
     // dataset and it spans the whole timeline (2,565 of its stations are open
@@ -5402,11 +5468,21 @@
   // operator's own DATES OF OPERATION start year, used only to stop Rule 2
   // landing on a year the company did not exist in — see below.
   function applySliderFollow(range, operatedFrom) {
-    activeSpanRange = range || null;
-    if (!range) { syncSliderInstances(); return; } // RULE 3
+    if (!range) { activeSpanRange = null; syncSliderInstances(); return; } // RULE 3
     var max = historyMaxYear();
     var lo = range.first_year;
     var hi = range.last_year === null ? max : range.last_year;
+    // ACTIVE SPAN starts at the SAME max(coverage, first operation) the landing
+    // uses, not at raw map coverage. Approved 2026-07-26: a band starting at
+    // raw coverage makes the same false claim the landing bug did, just
+    // visually — GWR's coverage starts 1825 because two 1825-dated "Porthcawl
+    // Branch Line" features are named after the company that later absorbed
+    // them, eight years before GWR ran a train. Cost accepted: those two
+    // features sit outside the displayed band. The band is still purely
+    // visual and never gates dragging or the Jump-to field.
+    var spanFrom = lo;
+    if (typeof operatedFrom === 'number' && operatedFrom > spanFrom && operatedFrom <= hi) spanFrom = operatedFrom;
+    activeSpanRange = { first_year: spanFrom, last_year: range.last_year };
     if (historyYear >= lo && historyYear <= hi) { syncSliderInstances(); return; } // RULE 1
 
     // RULE 2 — land on max(map-coverage start, dates-of-operation start).
@@ -5427,11 +5503,7 @@
     //
     // Where dates_of_operation is not populated this falls through to raw map
     // coverage exactly as before — a founding year is never guessed.
-    var landing = lo;
-    if (typeof operatedFrom === 'number' && operatedFrom > landing && operatedFrom <= hi) {
-      landing = operatedFrom;
-    }
-    setHistoryYear(landing, { source: 'follow' });
+    setHistoryYear(spanFrom, { source: 'follow' }); // same value as the span start, by construction
     syncSliderInstances();
   }
 
@@ -5468,8 +5540,11 @@
     animateSidebarTransition();
     setSelectedStationPoints([]);
     var rec = historicalOperators[slug];
-    var operatedFrom = rec && rec.dates_of_operation && typeof rec.dates_of_operation.start === 'number'
-      ? rec.dates_of_operation.start : null;
+    // first_operation_year, NOT `founded`. Renamed from dates_of_operation.start
+    // precisely because the old name invited the founding year to be put here —
+    // which is what happened, and what sent GWR's landing to 1825/1833 instead
+    // of 1838. See the field's own note in data/historical-operators.json.
+    var operatedFrom = rec && typeof rec.first_operation_year === 'number' ? rec.first_operation_year : null;
     applySliderFollow(coverageForHistoricalOperator(slug), operatedFrom);
     pushHistoryForCurrentState();
   }
@@ -5521,12 +5596,14 @@
   }
 
   function histDatesOfOperationHtml(rec) {
-    var d = rec.dates_of_operation;
-    if (!d || d.start === undefined || d.start === null) return dbFieldHtml('Dates of operation', 'Unrecorded');
-    // "Dates of operation" is the standard term in rail literature and in
-    // Wikipedia rail-company infoboxes — deliberately NOT "founded", which is
-    // incorporation and a different fact entirely.
-    return dbFieldHtml('Dates of operation', d.start + '–' + (d.end === null || d.end === undefined ? 'present' : d.end));
+    var from = rec.first_operation_year;
+    if (from === undefined || from === null) return dbFieldHtml('Dates of operation', 'Unrecorded');
+    var to = rec.last_operation_year;
+    // The LABEL stays "Dates of operation" — that is the standard term in rail
+    // literature and in Wikipedia rail-company infoboxes. Only the underlying
+    // FIELD names changed, to first/last_operation_year, so that whoever
+    // populates them cannot mistake them for incorporation dates.
+    return dbFieldHtml('Dates of operation', from + '–' + (to === null || to === undefined ? 'present' : to));
   }
 
   function historicalOperatorSkeletonHtml() {
@@ -5657,8 +5734,90 @@
   // Map interaction inside History mode. Registered once, and every handler
   // no-ops unless mode === 'history', so these cannot interfere with Live or
   // Database click behaviour.
+  // ── History hover: per-segment highlight + tooltip ───────────────────────
+  // PER-SEGMENT, not per-operator. Live mode highlights an operator's whole
+  // network on hover, but that is impossible here: ~36% of pre-1923 and Big
+  // Four features have no operator attributed at all, so for most of the map
+  // there is no network to highlight. Per-segment is the only behaviour that
+  // works across every band.
+  function historyHoverLabel(props) {
+    // The operator shown is the one for the CURRENT BAND only — never a
+    // fallback to another band's attribution, which would silently claim e.g.
+    // a Big Four company for a year it did not run the line.
+    var band = eraBandForYear(historyYear);
+    var company = BAND_PROPERTY[band] ? props[BAND_PROPERTY[band]] : null;
+    var name = props.name || null;
+    // No operator attributed: show the line name ALONE. No "unknown", no empty
+    // operator row — an absent attribution is not a fact worth a line of UI.
+    if (name && company) return company + ': ' + name;
+    if (name) return name;
+    if (company) return company;
+    return null; // nothing to say — see the no-name finding in the report
+  }
+
+  function applyHistoryHoverPaint() {
+    if (!map || !map.getLayer(HIST_GLOW_PREFIX + '0')) return;
+    var theme = currentTheme();
+    if (!hoveredHistoryFeature) {
+      GLOW_RINGS.forEach(function (ring, i) {
+        if (map.getLayer(HIST_GLOW_PREFIX + i)) map.setFilter(HIST_GLOW_PREFIX + i, NO_HISTORY_FEATURE_FILTER);
+      });
+      return;
+    }
+    // `source` ("ohm:way/{id}") is the only per-feature unique identifier in
+    // the tiles, so it doubles as the hover key. promoteId/feature-state would
+    // be the usual route, but the glow needs a FILTER anyway (to keep the other
+    // ~11,000 features off the blur render path entirely), and filtering on a
+    // property avoids depending on a promoted id this source does not declare.
+    var filter = ['==', ['get', 'source'], hoveredHistoryFeature];
+    // Highlight colour must read against a flat single-colour network — that
+    // is the whole point. Using the UI accent rather than the band colour makes
+    // the hovered segment unambiguously "the thing under your cursor" instead
+    // of a slightly brighter version of its neighbours.
+    // NOTE: --t/accent is reserved for UI meaning, and a hover highlight IS UI
+    // meaning rather than operator identity, so this does not breach the
+    // palette rule the era colours follow.
+    var color = THEME_COLORS[theme].accent;
+    GLOW_RINGS.forEach(function (ring, i) {
+      var id = HIST_GLOW_PREFIX + i;
+      if (!map.getLayer(id)) return;
+      map.setFilter(id, filter);
+      map.setPaintProperty(id, 'line-color', color);
+    });
+  }
+
+  function clearHistoryHover() {
+    if (hoveredHistoryFeature === null) return;
+    hoveredHistoryFeature = null;
+    applyHistoryHoverPaint();
+    hideHoverTooltip();
+  }
+
   function wireHistoryMapInteraction() {
     if (!map) return;
+    // Hover is bound to the HIT layer, not the visible line — that is what
+    // makes a 2px route grabbable. Hover does nothing over empty map because
+    // the hit layer carries the same year filter as the visible line, and is
+    // hidden entirely at 1994+.
+    map.on('mousemove', HIST_LINE_HIT_LAYER, function (e) {
+      if (mode !== 'history' || !e.features || !e.features.length) return;
+      map.getCanvas().style.cursor = 'pointer';
+      var props = e.features[0].properties;
+      if (hoveredHistoryFeature !== props.source) {
+        hoveredHistoryFeature = props.source;
+        applyHistoryHoverPaint();
+      }
+      var label = historyHoverLabel(props);
+      if (label) showHoverTooltip(e.lngLat, label);
+      else hideHoverTooltip();
+    });
+    map.on('mouseleave', HIST_LINE_HIT_LAYER, function () {
+      if (mode !== 'history') return;
+      map.getCanvas().style.cursor = '';
+      clearHistoryHover();
+    });
+    map.on('zoomstart', clearHistoryHover);
+    map.on('dragstart', clearHistoryHover);
     // Surface a missing/unreachable historical tileset instead of rendering an
     // empty map. Confirmed live 2026-07-26: historical.pmtiles was returning
     // HTTP 404 from R2 (never uploaded), which is indistinguishable on screen
@@ -5670,7 +5829,7 @@
       console.warn('historical.pmtiles could not be loaded — History mode will show no pre-1994 features.', e && e.error);
       if (mode === 'history') rebuildSidebarContent();
     });
-    map.on('click', HIST_LINE_LAYER, function (e) {
+    map.on('click', HIST_LINE_HIT_LAYER, function (e) {
       if (mode !== 'history' || !e.features || !e.features.length) return;
       selectHistoricalLine(e.features[0].properties);
     });
@@ -5678,10 +5837,11 @@
       if (mode !== 'history' || !e.features || !e.features.length) return;
       selectHistoricalStation(e.features[0].properties);
     });
-    [HIST_LINE_LAYER, HIST_STATION_LAYER].forEach(function (id) {
-      map.on('mouseenter', id, function () { if (mode === 'history') map.getCanvas().style.cursor = 'pointer'; });
-      map.on('mouseleave', id, function () { if (mode === 'history') map.getCanvas().style.cursor = ''; });
-    });
+    // Lines get their cursor from the mousemove handler above (bound to the hit
+    // layer); stations only need the simple enter/leave pair. Same pointer
+    // convention as the Live and Database tabs.
+    map.on('mouseenter', HIST_STATION_LAYER, function () { if (mode === 'history') map.getCanvas().style.cursor = 'pointer'; });
+    map.on('mouseleave', HIST_STATION_LAYER, function () { if (mode === 'history') map.getCanvas().style.cursor = ''; });
   }
 
   // ── Header: mode switching (Live / Database / History) ───────────────────
@@ -5725,6 +5885,7 @@
       // operator lines AND their hit/glow layers AND the live station markers.
       // Without this the full-colour History paint and the hidden station dots
       // would persist into Live/Database.
+      clearHistoryHover();
       restoreLiveLayersAfterHistory();
       applyOperatorHighlightPaint();
     }

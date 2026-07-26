@@ -6,14 +6,15 @@
     "short_name": "optional compact form for chips",
     "tile_matches": "array of literal strings as they appear in tile co_* properties — THE join key from a map feature",
     "description": "1-3 sentences, grounded, no invention",
-    "founded": "incorporation year (int) or null — NEVER used for slider movement",
-    "dates_of_operation": "{ start: int, end: int|null } — end null = still operating. The editorial span shown in the panel. Standard term in rail literature and Wikipedia rail-company infoboxes; use this exact label in the UI.",
+    "founded": "incorporation / company-formation year (int) or null. NEVER used for slider movement and NEVER copied into first_operation_year — see that field.",
     "headquarters": "string or null",
     "predecessor": "{ state: 'known'|'nil'|'unrecorded', entities: [{ key, display_name, kind }] }",
     "successor": "same shape as predecessor",
     "notable_features": "array of short grounded strings",
     "source_url": "Wikipedia (or other) URL the facts came from",
-    "era_band": "which colour band this operator belongs to — pre1923 | big4 | br. Used only to pick the panel's accent, NOT stored on features."
+    "era_band": "which colour band this operator belongs to — pre1923 | big4 | br. Used only to pick the panel's accent, NOT stored on features.",
+    "first_operation_year": "int or null — the year the company FIRST RAN TRAINS. NOT the incorporation year, NOT the enabling-Act year. Renamed from `dates_of_operation.start` in Phase 2B after the person who wrote the anti-conflation rule populated it with GWR's founding year (1833) instead of its first trains (1838). The old name invited exactly that mistake; this one states the fact it wants. Drives the Rule 2 slider landing year and the active-span indicator start, so a founding year here silently lands users on a year the company did not operate in.",
+    "last_operation_year": "int or null — last year of operation; null = still operating."
   },
   "operators": {
     "gwr-legacy": {
@@ -26,10 +27,8 @@
       "era_band": "big4",
       "description": "Incorporated in 1833 to link London with Bristol, the Great Western Railway was the only one of the Big Four to keep its pre-grouping identity through the 1923 Grouping, absorbing its constituents into an existing company rather than forming a new one. It ran until nationalisation on 1 January 1948.",
       "founded": 1833,
-      "dates_of_operation": {
-        "start": 1838,
-        "end": 1947
-      },
+      "first_operation_year": 1838,
+      "last_operation_year": 1947,
       "headquarters": "Paddington station, London",
       "predecessor": {
         "state": "nil",
@@ -64,10 +63,8 @@
       "era_band": "big4",
       "description": "Formed at the 1923 Grouping from the London and North Western, Midland, Lancashire and Yorkshire, Caledonian and Highland railways among others, the LMS was the largest of the Big Four and, at the time, the largest joint-stock company in the world.",
       "founded": 1923,
-      "dates_of_operation": {
-        "start": 1923,
-        "end": 1947
-      },
+      "first_operation_year": 1923,
+      "last_operation_year": 1947,
       "headquarters": "Euston station, London",
       "predecessor": {
         "state": "known",
@@ -117,10 +114,8 @@
       "era_band": "big4",
       "description": "Formed at the 1923 Grouping around the Great Northern, Great Eastern, Great Central and North Eastern railways. It never made a profit, partly because it inherited the debts the Great Central incurred building its London extension.",
       "founded": 1923,
-      "dates_of_operation": {
-        "start": 1923,
-        "end": 1947
-      },
+      "first_operation_year": 1923,
+      "last_operation_year": 1947,
       "headquarters": "King's Cross station, London",
       "predecessor": {
         "state": "known",
@@ -169,10 +164,8 @@
       "era_band": "big4",
       "description": "The smallest of the Big Four by route mileage but the busiest by passenger numbers, carrying over a quarter of all UK passenger traffic. Predominantly a passenger railway serving densely populated south-east England, it pursued electrification more vigorously than any of its peers.",
       "founded": 1923,
-      "dates_of_operation": {
-        "start": 1923,
-        "end": 1947
-      },
+      "first_operation_year": 1923,
+      "last_operation_year": 1947,
       "headquarters": "Waterloo station, London",
       "predecessor": {
         "state": "known",
@@ -221,10 +214,8 @@
       "era_band": "br",
       "description": "The nationalised operator formed on 1 January 1948 when the Big Four were taken into public ownership under the Transport Act 1947. It ran the national network until privatisation was completed in the mid-1990s.",
       "founded": 1948,
-      "dates_of_operation": {
-        "start": 1948,
-        "end": 1994
-      },
+      "first_operation_year": 1948,
+      "last_operation_year": 1994,
       "headquarters": "Marylebone, London",
       "predecessor": {
         "state": "known",
