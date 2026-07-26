@@ -67,17 +67,52 @@ echo "[1/2] Preparing tile-ready GeoJSON"
 node scripts/build-historical-tiles-geojson.mjs
 
 echo ""
-echo "[2/2] Tiling with tippecanoe -> tile-generation/historical.pmtiles"
+echo "[2/3] Tiling LINES -> historical-lines.pmtiles"
 cd tile-generation
 tippecanoe \
-  -o historical.pmtiles \
-  -L historical_lines:historical-lines.geojson \
-  -L historical_stations:historical-stations.geojson \
+  -o historical-lines.pmtiles \
+  -l historical_lines \
   -Z5 -z14 \
   -S 0.5 \
   --drop-densest-as-needed \
   --force \
-  -A '© OpenHistoricalMap contributors (CC0) · Some historical linework reproduced with the permission of the National Library of Scotland (CC BY) · Station dates from Wikipedia (CC BY-SA 4.0) · Coordinates from Wikidata (CC0)'
+  historical-lines.geojson
+
+echo ""
+echo "[3/3] Tiling STATIONS -> historical-stations.pmtiles, then joining"
+# STATIONS ARE TILED SEPARATELY, AND THIS IS NOT OPTIONAL.
+#
+# tippecanoe applies its feature-dropping settings per TILE, not per layer, so
+# tiling both layers in one invocation makes them compete for the same tile
+# budget. The ~11,000 line features carry 210,800 vertices and dominate it
+# completely: measured on the first combined build, a z5 tile held 5,463 lines
+# and TWO of the 8,884 stations. z6 held five. The station dots were not faint,
+# they were absent from the tiles — no paint or radius change could have fixed
+# it.
+#
+# That was a side effect of --drop-densest-as-needed, added for the line
+# simplification tuning. It is right for lines (bounded tiles, no visible loss)
+# and catastrophic for a sparse point layer.
+#
+# -r1 disables point dropping outright; points cost a coordinate pair each, so
+# all 8,884 fit comfortably at every zoom without the size limits the lines need.
+tippecanoe \
+  -o historical-stations.pmtiles \
+  -l historical_stations \
+  -Z5 -z14 \
+  -r1 \
+  --no-feature-limit \
+  --no-tile-size-limit \
+  --force \
+  historical-stations.geojson
+
+# tile-join merges the two single-layer tilesets into the one file map.html
+# reads, preserving each layer's own tiling settings.
+tile-join \
+  -o historical.pmtiles \
+  --force \
+  -A '© OpenHistoricalMap contributors (CC0) · Some historical linework reproduced with the permission of the National Library of Scotland (CC BY) · Station dates from Wikipedia (CC BY-SA 4.0) · Coordinates from Wikidata (CC0)' \
+  historical-lines.pmtiles historical-stations.pmtiles
 
 echo ""
 echo "Done. tile-generation/historical.pmtiles written (LOCAL ONLY — not uploaded)."
