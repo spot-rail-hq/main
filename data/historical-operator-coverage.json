@@ -1,0 +1,3733 @@
+{
+  "generated_at": "2026-07-26T12:13:05.793Z",
+  "_notes": "MAP-COVERAGE RANGE per operator, derived from tile-generation/historical-lines.geojson — the exact input the historical tiles were built from, so this cannot disagree with what actually renders. Built by scripts/build-historical-operator-coverage.mjs (sole writer). Keyed by the LITERAL string as it appears in the tiles' co_pre1923 / co_big4 / co_br properties, NOT by a slug — this is the join key a map feature gives you, and translating it to a slug is data/historical-operators.json's job via its own `tile_matches` array. first_year / last_year are the span to use for slider movement and for the active-span indicator. Both are CLAMPED to the era band the attribution is valid within, which is what makes them usable: unclamped, British Railways computed as 1700 (an 18th-century wagonway that later became BR track) and would have sent a user opening the BR panel to a blank map 248 years before BR existed. A name appearing in more than one band spans both — Great Western Railway is 1825-1947 because it is both a pre-grouping builder name and a 1923 group. DO NOT use a company's founding year for slider movement — see this script's header on why the three dates are not interchangeable.",
+  "coverage": {
+    "British Railways": {
+      "name": "British Railways",
+      "fields": {
+        "co_br": 10303
+      },
+      "first_year": 1948,
+      "last_year": 1993,
+      "feature_count": 10303
+    },
+    "London, Midland and Scottish Railway": {
+      "name": "London, Midland and Scottish Railway",
+      "fields": {
+        "co_big4": 617
+      },
+      "first_year": 1923,
+      "last_year": 1947,
+      "feature_count": 617
+    },
+    "London and North Eastern Railway": {
+      "name": "London and North Eastern Railway",
+      "fields": {
+        "co_big4": 389
+      },
+      "first_year": 1923,
+      "last_year": 1947,
+      "feature_count": 389
+    },
+    "Edinburgh and Northern Railway": {
+      "name": "Edinburgh and Northern Railway",
+      "fields": {
+        "co_pre1923": 233
+      },
+      "first_year": 1847,
+      "last_year": 1922,
+      "feature_count": 233
+    },
+    "Great Western Railway": {
+      "name": "Great Western Railway",
+      "fields": {
+        "co_big4": 160,
+        "co_pre1923": 37
+      },
+      "first_year": 1825,
+      "last_year": 1947,
+      "feature_count": 197
+    },
+    "Formartine and Buchan Railway": {
+      "name": "Formartine and Buchan Railway",
+      "fields": {
+        "co_pre1923": 189
+      },
+      "first_year": 1862,
+      "last_year": 1922,
+      "feature_count": 189
+    },
+    "Glasgow, Paisley and Greenock Railway": {
+      "name": "Glasgow, Paisley and Greenock Railway",
+      "fields": {
+        "co_pre1923": 178
+      },
+      "first_year": 1841,
+      "last_year": 1922,
+      "feature_count": 178
+    },
+    "Aberdeen Railway": {
+      "name": "Aberdeen Railway",
+      "fields": {
+        "co_pre1923": 165
+      },
+      "first_year": 1849,
+      "last_year": 1922,
+      "feature_count": 165
+    },
+    "Scottish Central Railway": {
+      "name": "Scottish Central Railway",
+      "fields": {
+        "co_pre1923": 152
+      },
+      "first_year": 1848,
+      "last_year": 1922,
+      "feature_count": 152
+    },
+    "General Terminus and Glasgow Harbour Railway": {
+      "name": "General Terminus and Glasgow Harbour Railway",
+      "fields": {
+        "co_pre1923": 125
+      },
+      "first_year": 1849,
+      "last_year": 1922,
+      "feature_count": 125
+    },
+    "Lanarkshire and Ayrshire Railway": {
+      "name": "Lanarkshire and Ayrshire Railway",
+      "fields": {
+        "co_pre1923": 108
+      },
+      "first_year": 1903,
+      "last_year": 1922,
+      "feature_count": 108
+    },
+    "Inverness and Perth Junction Railway": {
+      "name": "Inverness and Perth Junction Railway",
+      "fields": {
+        "co_pre1923": 106
+      },
+      "first_year": 1863,
+      "last_year": 1922,
+      "feature_count": 106
+    },
+    "East Lancashire Railway": {
+      "name": "East Lancashire Railway",
+      "fields": {
+        "co_pre1923": 96
+      },
+      "first_year": 1846,
+      "last_year": 1922,
+      "feature_count": 96
+    },
+    "Great North of Scotland Railway": {
+      "name": "Great North of Scotland Railway",
+      "fields": {
+        "co_pre1923": 92
+      },
+      "first_year": 1884,
+      "last_year": 1922,
+      "feature_count": 92
+    },
+    "Cathcart District Railway": {
+      "name": "Cathcart District Railway",
+      "fields": {
+        "co_pre1923": 92
+      },
+      "first_year": 1886,
+      "last_year": 1922,
+      "feature_count": 92
+    },
+    "Glasgow, Barrhead and Neilston Direct Railway": {
+      "name": "Glasgow, Barrhead and Neilston Direct Railway",
+      "fields": {
+        "co_pre1923": 92
+      },
+      "first_year": 1848,
+      "last_year": 1922,
+      "feature_count": 92
+    },
+    "Inverness and Aberdeen Junction Railway": {
+      "name": "Inverness and Aberdeen Junction Railway",
+      "fields": {
+        "co_pre1923": 80
+      },
+      "first_year": 1856,
+      "last_year": 1922,
+      "feature_count": 80
+    },
+    "Highland Railway": {
+      "name": "Highland Railway",
+      "fields": {
+        "co_pre1923": 79
+      },
+      "first_year": 1863,
+      "last_year": 1922,
+      "feature_count": 79
+    },
+    "Manchester and Leeds Railway": {
+      "name": "Manchester and Leeds Railway",
+      "fields": {
+        "co_pre1923": 75
+      },
+      "first_year": 1840,
+      "last_year": 1922,
+      "feature_count": 75
+    },
+    "Glasgow and Paisley Joint Railway": {
+      "name": "Glasgow and Paisley Joint Railway",
+      "fields": {
+        "co_pre1923": 70
+      },
+      "first_year": 1840,
+      "last_year": 1922,
+      "feature_count": 70
+    },
+    "City of Glasgow Union Railway": {
+      "name": "City of Glasgow Union Railway",
+      "fields": {
+        "co_pre1923": 62
+      },
+      "first_year": 1870,
+      "last_year": 1922,
+      "feature_count": 62
+    },
+    "Liverpool, St Helens and South Lancashire Railway": {
+      "name": "Liverpool, St Helens and South Lancashire Railway",
+      "fields": {
+        "co_pre1923": 50
+      },
+      "first_year": 1900,
+      "last_year": 1922,
+      "feature_count": 50
+    },
+    "Dundee and Perth Railway": {
+      "name": "Dundee and Perth Railway",
+      "fields": {
+        "co_pre1923": 46
+      },
+      "first_year": 1847,
+      "last_year": 1922,
+      "feature_count": 46
+    },
+    "Portpatrick and Wigtownshire Joint Railways": {
+      "name": "Portpatrick and Wigtownshire Joint Railways",
+      "fields": {
+        "co_pre1923": 46
+      },
+      "first_year": 1861,
+      "last_year": 1922,
+      "feature_count": 46
+    },
+    "North British, Arbroath and Montrose Railway": {
+      "name": "North British, Arbroath and Montrose Railway",
+      "fields": {
+        "co_pre1923": 45
+      },
+      "first_year": 1883,
+      "last_year": 1922,
+      "feature_count": 45
+    },
+    "Dundee and Newtyle Railway": {
+      "name": "Dundee and Newtyle Railway",
+      "fields": {
+        "co_pre1923": 45
+      },
+      "first_year": 1832,
+      "last_year": 1922,
+      "feature_count": 45
+    },
+    "East London Railway": {
+      "name": "East London Railway",
+      "fields": {
+        "co_pre1923": 40
+      },
+      "first_year": 1869,
+      "last_year": 1922,
+      "feature_count": 40
+    },
+    "Scottish Midland Junction Railway": {
+      "name": "Scottish Midland Junction Railway",
+      "fields": {
+        "co_pre1923": 36
+      },
+      "first_year": 1845,
+      "last_year": 1922,
+      "feature_count": 36
+    },
+    "Glasgow City and District Railway": {
+      "name": "Glasgow City and District Railway",
+      "fields": {
+        "co_pre1923": 34
+      },
+      "first_year": 1871,
+      "last_year": 1922,
+      "feature_count": 34
+    },
+    "Mineral Railway": {
+      "name": "Mineral Railway",
+      "fields": {
+        "co_pre1923": 31
+      },
+      "first_year": 1848,
+      "last_year": 1922,
+      "feature_count": 31
+    },
+    "Stirlingshire Midland Junction Railway": {
+      "name": "Stirlingshire Midland Junction Railway",
+      "fields": {
+        "co_pre1923": 31
+      },
+      "first_year": 1850,
+      "last_year": 1922,
+      "feature_count": 31
+    },
+    "Metropolitan Railway": {
+      "name": "Metropolitan Railway",
+      "fields": {
+        "co_pre1923": 30
+      },
+      "first_year": 1863,
+      "last_year": 1922,
+      "feature_count": 30
+    },
+    "Caledonian Railway": {
+      "name": "Caledonian Railway",
+      "fields": {
+        "co_pre1923": 30
+      },
+      "first_year": 1845,
+      "last_year": 1922,
+      "feature_count": 30
+    },
+    "Manchester, Bury and Rossendale Railway": {
+      "name": "Manchester, Bury and Rossendale Railway",
+      "fields": {
+        "co_pre1923": 29
+      },
+      "first_year": 1846,
+      "last_year": 1922,
+      "feature_count": 29
+    },
+    "Dundee and Arbroath Railway": {
+      "name": "Dundee and Arbroath Railway",
+      "fields": {
+        "co_pre1923": 29
+      },
+      "first_year": 1847,
+      "last_year": 1922,
+      "feature_count": 29
+    },
+    "Wakefield, Pontefract and Goole Railway": {
+      "name": "Wakefield, Pontefract and Goole Railway",
+      "fields": {
+        "co_pre1923": 28
+      },
+      "first_year": 1848,
+      "last_year": 1922,
+      "feature_count": 28
+    },
+    "Banff, Portsoy and Strathisla Railway": {
+      "name": "Banff, Portsoy and Strathisla Railway",
+      "fields": {
+        "co_pre1923": 28
+      },
+      "first_year": 1860,
+      "last_year": 1922,
+      "feature_count": 28
+    },
+    "Morayshire Railway": {
+      "name": "Morayshire Railway",
+      "fields": {
+        "co_pre1923": 27
+      },
+      "first_year": 1852,
+      "last_year": 1922,
+      "feature_count": 27
+    },
+    "Alford Valley Railway": {
+      "name": "Alford Valley Railway",
+      "fields": {
+        "co_pre1923": 27
+      },
+      "first_year": 1859,
+      "last_year": 1922,
+      "feature_count": 27
+    },
+    "Whitby and Pickering Railway": {
+      "name": "Whitby and Pickering Railway",
+      "fields": {
+        "co_pre1923": 24
+      },
+      "first_year": 1835,
+      "last_year": 1922,
+      "feature_count": 24
+    },
+    "Gourock Extension Railway": {
+      "name": "Gourock Extension Railway",
+      "fields": {
+        "co_pre1923": 23
+      },
+      "first_year": 1889,
+      "last_year": 1922,
+      "feature_count": 23
+    },
+    "Hertford and Welwyn Junction Railway": {
+      "name": "Hertford and Welwyn Junction Railway",
+      "fields": {
+        "co_pre1923": 22
+      },
+      "first_year": 1858,
+      "last_year": 1922,
+      "feature_count": 22
+    },
+    "Stanhope and Tyne Railway": {
+      "name": "Stanhope and Tyne Railway",
+      "fields": {
+        "co_pre1923": 21
+      },
+      "first_year": 1834,
+      "last_year": 1922,
+      "feature_count": 21
+    },
+    "Southern Railway": {
+      "name": "Southern Railway",
+      "fields": {
+        "co_big4": 19
+      },
+      "first_year": 1923,
+      "last_year": 1947,
+      "feature_count": 19
+    },
+    "Manchester and Wigan Railway": {
+      "name": "Manchester and Wigan Railway",
+      "fields": {
+        "co_pre1923": 19
+      },
+      "first_year": 1864,
+      "last_year": 1922,
+      "feature_count": 19
+    },
+    "Bradford, Wakefield and Leeds Railway": {
+      "name": "Bradford, Wakefield and Leeds Railway",
+      "fields": {
+        "co_pre1923": 19
+      },
+      "first_year": 1857,
+      "last_year": 1922,
+      "feature_count": 19
+    },
+    "Kettering, Thrapston and Huntingdon Railway": {
+      "name": "Kettering, Thrapston and Huntingdon Railway",
+      "fields": {
+        "co_pre1923": 18
+      },
+      "first_year": 1866,
+      "last_year": 1922,
+      "feature_count": 18
+    },
+    "Manchester and Southport Railway": {
+      "name": "Manchester and Southport Railway",
+      "fields": {
+        "co_pre1923": 18
+      },
+      "first_year": 1855,
+      "last_year": 1922,
+      "feature_count": 18
+    },
+    "Lancashire Union Railway": {
+      "name": "Lancashire Union Railway",
+      "fields": {
+        "co_pre1923": 18
+      },
+      "first_year": 1858,
+      "last_year": 1922,
+      "feature_count": 18
+    },
+    "Inverury and Old Meldrum Junction Railway": {
+      "name": "Inverury and Old Meldrum Junction Railway",
+      "fields": {
+        "co_pre1923": 18
+      },
+      "first_year": 1856,
+      "last_year": 1922,
+      "feature_count": 18
+    },
+    "Whitehaven Junction Railway": {
+      "name": "Whitehaven Junction Railway",
+      "fields": {
+        "co_pre1923": 16
+      },
+      "first_year": 1845,
+      "last_year": 1922,
+      "feature_count": 16
+    },
+    "North Midland Railway": {
+      "name": "North Midland Railway",
+      "fields": {
+        "co_pre1923": 14
+      },
+      "first_year": 1840,
+      "last_year": 1922,
+      "feature_count": 14
+    },
+    "Liverpool, Ormskirk and Preston Railway": {
+      "name": "Liverpool, Ormskirk and Preston Railway",
+      "fields": {
+        "co_pre1923": 14
+      },
+      "first_year": 1849,
+      "last_year": 1922,
+      "feature_count": 14
+    },
+    "Londonderry Railway": {
+      "name": "Londonderry Railway",
+      "fields": {
+        "co_pre1923": 14
+      },
+      "first_year": 1823,
+      "last_year": 1922,
+      "feature_count": 14
+    },
+    "Wrexham, Mold and Connah's Quay Railway": {
+      "name": "Wrexham, Mold and Connah's Quay Railway",
+      "fields": {
+        "co_pre1923": 13
+      },
+      "first_year": 1866,
+      "last_year": 1922,
+      "feature_count": 13
+    },
+    "Cheshire Lines Railway": {
+      "name": "Cheshire Lines Railway",
+      "fields": {
+        "co_pre1923": 13
+      },
+      "first_year": 1884,
+      "last_year": 1922,
+      "feature_count": 13
+    },
+    "Deeside Railway": {
+      "name": "Deeside Railway",
+      "fields": {
+        "co_pre1923": 12
+      },
+      "first_year": 1853,
+      "last_year": 1922,
+      "feature_count": 12
+    },
+    "Clarence Railway": {
+      "name": "Clarence Railway",
+      "fields": {
+        "co_pre1923": 12
+      },
+      "first_year": 1833,
+      "last_year": 1922,
+      "feature_count": 12
+    },
+    "Durham and Sunderland Railway": {
+      "name": "Durham and Sunderland Railway",
+      "fields": {
+        "co_pre1923": 12
+      },
+      "first_year": 1836,
+      "last_year": 1922,
+      "feature_count": 12
+    },
+    "Llanelly Railway": {
+      "name": "Llanelly Railway",
+      "fields": {
+        "co_pre1923": 10
+      },
+      "first_year": 1840,
+      "last_year": 1922,
+      "feature_count": 10
+    },
+    "Preston and Wyre Joint Railway": {
+      "name": "Preston and Wyre Joint Railway",
+      "fields": {
+        "co_pre1923": 10
+      },
+      "first_year": 1840,
+      "last_year": 1922,
+      "feature_count": 10
+    },
+    "Newport, Abergavenny and Hereford Railway": {
+      "name": "Newport, Abergavenny and Hereford Railway",
+      "fields": {
+        "co_pre1923": 10
+      },
+      "first_year": 1852,
+      "last_year": 1922,
+      "feature_count": 10
+    },
+    "London and South Western Railway": {
+      "name": "London and South Western Railway",
+      "fields": {
+        "co_pre1923": 9
+      },
+      "first_year": 1838,
+      "last_year": 1922,
+      "feature_count": 9
+    },
+    "East Lincolnshire Railway": {
+      "name": "East Lincolnshire Railway",
+      "fields": {
+        "co_pre1923": 9
+      },
+      "first_year": 1848,
+      "last_year": 1922,
+      "feature_count": 9
+    },
+    "Burry Port and Gwendraeth Valley Railway": {
+      "name": "Burry Port and Gwendraeth Valley Railway",
+      "fields": {
+        "co_pre1923": 9
+      },
+      "first_year": 1909,
+      "last_year": 1922,
+      "feature_count": 9
+    },
+    "Stockport, Timperley and Altrincham Junction Railway": {
+      "name": "Stockport, Timperley and Altrincham Junction Railway",
+      "fields": {
+        "co_pre1923": 9
+      },
+      "first_year": 1865,
+      "last_year": 1922,
+      "feature_count": 9
+    },
+    "West Riding and Grimsby Railway": {
+      "name": "West Riding and Grimsby Railway",
+      "fields": {
+        "co_pre1923": 9
+      },
+      "first_year": 1866,
+      "last_year": 1922,
+      "feature_count": 9
+    },
+    "Golden Valley Railway": {
+      "name": "Golden Valley Railway",
+      "fields": {
+        "co_pre1923": 9
+      },
+      "first_year": 1881,
+      "last_year": 1922,
+      "feature_count": 9
+    },
+    "Stirling and Dunfermline Railway": {
+      "name": "Stirling and Dunfermline Railway",
+      "fields": {
+        "co_pre1923": 9
+      },
+      "first_year": 1852,
+      "last_year": 1922,
+      "feature_count": 9
+    },
+    "Deeside Extension Railway": {
+      "name": "Deeside Extension Railway",
+      "fields": {
+        "co_pre1923": 9
+      },
+      "first_year": 1859,
+      "last_year": 1922,
+      "feature_count": 9
+    },
+    "London, Tilbury and Southend Railway": {
+      "name": "London, Tilbury and Southend Railway",
+      "fields": {
+        "co_pre1923": 8
+      },
+      "first_year": 1854,
+      "last_year": 1922,
+      "feature_count": 8
+    },
+    "Bristol & Gloucester Railway": {
+      "name": "Bristol & Gloucester Railway",
+      "fields": {
+        "co_pre1923": 8
+      },
+      "first_year": 1844,
+      "last_year": 1922,
+      "feature_count": 8
+    },
+    "Great Northern and Great Eastern Joint Railway": {
+      "name": "Great Northern and Great Eastern Joint Railway",
+      "fields": {
+        "co_pre1923": 8
+      },
+      "first_year": 1882,
+      "last_year": 1922,
+      "feature_count": 8
+    },
+    "Sheffield, Ashton-under-Lyne and Manchester Railway": {
+      "name": "Sheffield, Ashton-under-Lyne and Manchester Railway",
+      "fields": {
+        "co_pre1923": 8
+      },
+      "first_year": 1845,
+      "last_year": 1922,
+      "feature_count": 8
+    },
+    "Alyth Railway": {
+      "name": "Alyth Railway",
+      "fields": {
+        "co_pre1923": 8
+      },
+      "first_year": 1879,
+      "last_year": 1922,
+      "feature_count": 8
+    },
+    "Stockton & Darlington Railway": {
+      "name": "Stockton & Darlington Railway",
+      "fields": {
+        "co_pre1923": 8
+      },
+      "first_year": 1827,
+      "last_year": 1922,
+      "feature_count": 8
+    },
+    "Polloc and Govan Railway": {
+      "name": "Polloc and Govan Railway",
+      "fields": {
+        "co_pre1923": 8
+      },
+      "first_year": 1842,
+      "last_year": 1922,
+      "feature_count": 8
+    },
+    "North London Railway": {
+      "name": "North London Railway",
+      "fields": {
+        "co_pre1923": 7
+      },
+      "first_year": 1850,
+      "last_year": 1922,
+      "feature_count": 7
+    },
+    "Edgware, Highgate & London Railway": {
+      "name": "Edgware, Highgate & London Railway",
+      "fields": {
+        "co_pre1923": 7
+      },
+      "first_year": 1867,
+      "last_year": 1922,
+      "feature_count": 7
+    },
+    "Spalding and Bourn Railway": {
+      "name": "Spalding and Bourn Railway",
+      "fields": {
+        "co_pre1923": 7
+      },
+      "first_year": 1866,
+      "last_year": 1922,
+      "feature_count": 7
+    },
+    "Stamford and Essendine Railway": {
+      "name": "Stamford and Essendine Railway",
+      "fields": {
+        "co_pre1923": 7
+      },
+      "first_year": 1856,
+      "last_year": 1922,
+      "feature_count": 7
+    },
+    "Bolton and Leigh Railway": {
+      "name": "Bolton and Leigh Railway",
+      "fields": {
+        "co_pre1923": 7
+      },
+      "first_year": 1828,
+      "last_year": 1922,
+      "feature_count": 7
+    },
+    "Liverpool and Bury Railway": {
+      "name": "Liverpool and Bury Railway",
+      "fields": {
+        "co_pre1923": 7
+      },
+      "first_year": 1841,
+      "last_year": 1922,
+      "feature_count": 7
+    },
+    "York and North Midland Railway": {
+      "name": "York and North Midland Railway",
+      "fields": {
+        "co_pre1923": 7
+      },
+      "first_year": 1839,
+      "last_year": 1922,
+      "feature_count": 7
+    },
+    "Hull and Barnsley Railway": {
+      "name": "Hull and Barnsley Railway",
+      "fields": {
+        "co_pre1923": 7
+      },
+      "first_year": 1885,
+      "last_year": 1922,
+      "feature_count": 7
+    },
+    "Whitehaven, Cleator and Egremont Railway": {
+      "name": "Whitehaven, Cleator and Egremont Railway",
+      "fields": {
+        "co_pre1923": 7
+      },
+      "first_year": 1855,
+      "last_year": 1922,
+      "feature_count": 7
+    },
+    "Bredisholm Railways": {
+      "name": "Bredisholm Railways",
+      "fields": {
+        "co_pre1923": 7
+      },
+      "first_year": 1888,
+      "last_year": 1922,
+      "feature_count": 7
+    },
+    "North Devon Railway": {
+      "name": "North Devon Railway",
+      "fields": {
+        "co_pre1923": 6
+      },
+      "first_year": 1851,
+      "last_year": 1922,
+      "feature_count": 6
+    },
+    "Cromford and High Peak Railway": {
+      "name": "Cromford and High Peak Railway",
+      "fields": {
+        "co_pre1923": 6
+      },
+      "first_year": 1830,
+      "last_year": 1922,
+      "feature_count": 6
+    },
+    "Bourne and Sleaford Railway": {
+      "name": "Bourne and Sleaford Railway",
+      "fields": {
+        "co_pre1923": 6
+      },
+      "first_year": 1871,
+      "last_year": 1922,
+      "feature_count": 6
+    },
+    "Oxford, Worcester and Wolverhampton Railway": {
+      "name": "Oxford, Worcester and Wolverhampton Railway",
+      "fields": {
+        "co_pre1923": 6
+      },
+      "first_year": 1852,
+      "last_year": 1922,
+      "feature_count": 6
+    },
+    "Wirral Railway": {
+      "name": "Wirral Railway",
+      "fields": {
+        "co_pre1923": 6
+      },
+      "first_year": 1866,
+      "last_year": 1922,
+      "feature_count": 6
+    },
+    "South Durham and Lancashire Union Railway": {
+      "name": "South Durham and Lancashire Union Railway",
+      "fields": {
+        "co_pre1923": 6
+      },
+      "first_year": 1861,
+      "last_year": 1922,
+      "feature_count": 6
+    },
+    "Maryport and Carlisle Railway": {
+      "name": "Maryport and Carlisle Railway",
+      "fields": {
+        "co_pre1923": 6
+      },
+      "first_year": 1840,
+      "last_year": 1922,
+      "feature_count": 6
+    },
+    "Hull and Barnsley and Great Central Joint Railway": {
+      "name": "Hull and Barnsley and Great Central Joint Railway",
+      "fields": {
+        "co_pre1923": 6
+      },
+      "first_year": 1916,
+      "last_year": 1922,
+      "feature_count": 6
+    },
+    "Hereford, Hay and Brecon Railway": {
+      "name": "Hereford, Hay and Brecon Railway",
+      "fields": {
+        "co_pre1923": 6
+      },
+      "first_year": 1862,
+      "last_year": 1922,
+      "feature_count": 6
+    },
+    "Deerness Valley Railway": {
+      "name": "Deerness Valley Railway",
+      "fields": {
+        "co_pre1923": 6
+      },
+      "first_year": 1858,
+      "last_year": 1922,
+      "feature_count": 6
+    },
+    "Busby Railway": {
+      "name": "Busby Railway",
+      "fields": {
+        "co_pre1923": 6
+      },
+      "first_year": 1866,
+      "last_year": 1922,
+      "feature_count": 6
+    },
+    "Liverpool and Manchester Railway": {
+      "name": "Liverpool and Manchester Railway",
+      "fields": {
+        "co_pre1923": 5
+      },
+      "first_year": 1830,
+      "last_year": 1922,
+      "feature_count": 5
+    },
+    "Midland Counties Railway": {
+      "name": "Midland Counties Railway",
+      "fields": {
+        "co_pre1923": 5
+      },
+      "first_year": 1839,
+      "last_year": 1922,
+      "feature_count": 5
+    },
+    "St Andrews Railway": {
+      "name": "St Andrews Railway",
+      "fields": {
+        "co_pre1923": 5
+      },
+      "first_year": 1852,
+      "last_year": 1922,
+      "feature_count": 5
+    },
+    "Launceston Steam Railway": {
+      "name": "Launceston Steam Railway",
+      "fields": {
+        "co_pre1923": 5
+      },
+      "first_year": 1892,
+      "last_year": 1922,
+      "feature_count": 5
+    },
+    "Mansfield and Pinxton Railway": {
+      "name": "Mansfield and Pinxton Railway",
+      "fields": {
+        "co_pre1923": 5
+      },
+      "first_year": 1819,
+      "last_year": 1922,
+      "feature_count": 5
+    },
+    "Southport and Cheshire Lines Extension Railway": {
+      "name": "Southport and Cheshire Lines Extension Railway",
+      "fields": {
+        "co_pre1923": 5
+      },
+      "first_year": 1884,
+      "last_year": 1922,
+      "feature_count": 5
+    },
+    "Darlington and Barnard Castle Railway": {
+      "name": "Darlington and Barnard Castle Railway",
+      "fields": {
+        "co_pre1923": 5
+      },
+      "first_year": 1856,
+      "last_year": 1922,
+      "feature_count": 5
+    },
+    "Weardale Extension Railway": {
+      "name": "Weardale Extension Railway",
+      "fields": {
+        "co_pre1923": 5
+      },
+      "first_year": 1845,
+      "last_year": 1922,
+      "feature_count": 5
+    },
+    "Wensleydale Railway": {
+      "name": "Wensleydale Railway",
+      "fields": {
+        "co_pre1923": 5
+      },
+      "first_year": 1855,
+      "last_year": 1922,
+      "feature_count": 5
+    },
+    "Pontop & Jarrow Railway": {
+      "name": "Pontop & Jarrow Railway",
+      "fields": {
+        "co_pre1923": 5
+      },
+      "first_year": 1826,
+      "last_year": 1922,
+      "feature_count": 5
+    },
+    "Midland Railway": {
+      "name": "Midland Railway",
+      "fields": {
+        "co_pre1923": 5
+      },
+      "first_year": 1860,
+      "last_year": 1898,
+      "feature_count": 5
+    },
+    "London and Blackwall Railway": {
+      "name": "London and Blackwall Railway",
+      "fields": {
+        "co_pre1923": 4
+      },
+      "first_year": 1840,
+      "last_year": 1922,
+      "feature_count": 4
+    },
+    "Eastern Counties and Thames Junction Railway": {
+      "name": "Eastern Counties and Thames Junction Railway",
+      "fields": {
+        "co_pre1923": 4
+      },
+      "first_year": 1846,
+      "last_year": 1922,
+      "feature_count": 4
+    },
+    "District Railway-Wimbledon Branch": {
+      "name": "District Railway-Wimbledon Branch",
+      "fields": {
+        "co_pre1923": 4
+      },
+      "first_year": 1880,
+      "last_year": 1922,
+      "feature_count": 4
+    },
+    "Eastern Counties Railway": {
+      "name": "Eastern Counties Railway",
+      "fields": {
+        "co_pre1923": 4
+      },
+      "first_year": 1839,
+      "last_year": 1922,
+      "feature_count": 4
+    },
+    "Manchester, South Junction and Altrincham Railway": {
+      "name": "Manchester, South Junction and Altrincham Railway",
+      "fields": {
+        "co_pre1923": 4
+      },
+      "first_year": 1849,
+      "last_year": 1922,
+      "feature_count": 4
+    },
+    "South Wales Railway": {
+      "name": "South Wales Railway",
+      "fields": {
+        "co_pre1923": 4
+      },
+      "first_year": 1850,
+      "last_year": 1922,
+      "feature_count": 4
+    },
+    "Perth and Dunkeld Railway": {
+      "name": "Perth and Dunkeld Railway",
+      "fields": {
+        "co_pre1923": 4
+      },
+      "first_year": 1856,
+      "last_year": 1922,
+      "feature_count": 4
+    },
+    "Northampton and Peterborough railway": {
+      "name": "Northampton and Peterborough railway",
+      "fields": {
+        "co_pre1923": 4
+      },
+      "first_year": 1845,
+      "last_year": 1922,
+      "feature_count": 4
+    },
+    "Swansea & Mumbles Railway": {
+      "name": "Swansea & Mumbles Railway",
+      "fields": {
+        "co_pre1923": 4
+      },
+      "first_year": 1807,
+      "last_year": 1922,
+      "feature_count": 4
+    },
+    "Bangor and Carnarvon Railway": {
+      "name": "Bangor and Carnarvon Railway",
+      "fields": {
+        "co_pre1923": 4
+      },
+      "first_year": 1851,
+      "last_year": 1922,
+      "feature_count": 4
+    },
+    "Brandling Junction Railway": {
+      "name": "Brandling Junction Railway",
+      "fields": {
+        "co_pre1923": 4
+      },
+      "first_year": 1839,
+      "last_year": 1922,
+      "feature_count": 4
+    },
+    "Southampton and Dorchester railway": {
+      "name": "Southampton and Dorchester railway",
+      "fields": {
+        "co_pre1923": 4
+      },
+      "first_year": 1847,
+      "last_year": 1922,
+      "feature_count": 4
+    },
+    "Newcastle & Carlisle Railway": {
+      "name": "Newcastle & Carlisle Railway",
+      "fields": {
+        "co_pre1923": 4
+      },
+      "first_year": 1835,
+      "last_year": 1922,
+      "feature_count": 4
+    },
+    "East and West Junction Railway": {
+      "name": "East and West Junction Railway",
+      "fields": {
+        "co_pre1923": 4
+      },
+      "first_year": 1871,
+      "last_year": 1922,
+      "feature_count": 4
+    },
+    "Grand Junction Railway": {
+      "name": "Grand Junction Railway",
+      "fields": {
+        "co_pre1923": 4
+      },
+      "first_year": 1837,
+      "last_year": 1922,
+      "feature_count": 4
+    },
+    "Worcester and Hereford Railway": {
+      "name": "Worcester and Hereford Railway",
+      "fields": {
+        "co_pre1923": 4
+      },
+      "first_year": 1859,
+      "last_year": 1922,
+      "feature_count": 4
+    },
+    "Wye Valley Railway": {
+      "name": "Wye Valley Railway",
+      "fields": {
+        "co_pre1923": 4
+      },
+      "first_year": 1876,
+      "last_year": 1922,
+      "feature_count": 4
+    },
+    "Severn Valley Railway": {
+      "name": "Severn Valley Railway",
+      "fields": {
+        "co_pre1923": 4
+      },
+      "first_year": 1862,
+      "last_year": 1922,
+      "feature_count": 4
+    },
+    "Wellington to Craven Arms Railway": {
+      "name": "Wellington to Craven Arms Railway",
+      "fields": {
+        "co_pre1923": 4
+      },
+      "first_year": 1859,
+      "last_year": 1922,
+      "feature_count": 4
+    },
+    "Wigan Junction Railway": {
+      "name": "Wigan Junction Railway",
+      "fields": {
+        "co_pre1923": 4
+      },
+      "first_year": 1879,
+      "last_year": 1922,
+      "feature_count": 4
+    },
+    "Oldham, Ashton and Guide Bridge Railway": {
+      "name": "Oldham, Ashton and Guide Bridge Railway",
+      "fields": {
+        "co_pre1923": 4
+      },
+      "first_year": 1861,
+      "last_year": 1922,
+      "feature_count": 4
+    },
+    "Stockport and Woodley Junction Railway": {
+      "name": "Stockport and Woodley Junction Railway",
+      "fields": {
+        "co_pre1923": 4
+      },
+      "first_year": 1863,
+      "last_year": 1922,
+      "feature_count": 4
+    },
+    "Leeds, Bradford and Halifax Junction Railway": {
+      "name": "Leeds, Bradford and Halifax Junction Railway",
+      "fields": {
+        "co_pre1923": 4
+      },
+      "first_year": 1854,
+      "last_year": 1922,
+      "feature_count": 4
+    },
+    "North Lindsey Light Railway": {
+      "name": "North Lindsey Light Railway",
+      "fields": {
+        "co_pre1923": 4
+      },
+      "first_year": 1906,
+      "last_year": 1922,
+      "feature_count": 4
+    },
+    "Whitby, Redcar and Middlesbrough Union Railway": {
+      "name": "Whitby, Redcar and Middlesbrough Union Railway",
+      "fields": {
+        "co_pre1923": 4
+      },
+      "first_year": 1883,
+      "last_year": 1922,
+      "feature_count": 4
+    },
+    "Ravenglass and Eskdale Railway": {
+      "name": "Ravenglass and Eskdale Railway",
+      "fields": {
+        "co_pre1923": 4
+      },
+      "first_year": 1875,
+      "last_year": 1922,
+      "feature_count": 4
+    },
+    "Lambton Railway": {
+      "name": "Lambton Railway",
+      "fields": {
+        "co_pre1923": 4
+      },
+      "first_year": 1819,
+      "last_year": 1914,
+      "feature_count": 4
+    },
+    "Rye and Camber Tramways Company Ltd": {
+      "name": "Rye and Camber Tramways Company Ltd",
+      "fields": {
+        "co_pre1923": 4
+      },
+      "first_year": 1895,
+      "last_year": 1922,
+      "feature_count": 4
+    },
+    "Glasgow, Dumbarton and Helensburgh Railway": {
+      "name": "Glasgow, Dumbarton and Helensburgh Railway",
+      "fields": {
+        "co_pre1923": 4
+      },
+      "first_year": 1858,
+      "last_year": 1922,
+      "feature_count": 4
+    },
+    "Strabathie Light Railway": {
+      "name": "Strabathie Light Railway",
+      "fields": {
+        "co_pre1923": 4
+      },
+      "first_year": 1899,
+      "last_year": 1922,
+      "feature_count": 4
+    },
+    "West End of London & Crystal Palace Railway": {
+      "name": "West End of London & Crystal Palace Railway",
+      "fields": {
+        "co_pre1923": 3
+      },
+      "first_year": 1856,
+      "last_year": 1922,
+      "feature_count": 3
+    },
+    "Whitechapel & Bow Railway": {
+      "name": "Whitechapel & Bow Railway",
+      "fields": {
+        "co_pre1923": 3
+      },
+      "first_year": 1902,
+      "last_year": 1922,
+      "feature_count": 3
+    },
+    "Wycombe Railway": {
+      "name": "Wycombe Railway",
+      "fields": {
+        "co_pre1923": 3
+      },
+      "first_year": 1854,
+      "last_year": 1922,
+      "feature_count": 3
+    },
+    "Taff Vale Railway": {
+      "name": "Taff Vale Railway",
+      "fields": {
+        "co_pre1923": 3
+      },
+      "first_year": 1840,
+      "last_year": 1922,
+      "feature_count": 3
+    },
+    "Wells and Fakenham railway": {
+      "name": "Wells and Fakenham railway",
+      "fields": {
+        "co_pre1923": 3
+      },
+      "first_year": 1857,
+      "last_year": 1922,
+      "feature_count": 3
+    },
+    "Stour Valley Railway": {
+      "name": "Stour Valley Railway",
+      "fields": {
+        "co_pre1923": 3
+      },
+      "first_year": 1849,
+      "last_year": 1922,
+      "feature_count": 3
+    },
+    "Bedford Railway": {
+      "name": "Bedford Railway",
+      "fields": {
+        "co_pre1923": 3
+      },
+      "first_year": 1846,
+      "last_year": 1922,
+      "feature_count": 3
+    },
+    "Rhymney Railway": {
+      "name": "Rhymney Railway",
+      "fields": {
+        "co_pre1923": 3
+      },
+      "first_year": 1858,
+      "last_year": 1922,
+      "feature_count": 3
+    },
+    "Wansbeck Railway": {
+      "name": "Wansbeck Railway",
+      "fields": {
+        "co_pre1923": 3
+      },
+      "first_year": 1862,
+      "last_year": 1922,
+      "feature_count": 3
+    },
+    "Bridport Railway": {
+      "name": "Bridport Railway",
+      "fields": {
+        "co_pre1923": 3
+      },
+      "first_year": 1857,
+      "last_year": 1922,
+      "feature_count": 3
+    },
+    "Isle of Wight Railway": {
+      "name": "Isle of Wight Railway",
+      "fields": {
+        "co_pre1923": 3
+      },
+      "first_year": 1864,
+      "last_year": 1922,
+      "feature_count": 3
+    },
+    "Bodmin and Wadebridge Railway": {
+      "name": "Bodmin and Wadebridge Railway",
+      "fields": {
+        "co_pre1923": 3
+      },
+      "first_year": 1834,
+      "last_year": 1922,
+      "feature_count": 3
+    },
+    "Portishead Railway": {
+      "name": "Portishead Railway",
+      "fields": {
+        "co_pre1923": 3
+      },
+      "first_year": 1867,
+      "last_year": 1922,
+      "feature_count": 3
+    },
+    "Severn and Wye Railway": {
+      "name": "Severn and Wye Railway",
+      "fields": {
+        "co_pre1923": 3
+      },
+      "first_year": 1810,
+      "last_year": 1922,
+      "feature_count": 3
+    },
+    "Banbury and Cheltenham Direct Railway": {
+      "name": "Banbury and Cheltenham Direct Railway",
+      "fields": {
+        "co_pre1923": 3
+      },
+      "first_year": 1862,
+      "last_year": 1922,
+      "feature_count": 3
+    },
+    "Birmingham West Suburban Railway": {
+      "name": "Birmingham West Suburban Railway",
+      "fields": {
+        "co_pre1923": 3
+      },
+      "first_year": 1876,
+      "last_year": 1922,
+      "feature_count": 3
+    },
+    "Birmingham and Gloucester Railway": {
+      "name": "Birmingham and Gloucester Railway",
+      "fields": {
+        "co_pre1923": 3
+      },
+      "first_year": 1840,
+      "last_year": 1922,
+      "feature_count": 3
+    },
+    "Hereford, Ross & Gloucester Railway": {
+      "name": "Hereford, Ross & Gloucester Railway",
+      "fields": {
+        "co_pre1923": 3
+      },
+      "first_year": 1855,
+      "last_year": 1922,
+      "feature_count": 3
+    },
+    "Denbigh, Ruthin and Corwen Railway": {
+      "name": "Denbigh, Ruthin and Corwen Railway",
+      "fields": {
+        "co_pre1923": 3
+      },
+      "first_year": 1862,
+      "last_year": 1922,
+      "feature_count": 3
+    },
+    "Leicester and Swannington Railway": {
+      "name": "Leicester and Swannington Railway",
+      "fields": {
+        "co_pre1923": 3
+      },
+      "first_year": 1832,
+      "last_year": 1922,
+      "feature_count": 3
+    },
+    "Ashby and Nuneaton Joint Railway": {
+      "name": "Ashby and Nuneaton Joint Railway",
+      "fields": {
+        "co_pre1923": 3
+      },
+      "first_year": 1873,
+      "last_year": 1922,
+      "feature_count": 3
+    },
+    "Liverpool, Crosby & Southport Railway": {
+      "name": "Liverpool, Crosby & Southport Railway",
+      "fields": {
+        "co_pre1923": 3
+      },
+      "first_year": 1848,
+      "last_year": 1922,
+      "feature_count": 3
+    },
+    "Methley Joint Railway": {
+      "name": "Methley Joint Railway",
+      "fields": {
+        "co_pre1923": 3
+      },
+      "first_year": 1865,
+      "last_year": 1922,
+      "feature_count": 3
+    },
+    "Hull and South Yorkshire Extension Railway": {
+      "name": "Hull and South Yorkshire Extension Railway",
+      "fields": {
+        "co_pre1923": 3
+      },
+      "first_year": 1902,
+      "last_year": 1922,
+      "feature_count": 3
+    },
+    "Barnsley Coal Railway": {
+      "name": "Barnsley Coal Railway",
+      "fields": {
+        "co_pre1923": 3
+      },
+      "first_year": 1870,
+      "last_year": 1922,
+      "feature_count": 3
+    },
+    "Scarborough and Whitby Railway": {
+      "name": "Scarborough and Whitby Railway",
+      "fields": {
+        "co_pre1923": 3
+      },
+      "first_year": 1885,
+      "last_year": 1922,
+      "feature_count": 3
+    },
+    "Leeds and Thirsk Railway": {
+      "name": "Leeds and Thirsk Railway",
+      "fields": {
+        "co_pre1923": 3
+      },
+      "first_year": 1848,
+      "last_year": 1922,
+      "feature_count": 3
+    },
+    "Eden Valley Railway": {
+      "name": "Eden Valley Railway",
+      "fields": {
+        "co_pre1923": 3
+      },
+      "first_year": 1862,
+      "last_year": 1922,
+      "feature_count": 3
+    },
+    "Hartlepool Dock & Railway": {
+      "name": "Hartlepool Dock & Railway",
+      "fields": {
+        "co_pre1923": 3
+      },
+      "first_year": 1835,
+      "last_year": 1922,
+      "feature_count": 3
+    },
+    "Whitland and Cardigan Railway": {
+      "name": "Whitland and Cardigan Railway",
+      "fields": {
+        "co_pre1923": 3
+      },
+      "first_year": 1873,
+      "last_year": 1922,
+      "feature_count": 3
+    },
+    "Cleator and Workington Junction Railway": {
+      "name": "Cleator and Workington Junction Railway",
+      "fields": {
+        "co_pre1923": 3
+      },
+      "first_year": 1879,
+      "last_year": 1922,
+      "feature_count": 3
+    },
+    "Cockermouth, Keswick and Penrith Railway": {
+      "name": "Cockermouth, Keswick and Penrith Railway",
+      "fields": {
+        "co_pre1923": 3
+      },
+      "first_year": 1864,
+      "last_year": 1922,
+      "feature_count": 3
+    },
+    "Bishop Auckland and Weardale Railway": {
+      "name": "Bishop Auckland and Weardale Railway",
+      "fields": {
+        "co_pre1923": 3
+      },
+      "first_year": 1847,
+      "last_year": 1922,
+      "feature_count": 3
+    },
+    "Lanchester Valley Railway": {
+      "name": "Lanchester Valley Railway",
+      "fields": {
+        "co_pre1923": 3
+      },
+      "first_year": 1862,
+      "last_year": 1922,
+      "feature_count": 3
+    },
+    "Mansfield Railway": {
+      "name": "Mansfield Railway",
+      "fields": {
+        "co_pre1923": 3
+      },
+      "first_year": 1913,
+      "last_year": 1922,
+      "feature_count": 3
+    },
+    "Anglesey Central Railway": {
+      "name": "Anglesey Central Railway",
+      "fields": {
+        "co_pre1923": 3
+      },
+      "first_year": 1864,
+      "last_year": 1922,
+      "feature_count": 3
+    },
+    "Scottish Midland Junction Railway, Blairgowrie Branch": {
+      "name": "Scottish Midland Junction Railway, Blairgowrie Branch",
+      "fields": {
+        "co_pre1923": 3
+      },
+      "first_year": 1855,
+      "last_year": 1922,
+      "feature_count": 3
+    },
+    "Corris Railway": {
+      "name": "Corris Railway",
+      "fields": {
+        "co_pre1923": 3
+      },
+      "first_year": 1859,
+      "last_year": 1922,
+      "feature_count": 3
+    },
+    "Weatherhill and Rookhope Railway": {
+      "name": "Weatherhill and Rookhope Railway",
+      "fields": {
+        "co_pre1923": 3
+      },
+      "first_year": 1846,
+      "last_year": 1922,
+      "feature_count": 3
+    },
+    "Westerton Colliery Railway": {
+      "name": "Westerton Colliery Railway",
+      "fields": {
+        "co_pre1923": 3
+      },
+      "first_year": 1836,
+      "last_year": 1922,
+      "feature_count": 3
+    },
+    "Aboyne and Braemar Railway": {
+      "name": "Aboyne and Braemar Railway",
+      "fields": {
+        "co_pre1923": 3
+      },
+      "first_year": 1866,
+      "last_year": 1922,
+      "feature_count": 3
+    },
+    "Chatham and District Light Railway Company": {
+      "name": "Chatham and District Light Railway Company",
+      "fields": {
+        "co_pre1923": 3
+      },
+      "first_year": 1904,
+      "last_year": 1922,
+      "feature_count": 3
+    },
+    "Millwall Extension Railway": {
+      "name": "Millwall Extension Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1871,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "London Necropolis Railway": {
+      "name": "London Necropolis Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1854,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "District Railway": {
+      "name": "District Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1879,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "St Helens and Runcorn Gap Railway": {
+      "name": "St Helens and Runcorn Gap Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1833,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Surrey Iron Railway": {
+      "name": "Surrey Iron Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1803,
+      "last_year": 1846,
+      "feature_count": 2
+    },
+    "Exe Valley Railway": {
+      "name": "Exe Valley Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1884,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Cambridge and St Ives branch railway": {
+      "name": "Cambridge and St Ives branch railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1847,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Saffron Walden Railway": {
+      "name": "Saffron Walden Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1865,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Benwick Goods Railway": {
+      "name": "Benwick Goods Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1897,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Rugby and Stamford railway": {
+      "name": "Rugby and Stamford railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1850,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Rumney Railway": {
+      "name": "Rumney Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1826,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Brecon and Merthyr Tydfil Junction Railway": {
+      "name": "Brecon and Merthyr Tydfil Junction Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1863,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Newcastle and Berwick Railway": {
+      "name": "Newcastle and Berwick Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1847,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Elham Valley railway": {
+      "name": "Elham Valley railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1887,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Kent and East Sussex Railway": {
+      "name": "Kent and East Sussex Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1903,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "West Sussex Railway": {
+      "name": "West Sussex Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1897,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Moretonhampstead and South Devon Railway": {
+      "name": "Moretonhampstead and South Devon Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1866,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "South Devon & Tavistock Railway": {
+      "name": "South Devon & Tavistock Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1859,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "North Cornwall Railway": {
+      "name": "North Cornwall Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1886,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Bideford, Westward Ho! and Appledore Railway": {
+      "name": "Bideford, Westward Ho! and Appledore Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1901,
+      "last_year": 1917,
+      "feature_count": 2
+    },
+    "Devon & Somerset Railway": {
+      "name": "Devon & Somerset Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1871,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "West Somerset Railway": {
+      "name": "West Somerset Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1862,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Cornwall Minerals Railway": {
+      "name": "Cornwall Minerals Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1874,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Truro and Newquay Railway": {
+      "name": "Truro and Newquay Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1903,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Hayle Railway": {
+      "name": "Hayle Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1837,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Newquay and Cornwall Junction Railway": {
+      "name": "Newquay and Cornwall Junction Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1869,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Weston, Clevedon and Portishead Light Railway": {
+      "name": "Weston, Clevedon and Portishead Light Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1897,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Severn Bridge Railway": {
+      "name": "Severn Bridge Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1879,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Midland and South Western Junction Railway": {
+      "name": "Midland and South Western Junction Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1883,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Birmingham and Oxford Junction Railway": {
+      "name": "Birmingham and Oxford Junction Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1852,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Oxford, Witney and Fairford Railway": {
+      "name": "Oxford, Witney and Fairford Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1861,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Aylesbury and Buckingham Railway": {
+      "name": "Aylesbury and Buckingham Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1868,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Northampton and Banbury Junction Railway": {
+      "name": "Northampton and Banbury Junction Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1866,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Evesham & Redditch Railway": {
+      "name": "Evesham & Redditch Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1866,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Tewkesbury and Malvern Railway": {
+      "name": "Tewkesbury and Malvern Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1864,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Shrewsbury & Hereford Railway": {
+      "name": "Shrewsbury & Hereford Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1852,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Ross & Monmouth Railway": {
+      "name": "Ross & Monmouth Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1873,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Ledbury & Gloucester Railway": {
+      "name": "Ledbury & Gloucester Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1885,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Tenbury and Bewdley Railway": {
+      "name": "Tenbury and Bewdley Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1864,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Bishops Castle Railway": {
+      "name": "Bishops Castle Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1866,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Oswestry, Ellesmere and Whitchurch Railway": {
+      "name": "Oswestry, Ellesmere and Whitchurch Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1863,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Oswestry and Newtown Railway": {
+      "name": "Oswestry and Newtown Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1860,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Wrexham & Ellesmere Railway": {
+      "name": "Wrexham & Ellesmere Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1895,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Macclesfield, Bollington and Marple Railway": {
+      "name": "Macclesfield, Bollington and Marple Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1869,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Grantham and Lincoln railway line": {
+      "name": "Grantham and Lincoln railway line",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1867,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Axholme Joint Railway": {
+      "name": "Axholme Joint Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1903,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Halesowen Railway": {
+      "name": "Halesowen Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1878,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Garston and Liverpool Railway": {
+      "name": "Garston and Liverpool Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1864,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "West Lancashire Railway": {
+      "name": "West Lancashire Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1882,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Ashton, Stalybridge and Liverpool Junction Railway": {
+      "name": "Ashton, Stalybridge and Liverpool Junction Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1846,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Kenyon and Leigh Junction Railway": {
+      "name": "Kenyon and Leigh Junction Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1831,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Holmfield to St Pauls (Halifax high level railway)": {
+      "name": "Holmfield to St Pauls (Halifax high level railway)",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1890,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "South Yorkshire Railway": {
+      "name": "South Yorkshire Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1850,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Hull and Selby Railway": {
+      "name": "Hull and Selby Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1840,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Dearne Valley Railway": {
+      "name": "Dearne Valley Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1909,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Pilmoor, Boroughbridge and Knaresborough Railway": {
+      "name": "Pilmoor, Boroughbridge and Knaresborough Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1847,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Middlesbrough and Guisborough Railway": {
+      "name": "Middlesbrough and Guisborough Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1854,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Cleveland Railway": {
+      "name": "Cleveland Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1861,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Castle Eden Railway": {
+      "name": "Castle Eden Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1877,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Hexham and Allendale Railway": {
+      "name": "Hexham and Allendale Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1867,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Lancaster and Carlisle Railway": {
+      "name": "Lancaster and Carlisle Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1846,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Garstang and Knot-End Railway": {
+      "name": "Garstang and Knot-End Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1870,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Preston and Longridge Railway": {
+      "name": "Preston and Longridge Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1840,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "\"Little\" North Western Railway": {
+      "name": "\"Little\" North Western Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1849,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Lakeside and Haverthwaite Railway": {
+      "name": "Lakeside and Haverthwaite Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1869,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Carlisle and Silloth Bay Railway": {
+      "name": "Carlisle and Silloth Bay Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1854,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Cockermouth and Workington Railway": {
+      "name": "Cockermouth and Workington Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1847,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Grimsby and Immingham Electric Railway": {
+      "name": "Grimsby and Immingham Electric Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1912,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Great Central and Midland Joint Railway": {
+      "name": "Great Central and Midland Joint Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1909,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Derwent Valley Light Railway": {
+      "name": "Derwent Valley Light Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1912,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Otley and Ilkley Joint Railway": {
+      "name": "Otley and Ilkley Joint Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1865,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Yorkshire Dales Railway": {
+      "name": "Yorkshire Dales Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1902,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Great North of England, Clarence and Hartlepool Junction Railway": {
+      "name": "Great North of England, Clarence and Hartlepool Junction Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1839,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "North Eastern Railway": {
+      "name": "North Eastern Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1838,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Arbroath and Forfar Railway": {
+      "name": "Arbroath and Forfar Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1847,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Rookhope and Middlehope Railway": {
+      "name": "Rookhope and Middlehope Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1855,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "South Hetton Railway": {
+      "name": "South Hetton Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1843,
+      "last_year": 1895,
+      "feature_count": 2
+    },
+    "NER": {
+      "name": "NER",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1847,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Pelaw Main Railway": {
+      "name": "Pelaw Main Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1815,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Black Boy Colliery Railway": {
+      "name": "Black Boy Colliery Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1827,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Crowtrees Railway": {
+      "name": "Crowtrees Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1831,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Lancashire and Yorkshire Railway": {
+      "name": "Lancashire and Yorkshire Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1875,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Liverpool Overhead Railway Company": {
+      "name": "Liverpool Overhead Railway Company",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1893,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Glasgow, Paisley, Kilmarnock and Ayr Railway": {
+      "name": "Glasgow, Paisley, Kilmarnock and Ayr Railway",
+      "fields": {
+        "co_pre1923": 2
+      },
+      "first_year": 1840,
+      "last_year": 1922,
+      "feature_count": 2
+    },
+    "Oldham Branch Railway": {
+      "name": "Oldham Branch Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1842,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Bolton and Preston railway": {
+      "name": "Bolton and Preston railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1841,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "West London railway": {
+      "name": "West London railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1864,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "London and Greenwich Railway": {
+      "name": "London and Greenwich Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1836,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Sheppey Light Railway": {
+      "name": "Sheppey Light Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1901,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "North London Railway-Poplar Branch": {
+      "name": "North London Railway-Poplar Branch",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1852,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Hampstead Junction Railway": {
+      "name": "Hampstead Junction Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1860,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Waterloo and City Railway": {
+      "name": "Waterloo and City Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1898,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Chipstead Valley Railway": {
+      "name": "Chipstead Valley Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1897,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Great Marlow Railway": {
+      "name": "Great Marlow Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1873,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Bexley Heath Railway": {
+      "name": "Bexley Heath Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1895,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Bourn and Essendine Railway": {
+      "name": "Bourn and Essendine Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1860,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Edenham and Little Bytham Railway": {
+      "name": "Edenham and Little Bytham Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1857,
+      "last_year": 1884,
+      "feature_count": 1
+    },
+    "Morayshire Railway (Orton Section)": {
+      "name": "Morayshire Railway (Orton Section)",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1858,
+      "last_year": 1903,
+      "feature_count": 1
+    },
+    "Glenlossie Railway": {
+      "name": "Glenlossie Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1862,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Birmingham and Derby Junction Railway": {
+      "name": "Birmingham and Derby Junction Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1839,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Cambridge to Mildenhall railway": {
+      "name": "Cambridge to Mildenhall railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1884,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "London and Croydon Railway": {
+      "name": "London and Croydon Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1839,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Mid-Kent Railway": {
+      "name": "Mid-Kent Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1857,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Watford and Rickmansworth Railway": {
+      "name": "Watford and Rickmansworth Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1862,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Yarmouth & Norwich railway": {
+      "name": "Yarmouth & Norwich railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1844,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Halesworth, Beccles and Haddiscoe Railway": {
+      "name": "Halesworth, Beccles and Haddiscoe Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1854,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Lowestoft and Beccles Railway": {
+      "name": "Lowestoft and Beccles Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1859,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Wells & Fakenham railway": {
+      "name": "Wells & Fakenham railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1849,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Yarmouth to Lowestoft railway": {
+      "name": "Yarmouth to Lowestoft railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1903,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Ramsey and Somersham Junction Railway": {
+      "name": "Ramsey and Somersham Junction Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1889,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Mid Suffolk Light Railway": {
+      "name": "Mid Suffolk Light Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1908,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Hadleigh railway": {
+      "name": "Hadleigh railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1847,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Elsenham & Thaxted Light Railway": {
+      "name": "Elsenham & Thaxted Light Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1913,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Llanelly & Mynydd Mawr Railway": {
+      "name": "Llanelly & Mynydd Mawr Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1881,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Buckinghamshire Railway": {
+      "name": "Buckinghamshire Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1850,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Syston and Peterborough Railway": {
+      "name": "Syston and Peterborough Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1846,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Rugby and Stamford Railway": {
+      "name": "Rugby and Stamford Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1850,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Clydach Vale Railway": {
+      "name": "Clydach Vale Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1873,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Welsh Highland Railway": {
+      "name": "Welsh Highland Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1863,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Vale of Neath Railway": {
+      "name": "Vale of Neath Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1853,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Pontypridd, Caerphilly and Newport Railway": {
+      "name": "Pontypridd, Caerphilly and Newport Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1884,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Canterbury & Whitstable railway": {
+      "name": "Canterbury & Whitstable railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1830,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Mid-Wales Railway": {
+      "name": "Mid-Wales Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1864,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Neath and Brecon Railway": {
+      "name": "Neath and Brecon Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1866,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Bluebell Railway": {
+      "name": "Bluebell Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1882,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Southsea Railway": {
+      "name": "Southsea Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1885,
+      "last_year": 1914,
+      "feature_count": 1
+    },
+    "Bordon Light Railway": {
+      "name": "Bordon Light Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1905,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Basingstoke and Alton Light Railway": {
+      "name": "Basingstoke and Alton Light Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1901,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Stert and Westbury Railway": {
+      "name": "Stert and Westbury Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1900,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Weymouth and Portland Railway": {
+      "name": "Weymouth and Portland Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1865,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Abbotsbury Railway": {
+      "name": "Abbotsbury Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1885,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Swanage Railway": {
+      "name": "Swanage Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1885,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Marlborough Railway": {
+      "name": "Marlborough Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1864,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Lambourn Valley Railway": {
+      "name": "Lambourn Valley Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1898,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Chinnor and Princes Risborough Railway": {
+      "name": "Chinnor and Princes Risborough Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1872,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Watlington & Princes Risborough Railway": {
+      "name": "Watlington & Princes Risborough Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1872,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Newport, Godshill and St Lawrence Railway": {
+      "name": "Newport, Godshill and St Lawrence Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1897,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Isle of WIght Steam Railway": {
+      "name": "Isle of WIght Steam Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1875,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Ryde and Newport Railway": {
+      "name": "Ryde and Newport Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1875,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Freshwater, Yarmouth and Newport Railway": {
+      "name": "Freshwater, Yarmouth and Newport Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1888,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "East Somerset Railway": {
+      "name": "East Somerset Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1858,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Wrington Vale Light Railway": {
+      "name": "Wrington Vale Light Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1901,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Plymouth, Devonport and South Western Junction Railway": {
+      "name": "Plymouth, Devonport and South Western Junction Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1890,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Princetown Railway": {
+      "name": "Princetown Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1883,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Bodmin and Wenford Railway": {
+      "name": "Bodmin and Wenford Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1888,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Bodmin & Wenford Railway": {
+      "name": "Bodmin & Wenford Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1887,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Bodmin & Wadebridge Railway": {
+      "name": "Bodmin & Wadebridge Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1834,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Culm Valley Light Railway": {
+      "name": "Culm Valley Light Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1876,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Lynton and Barnstaple Railway": {
+      "name": "Lynton and Barnstaple Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1898,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "West Somerset Mineral Railway": {
+      "name": "West Somerset Mineral Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1861,
+      "last_year": 1910,
+      "feature_count": 1
+    },
+    "Lostwithiel and Fowey Railway": {
+      "name": "Lostwithiel and Fowey Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1869,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Avon Valley Railway": {
+      "name": "Avon Valley Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1869,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Clifton Extension Railway": {
+      "name": "Clifton Extension Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1874,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Dursley and Midland Junction Railway": {
+      "name": "Dursley and Midland Junction Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1856,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Stonehouse & Nailsworth Railway": {
+      "name": "Stonehouse & Nailsworth Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1867,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Coleford Railway": {
+      "name": "Coleford Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1883,
+      "last_year": 1917,
+      "feature_count": 1
+    },
+    "Redditch Railway": {
+      "name": "Redditch Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1859,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Evesham, Redditch and Stratford-upon-Avon Junction Railway": {
+      "name": "Evesham, Redditch and Stratford-upon-Avon Junction Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1879,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Stratford-upon-Avon, Towcester and Midland Junction Railway": {
+      "name": "Stratford-upon-Avon, Towcester and Midland Junction Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1891,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Edge Hill Light Railway": {
+      "name": "Edge Hill Light Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1920,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Great Central Railway": {
+      "name": "Great Central Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1899,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Stratford on Avon Railway": {
+      "name": "Stratford on Avon Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1860,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Mitcheldean Road & Forest of Dean Junction Railway": {
+      "name": "Mitcheldean Road & Forest of Dean Junction Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1907,
+      "last_year": 1917,
+      "feature_count": 1
+    },
+    "Bullo Pill Railway": {
+      "name": "Bullo Pill Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1810,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Tenbury Railway": {
+      "name": "Tenbury Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1864,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Cleobury Mortimer and Ditton Priors Light Railway": {
+      "name": "Cleobury Mortimer and Ditton Priors Light Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1908,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Crewe and Shrewsbury Railway": {
+      "name": "Crewe and Shrewsbury Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1858,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "West Cheshire Railway": {
+      "name": "West Cheshire Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1869,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Wellington and Drayton Railway": {
+      "name": "Wellington and Drayton Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1867,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Nantwich and Market Drayton Railway": {
+      "name": "Nantwich and Market Drayton Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1863,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Llanelly Railway, Carmarthen Line": {
+      "name": "Llanelly Railway, Carmarthen Line",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1865,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Vale of Clwyd Railway": {
+      "name": "Vale of Clwyd Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1856,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Mold and Denbigh Junction Railway": {
+      "name": "Mold and Denbigh Junction Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1869,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Wrexham and Minera Railway": {
+      "name": "Wrexham and Minera Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1862,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Whitchurch & Tattenhall Railway": {
+      "name": "Whitchurch & Tattenhall Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1872,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Spilsby and Firsby Railway": {
+      "name": "Spilsby and Firsby Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1868,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Horncastle Railway": {
+      "name": "Horncastle Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1855,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Stonebridge Railway": {
+      "name": "Stonebridge Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1839,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "South Yorkshire Joint Railway": {
+      "name": "South Yorkshire Joint Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1909,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Sheffield and Rotherham Railway": {
+      "name": "Sheffield and Rotherham Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1838,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Sheffield and Rotherham railway": {
+      "name": "Sheffield and Rotherham railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1838,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Stockport, Disley and Whaley Bridge Railway": {
+      "name": "Stockport, Disley and Whaley Bridge Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1857,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Manchester and Bolton Railway": {
+      "name": "Manchester and Bolton Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1838,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Wigan Branch Railway": {
+      "name": "Wigan Branch Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1832,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Stalybridge Junction Railway": {
+      "name": "Stalybridge Junction Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1893,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Keighley & Worth Valley Railway": {
+      "name": "Keighley & Worth Valley Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1867,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Leeds and Bradford Railway": {
+      "name": "Leeds and Bradford Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1846,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Leeds and Selby Railway": {
+      "name": "Leeds and Selby Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1834,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "South Yorkshire Junction Railway": {
+      "name": "South Yorkshire Junction Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1894,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Hull & Hornsea Railway": {
+      "name": "Hull & Hornsea Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1864,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Trent, Ancholme and Grimsby Railway": {
+      "name": "Trent, Ancholme and Grimsby Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1866,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Deane Valley Junction Railway": {
+      "name": "Deane Valley Junction Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1912,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Malton and Driffield Junction Railway": {
+      "name": "Malton and Driffield Junction Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1853,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Stockton and Darlington Railway": {
+      "name": "Stockton and Darlington Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1825,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Easingwold Railway": {
+      "name": "Easingwold Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1891,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Nidd Valley Railway": {
+      "name": "Nidd Valley Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1862,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Nidd Valley Light Railway": {
+      "name": "Nidd Valley Light Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1907,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Middlesbrough and Redcar Railway": {
+      "name": "Middlesbrough and Redcar Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1846,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Seaham and Sunderland Railway": {
+      "name": "Seaham and Sunderland Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1854,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Lampeter, Aberayron and New Quay Light Railway": {
+      "name": "Lampeter, Aberayron and New Quay Light Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1911,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Vale of Rheidol Railway": {
+      "name": "Vale of Rheidol Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1902,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Lancaster and Preston Junction Railway": {
+      "name": "Lancaster and Preston Junction Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1840,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Whittingham Hospital Railway": {
+      "name": "Whittingham Hospital Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1889,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Furness and Midland Joint Railway": {
+      "name": "Furness and Midland Joint Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1867,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Ulverstone and Lancaster Railway": {
+      "name": "Ulverstone and Lancaster Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1857,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Kendal and Windermere Railway": {
+      "name": "Kendal and Windermere Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1846,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Findhorn Railway": {
+      "name": "Findhorn Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1860,
+      "last_year": 1880,
+      "feature_count": 1
+    },
+    "Somerset & Dorset Joint Railway": {
+      "name": "Somerset & Dorset Joint Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1860,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Lanchester Railway extension": {
+      "name": "Lanchester Railway extension",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1867,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Border Counties Railway": {
+      "name": "Border Counties Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1862,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Barton and Immingham Light Railway": {
+      "name": "Barton and Immingham Light Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1911,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Nottingham Suburban Railway": {
+      "name": "Nottingham Suburban Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1889,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Charnwood Forest Railway": {
+      "name": "Charnwood Forest Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1883,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Coleorton Railway": {
+      "name": "Coleorton Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1835,
+      "last_year": 1872,
+      "feature_count": 1
+    },
+    "Tees Valley Railway": {
+      "name": "Tees Valley Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1868,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Kington and Eardisley Railway": {
+      "name": "Kington and Eardisley Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1874,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Leominster and Kington Railway": {
+      "name": "Leominster and Kington Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1857,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Kington and Presteigne Railway": {
+      "name": "Kington and Presteigne Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1875,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Shropshire and Montgomeryshire Railway": {
+      "name": "Shropshire and Montgomeryshire Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1911,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Mold Railway": {
+      "name": "Mold Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1849,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Wrexham and Minera Joint Railway": {
+      "name": "Wrexham and Minera Joint Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1875,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Cawood, Wistow and Selby Light Railway": {
+      "name": "Cawood, Wistow and Selby Light Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1898,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Croydon, Merstham and Godstone Iron Railway": {
+      "name": "Croydon, Merstham and Godstone Iron Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1805,
+      "last_year": 1838,
+      "feature_count": 1
+    },
+    "Elan Valley Railway": {
+      "name": "Elan Valley Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1896,
+      "last_year": 1916,
+      "feature_count": 1
+    },
+    "South Shields, Marsden & Whitburn Colliery Railway": {
+      "name": "South Shields, Marsden & Whitburn Colliery Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1888,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Bowden Close Railway": {
+      "name": "Bowden Close Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1845,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "South Durham Colliery Railway": {
+      "name": "South Durham Colliery Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1842,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Surtees Railway": {
+      "name": "Surtees Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1830,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Crookhall Railway": {
+      "name": "Crookhall Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1839,
+      "last_year": 1880,
+      "feature_count": 1
+    },
+    "Iveston Railway": {
+      "name": "Iveston Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1839,
+      "last_year": 1892,
+      "feature_count": 1
+    },
+    "Weardale Lead Company": {
+      "name": "Weardale Lead Company",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1913,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "Hetton Colliery Railway": {
+      "name": "Hetton Colliery Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1822,
+      "last_year": 1922,
+      "feature_count": 1
+    },
+    "North Sunderland Railway": {
+      "name": "North Sunderland Railway",
+      "fields": {
+        "co_pre1923": 1
+      },
+      "first_year": 1898,
+      "last_year": 1922,
+      "feature_count": 1
+    }
+  }
+}

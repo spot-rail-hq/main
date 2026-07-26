@@ -1250,3 +1250,311 @@ Against that, `operators.pmtiles` is live on R2 and read by `map.html`, so rebui
 **5. 234 hidden stations** in triage bucket (b) are genuine content gaps, listed with coordinates in the review file as correction-mechanism candidates.
 
 **6. Repo size.** `historical.pmtiles` (17.9 MB) plus the GeoJSON intermediates and cached downloads add ~55 MB. Consistent with the repo already tracking `operators.pmtiles` and `gb-railways.pmtiles`, but worth a deliberate decision on whether the `scripts/output/` caches belong in git or in `.gitignore`.
+
+---
+---
+
+# Phase 2B — UI build
+
+**Status:** UI built in `map.html`. No commits. No content generated at scale.
+**Date:** 2026-07-26
+**Phases 1, 1B and 2A above are unchanged.**
+
+Verified headlessly (`new Function()` parse of every inline script, plus a filter/rule
+harness that extracts the real expressions out of `map.html` and evaluates them against the
+real tile GeoJSON). **There is no browser in this environment, so nothing here is visually
+verified** — layout, the cross-fade, and touch behaviour all need a real browser pass.
+
+---
+
+## Conflicts found — flagged, not worked around
+
+**1. A year slider already existed, in the wrong mode.** `#history-panel` was live in
+**Database** mode with a hardcoded `max="2025"`, snap-points including the superseded 1965,
+and JS carrying a literal `TODO: swap in OpenHistoricalMap vector tiles for this year` — a
+stub for exactly this feature, parked in the wrong tab. Building a second slider beside it
+would have been the parallel mechanism the brief forbids.
+
+**I moved it**, and split the Database-mode legend that was sharing the box out into its own
+`#db-legend`. **This does remove the year slider from the Database tab.** That is a change to
+an existing feature and is the one thing here I'd most want confirmed — it follows from
+"History is a third mode, never an overlay", but it is your call, not mine.
+
+**2. `co_modern` is null on every feature, as predicted.** The band paint expression returns
+early for the modern band and paints from `operators.pmtiles` instead, so the field is
+carried but unused. Unchanged from the Phase 2A flag; still a Phase 2C/3 decision whether to
+emit modern segments into the same tileset.
+
+**3. The sidebar mockup — RESOLVED after the fact.** The History-tab mockup was supplied
+after the first build pass and is now reflected in the code. What it corrected:
+
+| | first build | corrected to match mockup |
+|---|---|---|
+| **Sidebar order** | slider placed *below* the title bar | **slider directly under the tab row, title below the separator as the first thing in the entity block** |
+| Entity title | small single-line ellipsised (`.sb-selection-title`) | large 30px display heading that **wraps** ("Great Western Railway (Legacy)" over two lines), row top-aligned so share/× sit against line one — scoped to `body.mode-history` so Live/Database are untouched |
+| Year label | 20px | 28px |
+| `nil` predecessor | "None — no predecessor company" | **"NIL"** — the term the brief and mockup both use; reads as a recorded fact rather than an absence |
+| Source link | generic "Source" | **"Wikipedia"** when the URL is a Wikipedia one |
+| Extra field | I had added an "On this map" map-coverage field | **removed** — not in the brief's field list, not in the mockup, and the slider's active-span band already conveys it visually |
+
+Confirmed unchanged by the mockup: no star on history entity panels (share and × only), the
+tab-row star stays, uppercase letter-spaced field labels, chips for successor, and the
+year-highlight section absent at TODAY (it has no reviewed entry — collapsing is correct).
+
+Two deliberate divergences from the mockup, both following the written brief over the image:
+- **Tick labels.** The mockup shows 1845/1880/1923/**1965**/1994 — the brief states these are
+  carried over from an older slider, so the code uses 1825 / 1845 / 1880 / 1923 / **1963** /
+  1994 / current year.
+- **The Jump-to × is self-hiding.** The mockup draws it on an empty field; item 6 specifies
+  "visible only when the field has text", which is what is implemented.
+
+---
+
+## Item 9 investigations
+
+### era-colors per-band "unknown" — only one of the three is reachable
+
+Added `unknown` to all three bands as asked, but the measurement changes what they mean:
+
+| Band | features with no attribution | `unknown` reachable? |
+|---|---:|---|
+| pre1923 | 6,859 of 10,754 (63.8%) | **No** — band is single-colour by locked decision, so `co_pre1923` drives the popup only, never paint. Its `unknown` is deliberately identical to the band colour. |
+| big4 | 9,280 of 10,465 (**88.7%**) | **Yes — this is the only one that renders.** |
+| br | **0 of 10,304 (0.0%)** | **No** — `co_br` is a constant, so the band is 100% attributed. Present for schema symmetry; if it ever renders, something upstream broke. |
+
+So the request for three distinct neutrals is mostly moot: **only `big4.unknown` does any
+work**, and what matters is its distance from the *pre1923 band colour* (that is the 1923
+transition for 88.7% of the map), not from the other two unknowns. Measured: ΔE **32.8** to
+pre1923, **27.5** to BR rail blue. Values are `#7E8AA0` / `#5A6577` — tune with those two
+numbers in mind rather than in isolation.
+
+A first pass at a warm-stone `pre1923` (`#C4A987`) measured only ΔE 22.8 from GWR chocolate,
+which would have made 1923 nearly invisible across GWR territory. Now `#C9BBA4`, nearest
+neighbour 32.3.
+
+### MAP-COVERAGE RANGE — precomputed, and it had to be band-clamped
+
+`scripts/build-historical-operator-coverage.mjs` → `data/historical-operator-coverage.json`.
+**414 operator names**, all five stubs resolve.
+
+Precomputed rather than queried per panel-open, and the reason is correctness rather than
+speed: `querySourceFeatures()` only sees tiles loaded for the **current viewport**, so an
+operator whose network is off-screen would return nothing and Rule 3 would fire incorrectly.
+The answer would change with where the user happened to be panned.
+
+**The first version was wrong and would have shipped a visible bug.** Unclamped,
+`min(start_year)` returns the year the *line* was built, not the year the operator existed:
+
+| | unclamped | clamped | real |
+|---|---|---|---|
+| British Railways | **1700**–open | 1948–1993 | 1948–1994 |
+| LMS | **1810**–open | 1923–1947 | 1923–1947 |
+
+Opening the BR panel from 1600 would have moved the slider to **1700** — a blank map, 248
+years before BR existed. Each contribution is now clamped to the band its attribution is
+valid within. Verified: every stub operator's Rule 2 landing year shows a non-empty network.
+
+**One weak case, flagged not fixed:** `gwr-legacy` lands on **1825 with only 3 lines
+visible**, because "Great Western Railway" appears in `co_pre1923` on a few very early lines
+as well as in `co_big4`, so its coverage spans 1825–1947. The other three Big Four operators
+land on 1923 with 617 / 389 / 19 lines. Rule 2 as specified says "start of the map-coverage
+range" and I implemented that literally. If you'd rather it landed where the *network* is,
+the alternatives are start-of-band (1923 for a `big4` operator) or the densest year — both
+are deviations from the locked rule, so I did not make either.
+
+### Predecessor/successor — how far the derivable chain gets
+
+- **pre-1923 → Big Four: derivable**, and already built — `data/big4-constituents.json` has
+  322 companies from the Railways Act 1921 plus the constituent-list articles.
+- **Big Four → British Railways: trivially derivable** — all four nationalised on the same
+  date. Encoded in the stubs.
+- **BR → modern operators: NOT derivable, and not attempted.** Privatisation carved the
+  network by franchise territory rather than by company inheritance, so the mapping is
+  many-to-many. `british-railways.successor` is `state: "unrecorded"` — deliberately **not**
+  `nil`, because BR plainly had successors and asserting "none" would be false.
+
+That NIL-vs-unrecorded distinction is in the schema and in the UI: `nil` renders "None — no
+predecessor company" (GWR (Legacy), a genuine 1833 original incorporation), `unrecorded`
+renders "Unrecorded".
+
+**Chip suppression — I chose visibly disabled over hiding.** A chip whose target has no
+content record renders greyed with a dashed border and `aria-disabled`, not removed.
+Suppressing would hide a real historical fact (the LMS *did* succeed the Caledonian Railway)
+merely because we haven't written that company's entry yet — a worse lie than an unclickable
+name. It also makes the 2C backlog visible in the UI.
+
+### Where historical station/route content should live
+
+**Recommendation: separate files, keyed by lowercase-kebab slug** — which is what
+`data/historical-operators.json` now uses. Checked against every existing key scheme first,
+because key mismatches have caused real bugs here:
+
+| File | Key scheme |
+|---|---|
+| `stations-content.json` | 3-char uppercase CRS |
+| `operators-content.json` | 2–3 char uppercase codes **and** bare display names |
+| `routes-content.json` | SCREAMING-KEBAB slug |
+| `big4-constituents.json` | normalized lowercase name |
+| **`historical-operators.json`** | **lowercase-kebab slug** — collides with none of the above |
+
+Historical stations should **not** extend `stations-content.json`: that file is CRS-keyed and
+closed stations have no CRS and never will. Historical routes should not extend
+`routes-content.json` for the same reason (its keys are curated modern route slugs).
+
+**The lookup from a map feature is `tile_matches`, not the display name.** A clicked line
+gives you the literal string in its `co_*` property; matching on `display_name` would break
+the moment a name gains a "(Legacy)" suffix or a comma moves.
+
+### Notable-years file — shape, location, gate
+
+`data/notable-years.json`, keyed by year string, `{ year, blurb, source, reviewed }`.
+
+**The `reviewed` gate is enforced at load time, not render time** — unreviewed entries are
+dropped from the in-memory map entirely, so no current or future code path can surface one by
+forgetting a check. It requires `reviewed === true` exactly, not merely truthy.
+
+Five reviewed stubs (1825, 1830, 1923, 1948, 1963 — all hand-verifiable, several already
+grounded in Phase 1) plus **one deliberately unreviewed 1938 entry whose blurb says so**, as
+a live test fixture: if that text ever appears on the site, the gate is broken. Verified
+dropped.
+
+### Search scope for historical operators
+
+**Not built this phase** (correctly — the brief scopes it to a report). What it would take:
+`searchOperators()` already exists and ranks over `operatorsContent` with substring/starts-with
+ranking. Adding historical operators means merging a second source into that one function and
+tagging results by kind so the picker can route to `selectHistoricalOperator` vs
+`selectOperator` — roughly a 20-line change, since the Operator search tab and its
+autocomplete already exist.
+
+**The blocker is not the code, it's the disambiguation:** "Great Western Railway" would return
+two results that are genuinely different entities. The "(Legacy)" suffix handles display, but
+the result list needs a visible era qualifier or users will pick the wrong one. Worth deciding
+before building.
+
+**A historical STATION search index is explicitly out of scope and should stay that way** —
+9,421 stations with multiple open periods each is a different problem (which period do you
+show in a result row?), not a bigger version of this one.
+
+---
+
+## Edge tick labels (1825 and the current year)
+
+Ticks are absolutely positioned by percentage so they line up with the track rather than being
+evenly spaced. The first sits at 0% and the last at 100%, where the normal
+`transform: translateX(-50%)` centring would hang half the label outside the panel and clip it.
+
+**Handled by anchoring rather than insetting:** `.hs-tick.edge-first` drops the transform and
+pins `left: 0`; `.edge-last` pins `right: 0`. Every interior tick stays truly centred on its
+year. The alternative — nudging the first and last inward by a magic pixel value — would put
+those two labels at coordinates that don't match their years, which on a *historical* slider
+is a small lie about where 1825 is.
+
+**The mockup could not answer this**, because it omits both edge years entirely (its ticks run
+1845–1994). It did reveal a separate divergence: the mockup spaces its ticks **evenly**, while
+the code positions them **proportionally by year**. Even spacing would put "1845" at 3% of the
+track when 1845 actually sits at 10% — the same class of small lie, so proportional is kept.
+
+**Collision measured at the real track widths** (1825 and 1845 are only 20 years apart on a
+~200-year range, so they are the tightest pair everywhere):
+
+| context | track | min label gap |
+|---|---:|---:|
+| desktop map canvas, 10px type | 482px | 14.4px — fine |
+| sidebar, 10px type | 368px | 3.0px — tight |
+| sidebar, 9px type (applied) | 368px | ~5px |
+| mobile, 9px type (already in CSS) | 338px | 3.6px |
+
+No collision at any width, but the sidebar now drops to 9px for margin. **Still worth a real
+screen check** — these are computed from average glyph width, not measured text metrics.
+
+The last tick renders as **"Today"**, and both the label and the range max come from
+`historyMaxYear()` at runtime. Nothing is hardcoded to 2025/2026.
+
+---
+
+## Existing Escape handling — what was there, and what changed
+
+**Investigated first, as asked.** `wireAutocomplete()` is a single shared function used by
+*every* search field on the site (station, from, to, operator, and the mobile floating search
+bar). It already had full combobox keyboard support: ArrowDown/ArrowUp over a shared
+`highlightedIndex`, Enter-selects-highlighted with `stopImmediatePropagation` so it beats the
+field's own Enter listener, WAI-ARIA roles and `aria-activedescendant`, and mouse hover kept
+in sync with the keyboard highlight.
+
+**Escape existed but did stage one only** — `closeDropdown()` and nothing else. That is
+exactly the reported bug: clearing removed the results but left the text, forcing repeated
+backspacing.
+
+**Change made:** Escape now branches on whether the dropdown is open. Open → close it, return
+(unchanged behaviour). Not open → clear text *and* call `onPick(null)`, which is what resets
+the caller's own pick state. **No double-handling** — the handler returns after stage one, so
+one keypress can never do both, and the discriminator is the dropdown's visible state rather
+than a hidden flag, so the stages match what the user can see.
+
+The × button is **injected by `wireAutocomplete` itself**, so all five search fields got it
+from one change rather than five patches. It uses `mousedown` not `click`, because the input's
+blur handler closes the dropdown on a 120 ms delay and a click would fire after focus had
+already moved. The Jump-to fields declare their × in markup (they aren't autocompletes) and
+share the same class and behaviour. Clicking a field is untouched — no select-all, no clear.
+
+---
+
+## Live-tab viewport check — it did squeeze, and is now fixed
+
+**Measured rather than eyeballed.** Crediting all six MANDATORY sources unconditionally
+produces a **336-character** summary — roughly **5 wrapped lines, ~86 px** of permanent
+sidebar chrome. On a 700 px viewport that takes the Live tab's 50/50 departure/news panes from
+~219 px each to **~191 px each**. Real, and worse on anything shorter.
+
+**Fix, and it came from the manifest's own rule** rather than a design compromise:
+`data/attribution.json`'s `ui_guidance` already said the map bar must include mandatory
+entries *"and the layer is visible"*. Each source now carries an explicit `layer_scope`
+(`always` / `modern` / `historical` / `orm`) and the collapsed bar filters on it:
+
+| Context | collapsed summary |
+|---|---:|
+| Live / Database | **189 chars** |
+| History, pre-1994 | **273 chars** |
+| all six unconditionally | 336 chars |
+
+OpenRailwayMap's CC-BY-SA credit now appears only while the overlay is actually switched on,
+and OSM's ODbL credit is dropped in the pre-1994 historical view where no OSM-derived layer is
+drawn. **The expanded state always lists every source regardless of scope**, so nothing is
+unreachable — only one tap away. The bar re-renders on mode change, on crossing 1994, and on
+the ORM toggle.
+
+MapLibre's native `AttributionControl` is commented out, not deleted, with the reason inline.
+
+---
+
+## Mobile / touch
+
+`touch-action: pan-y` on the range input so a horizontal drag on the thumb is not handed to
+MapLibre's pan gesture, and the thumb grows 16 → 22 px under 768 px. The bottom slider goes
+edge-to-edge and sits at `bottom: 70px`, clear of the hint pills.
+
+**Two conflicts I could not resolve without a device, flagged rather than half-shipped:**
+
+1. **The bottom slider overlaps the map's pan area by design.** `touch-action` should stop the
+   browser handing a thumb drag to the map, but MapLibre attaches its own pointer handlers and
+   whether the panel's `pointer-events` reliably win at the panel's *edges* (outside the thumb,
+   still inside the box) is exactly the kind of thing that only shows up on hardware.
+2. **The sidebar instance and the map instance are both visible on mobile**, so on a short
+   viewport a user could see two sliders at once. They share one state and cannot drift, but
+   whether that reads as helpful or redundant is a design call. Hiding the map instance under
+   768 px would be a one-line change if you want it.
+
+---
+
+## What is not done
+
+- **No content at scale** — five stub operators, five reviewed year blurbs, one test fixture.
+- **No historical operator search** (reported above, not built, per the brief).
+- **No `schema_jsonld`** for history entities — the stub set is too small for structured data
+  to be meaningful, and a half-populated `Organization` record is worse than none.
+- **Favourites untouched.** No star on history panels (share and close only); the tab-row star
+  and `srhq_saved_routes` are exactly as they were.
+- **`historical.pmtiles` URL** points at the same R2 bucket as the other two tilesets. If the
+  file is not uploaded under that name yet, the historical layers will fail to load and
+  History mode will show an empty map — the rest of the UI degrades cleanly.

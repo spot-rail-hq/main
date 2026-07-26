@@ -1,0 +1,165 @@
+{
+  "_notes": "Historical railway operators — a NEW ENTITY TYPE, deliberately NOT folded into operators-content.json. That file is keyed by modern ATOC-style operator codes and describes companies running services today; 'Great Western Railway' (1833-1947) and today's GWR are different legal entities that happen to share a name, and this repo has already been bitten by exactly that collision (see operators-content.json's _notes on GW's wikipedia_title having pointed at the historic company). KEY SCHEME: lowercase kebab-case slug, chosen after checking every existing key scheme in the repo — stations-content.json uses 3-char uppercase CRS, operators-content.json uses 2-3 char uppercase codes AND bare display names, routes-content.json uses SCREAMING-KEBAB slugs, data/big4-constituents.json uses normalized lowercase names. A lowercase kebab slug collides with none of them, and the '-legacy' suffix keeps a historical entity distinguishable from its modern namesake at the key level as well as in display. THE LOOKUP FROM A MAP FEATURE IS `tile_matches`, NOT the display name: a clicked line gives you the literal string in its co_pre1923 / co_big4 / co_br property, and tile_matches lists exactly those strings for this operator. Matching on display_name instead would break the moment a display name gains a '(Legacy)' suffix or a comma moves. NIL vs UNRECORDED: predecessor/successor are objects with an explicit `state` of 'nil' (the company genuinely had none — GWR (Legacy) was an original incorporation with no predecessor) or 'unrecorded' (we simply have no data) or 'known' (with a populated list). Rendering an unrecorded predecessor as 'None' would assert something false. MAP-COVERAGE RANGE is NOT in this file — it is derived geometry, lives in data/historical-operator-coverage.json, and is written by scripts/build-historical-operator-coverage.mjs. This file holds FOUNDED (incorporation) and DATES OF OPERATION (the editorial span); neither is ever used to move the slider. STUB SET ONLY — five hand-verifiable entries so the rendering path can be exercised. Populating this at scale is Phase 2C.",
+  "_schema": {
+    "key": "lowercase-kebab slug, stable, '-legacy' where a modern namesake exists",
+    "display_name": "shown verbatim in the panel, including '(Legacy)' where applicable",
+    "short_name": "optional compact form for chips",
+    "tile_matches": "array of literal strings as they appear in tile co_* properties — THE join key from a map feature",
+    "description": "1-3 sentences, grounded, no invention",
+    "founded": "incorporation year (int) or null — NEVER used for slider movement",
+    "dates_of_operation": "{ start: int, end: int|null } — end null = still operating. The editorial span shown in the panel. Standard term in rail literature and Wikipedia rail-company infoboxes; use this exact label in the UI.",
+    "headquarters": "string or null",
+    "predecessor": "{ state: 'known'|'nil'|'unrecorded', entities: [{ key, display_name, kind }] }",
+    "successor": "same shape as predecessor",
+    "notable_features": "array of short grounded strings",
+    "source_url": "Wikipedia (or other) URL the facts came from",
+    "era_band": "which colour band this operator belongs to — pre1923 | big4 | br. Used only to pick the panel's accent, NOT stored on features."
+  },
+  "operators": {
+    "gwr-legacy": {
+      "key": "gwr-legacy",
+      "display_name": "Great Western Railway (Legacy)",
+      "short_name": "GWR (Legacy)",
+      "tile_matches": ["Great Western Railway"],
+      "era_band": "big4",
+      "description": "Incorporated in 1833 to link London with Bristol, the Great Western Railway was the only one of the Big Four to keep its pre-grouping identity through the 1923 Grouping, absorbing its constituents into an existing company rather than forming a new one. It ran until nationalisation on 1 January 1948.",
+      "founded": 1833,
+      "dates_of_operation": { "start": 1833, "end": 1947 },
+      "headquarters": "Paddington station, London",
+      "predecessor": {
+        "state": "nil",
+        "entities": [],
+        "_note": "Genuinely none — the GWR was an original 1833 incorporation, not a successor to an earlier company. This is a NIL, not an unrecorded gap, and must not render as 'no data'."
+      },
+      "successor": {
+        "state": "known",
+        "entities": [{ "key": "british-railways", "display_name": "British Railways", "kind": "historical" }]
+      },
+      "notable_features": [
+        "Built to Brunel's 7 ft 1/4 in broad gauge, converted to standard gauge in 1892",
+        "The only Big Four company to retain its pre-grouping name and identity",
+        "Absorbed the Barry, Cambrian, Cardiff, Rhymney and Taff Vale railways at the 1923 Grouping"
+      ],
+      "source_url": "https://en.wikipedia.org/wiki/Great_Western_Railway"
+    },
+    "lms": {
+      "key": "lms",
+      "display_name": "London, Midland and Scottish Railway",
+      "short_name": "LMS",
+      "tile_matches": ["London, Midland and Scottish Railway"],
+      "era_band": "big4",
+      "description": "Formed at the 1923 Grouping from the London and North Western, Midland, Lancashire and Yorkshire, Caledonian and Highland railways among others, the LMS was the largest of the Big Four and, at the time, the largest joint-stock company in the world.",
+      "founded": 1923,
+      "dates_of_operation": { "start": 1923, "end": 1947 },
+      "headquarters": "Euston station, London",
+      "predecessor": {
+        "state": "known",
+        "entities": [
+          { "key": null, "display_name": "London and North Western Railway", "kind": "historical" },
+          { "key": null, "display_name": "Midland Railway", "kind": "historical" },
+          { "key": null, "display_name": "Caledonian Railway", "kind": "historical" }
+        ],
+        "_note": "key null = no content record yet, so the chip must render disabled rather than as a dead link. Full statutory constituent list is in data/big4-constituents.json."
+      },
+      "successor": {
+        "state": "known",
+        "entities": [{ "key": "british-railways", "display_name": "British Railways", "kind": "historical" }]
+      },
+      "notable_features": [
+        "The largest of the Big Four companies formed by the Railways Act 1921",
+        "Absorbed eight statutory constituent companies and 27 subsidiaries",
+        "Appointed Sir William Stanier from the GWR as chief mechanical engineer in 1932"
+      ],
+      "source_url": "https://en.wikipedia.org/wiki/London,_Midland_and_Scottish_Railway"
+    },
+    "lner": {
+      "key": "lner",
+      "display_name": "London and North Eastern Railway",
+      "short_name": "LNER",
+      "tile_matches": ["London and North Eastern Railway"],
+      "era_band": "big4",
+      "description": "Formed at the 1923 Grouping around the Great Northern, Great Eastern, Great Central and North Eastern railways. It never made a profit, partly because it inherited the debts the Great Central incurred building its London extension.",
+      "founded": 1923,
+      "dates_of_operation": { "start": 1923, "end": 1947 },
+      "headquarters": "King's Cross station, London",
+      "predecessor": {
+        "state": "known",
+        "entities": [
+          { "key": null, "display_name": "Great Northern Railway", "kind": "historical" },
+          { "key": null, "display_name": "North Eastern Railway", "kind": "historical" },
+          { "key": null, "display_name": "Great Central Railway", "kind": "historical" }
+        ]
+      },
+      "successor": {
+        "state": "known",
+        "entities": [{ "key": "british-railways", "display_name": "British Railways", "kind": "historical" }]
+      },
+      "notable_features": [
+        "Its Class A4 4468 Mallard set the world steam speed record of 126 mph on 3 July 1938",
+        "Never returned a profit across its 25-year existence",
+        "Second largest of the Big Four by route mileage"
+      ],
+      "source_url": "https://en.wikipedia.org/wiki/London_and_North_Eastern_Railway"
+    },
+    "southern-railway-legacy": {
+      "key": "southern-railway-legacy",
+      "display_name": "Southern Railway (Legacy)",
+      "short_name": "SR (Legacy)",
+      "tile_matches": ["Southern Railway"],
+      "era_band": "big4",
+      "description": "The smallest of the Big Four by route mileage but the busiest by passenger numbers, carrying over a quarter of all UK passenger traffic. Predominantly a passenger railway serving densely populated south-east England, it pursued electrification more vigorously than any of its peers.",
+      "founded": 1923,
+      "dates_of_operation": { "start": 1923, "end": 1947 },
+      "headquarters": "Waterloo station, London",
+      "predecessor": {
+        "state": "known",
+        "entities": [
+          { "key": null, "display_name": "London and South Western Railway", "kind": "historical" },
+          { "key": null, "display_name": "London, Brighton and South Coast Railway", "kind": "historical" },
+          { "key": null, "display_name": "South Eastern and Chatham Railway", "kind": "historical" }
+        ]
+      },
+      "successor": {
+        "state": "known",
+        "entities": [{ "key": "british-railways", "display_name": "British Railways", "kind": "historical" }]
+      },
+      "notable_features": [
+        "Carried more than a quarter of all UK passenger traffic despite being the smallest Big Four company",
+        "Operated over 277 route miles of third-rail electrified track by the end of 1929",
+        "Predominantly passenger rather than freight, unlike the other three"
+      ],
+      "source_url": "https://en.wikipedia.org/wiki/Southern_Railway_(UK)"
+    },
+    "british-railways": {
+      "key": "british-railways",
+      "display_name": "British Railways",
+      "short_name": "BR",
+      "tile_matches": ["British Railways"],
+      "era_band": "br",
+      "description": "The nationalised operator formed on 1 January 1948 when the Big Four were taken into public ownership under the Transport Act 1947. It ran the national network until privatisation was completed in the mid-1990s.",
+      "founded": 1948,
+      "dates_of_operation": { "start": 1948, "end": 1994 },
+      "headquarters": "Marylebone, London",
+      "predecessor": {
+        "state": "known",
+        "entities": [
+          { "key": "gwr-legacy", "display_name": "Great Western Railway (Legacy)", "kind": "historical" },
+          { "key": "lms", "display_name": "London, Midland and Scottish Railway", "kind": "historical" },
+          { "key": "lner", "display_name": "London and North Eastern Railway", "kind": "historical" },
+          { "key": "southern-railway-legacy", "display_name": "Southern Railway (Legacy)", "kind": "historical" }
+        ]
+      },
+      "successor": {
+        "state": "unrecorded",
+        "entities": [],
+        "_note": "DELIBERATELY UNRECORDED, not nil. British Railways plainly had successors, but privatisation carved the network by franchise territory rather than by inheriting the company, so the mapping to modern operators is many-to-many and cannot be derived from the Railways Act 1921 lookup the way the pre-1923 -> Big Four -> BR chain can. Curating it is Phase 2C work. Rendering this as 'None' would assert something false."
+      },
+      "notable_features": [
+        "Formed on 1 January 1948 under the Transport Act 1947",
+        "The 1963 Beeching report identified 2,363 stations and 5,000 route miles for closure",
+        "Adopted the double-arrow symbol and Rail Blue livery in the 1965 corporate rebrand"
+      ],
+      "source_url": "https://en.wikipedia.org/wiki/British_Rail"
+    }
+  }
+}

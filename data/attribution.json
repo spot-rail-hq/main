@@ -1,8 +1,9 @@
 {
-  "generated_at": "2026-07-26T07:03:48.472Z",
+  "generated_at": "2026-07-26T16:44:22.574Z",
   "_notes": "Machine-readable licence/attribution manifest for srhq.uk map data. Built by scripts/build-attribution.mjs (sole writer). The OHM entries are DERIVED from the real extract's licence census so they cannot drift from what shipped; the rest are static facts about sources the repo already uses. Phase 2B must render the attribution bar FROM THIS FILE rather than hardcoding strings — that is the whole point of it existing. `attribution` is MANDATORY (the licence legally requires the credit) or COURTESY (the licence waives it — CC0 — but we credit anyway). A UI short on space may collapse COURTESY entries into an about/sources page; it may NOT collapse MANDATORY ones. Per-feature crediting is possible for the OHM/NLS split because every line feature carries its own `license` property all the way into the vector tiles.",
   "ui_guidance": {
     "map_bar_must_include": "every entry where attribution === \"MANDATORY\" and the layer is visible",
+    "layer_scope_values": "always = base map / always-loaded data, credit at all times. modern = the 1994+ operator layer (OSM-derived). historical = the pre-1994 OHM/Wikipedia layers. orm = the optional OpenRailwayMap raster overlay, credited only while it is switched on. The UI filters the COLLAPSED bar by these so it credits what is actually on screen rather than everything at once — measured 2026-07-26: crediting all six mandatory sources unconditionally produced a 336-character, ~5-line, ~86px bar that visibly squeezed the Live tab's 50/50 departure/news panes. The EXPANDED state always lists every source regardless of scope.",
     "about_page_should_include": "every entry regardless of MANDATORY/COURTESY",
     "per_feature_credit": "line features carry a `license` property (CC0-1.0 | CC-BY-4.0); a feature-level popup can credit NLS only for the features that actually need it, rather than crediting NLS for the whole layer",
     "open_decision": "Where the NLS credit sits — always-on in the bar, or only when an NLS feature is on screen / selected — is NOT decided here. Always-on is safe; conditional is tidier but needs the viewport test to be genuinely reliable, since a missed credit is a licence breach rather than a cosmetic slip."
@@ -14,6 +15,7 @@
       "applies_to": [
         "scripts/output/historical-lines.geojson (pre-1994 lines)"
       ],
+      "layer_scope": "historical",
       "licence_code": "CC0-1.0",
       "licence_label": "CC0 1.0 Universal (public domain dedication)",
       "licence_url": "https://creativecommons.org/publicdomain/zero/1.0/",
@@ -29,6 +31,7 @@
       "applies_to": [
         "scripts/output/historical-lines.geojson (pre-1994 lines)"
       ],
+      "layer_scope": "historical",
       "licence_code": "CC-BY-4.0",
       "licence_label": "Creative Commons Attribution 4.0",
       "licence_url": "https://creativecommons.org/licenses/by/4.0/",
@@ -47,6 +50,7 @@
         "tile-generation/gb-railways.pmtiles",
         "stations-content.json (OSM-derived structured fields)"
       ],
+      "layer_scope": "modern",
       "licence_code": "ODbL-1.0",
       "licence_label": "Open Database License 1.0",
       "licence_url": "https://opendatacommons.org/licenses/odbl/1-0/",
@@ -62,6 +66,7 @@
         "data/big4-constituents.json (Railways Act 1921 constituent lists)",
         "stations-content.json / operators-content.json / routes-content.json (narrative fields)"
       ],
+      "layer_scope": "historical",
       "licence_code": "CC-BY-SA-4.0",
       "licence_label": "Creative Commons Attribution-ShareAlike 4.0",
       "licence_url": "https://creativecommons.org/licenses/by-sa/4.0/",
@@ -75,6 +80,7 @@
       "applies_to": [
         "scripts/output/historical-stations.geojson (P625 coordinates)"
       ],
+      "layer_scope": "historical",
       "licence_code": "CC0-1.0",
       "licence_label": "CC0 1.0 Universal (public domain dedication)",
       "licence_url": "https://creativecommons.org/publicdomain/zero/1.0/",
@@ -89,6 +95,7 @@
         "station-list.json",
         "authoritative \"open now\" flag on historical stations"
       ],
+      "layer_scope": "always",
       "licence_code": "OGL-3.0",
       "licence_label": "Open Government Licence v3.0",
       "licence_url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
@@ -102,6 +109,7 @@
       "applies_to": [
         "base map tiles (Alidade Smooth Dark)"
       ],
+      "layer_scope": "always",
       "licence_code": "proprietary-with-attribution",
       "licence_label": "Stadia Maps terms of service",
       "licence_url": "https://stadiamaps.com/attribution/",
@@ -115,6 +123,7 @@
       "applies_to": [
         "ORM raster overlay"
       ],
+      "layer_scope": "orm",
       "licence_code": "CC-BY-SA-2.0",
       "licence_label": "Creative Commons Attribution-ShareAlike 2.0",
       "licence_url": "https://creativecommons.org/licenses/by-sa/2.0/",

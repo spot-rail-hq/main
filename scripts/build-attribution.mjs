@@ -64,6 +64,7 @@ const STATIC_SOURCES = [
       'tile-generation/gb-railways.pmtiles',
       'stations-content.json (OSM-derived structured fields)',
     ],
+    layer_scope: 'modern',
     licence_code: 'ODbL-1.0',
     licence_label: 'Open Database License 1.0',
     licence_url: 'https://opendatacommons.org/licenses/odbl/1-0/',
@@ -83,6 +84,7 @@ const STATIC_SOURCES = [
       'data/big4-constituents.json (Railways Act 1921 constituent lists)',
       'stations-content.json / operators-content.json / routes-content.json (narrative fields)',
     ],
+    layer_scope: 'historical',
     licence_code: 'CC-BY-SA-4.0',
     licence_label: 'Creative Commons Attribution-ShareAlike 4.0',
     licence_url: 'https://creativecommons.org/licenses/by-sa/4.0/',
@@ -99,6 +101,7 @@ const STATIC_SOURCES = [
     id: 'wikidata',
     source: 'Wikidata',
     applies_to: ['scripts/output/historical-stations.geojson (P625 coordinates)'],
+    layer_scope: 'historical',
     licence_code: 'CC0-1.0',
     licence_label: 'CC0 1.0 Universal (public domain dedication)',
     licence_url: 'https://creativecommons.org/publicdomain/zero/1.0/',
@@ -110,6 +113,7 @@ const STATIC_SOURCES = [
     id: 'naptan',
     source: 'NaPTAN (Department for Transport)',
     applies_to: ['station-list.json', 'authoritative "open now" flag on historical stations'],
+    layer_scope: 'always',
     licence_code: 'OGL-3.0',
     licence_label: 'Open Government Licence v3.0',
     licence_url: 'https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/',
@@ -121,6 +125,7 @@ const STATIC_SOURCES = [
     id: 'stadia',
     source: 'Stadia Maps / Stamen / OpenMapTiles',
     applies_to: ['base map tiles (Alidade Smooth Dark)'],
+    layer_scope: 'always',
     licence_code: 'proprietary-with-attribution',
     licence_label: 'Stadia Maps terms of service',
     licence_url: 'https://stadiamaps.com/attribution/',
@@ -132,6 +137,7 @@ const STATIC_SOURCES = [
     id: 'openrailwaymap',
     source: 'OpenRailwayMap',
     applies_to: ['ORM raster overlay'],
+    layer_scope: 'orm',
     licence_code: 'CC-BY-SA-2.0',
     licence_label: 'Creative Commons Attribution-ShareAlike 2.0',
     licence_url: 'https://creativecommons.org/licenses/by-sa/2.0/',
@@ -241,6 +247,7 @@ function main() {
           ? 'OpenHistoricalMap'
           : 'OpenHistoricalMap — National Library of Scotland tracings',
       applies_to: ['scripts/output/historical-lines.geojson (pre-1994 lines)'],
+      layer_scope: 'historical',
       licence_code: entry.code,
       licence_label: entry.label,
       licence_url:
@@ -286,6 +293,14 @@ function main() {
       'carries its own `license` property all the way into the vector tiles.',
     ui_guidance: {
       map_bar_must_include: 'every entry where attribution === "MANDATORY" and the layer is visible',
+      layer_scope_values:
+        'always = base map / always-loaded data, credit at all times. modern = the 1994+ operator ' +
+        'layer (OSM-derived). historical = the pre-1994 OHM/Wikipedia layers. orm = the optional ' +
+        'OpenRailwayMap raster overlay, credited only while it is switched on. The UI filters the ' +
+        'COLLAPSED bar by these so it credits what is actually on screen rather than everything at ' +
+        'once — measured 2026-07-26: crediting all six mandatory sources unconditionally produced a ' +
+        '336-character, ~5-line, ~86px bar that visibly squeezed the Live tab\'s 50/50 departure/news ' +
+        'panes. The EXPANDED state always lists every source regardless of scope.',
       about_page_should_include: 'every entry regardless of MANDATORY/COURTESY',
       per_feature_credit:
         'line features carry a `license` property (CC0-1.0 | CC-BY-4.0); a feature-level popup ' +

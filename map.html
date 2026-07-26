@@ -247,7 +247,16 @@
      for whichever mode is on, matching the site accent (not the old
      magenta-for-Live/turquoise-for-Database split). */
   .header-tab { display: flex; align-items: center; padding: 8px 14px; border-radius: 999px; font-size: 13.5px; font-weight: 500; color: var(--ink); }
-  .header-tab.live-on, .header-tab.db-on { background: var(--t); color: #07090C; }
+  .header-tab.live-on, .header-tab.db-on, .header-tab.history-on { background: var(--t); color: #07090C; }
+  /* Predecessor/successor chip with no content record behind it — rendered
+     visibly disabled rather than suppressed, so a real historical relationship
+     ("the LMS succeeded the Caledonian Railway") still shows even before that
+     company has an entry. Suppressing it would hide a fact; this only hides
+     the link. */
+  .filter-chip.is-disabled { opacity: 0.45; cursor: default; border-style: dashed; }
+  /* Honest labelling for inferred/unknown dates — deliberately quiet, but
+     always present when the underlying precision is not "exact". */
+  .db-precision-note { font-size: 11px; line-height: 1.5; color: var(--ink); opacity: 0.85; margin: 6px 0 0; }
 
   /* ── "Jump to" bar + zoom/layers/location cluster ────────────────────────
      Independent floating siblings now (not nested — see the HTML comment).
@@ -447,6 +456,17 @@
   #sidebar.has-selection .sb-selection { display: flex; }
   .sb-selection-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     font-family: var(--font-display); font-size: 20px; font-weight: 600; letter-spacing: -0.5px; }
+  /* HISTORY MODE title — per the approved mockup this is a large heading that
+     WRAPS (e.g. "Great Western Railway (Legacy)" over two lines) rather than the
+     single-line ellipsised title the other tabs use, and the row top-aligns so
+     the share/close buttons sit against the first line. Scoped to
+     body.mode-history so Live and Database keep their existing treatment
+     exactly. */
+  body.mode-history .sb-selection { align-items: flex-start; padding-top: 18px; }
+  body.mode-history .sb-selection-title { white-space: normal; overflow: visible; text-overflow: clip;
+    font-size: 30px; line-height: 1.12; letter-spacing: -0.8px; color: var(--ink-primary); }
+  /* The mockup shows a bigger year than the 20px first draft. */
+  body.mode-history .sb-hist-slider .hs-year { font-size: 28px; min-width: 92px; }
   #sb-star-btn.starred { color: var(--a); }
   #sb-star-btn.starred i::before { content: "\f6a6"; } /* ti-star-filled — was "\ea78", which renders as ⌘ in this webfont */
   #sb-saved-toggle[aria-pressed="true"] i::before { content: "\f6a6"; }
@@ -693,8 +713,125 @@
   .sv-empty { padding: 16px; font-size: 13px; color: var(--ink); text-align: center; }
 
   /* Persistent bottom strip — copyright/data attribution, never scrolls away
-     and never disappears (map-tile/data-source attribution requirement). */
-  #sb-attribution { flex-shrink: 0; padding: 8px 16px; border-top: 0.5px solid var(--br); font-size: 10px; color: var(--ink); text-align: left; }
+     and never disappears (map-tile/data-source attribution requirement).
+     Now expandable: collapsed shows MANDATORY credits, expanded adds COURTESY
+     ones. Content is built at runtime from data/attribution.json. */
+  #sb-attribution { flex-shrink: 0; border-top: 0.5px solid var(--br); font-size: 10px; color: var(--ink); text-align: left;
+    position: relative; background: var(--sf); }
+  /* Top-edge fade so sidebar content scrolls UNDER the bar rather than butting
+     against it. Reuses the same gradient-overlay approach as .scroll-fade
+     (a pseudo-element over the content, not mask-image on a scroll container —
+     see .scroll-fade's own comment for the WebKit reason that matters). */
+  #sb-attribution::before { content: ''; position: absolute; left: 0; right: 0; bottom: 100%; height: 14px;
+    background: linear-gradient(to top, var(--sf), transparent); pointer-events: none; }
+  .sb-attrib-toggle { width: 100%; display: flex; align-items: center; gap: 8px; padding: 8px 16px;
+    background: transparent; border: none; color: var(--ink); cursor: pointer; text-align: left;
+    font-family: inherit; font-size: inherit; box-sizing: border-box; }
+  .sb-attrib-summary { flex: 1; min-width: 0; line-height: 1.45; }
+  .sb-attrib-chev { flex-shrink: 0; font-size: 12px; transition: transform 0.2s; }
+  .sb-attrib-toggle[aria-expanded="true"] .sb-attrib-chev { transform: rotate(180deg); }
+  .sb-attrib-body { padding: 0 16px 10px; line-height: 1.5; max-height: 40vh; overflow-y: auto; }
+  .sb-attrib-row { margin-bottom: 6px; }
+  .sb-attrib-src { color: var(--ink-primary); }
+  .sb-attrib-lic { color: var(--ink); }
+  .sb-attrib-tag { font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink); }
+
+  /* ── History-mode year slider (two instances, one state) ────────────────
+     .hist-slider is shared by the map-canvas instance (#history-panel) and the
+     sidebar instance (#sb-history-slider); only placement differs. Both are
+     hidden unless body.mode-history, so nothing here can leak into Live or
+     Database. */
+  .hist-slider { display: none; }
+  body.mode-history .hist-slider { display: block; }
+  #history-panel.hist-slider { position: absolute; z-index: 41; left: 50%; transform: translateX(-50%);
+    bottom: 54px; width: calc((100vw - var(--sidebar-edge)) / 2);
+    background: var(--sf); border: 0.5px solid var(--brh); border-radius: 16px;
+    padding: 10px 14px 8px;
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+  @media (min-width: 769px) { #history-panel.hist-slider { left: calc(50% + (var(--sidebar-edge) / 2)); } }
+  .sb-hist-slider { flex-shrink: 0; padding: 10px 16px 8px; border-bottom: 0.5px solid var(--br); }
+
+  .hs-head { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .hs-year { font-family: var(--font-display); font-size: 20px; font-weight: 600; letter-spacing: -0.5px;
+    color: var(--t); flex-shrink: 0; min-width: 74px; }
+  .hs-jump-wrap { position: relative; margin-left: auto; }
+  .hs-jump { width: 92px; padding: 5px 22px 5px 9px; border-radius: 8px; border: 0.5px solid var(--br);
+    background: var(--bg); color: var(--ink-primary);
+    font-family: inherit; font-size: 11px; box-sizing: border-box; }
+  .hs-jump:focus { outline: none; border-color: var(--brh); }
+  .hs-jump.invalid { border-color: var(--m); }
+
+  /* Track. .hs-span is the ACTIVE SPAN INDICATOR — a band showing the open
+     entity's map-coverage range. Purely visual: it never gates the range
+     input's own min/max, so dragging and jumping outside it stay unrestricted. */
+  .hs-track-wrap { position: relative; }
+  .hs-span { position: absolute; top: 7.5px; height: 3px; border-radius: 2px;
+    background: rgba(64,224,208,0.28); pointer-events: none; }
+  .hs-range { -webkit-appearance: none; appearance: none; width: 100%; height: 18px; background: transparent;
+    cursor: pointer; --fill: 100%; margin: 0; position: relative; }
+  .hs-range::-webkit-slider-runnable-track { height: 3px; border-radius: 2px;
+    background: linear-gradient(to right, var(--t) var(--fill), var(--br) var(--fill)); }
+  .hs-range::-moz-range-track { height: 3px; border-radius: 2px; background: var(--br); }
+  .hs-range::-moz-range-progress { height: 3px; border-radius: 2px; background: var(--t); }
+  .hs-range::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%;
+    background: var(--t); border: 3px solid var(--bg); box-shadow: 0 0 0 1px var(--t); margin-top: -6.5px; cursor: pointer; }
+  .hs-range::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%;
+    background: var(--t); border: 3px solid var(--bg); box-shadow: 0 0 0 1px var(--t); cursor: pointer; }
+
+  /* Ticks are absolutely positioned by percentage so they line up with the
+     track rather than being evenly spaced. The first and last sit ON the track
+     ends, where a centred label would clip outside the box — see
+     .hs-tick.edge-first/.edge-last for the anchoring fix. */
+  .hs-ticks { position: relative; height: 14px; margin-top: 2px; }
+  .hs-tick { position: absolute; transform: translateX(-50%); font-size: 10px; color: var(--ink);
+    background: transparent; border: none; padding: 0; cursor: pointer; font-family: inherit;
+    white-space: nowrap; }
+  .hs-tick:hover, .hs-tick.on { color: var(--t); }
+  .hs-tick.edge-first { transform: none; left: 0 !important; }
+  .hs-tick.edge-last { transform: none; left: auto !important; right: 0; }
+  /* 1825 and 1845 are only 20 years apart on a ~200-year track, so they are the
+     tightest pair at every width. Measured at the real track widths: 3.0px gap
+     in the 368px sidebar at 10px type, 14.4px on the desktop map canvas. 9px
+     type in the sidebar takes that to ~5px. Not a collision either way, but
+     tight enough to be worth checking on a real screen. */
+  .sb-hist-slider .hs-tick { font-size: 9px; }
+
+  .hs-highlight { margin-top: 8px; padding: 8px 10px; border-radius: 10px;
+    background: rgba(64,224,208,0.05); border: 0.5px solid var(--br); line-height: 1.5; font-size: 11px; color: var(--ink); }
+  .hs-highlight-year { font-family: var(--font-mono); color: var(--t); margin-right: 6px; }
+
+  /* Clear (×) inside a text field — shared by every search input and the
+     Jump-to field. Hidden unless the field has text (JS toggles [hidden]) so
+     empty fields stay clean. */
+  .field-clear { position: absolute; right: 5px; top: 50%; transform: translateY(-50%);
+    width: 16px; height: 16px; line-height: 14px; text-align: center; border-radius: 50%;
+    background: transparent; border: none; color: var(--ink); cursor: pointer;
+    font-family: inherit; font-size: 13px; box-sizing: border-box; padding: 0; }
+  .field-clear:hover { color: var(--ink-primary); }
+
+  /* Database-mode legend — was sharing #history-panel with the year slider
+     until the slider moved to History mode. */
+  #db-legend { display: none; position: absolute; z-index: 41; left: 50%; transform: translateX(-50%);
+    bottom: 54px; width: calc((100vw - var(--sidebar-edge)) / 2);
+    background: var(--sf); border: 0.5px solid var(--brh); border-radius: 16px;
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+  body.mode-database #db-legend { display: block; }
+  @media (min-width: 769px) { #db-legend { left: calc(50% + (var(--sidebar-edge) / 2)); } }
+
+  @media (max-width: 768px) {
+    /* Edge-to-edge on narrow viewports, same treatment the old panel had.
+       Raised clear of the bottom hint pills. */
+    #history-panel.hist-slider, #db-legend { bottom: 70px; left: var(--sidebar-gap); right: var(--sidebar-gap);
+      width: auto; transform: none; }
+    /* Bigger touch target on the thumb — the default 16px is hard to grab
+       without catching the map underneath. touch-action on the range stops the
+       browser handing a horizontal drag to the map's own pan gesture. */
+    .hs-range { height: 26px; touch-action: pan-y; }
+    .hs-range::-webkit-slider-thumb { width: 22px; height: 22px; margin-top: -9.5px; }
+    .hs-range::-moz-range-thumb { width: 22px; height: 22px; }
+    .hs-ticks { height: 16px; }
+    .hs-tick { font-size: 9px; }
+  }
 
   /* Sidebar content block — swapped as a unit on every selection change
      (station tap, search, from/to submit, clear). Whole-block opacity is
@@ -903,6 +1040,7 @@
       <div class="sb-top-tabs">
         <button class="header-tab live-on" id="sb-tab-live" aria-label="Live mode" aria-pressed="true">Live</button>
         <button class="header-tab" id="sb-tab-database" aria-label="Database mode" aria-pressed="false">Database</button>
+        <button class="header-tab" id="sb-tab-history" aria-label="History mode" aria-pressed="false">History</button>
       </div>
       <div class="sb-top-actions">
         <button class="ghost-btn" id="sb-back-btn" aria-label="Back"><i class="ti ti-chevron-left"></i></button>
@@ -945,6 +1083,30 @@
     </div>
   </div>
 
+  <!-- HISTORY MODE — sidebar year slider (instance B). Identical structure to
+       the map-canvas instance above so one render function drives both from ONE
+       state variable; they can never drift because neither owns the year.
+       ORDER MATTERS: this sits ABOVE .sb-selection, because the approved mockup
+       puts the slider directly under the tab row and the entity TITLE below the
+       separator, as the first thing in the entity block — not above the slider.
+       (Built the other way round first; corrected against the mockup.) -->
+  <div id="sb-history-slider" class="hist-slider sb-hist-slider" data-slider-instance="sidebar">
+    <div class="hs-head">
+      <span class="hs-year" id="hs-year-sidebar">TODAY</span>
+      <div class="hs-jump-wrap">
+        <input type="text" class="hs-jump" id="hs-jump-sidebar" inputmode="numeric" autocomplete="off"
+               placeholder="Jump to" aria-label="Jump to year" />
+        <button type="button" class="field-clear" data-clear-for="hs-jump-sidebar" aria-label="Clear year" hidden>×</button>
+      </div>
+    </div>
+    <div class="hs-track-wrap">
+      <div class="hs-span" id="hs-span-sidebar" hidden></div>
+      <input type="range" class="hs-range" id="hs-range-sidebar" step="1" aria-label="History year" />
+    </div>
+    <div class="hs-ticks" id="hs-ticks-sidebar"></div>
+    <div class="hs-highlight" id="hs-highlight" hidden></div>
+  </div>
+
   <div class="sb-selection">
     <span class="sb-selection-title" id="sb-selection-title"></span>
     <button class="ghost-btn" id="sb-share-btn" aria-label="Share this"><i class="ti ti-share-3"></i></button>
@@ -956,30 +1118,57 @@
     <div class="sb-content-block" id="sb-content-block"></div>
   </div>
 
-  <div id="sb-attribution">© SpotRail HQ · Data: Network Rail, NRE</div>
+  <!-- Attribution bar. Content is BUILT AT RUNTIME from data/attribution.json
+       (see renderAttributionBar) — never hardcoded, so adding a source to that
+       file updates the bar with no code change. Collapsed shows MANDATORY
+       credits only; expanding adds the COURTESY ones. The static text below is
+       a pre-JS fallback only and is replaced on load. -->
+  <div id="sb-attribution" class="sb-attrib">
+    <button type="button" class="sb-attrib-toggle" id="sb-attrib-toggle" aria-expanded="false"
+            aria-controls="sb-attrib-body" aria-label="Data sources and attribution">
+      <span class="sb-attrib-summary" id="sb-attrib-summary">© SpotRail HQ</span>
+      <i class="ti ti-chevron-up sb-attrib-chev"></i>
+    </button>
+    <div class="sb-attrib-body" id="sb-attrib-body" hidden></div>
+  </div>
 </div>
 
-<!-- Collapsed by default; hp-body comes before hp-head in the DOM since the
-     head (toggle/title/legend) now sits at the BOTTOM of the box — the panel
-     is bottom-anchored (see CSS), so collapsing (which hides hp-body) leaves
-     exactly that bottom row visible, in place, with no extra JS needed. -->
-<div id="history-panel" class="collapsed">
-  <div class="hp-body">
-    <span class="hp-era" id="hp-era-chip">Today</span>
-    <input type="range" id="year-slider" min="1825" max="2025" value="2025" step="1" aria-label="History year" />
-    <div class="hp-snaps">
-      <button class="hp-snap" data-year="1845">1845</button>
-      <button class="hp-snap" data-year="1880">1880</button>
-      <button class="hp-snap" data-year="1923">1923</button>
-      <button class="hp-snap" data-year="1965">1965</button>
-      <button class="hp-snap" data-year="1994">1994</button>
-      <button class="hp-snap" data-year="2025">Today</button>
+<!-- HISTORY MODE — bottom-of-map year slider (instance A).
+     REPURPOSED, not newly invented: this element previously lived in Database
+     mode as a UI-only stub whose JS carried a literal
+     "TODO: swap in OpenHistoricalMap vector tiles for this year" — i.e. a
+     placeholder for exactly this feature, parked in the wrong mode. Building a
+     second slider alongside it would have been the parallel mechanism the brief
+     forbids, so the slider moves here and the Database-mode legend (which was
+     sharing the box) moves out to #db-legend below. Flagged in
+     HISTORICAL-SLIDER-FINDINGS.md Phase 2B — this DOES remove the year slider
+     from the Database tab.
+     Markup order matches instance B in the sidebar so one render function can
+     drive both; ticks are generated in JS from HISTORY_SNAP_YEARS rather than
+     hardcoded here, because the last one is the current year. -->
+<div id="history-panel" class="hist-slider" data-slider-instance="map">
+  <div class="hs-head">
+    <span class="hs-year" id="hs-year-map">TODAY</span>
+    <div class="hs-jump-wrap">
+      <input type="text" class="hs-jump" id="hs-jump-map" inputmode="numeric" autocomplete="off"
+             placeholder="Jump to" aria-label="Jump to year" />
+      <button type="button" class="field-clear" data-clear-for="hs-jump-map" aria-label="Clear year" hidden>×</button>
     </div>
-    <div class="hp-context" id="hp-context"></div>
   </div>
+  <div class="hs-track-wrap">
+    <div class="hs-span" id="hs-span-map" hidden></div>
+    <input type="range" class="hs-range" id="hs-range-map" step="1" aria-label="History year" />
+  </div>
+  <div class="hs-ticks" id="hs-ticks-map"></div>
+</div>
+
+<!-- Database-mode legend — split out of the old #history-panel when the year
+     slider moved to History mode (above). Same collapsed-by-default behaviour
+     and same bottom-anchored placement it had before. -->
+<div id="db-legend" class="collapsed">
   <div class="hp-head">
-    <button class="ghost-btn" id="hp-toggle" aria-label="Expand or collapse history panel"><i class="ti ti-chevron-down"></i></button>
-    <span class="hp-title">History</span>
+    <button class="ghost-btn" id="hp-toggle" aria-label="Expand or collapse legend"><i class="ti ti-chevron-down"></i></button>
+    <span class="hp-title">Legend</span>
     <div class="legend-items">
       <span class="legend-item"><span class="legend-line" style="background:rgba(64,224,208,0.7);"></span>National Rail</span>
       <span class="legend-item"><span class="legend-line" style="background:rgba(178,90,210,0.6);"></span>Metro/LRT</span>
@@ -1212,6 +1401,47 @@
   // curated strings rather than a canonicalized region list.
   var regionsData = {};
   loadJsonContent('/data/regions.json', function (d) { regionsData = d; });
+
+  // ── History mode content (Phase 2B) ──────────────────────────────────────
+  // Every one of these is OPTIONAL. Phase 2C populates them; until then they
+  // load as {} and each render path degrades to a graceful empty state rather
+  // than erroring — loadJsonContent already swallows a 404 and returns {}.
+  var eraColors = {};
+  var historicalOperators = {};   // slug -> record
+  var historicalOperatorByMatch = {}; // literal tile co_* string -> slug
+  var operatorCoverage = {};      // literal tile co_* string -> {first_year,last_year}
+  var notableYears = {};          // 'YYYY' -> {blurb, source} — REVIEWED ONLY
+
+  loadJsonContent('/data/era-colors.json', function (d) {
+    eraColors = d;
+    if (mode === 'history') { applyHistoryPaint(); renderHistoryLegend(); }
+  });
+  loadJsonContent('/data/historical-operators.json', function (d) {
+    // The file nests under `operators` alongside `_schema`; loadJsonContent
+    // only strips `_notes`, so unwrap here rather than teaching it a shape.
+    historicalOperators = (d && d.operators) || {};
+    historicalOperatorByMatch = {};
+    Object.keys(historicalOperators).forEach(function (slug) {
+      var rec = historicalOperators[slug];
+      (rec.tile_matches || []).forEach(function (m) { historicalOperatorByMatch[m] = slug; });
+    });
+    if (mode === 'history' && selection.type === 'histop') rebuildSidebarContent();
+  });
+  loadJsonContent('/data/historical-operator-coverage.json', function (d) {
+    operatorCoverage = (d && d.coverage) || {};
+  });
+  // HARD GATE on `reviewed`. Unreviewed entries are dropped HERE, at load
+  // time, rather than being filtered at render time — so there is no later
+  // code path, present or future, that could surface one by forgetting a
+  // check. An entry has to be exactly `true`, not merely truthy.
+  loadJsonContent('/data/notable-years.json', function (d) {
+    var src = (d && d.years) || {};
+    notableYears = {};
+    Object.keys(src).forEach(function (y) {
+      if (src[y] && src[y].reviewed === true) notableYears[y] = src[y];
+    });
+    if (mode === 'history') renderYearHighlight();
+  });
 
   // ── Operator line colors (Phase 5) ─────────────────────────────────────────
   // data/operator-colors.json's toc/metro/tfl_lines/heritage sections, merged
@@ -1904,7 +2134,14 @@
     // 'top-right' rather than a map corner the sidebar/bottom-sheet would
     // cover — the sidebar spans the full left edge on desktop and the full
     // width at the bottom on tablet/mobile.
-    map.addControl(new maplibregl.AttributionControl({ compact: true }), 'top-right');
+    // MapLibre's native attribution control is DELIBERATELY NOT ADDED. The
+    // sidebar attribution bar (#sb-attribution, rendered from
+    // data/attribution.json) is now the single place credits appear — adding
+    // this back would show two competing attributions, one of them built from
+    // per-source strings this app no longer controls. Sources still declare
+    // their own `attribution` when added, so anything reading source metadata
+    // directly still sees it; only the on-map widget is suppressed.
+    // map.addControl(new maplibregl.AttributionControl({ compact: true }), 'top-right');
 
     // Apply the exact same center/zoom/padding recipe as the "All UK"
     // region-jump chip (regionJumpFlyToPadding(), defined further down this
@@ -3240,6 +3477,18 @@
       var o = selection.code && operatorsContent[selection.code];
       selTitleEl.textContent = (o && o.name) || selection.fallbackName || 'Operator';
       starBtn.style.display = 'none';
+    } else if (type === 'histop') {
+      var ho = historicalOperators[selection.slug];
+      selTitleEl.textContent = (ho && ho.display_name) || selection.fallbackName || 'Operator';
+      // History-mode entity panels have NO star for now — share and close
+      // only. The favourites feature saves stations and is untouched here.
+      starBtn.style.display = 'none';
+    } else if (type === 'histline') {
+      selTitleEl.textContent = selection.fallbackName || 'Railway line';
+      starBtn.style.display = 'none';
+    } else if (type === 'histstation') {
+      selTitleEl.textContent = (selection.station && selection.station.name) || 'Station';
+      starBtn.style.display = 'none';
     }
   }
 
@@ -3803,11 +4052,18 @@
 
   function sidebarSkeletonHtml() {
     if (selection.type === 'saved') return '<div class="sv-list" id="sv-list" data-anim-row>' + savedListRowsHtml() + '</div>';
+    if (selection.type === 'histop') return historicalOperatorSkeletonHtml();
+    if (selection.type === 'histline') return historicalLineSkeletonHtml();
+    if (selection.type === 'histstation') return historicalStationSkeletonHtml(selection.station || {});
     if (selection.type === 'route') return routeDetailSkeletonHtml();
     if (selection.type === 'operator') return operatorDetailSkeletonHtml();
     if (selection.type === 'fromto') return mode === 'database' ? fromToDatabaseSkeletonHtml() : fromToSkeletonHtml();
     if (selectedStationCrs) return mode === 'database' ? stationDatabaseSkeletonHtml() : stationLiveSkeletonHtml();
+    if (mode === 'history') return historyDefaultSkeletonHtml();
     return mode === 'database' ? databaseDefaultSkeletonHtml() : liveDefaultSkeletonHtml();
+  }
+  function historyDefaultSkeletonHtml() {
+    return '<div class="db-hint" data-anim-row>Drag the year slider, or tap a line or station on the map to see its history.</div>';
   }
 
   // Rebuilds #sb-content-block for the current state and re-wires whatever's
@@ -3816,7 +4072,13 @@
   // late (see loadJsonContent above).
   function rebuildSidebarContent() {
     contentBlock.innerHTML = sidebarSkeletonHtml();
-    if (selection.type === 'saved') {
+    if (selection.type === 'histop' || selection.type === 'histline' || selection.type === 'histstation') {
+      wireHistoryPanel();
+      // No schema.org JSON-LD for history entities yet — the stub content set
+      // is too small for structured data to be meaningful, and emitting a
+      // half-populated Organization record would be worse than none.
+      injectSchemaJsonLd(null);
+    } else if (selection.type === 'saved') {
       wireSavedListRows();
       injectSchemaJsonLd(null);
     } else if (selection.type === 'route') {
@@ -3949,7 +4211,17 @@
   function buildStateUrl() {
     var params = new URLSearchParams();
     if (mode === 'database') params.set('mode', 'database');
-    if (selection.type === 'route' && selection.id) {
+    // A shared historical view MUST restore both mode and year — one without
+    // the other loads the wrong map. The year is always written while in
+    // History mode, including when the slider-follow rules moved it as a side
+    // effect of opening an entity.
+    if (mode === 'history') {
+      params.set('mode', 'history');
+      params.set('year', String(historyYear));
+    }
+    if (selection.type === 'histop' && selection.slug) {
+      params.set('histop', selection.slug);
+    } else if (selection.type === 'route' && selection.id) {
       params.set('route', selection.id);
     } else if (selection.type === 'operator' && selection.code) {
       params.set('operator', selection.code);
@@ -3966,6 +4238,15 @@
     if (suppressHistoryPush) return;
     history.pushState({ srhq: true }, '', buildStateUrl());
   }
+  // The slider year is NOT an entity-level change and must not push a history
+  // entry — a single drag across the range would otherwise bury the user's
+  // real navigation under a hundred back-button steps. replaceState keeps the
+  // year shareable (it stays in the address bar, so copy/share picks it up)
+  // without touching the stack.
+  function replaceHistoryYearInUrl() {
+    if (suppressHistoryPush || mode !== 'history') return;
+    history.replaceState({ srhq: true }, '', buildStateUrl());
+  }
   // Parses the current URL and drives the same selection functions used for
   // real interaction — so restoring a link and clicking your way there by
   // hand produce identical state. Only called once station-list.json and
@@ -3977,8 +4258,19 @@
     suppressHistoryPush = true;
     try {
       var params = new URLSearchParams(location.search);
-      var urlMode = params.get('mode') === 'database' ? 'database' : 'live';
+      var rawMode = params.get('mode');
+      var urlMode = rawMode === 'database' ? 'database' : (rawMode === 'history' ? 'history' : 'live');
       if (urlMode !== mode) setMode(urlMode);
+      // Year is restored BEFORE any entity selection, so the slider-follow
+      // rules see the shared year as the user's current position — Rule 1
+      // then correctly leaves it alone if it is already inside the entity's
+      // span, instead of overriding the exact year that was shared.
+      if (urlMode === 'history') {
+        var yr = parseInt(params.get('year'), 10);
+        if (!isNaN(yr)) setHistoryYear(yr, { silent: true });
+      }
+      var histOp = params.get('histop');
+      if (histOp) { selectHistoricalOperator(histOp, histOp); return; }
       var routeId = params.get('route');
       var operatorCode = params.get('operator');
       var fromCrs = params.get('from'), toCrs = params.get('to');
@@ -4581,17 +4873,717 @@
     if (map && map.getLayer(ROUTE_HIT_LAYER_ID)) map.setLayoutProperty(ROUTE_HIT_LAYER_ID, 'visibility', 'none');
   }
 
-  // ── Header: mode switching (Live / Database) ─────────────────────────────
+  // ══ HISTORY MODE (Phase 2B) ══════════════════════════════════════════════
+  // Slider, historical map layers, and the history-focused entity panels.
+  // Everything here is inert unless mode === 'history'.
+
+  // The labelled TICK MARKS. These are stops on a CONTINUOUS slider, not
+  // discrete states — the user can rest on any year. The last one is the
+  // current year resolved at runtime; hardcoding it would silently rot.
+  var HISTORY_MIN_YEAR = 1825;
+  function historyMaxYear() { return new Date().getUTCFullYear(); }
+  function historySnapYears() { return [1825, 1845, 1880, 1923, 1963, 1994, historyMaxYear()]; }
+  // The 1994 source-switch. Below this the map draws the OHM historical
+  // tileset; at or above it, the existing operators.pmtiles. Never both at
+  // rest — see setHistoryLayerVisibility().
+  var HISTORY_MODERN_FROM = 1994;
+  var HISTORY_FADE_MS = 200;
+
+  var historyYear = historyMaxYear();
+  var historyLayersReady = false;
+  var activeSpanRange = null; // {first_year,last_year} of the open entity, or null
+
+  function eraBandForYear(y) {
+    if (y < 1923) return 'pre1923';
+    if (y < 1948) return 'big4';
+    if (y < HISTORY_MODERN_FROM) return 'br';
+    return 'modern';
+  }
+  // Which co_* property the paint expression should read for a given year.
+  // The band is a property of the SLIDER POSITION, computed here globally —
+  // it is deliberately NOT stored per feature, because 94.5% of lines span
+  // more than one band and half span all four (Phase 1B).
+  var BAND_PROPERTY = { pre1923: 'co_pre1923', big4: 'co_big4', br: 'co_br' };
+
+  function eraColorFor(bandKey, companyName) {
+    var theme = currentTheme();
+    var band = eraColors[bandKey];
+    if (!band) return MULTI_OPERATOR_NEUTRAL[theme];
+    if (companyName && band.companies && band.companies[companyName]) {
+      return band.companies[companyName][theme];
+    }
+    if (companyName && !band.companies && band[theme]) return band[theme];
+    var unknown = band.unknown || band;
+    return unknown[theme] || MULTI_OPERATOR_NEUTRAL[theme];
+  }
+
+  // ── Slider (two instances, one state) ────────────────────────────────────
+  var SLIDER_INSTANCES = ['map', 'sidebar'];
+  function sliderEl(instance, part) { return document.getElementById('hs-' + part + '-' + instance); }
+
+  function renderTicks(instance) {
+    var host = sliderEl(instance, 'ticks');
+    if (!host) return;
+    var years = historySnapYears();
+    var min = HISTORY_MIN_YEAR, max = historyMaxYear();
+    host.innerHTML = years.map(function (y, i) {
+      var pct = ((y - min) / (max - min)) * 100;
+      // EDGE LABELS: 1825 sits at 0% and the current year at 100%, where a
+      // translateX(-50%) centred label would hang outside the panel and clip.
+      // Those two are anchored to the track ends instead (left:0 / right:0,
+      // no transform) so they stay inside the box while every interior tick
+      // stays centred on its true position. Handled in CSS via .edge-first /
+      // .edge-last rather than with a magic inset here.
+      var cls = 'hs-tick' + (i === 0 ? ' edge-first' : '') + (i === years.length - 1 ? ' edge-last' : '');
+      var label = y === max ? 'Today' : String(y);
+      return '<button type="button" class="' + cls + '" style="left:' + pct + '%" data-year="' + y + '">' + label + '</button>';
+    }).join('');
+    Array.prototype.forEach.call(host.querySelectorAll('.hs-tick'), function (btn) {
+      btn.addEventListener('click', function () { setHistoryYear(parseInt(btn.dataset.year, 10), { source: 'tick' }); });
+    });
+  }
+
+  // Pushes the current state into BOTH instances. Neither instance owns the
+  // year, so they cannot drift: every path goes through setHistoryYear().
+  function syncSliderInstances() {
+    var min = HISTORY_MIN_YEAR, max = historyMaxYear();
+    var pct = ((historyYear - min) / (max - min)) * 100;
+    SLIDER_INSTANCES.forEach(function (inst) {
+      var range = sliderEl(inst, 'range');
+      if (range) {
+        range.min = String(min);
+        range.max = String(max);
+        if (parseInt(range.value, 10) !== historyYear) range.value = String(historyYear);
+        range.style.setProperty('--fill', pct + '%');
+        range.setAttribute('aria-valuetext', historyYear === max ? 'Today' : String(historyYear));
+      }
+      var label = sliderEl(inst, 'year');
+      if (label) label.textContent = historyYear >= max ? 'TODAY' : String(historyYear);
+      var ticks = sliderEl(inst, 'ticks');
+      if (ticks) {
+        Array.prototype.forEach.call(ticks.querySelectorAll('.hs-tick'), function (b) {
+          b.classList.toggle('on', parseInt(b.dataset.year, 10) === historyYear);
+        });
+      }
+      // ACTIVE SPAN INDICATOR — visual only. It never touches the range
+      // input's min/max, so dragging and the Jump-to field stay unrestricted
+      // outside the open entity's span.
+      var span = sliderEl(inst, 'span');
+      if (span) {
+        if (activeSpanRange) {
+          var a = Math.max(activeSpanRange.first_year, min);
+          var b = Math.min(activeSpanRange.last_year === null ? max : activeSpanRange.last_year, max);
+          if (b >= a) {
+            span.hidden = false;
+            span.style.left = (((a - min) / (max - min)) * 100) + '%';
+            span.style.width = (((b - a) / (max - min)) * 100) + '%';
+          } else { span.hidden = true; }
+        } else { span.hidden = true; }
+      }
+    });
+  }
+
+  // THE single entry point for changing the year. `opts.source` is only used
+  // to decide history-stack behaviour; every caller lands here.
+  function setHistoryYear(year, opts) {
+    opts = opts || {};
+    var min = HISTORY_MIN_YEAR, max = historyMaxYear();
+    year = Math.max(min, Math.min(max, Math.round(year)));
+    var changed = year !== historyYear;
+    historyYear = year;
+    syncSliderInstances();
+    if (changed) {
+      // PERFORMANCE: the data is year-granular, so map filters only re-run
+      // when the integer year actually changes — not on every pointer move.
+      // Re-filtering ~11,000 line features and ~8,900 stations per drag frame
+      // would jank badly.
+      applyHistoryFilters();
+      renderYearHighlight();
+      // Crossing 1994 swaps which dataset is on screen, so the collapsed
+      // attribution bar's scope filter has to be re-evaluated.
+      renderAttributionBar();
+    }
+    if (!opts.silent) replaceHistoryYearInUrl();
+  }
+
+  function wireSliderInstance(inst) {
+    var range = sliderEl(inst, 'range');
+    if (range) {
+      range.addEventListener('input', function () {
+        setHistoryYear(parseInt(range.value, 10), { source: 'drag' });
+      });
+    }
+    var jump = sliderEl(inst, 'jump');
+    if (jump) {
+      // JUMP-TO IS UNRESTRICTED by design: it accepts any year in the slider
+      // range regardless of which entity is open, and the panel stays open if
+      // the year lands outside that entity's span. The panel is reference
+      // material, not a map view — closing it on a year change would be
+      // surprising.
+      var commit = function () {
+        var raw = jump.value.trim();
+        if (!raw) { jump.classList.remove('invalid'); return; }
+        var y = parseInt(raw, 10);
+        if (!/^\d{3,4}$/.test(raw) || isNaN(y)) { jump.classList.add('invalid'); return; }
+        var min = HISTORY_MIN_YEAR, max = historyMaxYear();
+        if (y < min || y > max) {
+          // Clamp rather than reject: a user typing 1700 or 2050 has made
+          // their intent obvious, and silently doing nothing reads as broken.
+          // The field shows what it actually did.
+          y = Math.max(min, Math.min(max, y));
+          jump.value = String(y);
+        }
+        jump.classList.remove('invalid');
+        setHistoryYear(y, { source: 'jump' });
+      };
+      jump.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); commit(); }
+      });
+      jump.addEventListener('blur', commit);
+      jump.addEventListener('input', function () { jump.classList.remove('invalid'); });
+    }
+  }
+
+  // ── Historical map layers ────────────────────────────────────────────────
+  var HISTORY_TILES_URL = 'https://pub-f3c70a3d45aa443d81dab5db7f762d2a.r2.dev/historical.pmtiles';
+  var HIST_LINE_LAYER = 'history-lines';
+  var HIST_STATION_LAYER = 'history-stations';
+
+  function ensureHistoryLayers() {
+    if (!map || historyLayersReady) return;
+    ensurePmtilesProtocol();
+    if (!map.getSource('history-vector')) {
+      map.addSource('history-vector', {
+        type: 'vector',
+        url: 'pmtiles://' + HISTORY_TILES_URL,
+        // Attribution is rendered by the sidebar bar from data/attribution.json,
+        // and MapLibre's own control is disabled — this string is only a
+        // fallback for any consumer reading the source metadata directly.
+        attribution: '© OpenHistoricalMap contributors (CC0)',
+      });
+    }
+    if (!map.getLayer(HIST_LINE_LAYER)) {
+      map.addLayer({
+        id: HIST_LINE_LAYER, type: 'line', source: 'history-vector', 'source-layer': 'historical_lines',
+        layout: { 'line-cap': 'round', 'line-join': 'round', visibility: 'none' },
+        paint: {
+          'line-color': MULTI_OPERATOR_NEUTRAL[currentTheme()],
+          'line-width': ['interpolate', ['linear'], ['zoom'], 5, 0.9, 10, 1.8, 14, 3.2],
+          'line-opacity': 0,
+          'line-opacity-transition': { duration: HISTORY_FADE_MS },
+        },
+      });
+    }
+    if (!map.getLayer(HIST_STATION_LAYER)) {
+      map.addLayer({
+        id: HIST_STATION_LAYER, type: 'circle', source: 'history-vector', 'source-layer': 'historical_stations',
+        layout: { visibility: 'none' },
+        paint: {
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, 1.6, 10, 3, 14, 5],
+          'circle-color': themeColors().bg,
+          'circle-stroke-width': 1,
+          'circle-stroke-color': eraColorFor('pre1923', null),
+          'circle-opacity': 0,
+          'circle-stroke-opacity': 0,
+          'circle-opacity-transition': { duration: HISTORY_FADE_MS },
+          'circle-stroke-opacity-transition': { duration: HISTORY_FADE_MS },
+        },
+      });
+    }
+    historyLayersReady = true;
+    wireHistoryMapInteraction();
+    applyHistoryPaint();
+    applyHistoryFilters();
+  }
+
+  // Paint reads whichever co_* property the CURRENT BAND calls for. Rebuilt
+  // on year-band change and on theme change, not per feature.
+  function applyHistoryPaint() {
+    if (!map || !map.getLayer(HIST_LINE_LAYER)) return;
+    var band = eraBandForYear(historyYear);
+    if (band === 'modern') return; // modern band paints from operators.pmtiles
+    var prop = BAND_PROPERTY[band];
+    var bandData = eraColors[band] || {};
+    var expr;
+    if (bandData.companies) {
+      // Big Four: one colour per resolved company, the band's own `unknown`
+      // neutral for everything else. ~88.7% of the band falls to `unknown`,
+      // which is why that colour has to be distinct from the pre1923 band's
+      // (otherwise the 1923 transition is invisible for most of the map).
+      var match = ['match', ['coalesce', ['get', prop], '']];
+      Object.keys(bandData.companies).forEach(function (name) {
+        match.push(name, bandData.companies[name][currentTheme()]);
+      });
+      match.push(eraColorFor(band, null));
+      expr = match;
+    } else {
+      expr = eraColorFor(band, null);
+    }
+    map.setPaintProperty(HIST_LINE_LAYER, 'line-color', expr);
+    map.setPaintProperty(HIST_STATION_LAYER, 'circle-stroke-color', eraColorFor(band, null));
+    map.setPaintProperty(HIST_STATION_LAYER, 'circle-color', themeColors().bg);
+  }
+
+  function applyHistoryFilters() {
+    if (!map || !historyLayersReady || !map.getLayer(HIST_LINE_LAYER)) return;
+    var y = historyYear;
+    // Lines: present if built on or before y and not yet closed. Undated
+    // lines were dropped at build time, so there is nothing to exclude here.
+    map.setFilter(HIST_LINE_LAYER, ['all',
+      ['<=', ['coalesce', ['get', 'start_year'], 9999], y],
+      ['any', ['!', ['has', 'end_year']], ['>=', ['coalesce', ['get', 'end_year'], 9999], y]],
+    ]);
+    // Stations: visible if y falls inside ANY period. Uses the FLATTENED
+    // p1_start..p5_end scalars, never the `periods` JSON string — MVT cannot
+    // query inside a string, which is exactly why 2A emitted both.
+    var any = ['any'];
+    for (var i = 1; i <= 5; i++) {
+      any.push(['all',
+        ['has', 'p' + i + '_start'],
+        ['<=', ['get', 'p' + i + '_start'], y],
+        ['any', ['!', ['has', 'p' + i + '_end']], ['>=', ['get', 'p' + i + '_end'], y]],
+      ]);
+    }
+    map.setFilter(HIST_STATION_LAYER, any);
+    applyHistoryPaint();
+    setHistoryLayerVisibility();
+  }
+
+  // The 1994 source-switch, as a fast opacity cross-fade. Deliberately fast:
+  // the two datasets differ ~3.3x in vertex density and 10-19m in geometry,
+  // so a slow fade shows visible double-vision on every still-open line.
+  function setHistoryLayerVisibility() {
+    if (!map || !historyLayersReady) return;
+    var showHistorical = mode === 'history' && historyYear < HISTORY_MODERN_FROM;
+    var showModern = mode === 'history' && historyYear >= HISTORY_MODERN_FROM;
+    [HIST_LINE_LAYER, HIST_STATION_LAYER].forEach(function (id) {
+      if (!map.getLayer(id)) return;
+      if (mode === 'history') map.setLayoutProperty(id, 'visibility', 'visible');
+      else map.setLayoutProperty(id, 'visibility', 'none');
+    });
+    if (map.getLayer(HIST_LINE_LAYER)) {
+      map.setPaintProperty(HIST_LINE_LAYER, 'line-opacity', showHistorical ? 1 : 0);
+    }
+    if (map.getLayer(HIST_STATION_LAYER)) {
+      map.setPaintProperty(HIST_STATION_LAYER, 'circle-opacity', showHistorical ? 1 : 0);
+      map.setPaintProperty(HIST_STATION_LAYER, 'circle-stroke-opacity', showHistorical ? 1 : 0);
+    }
+    // Modern operator-coloured lines. In History mode these render in FULL
+    // COLOUR — the reverse-colour-reveal (grey until hover) is a Live-mode
+    // affordance and is bypassed entirely here, see applyHistoryModernPaint().
+    ROUTE_TIERS.forEach(function (t) {
+      var id = 'operator-lines-' + t.id;
+      if (!map.getLayer(id)) return;
+      if (mode === 'history') {
+        map.setLayoutProperty(id, 'visibility', showModern ? 'visible' : 'none');
+      }
+    });
+    if (showModern) applyHistoryModernPaint();
+  }
+
+  // Full-colour operator paint for the modern band inside History mode.
+  function applyHistoryModernPaint() {
+    if (!map || !operatorColorsData) return;
+    var theme = currentTheme();
+    var lookup = buildOperatorColorLookup(theme);
+    var match = ['match', ['get', 'operators']];
+    Object.keys(lookup).forEach(function (k) { match.push(k, lookup[k]); });
+    match.push(MULTI_OPERATOR_NEUTRAL[theme]);
+    ROUTE_TIERS.forEach(function (t) {
+      var id = 'operator-lines-' + t.id;
+      if (map.getLayer(id)) map.setPaintProperty(id, 'line-color', match);
+    });
+  }
+
+  // ── Year highlight (sidebar) ─────────────────────────────────────────────
+  // Reads the reviewed-only notableYears map. Not every year has an entry —
+  // the section COLLAPSES cleanly when there is none rather than showing an
+  // empty box.
+  function renderYearHighlight() {
+    var el = document.getElementById('hs-highlight');
+    if (!el) return;
+    var entry = notableYears[String(historyYear)];
+    if (!entry || !entry.blurb) { el.hidden = true; el.innerHTML = ''; return; }
+    el.hidden = false;
+    el.innerHTML = '<span class="hs-highlight-year">' + historyYear + '</span>' + escapeAttr(entry.blurb);
+  }
+
+  function renderHistoryLegend() { /* legend lives in Database mode; no-op hook for era-colors load */ }
+
+  // ── Attribution bar ──────────────────────────────────────────────────────
+  // Built ENTIRELY from data/attribution.json — no attribution string is
+  // hardcoded anywhere in this file, so adding a source to that manifest
+  // updates the bar with no code change. That is the whole reason the
+  // manifest exists rather than a block of markup.
+  //
+  // Collapsed shows every MANDATORY credit (the licence legally requires it).
+  // COURTESY credits — CC0 sources like OpenHistoricalMap and Wikidata, which
+  // waive attribution — live in the expanded state only. A UI short on space
+  // may collapse courtesy credits; it may never collapse mandatory ones.
+  var attributionManifest = null;
+  loadJsonContent('/data/attribution.json', function (d) {
+    attributionManifest = d;
+    renderAttributionBar();
+  });
+
+  function renderAttributionBar() {
+    var summaryEl = document.getElementById('sb-attrib-summary');
+    var bodyEl = document.getElementById('sb-attrib-body');
+    if (!summaryEl || !bodyEl) return;
+    var sources = (attributionManifest && attributionManifest.sources) || [];
+    if (!sources.length) return; // keep the static pre-JS fallback text
+    // COLLAPSED BAR credits only what is CURRENTLY ON SCREEN, using each
+    // source's own `layer_scope` from the manifest — not a hardcoded list and
+    // not string-matching on file paths. This is the manifest's own stated
+    // rule ("every entry where attribution === MANDATORY and the layer is
+    // visible") and it exists because crediting all six mandatory sources
+    // unconditionally measured 336 characters — about five wrapped lines and
+    // ~86px of permanent sidebar chrome, which visibly squeezed the Live
+    // tab's 50/50 departure/news panes on a short viewport.
+    //
+    // The EXPANDED state always lists every source regardless of scope, so
+    // nothing is ever unreachable — only deferred by one tap.
+    function scopeVisible(scope) {
+      if (!scope || scope === 'always') return true;
+      if (scope === 'orm') return !!ormVisible;
+      if (scope === 'historical') return mode === 'history' && historyYear < HISTORY_MODERN_FROM;
+      if (scope === 'modern') return mode !== 'history' || historyYear >= HISTORY_MODERN_FROM;
+      return true;
+    }
+    var mandatory = sources.filter(function (s) { return s.attribution === 'MANDATORY'; });
+    var courtesy = sources.filter(function (s) { return s.attribution !== 'MANDATORY'; });
+    var visibleMandatory = mandatory.filter(function (s) { return scopeVisible(s.layer_scope); });
+    summaryEl.textContent = visibleMandatory.map(function (s) { return s.attribution_string; }).join(' · ');
+    function rowHtml(s) {
+      var lic = s.licence_url
+        ? '<a class="db-link" href="' + escapeAttr(s.licence_url) + '" target="_blank" rel="noopener">' + escapeAttr(s.licence_label || s.licence_code || '') + '</a>'
+        : escapeAttr(s.licence_label || s.licence_code || '');
+      return '<div class="sb-attrib-row">' +
+        '<span class="sb-attrib-src">' + escapeAttr(s.attribution_string) + '</span><br>' +
+        '<span class="sb-attrib-lic">' + lic + '</span> ' +
+        '<span class="sb-attrib-tag">' + escapeAttr(s.attribution === 'MANDATORY' ? 'required' : 'courtesy') + '</span>' +
+        '</div>';
+    }
+    bodyEl.innerHTML = mandatory.concat(courtesy).map(rowHtml).join('');
+  }
+
+  (function wireAttributionBar() {
+    var toggle = document.getElementById('sb-attrib-toggle');
+    var body = document.getElementById('sb-attrib-body');
+    if (!toggle || !body) return;
+    toggle.addEventListener('click', function () {
+      var open = toggle.getAttribute('aria-expanded') === 'true';
+      toggle.setAttribute('aria-expanded', String(!open));
+      body.hidden = open;
+    });
+  })();
+
+  // ── Slider-follow rules ──────────────────────────────────────────────────
+  // Applied ONLY when an entity is OPENED — never on a year change, so
+  // dragging or jumping can never re-trigger them and yank the user back.
+  //
+  //   RULE 1  slider year already inside the span -> DO NOT MOVE. The user's
+  //           position is valid; moving it would destroy their place.
+  //   RULE 2  outside the span -> move to the START of the MAP-COVERAGE
+  //           RANGE, so the entity's network is actually visible.
+  //   RULE 3  no span determinable -> DO NOT MOVE. Never guess.
+  //
+  // The range used is always MAP-COVERAGE (derived from our own tiles), never
+  // `founded` and never `dates_of_operation`. GWR (Legacy) was incorporated
+  // in 1833 but its first line opened in 1838 — following the founding year
+  // would land the user on an empty map.
+  function applySliderFollow(range) {
+    activeSpanRange = range || null;
+    if (!range) { syncSliderInstances(); return; } // RULE 3
+    var max = historyMaxYear();
+    var lo = range.first_year;
+    var hi = range.last_year === null ? max : range.last_year;
+    if (historyYear >= lo && historyYear <= hi) { syncSliderInstances(); return; } // RULE 1
+    setHistoryYear(lo, { source: 'follow' }); // RULE 2
+    syncSliderInstances();
+  }
+
+  // MAP-COVERAGE RANGE for a historical operator, precomputed at build time by
+  // scripts/build-historical-operator-coverage.mjs. Precomputed rather than
+  // queried per panel-open because querySourceFeatures() only sees tiles
+  // loaded for the CURRENT viewport — the answer would change with where the
+  // user happened to be panned, which is a correctness problem, not just a
+  // slow one.
+  function coverageForHistoricalOperator(slug) {
+    var rec = historicalOperators[slug];
+    if (!rec) return null;
+    var best = null;
+    (rec.tile_matches || []).forEach(function (m) {
+      var cov = operatorCoverage[m];
+      if (!cov) return;
+      if (!best) { best = { first_year: cov.first_year, last_year: cov.last_year }; return; }
+      best.first_year = Math.min(best.first_year, cov.first_year);
+      if (best.last_year !== null) {
+        best.last_year = cov.last_year === null ? null : Math.max(best.last_year, cov.last_year);
+      }
+    });
+    return best;
+  }
+
+  // ── History-mode entity panels ───────────────────────────────────────────
+  // Navigation within History mode STAYS in History mode — none of these ever
+  // calls setMode('database').
+  function selectHistoricalOperator(slug, fallbackName) {
+    ++selectionSeq;
+    selection = { type: 'histop', slug: slug, fallbackName: fallbackName || slug };
+    renderSelectionChrome();
+    expandSidebarIfCollapsed();
+    animateSidebarTransition();
+    setSelectedStationPoints([]);
+    applySliderFollow(coverageForHistoricalOperator(slug));
+    pushHistoryForCurrentState();
+  }
+
+  function selectHistoricalLine(props) {
+    ++selectionSeq;
+    selection = { type: 'histline', line: props, fallbackName: props.name || 'Railway line' };
+    renderSelectionChrome();
+    expandSidebarIfCollapsed();
+    animateSidebarTransition();
+    setSelectedStationPoints([]);
+    // A line's own lifespan IS its map-coverage range — it is one feature, so
+    // there is nothing to aggregate.
+    var end = (props.end_year === undefined || props.end_year === null) ? null : props.end_year;
+    applySliderFollow(props.start_year !== undefined ? { first_year: props.start_year, last_year: end } : null);
+    pushHistoryForCurrentState();
+  }
+
+  // Renders a predecessor/successor group. THE NIL-vs-UNRECORDED DISTINCTION
+  // IS LOAD-BEARING: a company that genuinely had no predecessor (GWR (Legacy)
+  // was an original 1833 incorporation) is a different fact from one we simply
+  // have no data for, and rendering both as "None" asserts something false.
+  function histRelationHtml(label, group) {
+    if (!group) return dbFieldHtml(label, '<span class="db-value">Unrecorded</span>');
+    // "NIL" verbatim, per both the brief and the approved mockup. It reads as
+    // a recorded fact ("we checked; there was none") in a way "None" does not,
+    // which is the whole point of distinguishing it from Unrecorded.
+    if (group.state === 'nil') return dbFieldHtml(label, 'NIL');
+    if (group.state !== 'known' || !(group.entities || []).length) {
+      return dbFieldHtml(label, 'Unrecorded');
+    }
+    // A chip only becomes clickable when the target actually has a content
+    // record. CHOSEN: render it VISIBLY DISABLED rather than suppressing it —
+    // suppressing would silently hide a real historical fact (the LMS did
+    // succeed the Caledonian Railway) just because we have not written that
+    // company's entry yet, which is a worse lie than showing an unclickable
+    // name. Disabled chips also make the 2C content backlog visible in the UI.
+    var chips = group.entities.map(function (e) {
+      var hasRecord = e.key && historicalOperators[e.key];
+      if (hasRecord) {
+        return '<button type="button" class="filter-chip hist-rel-chip" data-histop="' + escapeAttr(e.key) + '">' +
+          escapeAttr(e.display_name) + '</button>';
+      }
+      return '<span class="filter-chip hist-rel-chip is-disabled" aria-disabled="true" title="No database entry yet">' +
+        escapeAttr(e.display_name) + '</span>';
+    }).join('');
+    return '<div class="db-field" data-anim-row><div class="db-label">' + label +
+      '</div><div class="db-chip-row">' + chips + '</div></div>';
+  }
+
+  function histDatesOfOperationHtml(rec) {
+    var d = rec.dates_of_operation;
+    if (!d || d.start === undefined || d.start === null) return dbFieldHtml('Dates of operation', 'Unrecorded');
+    // "Dates of operation" is the standard term in rail literature and in
+    // Wikipedia rail-company infoboxes — deliberately NOT "founded", which is
+    // incorporation and a different fact entirely.
+    return dbFieldHtml('Dates of operation', d.start + '–' + (d.end === null || d.end === undefined ? 'present' : d.end));
+  }
+
+  function historicalOperatorSkeletonHtml() {
+    var rec = historicalOperators[selection.slug];
+    if (!rec) return dbComingSoonHtml(selection.fallbackName);
+    var html = '';
+    html += dbHeadlineHtml(rec.description);
+    html += dbFieldHtml('Founded', rec.founded ? String(rec.founded) : 'Unrecorded');
+    html += histDatesOfOperationHtml(rec);
+    html += dbFieldHtml('Headquarters', rec.headquarters || 'Unrecorded');
+    html += histRelationHtml('Predecessor', rec.predecessor);
+    html += histRelationHtml('Successor', rec.successor);
+    // NOTE: no "On this map" / map-coverage field here. It is neither in the
+    // brief's field list nor in the mockup, and the slider's active-span band
+    // already conveys the same range visually — a second, numeric copy of it
+    // would be redundant panel weight.
+    html += notableFeaturesHtml(rec.notable_features);
+    if (rec.source_url) {
+      // Labelled by the source it actually points at (the mockup shows
+      // "WIKIPEDIA"), not a generic "Source" — the reader can tell what they
+      // are about to open.
+      var srcLabel = /wikipedia\.org/.test(rec.source_url) ? 'Wikipedia' : 'Source';
+      html += '<div class="db-links" data-anim-row><a class="db-link" href="' + escapeAttr(rec.source_url) +
+        '" target="_blank" rel="noopener">' + srcLabel + '</a></div>';
+    }
+    // NOTE: no fleet chips, no region chips, no departure elements. History
+    // operator panels are history-focused regardless of whether the operator
+    // is historical or modern — that is a deliberate difference from the
+    // Database tab's operator view, not an omission.
+    return html || dbComingSoonHtml(rec.display_name);
+  }
+
+  function histPrecisionNoteHtml(startPrecision, endPrecision) {
+    var notes = [];
+    if (startPrecision === 'inferred') notes.push('Opening year inferred from the line it sits on — a verified date is welcome.');
+    if (startPrecision === 'unknown') notes.push('Opening year unknown.');
+    if (endPrecision === 'inferred') notes.push('Closing year inferred — a verified date is welcome.');
+    if (endPrecision === 'unknown') notes.push('No closure recorded; this may mean still open, or simply unrecorded.');
+    if (!notes.length) return '';
+    return '<p class="db-precision-note" data-anim-row>' + notes.map(escapeAttr).join(' ') + '</p>';
+  }
+
+  function historicalLineSkeletonHtml() {
+    var p = selection.line || {};
+    var html = '';
+    var band = eraBandForYear(historyYear);
+    var company = p[BAND_PROPERTY[band]] || null;
+    html += dbFieldHtml('Name', p.name || 'Unnamed line');
+    html += dbFieldHtml('On this map',
+      (p.start_year !== undefined ? p.start_year : '?') + '–' +
+      (p.end_year === undefined || p.end_year === null ? 'present' : p.end_year));
+    // A line with NO company attribution (~88.7% of the Big Four band, ~64%
+    // of pre-1923) degrades to "Unrecorded" here rather than opening an empty
+    // operator panel.
+    if (company) {
+      var slug = historicalOperatorByMatch[company];
+      html += slug
+        ? '<div class="db-field" data-anim-row><div class="db-label">Operator</div><div class="db-chip-row">' +
+            '<button type="button" class="filter-chip hist-rel-chip" data-histop="' + escapeAttr(slug) + '">' +
+            escapeAttr(company) + '</button></div></div>'
+        : dbFieldHtml('Operator', escapeAttr(company));
+    } else {
+      html += dbFieldHtml('Operator', 'Unrecorded for this period');
+    }
+    html += histPrecisionNoteHtml(p.start_precision, p.end_precision);
+    if (p.license === 'CC-BY-4.0') {
+      html += '<p class="db-precision-note" data-anim-row>Linework reproduced with the permission of the National Library of Scotland (CC BY).</p>';
+    }
+    return html;
+  }
+
+  // Station panel in History mode — shows the FULL open/closed history, not
+  // just the current period. 965 stations have more than one.
+  function historicalStationSkeletonHtml(props) {
+    var html = '';
+    var periods = [];
+    try { periods = JSON.parse(props.periods || '[]'); } catch (e) { periods = []; }
+    if (!periods.length && props.p1_start !== undefined) {
+      periods = [{ start_year: props.p1_start, end_year: props.p1_end === undefined ? null : props.p1_end }];
+    }
+    if (periods.length) {
+      html += '<div class="db-field" data-anim-row><div class="db-label">Open periods</div><div class="db-value">' +
+        periods.map(function (p) {
+          return p.start_year + '–' + (p.end_year === null || p.end_year === undefined ? 'present' : p.end_year);
+        }).join('<br>') + '</div></div>';
+    }
+    html += histPrecisionNoteHtml(props.start_precision, props.end_precision);
+    if (props.crs) html += dbFieldHtml('Still open', 'Yes');
+    if (props.source) {
+      var title = String(props.source).replace(/^wikipedia:/, '');
+      html += '<div class="db-links" data-anim-row><a class="db-link" href="https://en.wikipedia.org/wiki/' +
+        escapeAttr(title.replace(/ /g, '_')) + '" target="_blank" rel="noopener">Source</a></div>';
+    }
+    return html;
+  }
+
+  function wireHistoryPanel() {
+    Array.prototype.forEach.call(contentBlock.querySelectorAll('.hist-rel-chip[data-histop]'), function (btn) {
+      btn.addEventListener('click', function () {
+        // Predecessor/successor navigation STAYS in History mode and applies
+        // the slider-follow rules, including when it crosses the 1994
+        // source-switch (a BR panel's modern successor is a legitimate jump).
+        var slug = btn.dataset.histop;
+        selectHistoricalOperator(slug, (historicalOperators[slug] || {}).display_name);
+      });
+    });
+  }
+
+  function selectHistoricalStation(props) {
+    ++selectionSeq;
+    selection = { type: 'histstation', station: props, fallbackName: props.name || 'Station' };
+    renderSelectionChrome();
+    expandSidebarIfCollapsed();
+    animateSidebarTransition();
+    setSelectedStationPoints([]);
+    // A station's span is its first opening to its last closing — read from
+    // the flattened scalars, since `periods` is a JSON string in the tiles.
+    var first = props.p1_start, last = null, sawOpen = false;
+    for (var i = 1; i <= 5; i++) {
+      if (props['p' + i + '_start'] === undefined) break;
+      if (props['p' + i + '_end'] === undefined) sawOpen = true;
+      else last = props['p' + i + '_end'];
+    }
+    applySliderFollow(first !== undefined ? { first_year: first, last_year: sawOpen ? null : last } : null);
+    pushHistoryForCurrentState();
+  }
+
+  // Map interaction inside History mode. Registered once, and every handler
+  // no-ops unless mode === 'history', so these cannot interfere with Live or
+  // Database click behaviour.
+  function wireHistoryMapInteraction() {
+    if (!map) return;
+    map.on('click', HIST_LINE_LAYER, function (e) {
+      if (mode !== 'history' || !e.features || !e.features.length) return;
+      selectHistoricalLine(e.features[0].properties);
+    });
+    map.on('click', HIST_STATION_LAYER, function (e) {
+      if (mode !== 'history' || !e.features || !e.features.length) return;
+      selectHistoricalStation(e.features[0].properties);
+    });
+    [HIST_LINE_LAYER, HIST_STATION_LAYER].forEach(function (id) {
+      map.on('mouseenter', id, function () { if (mode === 'history') map.getCanvas().style.cursor = 'pointer'; });
+      map.on('mouseleave', id, function () { if (mode === 'history') map.getCanvas().style.cursor = ''; });
+    });
+  }
+
+  // ── Header: mode switching (Live / Database / History) ───────────────────
   var tabLive = document.getElementById('sb-tab-live');
   var tabDb = document.getElementById('sb-tab-database');
+  var tabHistory = document.getElementById('sb-tab-history');
   function setMode(newMode) {
     if (newMode === mode) return;
+    var leavingHistory = mode === 'history';
     mode = newMode;
     document.body.classList.toggle('mode-database', mode === 'database');
+    document.body.classList.toggle('mode-history', mode === 'history');
     tabLive.classList.toggle('live-on', mode === 'live');
     tabLive.setAttribute('aria-pressed', mode === 'live');
     tabDb.classList.toggle('db-on', mode === 'database');
     tabDb.setAttribute('aria-pressed', mode === 'database');
+    tabHistory.classList.toggle('history-on', mode === 'history');
+    tabHistory.setAttribute('aria-pressed', mode === 'history');
+
+    // HISTORY IS A THIRD MODE, NEVER AN OVERLAY. Entering it hides the
+    // operator-coloured live layer and clears any locked highlight, so no
+    // residual Live-mode paint or filter state survives the switch; leaving
+    // it reverses that exactly, handing the operator layers back to
+    // applyOperatorHighlightPaint() as their sole owner.
+    if (mode === 'history') {
+      // The reverse-colour-reveal (grey default, colour on hover/click) is a
+      // LIVE-MODE affordance. History uses full colours, so the locked state
+      // is cleared rather than merely ignored — leaving it set would repaint
+      // the moment the user switched back mid-highlight.
+      clearOperatorHighlight();
+      ensureHistoryLayers();
+      renderTicks('map');
+      renderTicks('sidebar');
+      syncSliderInstances();
+      renderYearHighlight();
+      applyHistoryFilters();
+      renderAttributionBar();
+    } else if (leavingHistory) {
+      setHistoryLayerVisibility(); // mode is no longer 'history', so this hides the historical layers
+      // Hand the operator layers back to their normal owner. Without this the
+      // full-colour History paint would persist into Live/Database and the
+      // reverse-colour-reveal would look broken.
+      ROUTE_TIERS.forEach(function (t) {
+        var id = 'operator-lines-' + t.id;
+        if (map && map.getLayer(id)) map.setLayoutProperty(id, 'visibility', 'visible');
+      });
+      applyOperatorHighlightPaint();
+    }
     // Operator search is hidden in Live (see its CSS) — if it was the active
     // search sub-mode when the user switches away from Database, reset back
     // to Station rather than leaving the search panel on a now-hidden tab
@@ -4618,8 +5610,14 @@
     // instead of silently throwing it away.
     var liveOnly = selection.type === 'saved';
     var dbOnly = selection.type === 'route' || selection.type === 'operator';
-    if ((mode === 'database' && liveOnly) || (mode === 'live' && dbOnly)) {
+    // History-only selection types — the history-focused operator/station/line
+    // panels. Same reasoning as liveOnly/dbOnly: carrying one into a mode that
+    // cannot render it would leave the sidebar showing an inapplicable view.
+    var historyOnly = selection.type === 'histop' || selection.type === 'histline';
+    if ((mode === 'database' && liveOnly) || (mode === 'live' && dbOnly) ||
+        (mode !== 'history' && historyOnly) || (mode === 'history' && (liveOnly || dbOnly))) {
       selection = { type: 'none' };
+      activeSpanRange = null;
     }
 
     var mySeq = ++selectionSeq;
@@ -4637,6 +5635,31 @@
   }
   tabLive.addEventListener('click', function () { setMode('live'); });
   tabDb.addEventListener('click', function () { setMode('database'); });
+  tabHistory.addEventListener('click', function () { setMode('history'); });
+  SLIDER_INSTANCES.forEach(wireSliderInstance);
+  // Standalone clear (×) buttons declared in markup (the Jump-to fields).
+  // Search fields get theirs injected by wireAutocomplete instead — same
+  // class, same behaviour, different origin because those fields are wired
+  // through one shared function and these are not.
+  Array.prototype.forEach.call(document.querySelectorAll('.field-clear[data-clear-for]'), function (btn) {
+    var input = document.getElementById(btn.dataset.clearFor);
+    if (!input) return;
+    var sync = function () { btn.hidden = !input.value; };
+    btn.addEventListener('mousedown', function (e) {
+      e.preventDefault();
+      input.value = '';
+      input.classList.remove('invalid');
+      sync();
+      input.focus();
+    });
+    input.addEventListener('input', sync);
+    input.addEventListener('keydown', function (e) {
+      // Same two-stage convention as the search fields. These have no
+      // dropdown, so Escape goes straight to stage two: clear the field.
+      if (e.key === 'Escape') { input.value = ''; input.classList.remove('invalid'); sync(); }
+    });
+    sync();
+  });
 
   // ── Map controls ─────────────────────────────────────────────────────────
   document.getElementById('zoom-in').addEventListener('click', function () { map.zoomIn(); });
@@ -4650,6 +5673,7 @@
       map.setLayoutProperty('railway-lines-closed', 'visibility', ormVisible ? 'visible' : 'none');
     }
     layersBtn.setAttribute('aria-pressed', String(ormVisible));
+    renderAttributionBar(); // ORM's CC-BY-SA credit is only required while the overlay is on
     // Keep the hover tooltip's wording matched to what the next click will
     // actually do, not a static label — same reasoning as the aria-pressed
     // update just above.
@@ -5018,13 +6042,69 @@
         });
       });
     }
+    // Clearing by ANY route (× button or Escape) must reset the underlying
+    // search STATE, not merely blank the input — stale results sitting under
+    // an empty field is precisely the reported bug. onPick(null) is what
+    // invalidates the caller's own pick state (stationPick, operatorPick, …).
+    function clearField() {
+      inputEl.value = '';
+      closeDropdown();
+      onPick(null);
+      syncClearButton();
+      inputEl.focus();
+    }
+    // The × lives inside the field and is VISIBLE ONLY WHEN THERE IS TEXT, so
+    // empty fields stay clean and the sidebar isn't littered with × marks.
+    // Injected here rather than in the markup so every field wired through
+    // this one function gets it automatically — the same reasoning that makes
+    // this shared function the right place for the keyboard behaviour.
+    var clearBtn = null;
+    var wrap = inputEl.parentNode;
+    if (wrap && wrap.classList && wrap.classList.contains('sb-ac-wrap')) {
+      clearBtn = document.createElement('button');
+      clearBtn.type = 'button';
+      clearBtn.className = 'field-clear';
+      clearBtn.setAttribute('aria-label', 'Clear ' + (inputEl.getAttribute('aria-label') || 'search'));
+      clearBtn.textContent = '×';
+      clearBtn.hidden = true;
+      // mousedown, not click: the input's blur handler closes the dropdown on
+      // a 120ms delay, and a plain click would fire after blur had already
+      // moved focus, making the refocus in clearField() fight the browser.
+      clearBtn.addEventListener('mousedown', function (e) { e.preventDefault(); clearField(); });
+      wrap.appendChild(clearBtn);
+    }
+    function syncClearButton() { if (clearBtn) clearBtn.hidden = !inputEl.value; }
+
     inputEl.addEventListener('input', function () {
       onPick(null);
       currentMatches = searchFn(inputEl.value, 7);
       renderDropdown();
+      syncClearButton();
     });
+    // Clicking the field positions the cursor and does NOT select-all or
+    // clear — standard behaviour, so an existing query stays editable. This
+    // is a deliberate no-op note rather than code: nothing here overrides the
+    // browser default, and nothing should be added that does.
+    syncClearButton();
     inputEl.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape') { closeDropdown(); return; }
+      // TWO-STAGE ESCAPE. Investigated first (Phase 2B): this handler already
+      // existed and did stage one only — Escape closed the dropdown and
+      // nothing else, so a user who wanted to start a new search had to
+      // backspace the old query out by hand. That is the bug being fixed.
+      //
+      // Stage 1: a dropdown is open -> close it, leave the text alone.
+      // Stage 2: no dropdown open -> clear the text AND the underlying search
+      //          state, so no stale results survive under an empty field.
+      //
+      // Careful not to double-handle: this returns after stage one, so a
+      // single keypress can never do both. The dropdown's open state is the
+      // discriminator, which is also what the user sees, so the two stages
+      // match what is on screen rather than an invisible internal flag.
+      if (e.key === 'Escape') {
+        if (dropdownEl.classList.contains('open')) { closeDropdown(); return; }
+        clearField();
+        return;
+      }
       if (e.key === 'ArrowDown') {
         if (!currentMatches.length) return;
         e.preventDefault();

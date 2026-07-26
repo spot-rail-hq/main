@@ -8,7 +8,13 @@
     "single_colour": true,
     "_note": "The pre-grouping era had hundreds of independent companies and OHM carries a usable company name for only ~30% of the network, so per-company colouring is not honest at this scale — the band renders one neutral. A parchment/stone neutral rather than a grey: it reads as 'historic' without borrowing the --dim UI ink token (#9AA4B2), which would make map linework look like disabled UI text. Deliberately desaturated toward stone rather than a warm tan — a first pass used #C4A987 and measured only deltaE 22.8 against GWR chocolate, which would have made the 1923 band change nearly invisible across GWR territory (the largest of the four networks). At #C9BBA4 the nearest neighbour in the whole era palette is 32.3.",
     "dark": "#C9BBA4",
-    "light": "#7D7361"
+    "light": "#7D7361",
+    "unknown": {
+      "label": "Company unrecorded",
+      "_note": "INTENTIONALLY IDENTICAL to this band's own dark/light values. The locked decision makes pre1923 a single neutral band, so co_pre1923 drives the POPUP only and never paint — there is no attributed-vs-unknown colour distinction to make here. The key exists so all three bands expose the same shape to map.html (one lookup path, no per-band special-casing) and so it can be given its own value later if the band ever stops being single-colour. 6,859 of 10,754 pre1923-band features have no company name, and they render exactly like the 3,895 that do.",
+      "dark": "#C9BBA4",
+      "light": "#7D7361"
+    }
   },
   "big4": {
     "key": "big4",
@@ -42,7 +48,7 @@
     },
     "unknown": {
       "label": "Company unknown",
-      "_note": "Not 'no company' — these lines had an owner, we just cannot evidence which one from open sources. The UI should say so rather than implying the line was unowned or unimportant.",
+      "_note": "Not 'no company' — these lines had an owner, we just cannot evidence which one from open sources. The UI should say so rather than implying the line was unowned or unimportant. THIS IS THE ONLY per-band unknown that actually renders: measured 9,280 of 10,465 big4-band features (88.7%) fall here. Its distinctness from the pre1923 band colour is therefore what makes the 1923 transition visible at all for the majority of the map — measured deltaE 32.8 against pre1923 #C9BBA4, and 27.5 against BR rail blue for the 1948 transition. Tune with those two numbers in mind rather than in isolation.",
       "dark": "#7E8AA0",
       "light": "#5A6577"
     }
@@ -55,7 +61,13 @@
     "livery": "BR rail blue (BS 4800 18 E 53 / monastral blue)",
     "_note": "A single nationalised operator needs no lookup, which is why Phase 1's finding that the string 'British Railways' appears exactly once in OHM's entire GB tag set turned out not to matter — co_br is written as a constant. Checked against the modern palette's deep blues (NT #1310C9/#0F0D78, SW #2D4ED0/#24398C): distinct, and in any case they never render at the same slider position.",
     "dark": "#5580C4",
-    "light": "#1F3F73"
+    "light": "#1F3F73",
+    "unknown": {
+      "label": "Company unrecorded",
+      "_note": "UNREACHABLE IN PRACTICE — present for schema symmetry only. co_br is written as the constant 'British Railways' on every feature alive in 1948-1993, so measured attribution in this band is 10,304/10,304 = 100.0% and this value can never be selected. Kept so map.html's band lookup has a uniform shape; if it ever renders, something upstream has broken and that is worth noticing rather than silently falling back to a company colour.",
+      "dark": "#3F5478",
+      "light": "#2A3B57"
+    }
   },
   "modern": {
     "key": "modern",
@@ -70,6 +82,11 @@
     "_note": "Measured 2026-07-26: every pair in the era palette is at least deltaE 27.5 apart (closest pair big4/unknown vs br); every entry is at least deltaE 32 from the reserved turquoise. See HISTORICAL-SLIDER-FINDINGS.md Phase 2A.",
     "min_pairwise_delta_e": 27.5,
     "closest_pair": "big4/unknown vs br",
-    "min_delta_e_from_reserved_turquoise": 32
+    "min_delta_e_from_reserved_turquoise": 32,
+    "per_band_unknown": {
+      "_note": "Added 2026-07-26 for Phase 2B. Only big4.unknown is reachable; see each band's own unknown._note.",
+      "pre1923_to_big4_transition_delta_e": 32.8,
+      "big4_to_br_transition_delta_e": 27.5
+    }
   }
 }

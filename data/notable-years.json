@@ -1,0 +1,47 @@
+{
+  "_notes": "Notable-year highlights for the historical map slider's sidebar. Keyed by four-digit year as a string. THE `reviewed` FLAG IS A HARD GATE: map.html must refuse to render any entry where reviewed is not exactly true. That is deliberate belt-and-braces — Phase 1B's recommendation was that historical-accuracy stakes here are higher than the locomotive spotlight's, so an unreviewed blurb must not be able to reach the page through an oversight rather than a decision. The gate is enforced at load time (unreviewed entries are dropped from the in-memory map entirely, so no later code path can accidentally surface one) rather than at render time. NOT EVERY YEAR HAS AN ENTRY, and that is normal — the sidebar section collapses cleanly when the current slider year has no reviewed entry rather than showing an empty box. STUB SET ONLY: a small number of hand-verifiable entries so the rendering path can be exercised, plus one deliberately-unreviewed entry so the gate itself is testable. Generating these at scale is Phase 2C, using the approach in HISTORICAL-SLIDER-FINDINGS.md section 3 — derive candidate years statistically from the opening/closure series, have Claude draft from fetched text, and land them here with reviewed:false for human review.",
+  "_schema": {
+    "year": "four-digit year, also the object key",
+    "blurb": "1-2 sentences. Shown verbatim.",
+    "source": "where the fact came from — 'wikipedia:{Article}' or a URL",
+    "reviewed": "boolean. MUST be exactly true to render. Default false."
+  },
+  "years": {
+    "1825": {
+      "year": 1825,
+      "blurb": "The Stockton and Darlington Railway opens on 27 September — 25 miles of line, and the first locomotive-hauled public railway in the world.",
+      "source": "wikipedia:History of rail transport in Great Britain",
+      "reviewed": true
+    },
+    "1830": {
+      "year": 1830,
+      "blurb": "The Liverpool and Manchester Railway opens: the world's first inter-city passenger railway, and the first with scheduled services and terminal stations.",
+      "source": "wikipedia:History of rail transport in Great Britain",
+      "reviewed": true
+    },
+    "1923": {
+      "year": 1923,
+      "blurb": "The Grouping takes effect on 1 January. Over 120 companies are amalgamated into the Big Four — the GWR, LMS, LNER and Southern Railway — under the Railways Act 1921.",
+      "source": "wikipedia:Railways Act 1921",
+      "reviewed": true
+    },
+    "1948": {
+      "year": 1948,
+      "blurb": "The Big Four are nationalised on 1 January under the Transport Act 1947, forming British Railways.",
+      "source": "wikipedia:Big Four (British railway companies)",
+      "reviewed": true
+    },
+    "1963": {
+      "year": 1963,
+      "blurb": "The Reshaping of British Railways is published. It identifies 2,363 stations and 5,000 miles of line for closure — 55% of stations and 30% of route miles.",
+      "source": "wikipedia:Beeching cuts",
+      "reviewed": true
+    },
+    "1938": {
+      "year": 1938,
+      "blurb": "PLACEHOLDER — NOT REVIEWED. This entry exists so the reviewed:false gate can be tested; it must never appear in the UI. If you can see this text on the site, the gate is broken.",
+      "source": "none — test fixture",
+      "reviewed": false
+    }
+  }
+}
