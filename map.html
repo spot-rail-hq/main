@@ -465,8 +465,7 @@
   body.mode-history .sb-selection { align-items: flex-start; padding-top: 18px; }
   body.mode-history .sb-selection-title { white-space: normal; overflow: visible; text-overflow: clip;
     font-size: 30px; line-height: 1.12; letter-spacing: -0.8px; color: var(--ink-primary); }
-  /* The mockup shows a bigger year than the 20px first draft. */
-  body.mode-history .sb-hist-slider .hs-year { font-size: 28px; min-width: 92px; }
+
   #sb-star-btn.starred { color: var(--a); }
   #sb-star-btn.starred i::before { content: "\f6a6"; } /* ti-star-filled — was "\ea78", which renders as ⌘ in this webfont */
   #sb-saved-toggle[aria-pressed="true"] i::before { content: "\f6a6"; }
@@ -752,8 +751,10 @@
   .sb-hist-slider { flex-shrink: 0; padding: 10px 16px 8px; border-bottom: 0.5px solid var(--br); }
 
   .hs-head { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
-  .hs-year { font-family: var(--font-display); font-size: 20px; font-weight: 600; letter-spacing: -0.5px;
-    color: var(--t); flex-shrink: 0; min-width: 74px; }
+  /* Same size as the Live / Database / History tab labels (13.5px), per direct
+     feedback that the first draft's 28px read as oversized next to them. */
+  .hs-year { font-family: var(--font-display); font-size: 13.5px; font-weight: 600; letter-spacing: 0;
+    color: var(--t); flex-shrink: 0; min-width: 46px; }
   .hs-jump-wrap { position: relative; margin-left: auto; }
   .hs-jump { width: 92px; padding: 5px 22px 5px 9px; border-radius: 8px; border: 0.5px solid var(--br);
     background: var(--bg); color: var(--ink-primary);
@@ -782,22 +783,22 @@
      track rather than being evenly spaced. The first and last sit ON the track
      ends, where a centred label would clip outside the box — see
      .hs-tick.edge-first/.edge-last for the anchoring fix. */
-  .hs-ticks { position: relative; height: 14px; margin-top: 2px; }
-  .hs-tick { position: absolute; transform: translateX(-50%); font-size: 10px; color: var(--ink);
+  .hs-ticks { position: relative; height: 19px; margin-top: 4px; }
+  .hs-tick { position: absolute; transform: translateX(-50%); font-size: 13px; color: var(--ink);
     background: transparent; border: none; padding: 0; cursor: pointer; font-family: inherit;
     white-space: nowrap; }
   .hs-tick:hover, .hs-tick.on { color: var(--t); }
   .hs-tick.edge-first { transform: none; left: 0 !important; }
   .hs-tick.edge-last { transform: none; left: auto !important; right: 0; }
-  /* 1825 and 1845 are only 20 years apart on a ~200-year track, so they are the
-     tightest pair at every width. Measured at the real track widths: 3.0px gap
-     in the 368px sidebar at 10px type, 14.4px on the desktop map canvas. 9px
-     type in the sidebar takes that to ~5px. Not a collision either way, but
-     tight enough to be worth checking on a real screen. */
-  .sb-hist-slider .hs-tick { font-size: 9px; }
+  /* Tick labels are 13px to match the panel/news-feed text scale rather than
+     the 9-10px disclaimer scale they started at. At that size 1825 and 1845 —
+     only 20 years apart on a ~200-year track — genuinely DO collide, so
+     overlapping labels are pruned at render time by measuring the real laid-out
+     boxes (pruneOverlappingTicks), not by guessing at a font metric. Positions
+     stay strictly proportional to the year either way. */
 
-  .hs-highlight { margin-top: 8px; padding: 8px 10px; border-radius: 10px;
-    background: rgba(64,224,208,0.05); border: 0.5px solid var(--br); line-height: 1.5; font-size: 11px; color: var(--ink); }
+  .hs-highlight { margin-top: 10px; padding: 9px 11px; border-radius: 10px;
+    background: rgba(64,224,208,0.05); border: 0.5px solid var(--br); line-height: 1.5; font-size: 13px; color: var(--ink); }
   .hs-highlight-year { font-family: var(--font-mono); color: var(--t); margin-right: 6px; }
 
   /* Clear (×) inside a text field — shared by every search input and the
@@ -829,8 +830,8 @@
     .hs-range { height: 26px; touch-action: pan-y; }
     .hs-range::-webkit-slider-thumb { width: 22px; height: 22px; margin-top: -9.5px; }
     .hs-range::-moz-range-thumb { width: 22px; height: 22px; }
-    .hs-ticks { height: 16px; }
-    .hs-tick { font-size: 9px; }
+    .hs-ticks { height: 18px; }
+    .hs-tick { font-size: 12px; }
   }
 
   /* Sidebar content block — swapped as a unit on every selection change
@@ -860,30 +861,19 @@
   .sb-dep-pane, .sb-news-pane { flex: 1 1 50%; min-height: 0; overflow-y: auto; overflow-x: hidden; }
   .sb-news-pane { border-top: 0.5px solid var(--br); }
 
-  /* ── History panel (Database mode) ────────────────────────────────────────
-     Floats independently of the sidebar, bottom-center of the visible map
-     area (viewport minus the sidebar's width on desktop). The legend lives
-     inside it now (bottom-right of the head row, which sits at the BOTTOM
-     of the box — see the HTML comment) instead of as its own separate
-     bottom bar. Width is 50% of that visible map area on desktop; on
-     tablet/mobile it matches the Jump-to bar's edge-to-edge treatment (same
-     --sidebar-gap inset, not centered/capped). Collapsed by default. ───── */
-  #history-panel { display: none; position: absolute; z-index: 41; left: 50%; transform: translateX(-50%);
-    bottom: 54px; width: calc((100vw - var(--sidebar-edge)) / 2);
-    background: var(--sf); border: 0.5px solid var(--brh); border-radius: 16px;
-    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
-  body.mode-database #history-panel { display: block; }
-  @media (min-width: 769px) { #history-panel { left: calc(50% + (var(--sidebar-edge) / 2)); } }
-  @media (max-width: 768px) {
-    #history-panel { bottom: 70px; left: var(--sidebar-gap); right: var(--sidebar-gap); width: auto; transform: none; }
-  }
+  /* The old "History panel (Database mode)" block lived here. The year slider
+     is GONE from Database mode entirely, on every breakpoint — it belongs to
+     History mode now and is styled under .hist-slider / #history-panel.hist-slider
+     further up. Its `body.mode-database #history-panel { display: block }` rule
+     was left behind in the first pass and would have shown the History slider on
+     the Database tab; removed. #db-legend keeps the legend for Database. */
 
   .hp-head { display: flex; align-items: center; gap: 10px; padding: 10px 14px; }
   #hp-toggle { flex-shrink: 0; }
   #hp-toggle i { transition: transform 0.2s; }
   /* Opposite convention from the sidebar's own toggle, per instruction:
      expanded = down (base icon, unrotated), collapsed = up (rotated 180°). */
-  #history-panel.collapsed #hp-toggle i { transform: rotate(180deg); }
+  #db-legend.collapsed #hp-toggle i { transform: rotate(180deg); }
   /* Matches the Live/Database pill label size (13.5px) per feedback that the
      reference mockup's own size read a touch small. */
   .hp-title { font-size: 13.5px; font-weight: 500; color: var(--ink-primary); }
@@ -893,28 +883,11 @@
   .legend-line.closed { background-image: repeating-linear-gradient(to right, rgba(64,224,208,0.4) 0 4px, transparent 4px 7px); }
 
   .hp-body { padding: 14px 14px 0; }
-  #history-panel.collapsed .hp-body { display: none; }
+  #db-legend.collapsed .hp-body { display: none; }
   .hp-era { display: block; font-family: var(--font-display); font-size: 20px; font-weight: 600;
     letter-spacing: -0.5px; color: var(--t); margin-bottom: 10px; }
 
-  /* Custom track fill + thumb — a native <input type=range> has no
-     cross-browser way to show progress, so WebKit gets a JS-driven
-     background gradient (--fill, updated in updateYear()) and Firefox uses
-     its native ::-moz-range-progress pseudo-element instead. */
-  #year-slider { -webkit-appearance: none; appearance: none; width: 100%; height: 18px; background: transparent;
-    cursor: pointer; --fill: 100%; }
-  #year-slider::-webkit-slider-runnable-track { height: 3px; border-radius: 2px;
-    background: linear-gradient(to right, var(--t) var(--fill), var(--br) var(--fill)); }
-  #year-slider::-moz-range-track { height: 3px; border-radius: 2px; background: var(--br); }
-  #year-slider::-moz-range-progress { height: 3px; border-radius: 2px; background: var(--t); }
-  #year-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%;
-    background: var(--t); border: 3px solid var(--bg); box-shadow: 0 0 0 1px var(--t); margin-top: -6.5px; cursor: pointer; }
-  #year-slider::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%;
-    background: var(--t); border: 3px solid var(--bg); box-shadow: 0 0 0 1px var(--t); cursor: pointer; }
 
-  .hp-snaps { display: flex; justify-content: space-between; margin-top: 4px; }
-  .hp-snap { font-size: 12px; color: var(--ink); }
-  .hp-context { font-size: 12px; color: var(--ink); margin-top: 6px; line-height: 1.5; }
 </style>
 </head>
 <body>
@@ -4063,6 +4036,13 @@
     return mode === 'database' ? databaseDefaultSkeletonHtml() : liveDefaultSkeletonHtml();
   }
   function historyDefaultSkeletonHtml() {
+    // A missing/unreachable tileset used to present as a silently blank map,
+    // which is indistinguishable from "there was no railway in 1850". Say so
+    // instead — the source error is caught below in wireHistoryMapInteraction.
+    if (historyTilesFailed) {
+      return '<div class="db-hint" data-anim-row>The historical map layer could not be loaded, so no lines or stations will appear before 1994. ' +
+        'The rest of History mode still works.</div>';
+    }
     return '<div class="db-hint" data-anim-row>Drag the year slider, or tap a line or station on the map to see its history.</div>';
   }
 
@@ -4891,6 +4871,7 @@
 
   var historyYear = historyMaxYear();
   var historyLayersReady = false;
+  var historyTilesFailed = false;
   var activeSpanRange = null; // {first_year,last_year} of the open entity, or null
 
   function eraBandForYear(y) {
@@ -4941,7 +4922,52 @@
     Array.prototype.forEach.call(host.querySelectorAll('.hs-tick'), function (btn) {
       btn.addEventListener('click', function () { setHistoryYear(parseInt(btn.dataset.year, 10), { source: 'tick' }); });
     });
+    pruneOverlappingTicks(host);
   }
+
+  // Tick POSITIONS are always strictly proportional to the year — that is the
+  // point of them, and evenly spacing them would put a label above a year it
+  // does not name. At 13px type on a 368px sidebar track, though, 1825 and 1845
+  // genuinely overlap (they are 20 years apart on a ~200-year range).
+  //
+  // So rather than shrinking the type back down or faking the spacing, any
+  // label that would overlap its neighbour is HIDDEN. Measured from the real
+  // laid-out boxes via getBoundingClientRect, not estimated from a font metric,
+  // because the estimate was already wrong once. The first and last are always
+  // kept — they anchor the range — so when the last one collides it is the
+  // previous survivor that gives way, not the endpoint.
+  function pruneOverlappingTicks(host) {
+    if (!host || !host.offsetParent) return; // not laid out yet (mode hidden); re-run on show
+    var ticks = Array.prototype.slice.call(host.querySelectorAll('.hs-tick'));
+    if (ticks.length < 2) return;
+    var MIN_GAP = 8;
+    ticks.forEach(function (t) { t.style.visibility = ''; });
+    var boxes = ticks.map(function (t) { return t.getBoundingClientRect(); });
+    var lastKept = 0;
+    for (var i = 1; i < ticks.length; i++) {
+      var isLast = i === ticks.length - 1;
+      if (boxes[i].left - boxes[lastKept].right >= MIN_GAP) { lastKept = i; continue; }
+      if (isLast) {
+        // The final tick wins: hide whichever label it collided with, then
+        // keep walking back if that was not enough.
+        var j = lastKept;
+        while (j > 0 && boxes[i].left - boxes[j].right < MIN_GAP) {
+          ticks[j].style.visibility = 'hidden';
+          j--;
+          while (j > 0 && ticks[j].style.visibility === 'hidden') j--;
+        }
+      } else {
+        ticks[i].style.visibility = 'hidden';
+      }
+    }
+  }
+  // Labels can only be measured once the panel is actually laid out, so both
+  // instances are re-pruned when History mode opens and whenever the sidebar or
+  // window is resized.
+  window.addEventListener('resize', function () {
+    if (mode !== 'history') return;
+    SLIDER_INSTANCES.forEach(function (inst) { pruneOverlappingTicks(sliderEl(inst, 'ticks')); });
+  });
 
   // Pushes the current state into BOTH instances. Neither instance owns the
   // year, so they cannot drift: every path goes through setHistoryYear().
@@ -5171,14 +5197,62 @@
     // Modern operator-coloured lines. In History mode these render in FULL
     // COLOUR — the reverse-colour-reveal (grey until hover) is a Live-mode
     // affordance and is bypassed entirely here, see applyHistoryModernPaint().
+    //
+    // EVERY modern layer has to be listed, not just the visible coloured ones.
+    // A first pass hid only the ROUTE_TIERS colour layers and left the
+    // transparent HIT layers behind them interactive, so in a pre-1994 view
+    // with nothing drawn the user could still hover and highlight the
+    // present-day network — reported as "nothing shows up but the hover
+    // highlight is active". The glow and active layers are the same class of
+    // leftover.
+    var modernLineLayers = [];
     ROUTE_TIERS.forEach(function (t) {
-      var id = 'operator-lines-' + t.id;
-      if (!map.getLayer(id)) return;
-      if (mode === 'history') {
-        map.setLayoutProperty(id, 'visibility', showModern ? 'visible' : 'none');
-      }
+      modernLineLayers.push('operator-lines-' + t.id, 'operator-lines-hit-' + t.id);
     });
+    modernLineLayers.push('operator-lines-active');
+    GLOW_RINGS.forEach(function (ring, i) { modernLineLayers.push('operator-lines-hover-glow-' + i); });
+    modernLineLayers.forEach(function (id) {
+      if (!map.getLayer(id)) return;
+      if (mode === 'history') map.setLayoutProperty(id, 'visibility', showModern ? 'visible' : 'none');
+    });
+
+    // LIVE STATION MARKERS. These are a separate geojson source from the
+    // historical station tiles and were not being touched at all, so the
+    // present-day station dots stayed on screen at every year — reported as
+    // "all stations remain unchanged throughout the timeline". In History mode
+    // the historical station layer is the only station layer that should draw.
+    var liveStationLayers = [];
+    STATION_TIERS.forEach(function (t) {
+      liveStationLayers.push(
+        'stations-circle-' + t.id,
+        'stations-circle-' + t.id + '-hit',
+        'stations-hover-glow-' + t.id,
+        'stations-label-' + t.id,
+      );
+    });
+    liveStationLayers.forEach(function (id) {
+      if (!map.getLayer(id)) return;
+      if (mode === 'history') map.setLayoutProperty(id, 'visibility', 'none');
+    });
+
     if (showModern) applyHistoryModernPaint();
+  }
+
+  // Restores every layer History mode hid. Kept next to the hide list above so
+  // the two cannot drift — a layer added to one must be added to the other.
+  function restoreLiveLayersAfterHistory() {
+    if (!map) return;
+    var ids = [];
+    ROUTE_TIERS.forEach(function (t) { ids.push('operator-lines-' + t.id, 'operator-lines-hit-' + t.id); });
+    ids.push('operator-lines-active');
+    GLOW_RINGS.forEach(function (ring, i) { ids.push('operator-lines-hover-glow-' + i); });
+    STATION_TIERS.forEach(function (t) {
+      ids.push('stations-circle-' + t.id, 'stations-circle-' + t.id + '-hit',
+        'stations-hover-glow-' + t.id, 'stations-label-' + t.id);
+    });
+    ids.forEach(function (id) {
+      if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', 'visible');
+    });
   }
 
   // Full-colour operator paint for the modern band inside History mode.
@@ -5275,6 +5349,16 @@
       var open = toggle.getAttribute('aria-expanded') === 'true';
       toggle.setAttribute('aria-expanded', String(!open));
       body.hidden = open;
+      // The expanded list already contains every source, INCLUDING the ones the
+      // collapsed summary names. Showing both stacked them on top of each other
+      // — the first row's source line ran into the summary and read as clipped
+      // text. Collapse the summary to a short label while expanded.
+      var summary = document.getElementById('sb-attrib-summary');
+      if (summary) {
+        summary.classList.toggle('is-collapsed-label', !open);
+        if (!open) summary.textContent = 'Data sources';
+        else renderAttributionBar();
+      }
     });
   })();
 
@@ -5524,6 +5608,17 @@
   // Database click behaviour.
   function wireHistoryMapInteraction() {
     if (!map) return;
+    // Surface a missing/unreachable historical tileset instead of rendering an
+    // empty map. Confirmed live 2026-07-26: historical.pmtiles was returning
+    // HTTP 404 from R2 (never uploaded), which is indistinguishable on screen
+    // from "no railway existed in this year".
+    map.on('error', function (e) {
+      var src = e && e.sourceId;
+      if (src !== 'history-vector' || historyTilesFailed) return;
+      historyTilesFailed = true;
+      console.warn('historical.pmtiles could not be loaded — History mode will show no pre-1994 features.', e && e.error);
+      if (mode === 'history') rebuildSidebarContent();
+    });
     map.on('click', HIST_LINE_LAYER, function (e) {
       if (mode !== 'history' || !e.features || !e.features.length) return;
       selectHistoricalLine(e.features[0].properties);
@@ -5575,13 +5670,11 @@
       renderAttributionBar();
     } else if (leavingHistory) {
       setHistoryLayerVisibility(); // mode is no longer 'history', so this hides the historical layers
-      // Hand the operator layers back to their normal owner. Without this the
-      // full-colour History paint would persist into Live/Database and the
-      // reverse-colour-reveal would look broken.
-      ROUTE_TIERS.forEach(function (t) {
-        var id = 'operator-lines-' + t.id;
-        if (map && map.getLayer(id)) map.setLayoutProperty(id, 'visibility', 'visible');
-      });
+      // Hand every layer History mode hid back to its normal owner — the
+      // operator lines AND their hit/glow layers AND the live station markers.
+      // Without this the full-colour History paint and the hidden station dots
+      // would persist into Live/Database.
+      restoreLiveLayersAfterHistory();
       applyOperatorHighlightPaint();
     }
     // Operator search is hidden in Live (see its CSS) — if it was the active
@@ -6514,36 +6607,22 @@
   document.getElementById('cc-accept').addEventListener('click', function () { persistCookieChoice(true); });
   document.getElementById('cc-reject').addEventListener('click', function () { persistCookieChoice(false); });
 
-  // ── Database mode: history panel ──────────────────────────────────────────
-  var ERA_INFO = {
-    1845: 'The Railway Mania era — hundreds of competing companies laid track across Britain.',
-    1880: 'The "Big Four"’ predecessors expand — mainlines link every major city.',
-    1923: 'The Grouping — over 120 companies consolidated into the Big Four (GWR, LMS, LNER, SR).',
-    1965: 'Post-Beeching — thousands of miles of branch lines closed to traffic.',
-    1994: 'On the eve of privatisation — British Rail sectors prepare for franchising.',
-    2025: 'Today’s network — electrified mainlines, high-speed services and open access operators.',
-  };
-  var historyPanel = document.getElementById('history-panel');
-  document.getElementById('hp-toggle').addEventListener('click', function () {
-    historyPanel.classList.toggle('collapsed');
-  });
-  var yearSlider = document.getElementById('year-slider');
-  var YEAR_MIN = parseInt(yearSlider.min, 10), YEAR_MAX = parseInt(yearSlider.max, 10);
-  function updateYear(year) {
-    year = parseInt(year, 10);
-    var snaps = [1845, 1880, 1923, 1965, 1994, 2025];
-    var closest = snaps.reduce(function (a, b) { return Math.abs(b - year) < Math.abs(a - year) ? b : a; });
-    document.getElementById('hp-era-chip').textContent = closest >= 2025 ? 'Today' : closest;
-    document.getElementById('hp-context').textContent = ERA_INFO[closest] || '';
-    yearSlider.style.setProperty('--fill', ((year - YEAR_MIN) / (YEAR_MAX - YEAR_MIN) * 100) + '%');
-    // TODO: swap in OpenHistoricalMap vector tiles for this year once an
-    // OHM tile endpoint/key is available — currently UI-only.
-  }
-  yearSlider.addEventListener('input', function () { updateYear(yearSlider.value); });
-  Array.prototype.forEach.call(document.querySelectorAll('.hp-snap'), function (btn) {
-    btn.addEventListener('click', function () { yearSlider.value = btn.dataset.year; updateYear(btn.dataset.year); });
-  });
-  updateYear(2025);
+  // ── Database mode: legend collapse ────────────────────────────────────────
+  // The year slider that used to live in this panel is GONE from Database mode
+  // entirely (desktop and mobile) — it now belongs to History mode. What
+  // remains here is the legend and its collapse toggle.
+  //
+  // The old slider's JS used to sit here and was left behind when the markup
+  // moved: `document.getElementById('year-slider')` returned null and the very
+  // next line, `parseInt(yearSlider.min, 10)`, threw a TypeError that aborted
+  // the rest of this IIFE. That is why History mode looked half-dead on the
+  // deployed build — a thrown exception, not a data problem.
+  (function wireDbLegend() {
+    var legend = document.getElementById('db-legend');
+    var toggle = document.getElementById('hp-toggle');
+    if (!legend || !toggle) return;
+    toggle.addEventListener('click', function () { legend.classList.toggle('collapsed'); });
+  })();
 })();
 </script>
 </body>

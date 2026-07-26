@@ -19,11 +19,30 @@
       "source": "wikipedia:History of rail transport in Great Britain",
       "reviewed": true
     },
+    "1845": {
+      "year": 1845,
+      "blurb": "Railway Mania is under way. The 1840s were by far the biggest decade of railway growth in Britain, peaking in 1846 when 263 Acts of Parliament authorised new companies.",
+      "source": "wikipedia:Railway Mania",
+      "reviewed": true
+    },
+    "1880": {
+      "year": 1880,
+      "blurb": "The Callander and Oban Railway opens throughout to Oban on 1 July.",
+      "source": "wikipedia:1880 in rail transport",
+      "reviewed": true,
+      "_note": "THIN ON PURPOSE, and flagged rather than padded. 1880 has no headline-grade GB event in the open sources — '1880 in rail transport' is dominated by US railroads, which is exactly the Phase 1 finding that the prose year-articles are global and thin on UK content. This is the one genuinely verifiable GB fact in it. A better 1880 highlight is Phase 2C work; inventing one to fill the slot is what the reviewed gate exists to prevent."
+    },
     "1923": {
       "year": 1923,
       "blurb": "The Grouping takes effect on 1 January. Over 120 companies are amalgamated into the Big Four — the GWR, LMS, LNER and Southern Railway — under the Railways Act 1921.",
       "source": "wikipedia:Railways Act 1921",
       "reviewed": true
+    },
+    "1938": {
+      "year": 1938,
+      "blurb": "PLACEHOLDER — NOT REVIEWED. This entry exists so the reviewed:false gate can be tested; it must never appear in the UI. If you can see this text on the site, the gate is broken.",
+      "source": "none — test fixture",
+      "reviewed": false
     },
     "1948": {
       "year": 1948,
@@ -37,11 +56,11 @@
       "source": "wikipedia:Beeching cuts",
       "reviewed": true
     },
-    "1938": {
-      "year": 1938,
-      "blurb": "PLACEHOLDER — NOT REVIEWED. This entry exists so the reviewed:false gate can be tested; it must never appear in the UI. If you can see this text on the site, the gate is broken.",
-      "source": "none — test fixture",
-      "reviewed": false
+    "1994": {
+      "year": 1994,
+      "blurb": "Railway privatisation begins. Track and infrastructure pass to Railtrack while passenger services are franchised to private operators — originally 25 franchises.",
+      "source": "wikipedia:History of rail transport in Great Britain",
+      "reviewed": true
     }
   }
 }
