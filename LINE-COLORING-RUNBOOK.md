@@ -30,10 +30,17 @@ Overpass (self-hosted, GB extract)
    │      for a bounded bbox run — see LINE_SEGMENTS_BBOX below)
    │      (node-ID-matched segment graph, operators-per-segment)
    │
-   └─ Phase 3: scripts/build-station-graph-links.mjs
-        → scripts/output/station-graph-links.json
-          (each of the 2,637 NaPTAN stations snapped to its
-           nearest point on the Phase 2 graph, 200m tolerance)
+   ├─ Phase 3: scripts/build-station-graph-links.mjs
+   │    → scripts/output/station-graph-links.json
+   │      (each of the 2,637 NaPTAN stations snapped to its nearest
+   │       SUITABLE point on the Phase 2 graph — operator/mode-aware,
+   │       200m tolerance)
+   │
+   └─ Phase 6: scripts/build-graph-bridges.mjs
+        →  scripts/output/graph-bridges.json
+        └─ scripts/build-routing-graph.mjs
+             → data/routing-graph.json
+               (client-shipped From/To pathfinding graph — see Task 4b)
 ```
 
 Run in that order — each phase's output feeds the next. `operator-colors.json`
@@ -175,13 +182,25 @@ against the local Overpass instance, zero rate-limiting/retries needed.
 node scripts/build-station-graph-links.mjs
 ```
 
-Snaps each of the 2,637 NaPTAN stations to its nearest point on the Phase 2
-segment graph (true point-to-polyline distance, not just nearest node — a
-station can sit mid-edge), via a degree-based spatial grid (not a full
-R-tree — sufficient at this scale, no new dependency). 200m tolerance;
+Snaps each of the 2,637 NaPTAN stations to its nearest **suitable** point on
+the Phase 2 segment graph (true point-to-polyline distance, not just nearest
+node — a station can sit mid-edge), via a degree-based spatial grid (not a
+full R-tree — sufficient at this scale, no new dependency). 200m tolerance;
 anything farther is reported as unsnapped with the true nearest distance
-found, not silently forced. Current result: 2,543 / 2,637 snapped (96.4%).
-The 94 unsnapped break into two categories — read
+found, not silently forced. Current result: 2,546 / 2,629 snapped.
+
+**Candidates are ranked by tier before distance** (2026-07-26 — pure
+nearest-geometry snapping was putting National Rail termini on the tube line
+running underneath them, see the script header): an operator the station is
+actually served by beats the right mode alone, which beats anything else in
+range. Current split: 2,421 operator-matched, 119 mode-matched only, 6
+neither. The change moved exactly one station more than 50m (London
+Marylebone, 21m onto a *Bakerloo-line* segment → 84m onto the Chiltern main
+line, which is the whole point) and left the mean snap distance at 10.5m.
+`snap_tier`, `snap_operators` and `nearest_distance_m` in the output record
+why each station landed where it did.
+
+The 83 unsnapped break into two categories — read
 `scripts/output/station-graph-links.json` for full per-station detail:
 
 - **11 are a `station-list.json` data gap**, not a graph problem — null
@@ -192,7 +211,46 @@ The 94 unsnapped break into two categories — read
   one is incompletely digitized) rather than anything wrong in this
   pipeline — see the Phase 3 checkpoint conversation for the traced
   examples (Weardale Railway, Wherry Lines via Acle, the Harrogate Line's
-  truncated geometry).
+  truncated geometry). 59 of the 83 are more than 2km from any ingested
+  track, i.e. their entire line is missing from Phase 2; fixing them needs a
+  re-ingest, nothing here.
+
+---
+
+## Task 4b — Phase 6: routing graph (From/To pathfinding)
+
+```bash
+node scripts/build-graph-bridges.mjs    # then
+node scripts/build-routing-graph.mjs
+```
+
+Run in that order, and re-run **both** after any Phase 2/3 rebuild. Neither
+needs Overpass any more (the bridge script's mode check used to; it now uses
+the segment graph's own operator data, which is better evidence and offline).
+
+- `build-graph-bridges.mjs` sweeps every disconnected island in the graph and
+  welds the ones that are an OSM node-ID mismatch at a station throat rather
+  than a real gap: same mode either side, within 150m, island carries at
+  least one station. It reads the last `routing-graph.json` for node
+  coordinates but recomputes components with previous bridge edges EXCLUDED,
+  so repeated runs are stable. Output: `scripts/output/graph-bridges.json`
+  (25 bridges, plus an `unbridged` list of the islands it deliberately left
+  alone, with their measured gaps).
+- `build-routing-graph.mjs` writes the client-shipped
+  `data/routing-graph.json` (2.1MB raw / 416KB gzipped): node adjacency,
+  real edge lengths, `station_node`, and per-edge geometry POINTERS —
+  `segment_id` plus, for a segment split at a station, the two cut points
+  `from_coord`/`to_coord`. **Not** array indices: the client reads geometry
+  back from `operators.pmtiles`, where tippecanoe has simplified it per zoom
+  (segment 970 is 356 points here, 36 in a z10 tile), so an index range
+  addresses nothing. Coordinates survive simplification; indices don't.
+
+Current connectivity: 2,513 of 2,546 snapped stations in the main component
+(was 2,433 before the 2026-07-26 snapping/bridging work — 90.6% of random
+station pairs routable, up from 84.3%). The 33 stranded are 9 islands whose
+gap to the network is real missing track: the Harrogate line, the Bittern
+line, the Marlow branch, Colne, Cromford, Duffield, Denby Dale, Sheringham/
+West Runton, and the Isle of Wight (which is *correctly* isolated).
 
 ---
 

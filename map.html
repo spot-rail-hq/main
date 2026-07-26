@@ -1376,63 +1376,301 @@
   // visibly cut a corner a real train doesn't.
   var MAX_BRIDGEABLE_GAP_M = 300;
   function coordDist(a, b) { return Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]); }
-  // A LineString feature that crosses a tile boundary comes back from
-  // querySourceFeatures() as one SEPARATE feature object PER TILE it's
-  // currently loaded in (standard MapLibre/Mapbox GL vector-tile behavior —
-  // each tile clips its own fragment of the geometry, all sharing the same
-  // segment_id/properties). resolveFromToGeometry() used to read only
-  // feats[0], silently using whichever single tile's fragment happened to
-  // come back first — for any segment long enough to span multiple tiles
-  // (the common case for a real, non-trivial edge) that fragment covers
-  // only PART of the segment, so the rendered highlight just stopped
-  // partway with no error and no retry, reverting to the plain grey base
-  // line for the rest (2026-07-22 bugfix — reported as "only part of the
-  // route highlighted", occasional/racy because it depends on which tile
-  // happened to be loaded/ordered first). Stitches every returned fragment
-  // back into one continuous line by greedily chaining whichever remaining
-  // fragment's nearest endpoint is closest to the current chain's open end
-  // (reversing that fragment first if its far end is actually the closer
-  // one). Cheap — a real segment realistically spans a small handful of
-  // tiles, never dozens.
-  function mergeTileClippedFragments(feats) {
-    var frags = [];
+  function haversineM(a, b) {
+    var R = 6371000, toRad = Math.PI / 180;
+    var dLat = (b[1] - a[1]) * toRad, dLon = (b[0] - a[0]) * toRad;
+    var h = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(a[1] * toRad) * Math.cos(b[1] * toRad) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    return 2 * R * Math.asin(Math.sqrt(h));
+  }
+  function polylineLengthM(coords) {
+    var d = 0;
+    for (var i = 0; i < coords.length - 1; i++) d += haversineM(coords[i], coords[i + 1]);
+    return d;
+  }
+  // querySourceFeatures() returns one feature object per (tile × source
+  // feature). Two multiplicities have to be collapsed before any of it can
+  // be treated as "this segment's line":
+  //
+  // 1. ONE FEATURE PER OPERATOR. operators.pmtiles is the fan-out rendering
+  //    source: a stretch of track shared by three TOCs is three separate
+  //    features with the SAME segment_id and identical geometry (they differ
+  //    only in `operators`/`lane_offset`, which the renderer turns into
+  //    parallel offset lines). Filtering on segment_id alone therefore
+  //    returns the same line 2-4× over. The old merge chained those copies
+  //    end-to-end: it would append copy 2 REVERSED (its far endpoint sits
+  //    zero metres from the chain's open end), walking the line back to
+  //    where it started, then copy 3 forward again — leaving the highlight
+  //    ending at the wrong end of the segment, so the straight join to the
+  //    next edge shot off across country. That is the phantom second magenta
+  //    strand reported between Hatton and Leamington Spa (2026-07-26).
+  // 2. ONE FRAGMENT PER TILE. A line crossing a tile boundary comes back
+  //    clipped into one fragment per tile it spans (standard MapLibre/Mapbox
+  //    GL vector-tile behaviour). Reading only feats[0] used to leave the
+  //    highlight stopping partway (2026-07-22 bugfix); those genuinely do
+  //    need stitching back together.
+  //
+  // So: flatten MultiLineStrings, drop exact duplicates (same coordinates =
+  // same tile's copy of the same line for another operator), then assemble
+  // what's left longest-first, taking at each step the join that leaves the
+  // smallest real gap once the overlap has been trimmed off — see
+  // mergeTileClippedFragments below. Cheap — a real segment spans a handful
+  // of tiles, never dozens.
+  function tileFeatureFragments(feats) {
+    var frags = [], seen = {};
     for (var i = 0; i < feats.length; i++) {
-      var c = feats[i].geometry.coordinates;
-      if (c && c.length >= 2) frags.push(c);
+      var geom = feats[i].geometry;
+      if (!geom) continue;
+      var parts = geom.type === 'MultiLineString' ? geom.coordinates : [geom.coordinates];
+      for (var p = 0; p < parts.length; p++) {
+        var c = parts[p];
+        if (!c || c.length < 2) continue;
+        var key = c.length + ':' + c[0][0] + ',' + c[0][1] + ':' + c[c.length - 1][0] + ',' + c[c.length - 1][1];
+        if (seen[key]) continue; // an identical copy of this exact fragment — another operator's feature from the same tile
+        seen[key] = true;
+        frags.push(c);
+      }
     }
+    return frags;
+  }
+  // Metres from a point to a polyline (local equirectangular projection —
+  // accurate well past the scale this is used at). Early-exits as soon as
+  // it's clearly close enough for the redundancy test below.
+  function pointToPolylineM(p, line, goodEnough) {
+    var toRad = Math.PI / 180;
+    var mLon = 111320 * Math.cos(p[1] * toRad), mLat = 110574;
+    var best = Infinity;
+    for (var i = 0; i < line.length - 1; i++) {
+      var ax = (line[i][0] - p[0]) * mLon, ay = (line[i][1] - p[1]) * mLat;
+      var bx = (line[i + 1][0] - p[0]) * mLon, by = (line[i + 1][1] - p[1]) * mLat;
+      var dx = bx - ax, dy = by - ay, l2 = dx * dx + dy * dy;
+      var t = l2 === 0 ? 0 : ((-ax) * dx + (-ay) * dy) / l2;
+      t = Math.max(0, Math.min(1, t));
+      var nx = ax + t * dx, ny = ay + t * dy;
+      var d = Math.sqrt(nx * nx + ny * ny);
+      if (d < best) best = d;
+      if (best <= goodEnough) return best;
+    }
+    return best;
+  }
+  // How far apart two tiles' renderings of the same stretch of line can sit
+  // and still be the same stretch. Tile coordinates are quantised to a
+  // 4096-unit grid per tile, so the same original vertex lands on slightly
+  // different coordinates depending on which tile (and which zoom) drew it —
+  // tens of metres at the zooms a route is viewed at. 150m is comfortably
+  // above that and still far below the length of anything that would be a
+  // genuinely different part of the same segment.
+  var FRAGMENT_DUPLICATE_TOLERANCE_M = 150;
+  // Two fragments of the same segment always meet or overlap; anything
+  // further apart than this is not a continuation, it's a different part of
+  // the line with a hole between (see the join-gap guard in the merge).
+  var MAX_FRAGMENT_JOIN_GAP_M = 500;
+  function fragmentIsRedundant(frag, chain) {
+    return pointToPolylineM(frag[0], chain, FRAGMENT_DUPLICATE_TOLERANCE_M) <= FRAGMENT_DUPLICATE_TOLERANCE_M &&
+      pointToPolylineM(frag[frag.length - 1], chain, FRAGMENT_DUPLICATE_TOLERANCE_M) <= FRAGMENT_DUPLICATE_TOLERANCE_M;
+  }
+  // Is `addition` genuinely new line rather than a retrace of what the chain
+  // already has? Measured as the share of its length lying further than the
+  // duplicate tolerance from the chain. The bar is deliberately low: the
+  // first stretch of ANY real extension necessarily hugs the chain's end, so
+  // a short extension is mostly "near the chain" while still being exactly
+  // what's needed. A backwards retrace, by contrast, is near the chain along
+  // essentially its whole length.
+  var ADDITION_NOVEL_FRACTION = 0.25;
+  function additionCoversNewGround(addition, chain) {
+    // A single point is a legitimate extension when it's off the chain: on
+    // low-zoom, heavily simplified geometry one vertex can carry the line a
+    // kilometre or more (a 1.8km single-vertex step on the Brighton main
+    // line at z10), and rejecting it drops the whole fragment.
+    if (addition.length === 1) {
+      return pointToPolylineM(addition[0], chain, FRAGMENT_DUPLICATE_TOLERANCE_M) > FRAGMENT_DUPLICATE_TOLERANCE_M;
+    }
+    if (addition.length < 1) return false;
+    var total = 0, novel = 0;
+    for (var i = 0; i < addition.length - 1; i++) {
+      var mid = [(addition[i][0] + addition[i + 1][0]) / 2, (addition[i][1] + addition[i + 1][1]) / 2];
+      var len = haversineM(addition[i], addition[i + 1]);
+      total += len;
+      // Sparse low-zoom geometry can put a whole step's midpoint inside the
+      // tolerance while its far vertex is clearly beyond it, so a step counts
+      // as new if ANY of its midpoint or ends is off the chain.
+      var off = pointToPolylineM(mid, chain, FRAGMENT_DUPLICATE_TOLERANCE_M) > FRAGMENT_DUPLICATE_TOLERANCE_M ||
+        pointToPolylineM(addition[i + 1], chain, FRAGMENT_DUPLICATE_TOLERANCE_M) > FRAGMENT_DUPLICATE_TOLERANCE_M ||
+        pointToPolylineM(addition[i], chain, FRAGMENT_DUPLICATE_TOLERANCE_M) > FRAGMENT_DUPLICATE_TOLERANCE_M;
+      if (off) novel += len;
+    }
+    return total > 0 && novel >= total * ADDITION_NOVEL_FRACTION;
+  }
+  function mergeTileClippedFragments(feats) {
+    var frags = tileFeatureFragments(feats);
     if (!frags.length) return null;
     if (frags.length === 1) return frags[0];
+    // Longest first, by GROUND LENGTH rather than vertex count (a heavily
+    // simplified rendering of the whole segment can carry fewer points than
+    // a detailed fragment of a third of it): start from the most complete
+    // rendering available, so every other fragment can be tested for whether
+    // it adds anything at all before being welded on. Without this the chain
+    // can start from a stubby near-duplicate and grow sideways from there.
+    frags.sort(function (a, b) { return polylineLengthM(b) - polylineLengthM(a); });
     var chain = frags.shift();
     while (frags.length) {
-      var chainStart = chain[0], chainEnd = chain[chain.length - 1];
-      var bestI = -1, bestScore = Infinity, bestAppendToEnd = true, bestReverse = false;
+      // Drop anything the chain already covers — the same stretch redrawn by
+      // another tile or another zoom level, which has nothing to contribute
+      // and everything to confuse.
+      for (var ri = frags.length - 1; ri >= 0; ri--) {
+        if (fragmentIsRedundant(frags[ri], chain)) frags.splice(ri, 1);
+      }
+      if (!frags.length) break;
+      // Score every way each remaining fragment could join — either open end
+      // of the chain, either orientation — by the gap that would be left
+      // AFTER trimming the overlap, and take the tightest join.
+      //
+      // Scoring on the raw endpoint distance instead (the original approach)
+      // is misled by exactly the thing tile fragments always do: overlap. Two
+      // tiles' renderings of the GWML overlap by well over a kilometre, so
+      // the endpoint that looks nearest is regularly the wrong end of the
+      // wrong fragment, and the piece gets welded on backwards or dropped —
+      // either a phantom strand or a hole. Trimming first and measuring the
+      // real remaining gap answers the question that actually matters:
+      // "where would this fragment's NEW part start?"
+      var best = null;
       for (var fi = 0; fi < frags.length; fi++) {
-        var f = frags[fi], fStart = f[0], fEnd = f[f.length - 1];
-        var candidates = [
-          { score: coordDist(chainEnd, fStart), appendToEnd: true, reverse: false },
-          { score: coordDist(chainEnd, fEnd), appendToEnd: true, reverse: true },
-          { score: coordDist(chainStart, fEnd), appendToEnd: false, reverse: false },
-          { score: coordDist(chainStart, fStart), appendToEnd: false, reverse: true },
-        ];
-        for (var ci = 0; ci < candidates.length; ci++) {
-          if (candidates[ci].score < bestScore) {
-            bestScore = candidates[ci].score; bestI = fi;
-            bestAppendToEnd = candidates[ci].appendToEnd; bestReverse = candidates[ci].reverse;
+        var frag = frags[fi];
+        for (var side = 0; side < 2; side++) {
+          var appendToEnd = side === 0;
+          var openEnd = appendToEnd ? chain[chain.length - 1] : chain[0];
+          // Two shapes of join, told apart by whether the chain's open end
+          // lies ON this fragment:
+          //  - OVERLAPPING (the normal case — tiles are cut with a buffer):
+          //    the fragment straddles the chain's open end, so cut it AT that
+          //    point and keep the run heading away. Cutting at the nearest
+          //    VERTEX instead leaves a false gap whenever vertices are sparse
+          //    (a 4-point, 2.5km fragment on the Brighton main line lost its
+          //    first vertex and then looked 900m adrift).
+          //  - ABUTTING: the fragment starts where the chain stops, so all of
+          //    it is new and the small gap between the two is what has to be
+          //    sane.
+          // Either way BOTH runs away from the cut are tried: which one is
+          // the continuation and which is a retrace of the chain depends on
+          // the direction the tile happened to store the line in, and the
+          // far-end test below is what tells them apart.
+          var proj = projectOntoLine(frag, openEnd);
+          var overlapping = proj.distM <= FRAGMENT_DUPLICATE_TOLERANCE_M;
+          var runs = overlapping
+            ? [frag.slice(proj.index + 1), frag.slice(0, proj.index + 1).slice().reverse()]
+            : [frag, frag.slice().reverse()];
+          for (var ri2 = 0; ri2 < runs.length; ri2++) {
+            var run = runs[ri2]; // ordered starting nearest the chain, heading away
+            if (!run.length) continue;
+            var gapM = overlapping ? proj.distM : haversineM(openEnd, run[0]);
+            if (gapM > MAX_FRAGMENT_JOIN_GAP_M) continue; // not a continuation of this end — see MAX_FRAGMENT_JOIN_GAP_M
+            // Reject the mirror-image join: the run back along the overlap
+            // always LOOKS like a perfect zero-gap fit, because it starts
+            // exactly where the chain ends — but it retraces ground the chain
+            // already has. The tell is that its far end lands back on the
+            // chain instead of somewhere new.
+            if (pointToPolylineM(run[run.length - 1], chain, FRAGMENT_DUPLICATE_TOLERANCE_M) <= FRAGMENT_DUPLICATE_TOLERANCE_M) continue;
+            var addition = appendToEnd ? run : run.slice().reverse();
+            if (!best || gapM < best.gapM) best = { fi: fi, appendToEnd: appendToEnd, addition: addition, gapM: gapM };
           }
         }
       }
-      var picked = frags.splice(bestI, 1)[0];
-      if (bestReverse) picked = picked.slice().reverse();
-      if (bestAppendToEnd) {
-        if (picked[0][0] === chain[chain.length - 1][0] && picked[0][1] === chain[chain.length - 1][1]) picked = picked.slice(1);
-        chain = chain.concat(picked);
-      } else {
-        if (picked[picked.length - 1][0] === chain[0][0] && picked[picked.length - 1][1] === chain[0][1]) picked = picked.slice(0, -1);
-        chain = picked.concat(chain);
-      }
+      // Nothing left can join without a straight line across open country
+      // between two unrelated bits of railway — which is exactly the phantom
+      // strand reported on the Hatton–Leamington stretch. Stop here: a chain
+      // missing a piece fails the per-edge length check below and the caller
+      // retries, which is always better than drawing a confident line that
+      // isn't there.
+      if (!best) break;
+      frags.splice(best.fi, 1);
+      // Last guard: is the piece mostly a retrace? A fragment can run back
+      // along the chain and poke a couple of hundred metres out of its FAR
+      // end (a 13.5km fragment re-tracing a 12.7km one, seen on the
+      // Leamington–Banbury segment) — the far-end test above passes it,
+      // because that far end really is off the chain, just at the wrong end.
+      // Attaching it here would draw the whole overlap backwards; the
+      // correct join for it is at the chain's other end, which the next pass
+      // will find on its own.
+      if (!additionCoversNewGround(best.addition, chain)) continue;
+      chain = best.appendToEnd ? chain.concat(best.addition) : best.addition.concat(chain);
     }
     return chain;
   }
+  // Cuts `line` down to the stretch between two known points on it. Used for
+  // both edge kinds: a 'partial' sub-edge cuts at the station attachment
+  // points shipped as from_coord/to_coord, a whole 'segment' edge cuts at
+  // its two end nodes' coordinates (a no-op in the normal case, but it
+  // orients the line and trims any tile-boundary overshoot).
+  //
+  // Matching by POINT, not by array index: tippecanoe simplifies geometry
+  // per zoom level, so the same segment is 356 points in the source data,
+  // 54 in a z11 tile and 13 in a z14 one — index ranges from the source data
+  // address nothing in a tile. Points survive: simplification only ever
+  // DROPS vertices, it never moves the ones it keeps, so a cut point still
+  // lies on the simplified line and can be found by projection at any zoom.
+  //
+  // How far a cut point may sit from the line it is supposed to lie on
+  // (measured perpendicular to the line, NOT to the nearest vertex —
+  // simplification can leave a 5km straight run with a vertex only at each
+  // end, so a station in the middle of it is kilometres from any vertex
+  // while sitting exactly on the line). A cut point genuinely off the line
+  // means the geometry doesn't reach it — the fragment covering that end
+  // isn't loaded — and cutting there anyway would draw a straight line from
+  // wherever the geometry stops to a station miles away, while still
+  // looking about the right length overall. Unresolved is the honest
+  // answer; the caller retries.
+  var CUT_POINT_MAX_OFFSET_M = 250;
+  // Where along `line` `coord` sits: which vertex pair, how far along it,
+  // and how far off the line it is.
+  function projectOntoLine(line, coord) {
+    var toRad = Math.PI / 180;
+    var mLon = 111320 * Math.cos(coord[1] * toRad), mLat = 110574;
+    var best = { index: 0, t: 0, distM: Infinity };
+    for (var i = 0; i < line.length - 1; i++) {
+      var ax = (line[i][0] - coord[0]) * mLon, ay = (line[i][1] - coord[1]) * mLat;
+      var bx = (line[i + 1][0] - coord[0]) * mLon, by = (line[i + 1][1] - coord[1]) * mLat;
+      var dx = bx - ax, dy = by - ay, l2 = dx * dx + dy * dy;
+      var t = l2 === 0 ? 0 : ((-ax) * dx + (-ay) * dy) / l2;
+      t = Math.max(0, Math.min(1, t));
+      var nx = ax + t * dx, ny = ay + t * dy;
+      var d = Math.sqrt(nx * nx + ny * ny);
+      if (d < best.distM) best = { index: i, t: t, distM: d };
+    }
+    return best;
+  }
+  function cutLineBetween(line, fromCoord, toCoord) {
+    if (!fromCoord || !toCoord) return line;
+    if (line.length < 2) return null;
+    var a = projectOntoLine(line, fromCoord), b = projectOntoLine(line, toCoord);
+    if (a.distM > CUT_POINT_MAX_OFFSET_M || b.distM > CUT_POINT_MAX_OFFSET_M) return null;
+    var forward = (a.index < b.index) || (a.index === b.index && a.t <= b.t);
+    var lo = forward ? a : b, hi = forward ? b : a;
+    // Vertices strictly between the two cut positions, with the exact cut
+    // points themselves as the ends — so the drawn line starts and stops at
+    // the station rather than at whatever vertex happened to survive
+    // simplification nearby.
+    var middle = line.slice(lo.index + 1, hi.index + 1);
+    var slice = [fromCoord].concat(forward ? middle : middle.slice().reverse(), [toCoord]);
+    return slice;
+  }
+
+  // How far a resolved edge's drawn length may stray from the real length
+  // routing-graph.json computed for it before the result is rejected as
+  // garbage. Generous on both sides on purpose: low-zoom simplification
+  // legitimately shortens a wiggly line, and cutting at the nearest
+  // surviving vertex can add or drop a step. Anything outside this band is
+  // not simplification — it's the geometry not being fully loaded yet (a
+  // clipped fragment, a tile still in flight), so the caller's retry is the
+  // right answer. This is the backstop that stops ANY future mis-assembly
+  // from being drawn as a confident-looking line to nowhere.
+  var EDGE_LENGTH_MIN_RATIO = 0.5, EDGE_LENGTH_MAX_RATIO = 1.6, EDGE_LENGTH_SLACK_M = 150;
+  function edgeGeometryIsPlausible(coords, expectedLengthM) {
+    if (!(expectedLengthM > 0)) return true;
+    var actual = polylineLengthM(coords);
+    return actual >= expectedLengthM * EDGE_LENGTH_MIN_RATIO - EDGE_LENGTH_SLACK_M &&
+      actual <= expectedLengthM * EDGE_LENGTH_MAX_RATIO + EDGE_LENGTH_SLACK_M;
+  }
+
   function resolveFromToGeometry(edges) {
     var coordsOut = [];
     for (var i = 0; i < edges.length; i++) {
@@ -1455,17 +1693,41 @@
         if (edges[i].length_m !== undefined && edges[i].length_m <= MAX_BRIDGEABLE_GAP_M) continue; // bridge with a straight line to the next resolvable point, see comment above
         return null; // a real gap, not a negligible one — caller should retry, not silently draw a misleading shortcut
       }
-      var slice = info.type === 'segment' ? full : full.slice(Math.min(info.from_index, info.to_index), Math.max(info.from_index, info.to_index) + 1);
+      // Cut the segment down to this edge's own stretch, oriented
+      // edges[i].from -> edges[i].to. A 'partial' sub-edge carries its two
+      // cut points; a whole 'segment' edge is bounded by its end nodes'
+      // coordinates, which node_coord holds exactly (they ARE the segment's
+      // first/last coordinate).
+      var fromCoord, toCoord;
+      if (info.type === 'partial') {
+        // from_coord/to_coord are in the order the SEGMENT was split, which
+        // has nothing to do with which way this path happens to traverse the
+        // edge — every graph edge is undirected and Dijkstra uses whichever
+        // direction it likes. Orient against the traversal's own start node
+        // (node_coord holds a station node's attachment point, i.e. exactly
+        // one of these two cut points) so consecutive edges join up instead
+        // of each being drawn backwards and joined by a long straight line
+        // shooting back across the route.
+        fromCoord = info.from_coord; toCoord = info.to_coord;
+        var travFrom = routingGraph.node_coord[edges[i].from];
+        if (travFrom && coordDist(travFrom, toCoord) < coordDist(travFrom, fromCoord)) {
+          fromCoord = info.to_coord; toCoord = info.from_coord;
+        }
+      } else {
+        fromCoord = routingGraph.node_coord[edges[i].from];
+        toCoord = routingGraph.node_coord[edges[i].to];
+      }
+      var slice = cutLineBetween(full, fromCoord, toCoord);
+      if (!slice) {
+        if (edges[i].length_m !== undefined && edges[i].length_m <= MAX_BRIDGEABLE_GAP_M) continue; // same bounded-gap allowance as a missing feature
+        return null;
+      }
       if (slice.length < 2) continue;
-      // Orient this slice from `edges[i].from` -> `edges[i].to` — compare
-      // against the (approximate) node coordinate to decide if it needs
-      // reversing, since tile geometry has no inherent direction relative
-      // to the graph traversal.
-      var fromCoord = routingGraph.node_coord[edges[i].from];
-      if (fromCoord) {
-        var dStart = Math.abs(slice[0][0] - fromCoord[0]) + Math.abs(slice[0][1] - fromCoord[1]);
-        var dEnd = Math.abs(slice[slice.length - 1][0] - fromCoord[0]) + Math.abs(slice[slice.length - 1][1] - fromCoord[1]);
-        if (dEnd < dStart) slice = slice.slice().reverse();
+      // Reject an implausible result rather than drawing it — the tiles this
+      // edge needs aren't all loaded yet (see edgeGeometryIsPlausible).
+      if (!edgeGeometryIsPlausible(slice, edges[i].length_m)) {
+        if (edges[i].length_m !== undefined && edges[i].length_m <= MAX_BRIDGEABLE_GAP_M) continue;
+        return null;
       }
       if (coordsOut.length && coordsOut[coordsOut.length - 1][0] === slice[0][0] && coordsOut[coordsOut.length - 1][1] === slice[0][1]) {
         coordsOut.push.apply(coordsOut, slice.slice(1));
@@ -3333,6 +3595,55 @@
     });
   }
 
+  // ── Database-mode From/To panel ──────────────────────────────────────────
+  // A From/To search run from the Database tab used to fall through to the
+  // LIVE skeleton — departure board, "Live updates" heading, filter chips,
+  // news feed and all — because sidebarSkeletonHtml() matched
+  // selection.type === 'fromto' before it ever looked at the mode (reported
+  // 2026-07-26: "when I search from database tab, it always shows the live
+  // updates which supposed to be under Live tab"). Database mode gets the
+  // database view of the same thing instead: what the resolved path IS,
+  // rather than what's running on it right now.
+  function pathStationCrsList() {
+    var p = selection.fromToPath;
+    if (!p || !p.found) return [];
+    var out = [selection.fromCrs];
+    for (var i = 0; i < p.edges.length; i++) {
+      var id = String(p.edges[i].to);
+      if (id.slice(0, 2) === 'S:') out.push(id.slice(2));
+    }
+    return out;
+  }
+  function fromToDatabaseSkeletonHtml() {
+    var p = selection.fromToPath;
+    if (!p || !p.found) return fromToNoRouteNoteHtml() || dbComingSoonHtml(selection.fromName + ' → ' + selection.toName);
+    var html = '';
+    var km = p.totalLength_m / 1000;
+    // Miles alongside km: British railway distances are quoted in miles, and
+    // the rest of the database panels use plain units with no jargon.
+    html += dbFieldHtml('Distance', km.toFixed(1) + ' km (' + (km * 0.621371).toFixed(1) + ' miles)');
+    var crsList = pathStationCrsList();
+    if (crsList.length) {
+      // Every station this path physically runs through, which is not the
+      // same as a given train's calling points — worth saying plainly rather
+      // than implying a timetable this panel doesn't have.
+      html += '<div class="db-field" data-anim-row><div class="db-label">Stations along this path (' + crsList.length + ')</div>' +
+        '<div class="sv-list" id="db-path-stations">' +
+        crsList.map(function (crs, i) {
+          return '<div class="sv-item" data-crs="' + escapeAttr(crs) + '">' +
+            '<span class="sv-name">' + (i + 1) + '. ' + escapeAttr(stationNameForCrs(crs)) + '</span></div>';
+        }).join('') + '</div></div>';
+    }
+    return html;
+  }
+  function wireFromToDatabaseDetail() {
+    var listEl = document.getElementById('db-path-stations');
+    if (!listEl) return;
+    Array.prototype.forEach.call(listEl.querySelectorAll('.sv-item'), function (row) {
+      row.addEventListener('click', function () { flyToAndSelectStation(row.dataset.crs); });
+    });
+  }
+
   function routeDetailSkeletonHtml() {
     var r = routesContent[selection.id];
     if (!r) return dbComingSoonHtml(selection.fallbackName || selection.id);
@@ -3494,7 +3805,7 @@
     if (selection.type === 'saved') return '<div class="sv-list" id="sv-list" data-anim-row>' + savedListRowsHtml() + '</div>';
     if (selection.type === 'route') return routeDetailSkeletonHtml();
     if (selection.type === 'operator') return operatorDetailSkeletonHtml();
-    if (selection.type === 'fromto') return fromToSkeletonHtml();
+    if (selection.type === 'fromto') return mode === 'database' ? fromToDatabaseSkeletonHtml() : fromToSkeletonHtml();
     if (selectedStationCrs) return mode === 'database' ? stationDatabaseSkeletonHtml() : stationLiveSkeletonHtml();
     return mode === 'database' ? databaseDefaultSkeletonHtml() : liveDefaultSkeletonHtml();
   }
@@ -3516,6 +3827,9 @@
       wireOperatorDetail();
       var operatorEntry = selection.code && operatorsContent[selection.code];
       injectSchemaJsonLd(operatorEntry && operatorEntry.schema_jsonld);
+    } else if (mode === 'database' && selection.type === 'fromto') {
+      wireFromToDatabaseDetail();
+      injectSchemaJsonLd(null); // a From/To path isn't a single catalogued entity
     } else if (mode === 'database' && selectedStationCrs) {
       wireStationDatabaseDetail();
       var stationEntry = stationsContent[selectedStationCrs.toUpperCase()];
@@ -3793,7 +4107,7 @@
     clearOperatorHighlight(); // a locked operator-lines highlight from a previous Database selection doesn't belong to this fromto search either — see clearOperatorHighlight()'s comment
     expandSidebarIfCollapsed();
     animateSidebarTransition();
-    loadDepartureBoard(from.crs, mySeq, to.crs);
+    if (mode === 'live') loadDepartureBoard(from.crs, mySeq, to.crs); // Database mode's From/To panel has no departure board to fill — same guard selectStation() already uses
 
     var fromCoord = (from.lat != null && from.lon != null) ? [from.lon, from.lat] : null;
     var toCoord = (to.lat != null && to.lon != null) ? [to.lon, to.lat] : null;
@@ -3818,8 +4132,8 @@
       if (mySeq !== selectionSeq) return;
       var result = computeFromToPath(from.crs, to.crs);
       selection.fromToPath = result;
-      if (mode === 'live' && selection.type === 'fromto' && selection.fromCrs === from.crs && selection.toCrs === to.crs) {
-        rebuildSidebarContent(); // now showing the real found/no-route result instead of 'loading'
+      if (selection.type === 'fromto' && selection.fromCrs === from.crs && selection.toCrs === to.crs) {
+        rebuildSidebarContent(); // now showing the real found/no-route result instead of 'loading' — in EITHER mode; Database's panel is built entirely from this result, so skipping it there left it stuck on "Finding route…"
       }
       if (!result.found) return;
 
@@ -4290,13 +4604,19 @@
     // no auto-collapse needed here any more (it used to, back when the
     // sidebar was a bottom sheet on tablet/mobile).
 
-    // Task 4 — cross-tab station sync: 'fromto'/'saved' only make sense in
-    // Live, 'route'/'operator' only make sense in Database. Switching to a
-    // mode where the current special view doesn't belong drops it, falling
-    // back to the shared selected station (if any) or that mode's default —
+    // Task 4 — cross-tab station sync: 'saved' only makes sense in Live,
+    // 'route'/'operator' only make sense in Database. Switching to a mode
+    // where the current special view doesn't belong drops it, falling back
+    // to the shared selected station (if any) or that mode's default —
     // never carrying an inapplicable view across, never forcing a selection
     // that doesn't exist.
-    var liveOnly = selection.type === 'fromto' || selection.type === 'saved';
+    //
+    // 'fromto' is NOT mode-specific any more (2026-07-26): both tabs now
+    // have a real From/To panel — live departures and disruption in Live,
+    // the path's own facts in Database — and the map highlight is the same
+    // either way, so switching tabs keeps the route you searched for
+    // instead of silently throwing it away.
+    var liveOnly = selection.type === 'saved';
     var dbOnly = selection.type === 'route' || selection.type === 'operator';
     if ((mode === 'database' && liveOnly) || (mode === 'live' && dbOnly)) {
       selection = { type: 'none' };
@@ -4307,6 +4627,11 @@
     animateSidebarTransition(); // re-render for the new mode, same fade as a fresh selection
     if (mode === 'live' && selection.type === 'none' && selectedStationCrs) {
       loadDepartureBoard(selectedStationCrs, mySeq);
+    } else if (mode === 'live' && selection.type === 'fromto') {
+      // A From/To selection now survives the tab switch (see liveOnly above),
+      // so arriving in Live with one needs its "Next trains" board filled,
+      // exactly as running the search from this tab would have.
+      loadDepartureBoard(selection.fromCrs, mySeq, selection.toCrs);
     }
     pushHistoryForCurrentState();
   }

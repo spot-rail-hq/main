@@ -17,13 +17,13 @@
  * client already has that tile source loaded for the fan-out rendering, so
  * looking a segment's coords up from it costs nothing extra to fetch), and
  * for edges created by splitting a segment at a station's mid-segment
- * attachment point, `from_index`/`to_index` (which slice of that segment's
- * coords array this sub-edge covers) instead of embedding the sliced
- * coordinates directly — a first version that embedded full coordinate
- * slices per split sub-edge came out to 14.8MB/3.96MB gzipped (some splits
- * carry nearly an entire long segment's geometry when a station snaps near
- * one end); shipping index ranges instead and letting the client slice the
- * tile-sourced coords at render time cut that dramatically, see the size
+ * attachment point, `from_coord`/`to_coord` (the two points on that segment
+ * this sub-edge runs between) instead of embedding the sliced coordinates
+ * directly — a first version that embedded full coordinate slices per split
+ * sub-edge came out to 14.8MB/3.96MB gzipped (some splits carry nearly an
+ * entire long segment's geometry when a station snaps near one end);
+ * shipping two cut points instead and letting the client cut the
+ * tile-sourced line at render time cut that dramatically, see the size
  * report this script prints.
  *
  * STATION ATTACHMENT: a station snaps to a POINT on a segment (Phase 3),
@@ -134,21 +134,28 @@ for (const seg of graph.segments) {
     if (c0.id === c1.id) continue; // two stations snapped to the exact same point — collapse, no zero-length edge
     // Precise length uses the exact interpolated cut points (weight
     // accuracy matters for correctness). Rendering geometry does NOT need
-    // that precision — round each cut to its nearest existing node index
-    // instead, so the client can reconstruct this sub-edge's line by
-    // slicing coords[from_index..to_index] from the segment it already has
-    // (via the operators-vector tile source), no embedded coordinates
-    // shipped. Off by at most one inter-node gap (typically a few metres to
-    // tens of metres on real OSM rail data) — an acceptable visual
-    // approximation given it never affects the distance used for routing.
+    // that precision — the client just has to know WHERE along the segment
+    // this sub-edge starts and ends, so it can cut the segment's line at
+    // those two points, no embedded coordinate slice shipped.
+    //
+    // 2026-07-26 bugfix — this used to ship from_index/to_index: indices
+    // into THIS file's full-precision coords array. The client doesn't have
+    // that array. It reads the segment back out of operators.pmtiles, whose
+    // geometry tippecanoe has simplified per zoom level and clipped per
+    // tile — segment 970 is 356 points here but 36 points in a z10 tile —
+    // so an index range like 60..160 addressed nothing at all and the slice
+    // came back empty. The client silently skipped those sub-edges, which
+    // is precisely why a Solihull→Leamington Spa highlight started somewhere
+    // south of Solihull instead of at it. Coordinates survive simplification
+    // (a simplified line keeps a subset of the ORIGINAL vertices, moved
+    // nowhere), so a cut POINT can always be located on whatever geometry
+    // the client actually got, at any zoom.
     const slice = [c0.coord];
     for (let ei = c0.edgeIndex + 1; ei <= c1.edgeIndex; ei++) slice.push(seg.coords[ei]);
     slice.push(c1.coord);
     const length_m = pathLength(slice);
-    const roundToNodeIndex = (edgeIndex, t) => (t < 0.5 ? edgeIndex : edgeIndex + 1);
-    const fromIndex = roundToNodeIndex(c0.edgeIndex, c0.t);
-    const toIndex = roundToNodeIndex(c1.edgeIndex, c1.t);
-    addEdge(c0.id, c1.id, length_m, { type: 'partial', segment_id: seg.id, from_index: fromIndex, to_index: toIndex });
+    const round5 = (c) => [Math.round(c[0] * 1e5) / 1e5, Math.round(c[1] * 1e5) / 1e5]; // ~1m — finer than the tile geometry it gets matched against
+    addEdge(c0.id, c1.id, length_m, { type: 'partial', segment_id: seg.id, from_coord: round5(c0.coord), to_coord: round5(c1.coord) });
     totalSubEdges++;
   }
 }

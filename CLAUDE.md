@@ -174,9 +174,13 @@ consistently without duplicating the table.
   `node scripts/build-operator-palette.mjs` (this section's table) →
   `node scripts/build-line-segments.mjs` (checkpoint a bbox first, see
   runbook) → `LINE_SEGMENTS_NATIONAL=1 node scripts/build-line-segments.mjs`
-  → `node scripts/build-station-graph-links.mjs`. Needs a local Overpass
-  instance (see the OSM runbook) for every step except the last. Folds into
-  the same refresh cadence as the station/operator content.
+  → `node scripts/build-station-graph-links.mjs` →
+  `node scripts/build-graph-bridges.mjs` →
+  `node scripts/build-routing-graph.mjs` (the last three feed From/To
+  pathfinding — rerun all three together, in that order, after any segment
+  graph change). Needs a local Overpass instance (see the OSM runbook) for
+  every step except the last three. Folds into the same refresh cadence as
+  the station/operator content.
 
 ## Local dev environment notes
 - Terse/auto-looking commits you may see in `git log` ("map", "route", "05",

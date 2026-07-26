@@ -1,110 +1,506 @@
 {
-  "generated_at": "2026-07-15T14:45:40.309Z",
-  "threshold_m": 50,
+  "generated_at": "2026-07-26T12:01:40.253Z",
+  "threshold_m": 150,
   "bridges": [
     {
-      "anchor": "South Wales Valley Lines",
-      "crs": "CDQ",
+      "anchor": "ABA,ABE,ACY,BCG,BGD,BHD,BRY,BYD,BYI,CAD,CDB,CDQ,CGN,CMH,COY,CPH,CYS,DCT,DGL,DMG,DNS,EBK,ECP,FER,FRW,GFF,GTN,HHL,HLL,HNG,LLN,LLS,LLY,LNB,LVT,LWM,MER,MEV,MTA,NNP,PEN,PER,PGM,PLT,POR,PPD,PTB,QYD,RDR,RHI,RHY,RIA,TAF,TGS,TIR,TNP,TPN,TRB,TRD,TRE,TRF,TRH,TRY,WHT,WNG,YNW,YSM,YSR",
+      "crs": "ABA",
       "from": "30941069",
       "to": "1334375830",
       "distM": 9.14,
-      "fromTags": {},
-      "toTags": {}
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "AW",
+        "GW"
+      ],
+      "toOperators": [
+        "GW"
+      ]
     },
     {
-      "anchor": "Essex / c2c (Fenchurch St branch)",
-      "crs": "FST",
+      "anchor": "BEF,BGV,BHO,BKG,BSO,CFH,CHW,CRH,DDK,ETL,FST,GPO,GRY,HRY,LAI,LEM,LER,LES,LHS,OCK,PFL,PSE,RNM,SFO,SOC,SOE,SRY,STO,TIL,TPB,UHL,UPM,WCF,WEH,WGR,WHR,WMW,WNP",
+      "crs": "BEF",
       "from": "S:BKG",
       "to": "3303248175",
-      "distM": 17.29,
-      "fromTags": null,
-      "toTags": {}
+      "distM": 19.65,
+      "confidence": "mode-crossing-waived",
+      "waiver": "Barking — LTS/District shared throat; real heavy-rail junction not in the segment graph",
+      "fromOperators": [
+        "CC"
+      ],
+      "toOperators": [
+        "District",
+        "Hammersmith & City"
+      ]
     },
     {
-      "anchor": "Manchester (Piccadilly + Victoria)",
-      "crs": "MAN",
-      "from": "S:MAN",
-      "to": "6439206436",
-      "distM": 25.69,
-      "fromTags": null,
-      "toTags": {
-        "railway": "buffer_stop"
-      }
-    },
-    {
-      "anchor": "Scottish Highlands (Inverness / Far North / Kyle)",
-      "crs": "INV",
+      "anchor": "AAT,ABC,ACH,ACN,ARD,ASS,ATT,BEL,BRA,CBD,CUA,DCG,DIN,DNO,DRN,FRN,FRS,GGJ,GOL,GVE,HMS,IGD,INH,INV,KBC,KIL,KYL,LCC,LRG,MOO,PLK,ROG,SCT,STC,STF,TAI,THS,WCK",
+      "crs": "AAT",
       "from": "S:INV",
       "to": "6766602284",
       "distM": 15.59,
-      "fromTags": null,
-      "toTags": {
-        "name": "Inverness",
-        "name:gd": "Inbhir Nis",
-        "network": "gb-national-rail",
-        "public_transport": "stop_position",
-        "railway": "stop",
-        "ref": "3",
-        "train": "yes"
-      }
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "SR"
+      ],
+      "toOperators": [
+        "SR"
+      ]
     },
     {
-      "anchor": "Liverpool / Wrexham corridor",
-      "crs": "LVC",
+      "anchor": "BAC,BCK,BEB,BID,BKC,BKN,BKP,BKQ,BMR,BOM,CGW,CNP,CPU,CYB,ELP,ERA,GNL,GWE,HOO,HPE,HSW,HWB,HWD,HYK,LSW,LTT,LVC,LVJ,MEO,MNR,MRF,MRT,NBN,NES,OVE,PNF,PSL,RFY,SHT,SPI,UPT,WKI,WLG,WLV,WRX,WXC",
+      "crs": "BAC",
       "from": "3914514173",
       "to": "6335333583",
       "distM": 19.65,
-      "fromTags": {
-        "name": "Chester",
-        "public_transport": "stop_position",
-        "railway": "stop",
-        "train": "yes"
-      },
-      "toTags": {
-        "name": "Chester",
-        "public_transport": "stop_position",
-        "railway": "stop",
-        "train": "yes"
-      }
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "ME"
+      ],
+      "toOperators": [
+        "NT"
+      ]
     },
     {
-      "anchor": "Branch cluster (ELE)",
-      "crs": "ELE",
-      "from": "1763992757",
-      "to": "392788546",
-      "distM": 25.81,
-      "fromTags": {
-        "railway": "switch"
-      },
-      "toTags": {
-        "railway": "switch"
-      }
+      "anchor": "HFE,RYH,RYN,SMT,WAR",
+      "crs": "HFE",
+      "from": "1637962120",
+      "to": "1236166333",
+      "distM": 4.1,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "LE"
+      ],
+      "toOperators": [
+        "LE"
+      ]
     },
     {
-      "anchor": "Branch cluster (GNW)",
-      "crs": "GNW",
-      "from": "6418173067",
-      "to": "1604299836",
-      "distM": 15.71,
-      "fromTags": {
-        "railway": "switch"
-      },
-      "toTags": {
-        "name": "Pudding Mill Lane Junction",
-        "railway": "site",
-        "ref:tiploc": "PUDGMLL"
-      }
+      "anchor": "APG,BSJ,BWB,FEN,KMH,LID,MLB,RID,SWR,WOB",
+      "crs": "APG",
+      "from": "12189598629",
+      "to": "S:BLY",
+      "distM": 30.89,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "WMR"
+      ],
+      "toOperators": [
+        "CS",
+        "LD",
+        "VT",
+        "WMR"
+      ]
     },
     {
-      "anchor": "Charing Cross area",
-      "crs": "CHX",
-      "from": "S:CHX",
-      "to": "1272858565",
-      "distM": 38.03,
-      "fromTags": null,
-      "toTags": {
-        "railway": "buffer_stop"
-      }
+      "anchor": "NRC",
+      "crs": "NRC",
+      "from": "20955753",
+      "to": "5462556232",
+      "distM": 56.54,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "Central"
+      ],
+      "toOperators": [
+        "District"
+      ]
+    },
+    {
+      "anchor": "BGL,LUX,NQY,QUI,ROC,SCR",
+      "crs": "BGL",
+      "from": "1152760872",
+      "to": "S:PAR",
+      "distM": 142.63,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "GW"
+      ],
+      "toOperators": [
+        "GW"
+      ]
+    },
+    {
+      "anchor": "BRE,CTH,GDP,GMY,HRO,IFD,SVK",
+      "crs": "BRE",
+      "from": "32861739",
+      "to": "1597005716",
+      "distM": 36.18,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "LD",
+        "LE"
+      ],
+      "toOperators": [
+        "LE"
+      ]
+    },
+    {
+      "anchor": "CAU,COE,LOO,SDP,SKN",
+      "crs": "CAU",
+      "from": "32039047",
+      "to": "S:LSK",
+      "distM": 91.26,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "GW"
+      ],
+      "toOperators": [
+        "GW"
+      ]
+    },
+    {
+      "anchor": "CBP,DRG,GFD,SGN",
+      "crs": "CBP",
+      "from": "1719254384",
+      "to": "1719254186",
+      "distM": 70.55,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "GW"
+      ],
+      "toOperators": [
+        "GW",
+        "LD"
+      ]
+    },
+    {
+      "anchor": "BWO,GSN,HWW,PKT,SAA,WFN",
+      "crs": "BWO",
+      "from": "1764505693",
+      "to": "1764505705",
+      "distM": 81.61,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "WMR"
+      ],
+      "toOperators": [
+        "GTR"
+      ]
+    },
+    {
+      "anchor": "BMN,SUP",
+      "crs": "BMN",
+      "from": "1754249625",
+      "to": "S:GRP",
+      "distM": 95.53,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "SE"
+      ],
+      "toOperators": [
+        "SE"
+      ]
+    },
+    {
+      "anchor": "BBW,BHS,HOY,LCK",
+      "crs": "BBW",
+      "from": "1179015265",
+      "to": "S:HUD",
+      "distM": 34.44,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "NT"
+      ],
+      "toOperators": [
+        "TP"
+      ]
+    },
+    {
+      "anchor": "BNC,BRF,NEL",
+      "crs": "BNC",
+      "from": "1813227008",
+      "to": "29768944",
+      "distM": 29.61,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "NT"
+      ],
+      "toOperators": [
+        "NT"
+      ]
+    },
+    {
+      "anchor": "HOT,SHI,WGV",
+      "crs": "HOT",
+      "from": "7874283734",
+      "to": "S:TWY",
+      "distM": 34.7,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "GW"
+      ],
+      "toOperators": [
+        "GW",
+        "LD"
+      ]
+    },
+    {
+      "anchor": "BUE,CWC,SUY",
+      "crs": "BUE",
+      "from": "7151086637",
+      "to": "S:MKT",
+      "distM": 42,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "LE"
+      ],
+      "toOperators": [
+        "LE"
+      ]
+    },
+    {
+      "anchor": "LYP,LYT",
+      "crs": "LYP",
+      "from": "8931055356",
+      "to": "S:BCU",
+      "distM": 44.99,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "SW"
+      ],
+      "toOperators": [
+        "SW",
+        "XC"
+      ]
+    },
+    {
+      "anchor": "WNC",
+      "crs": "WNC",
+      "from": "283820317",
+      "to": "S:SLO",
+      "distM": 36.74,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "GW"
+      ],
+      "toOperators": [
+        "GW"
+      ]
+    },
+    {
+      "anchor": "PNS",
+      "crs": "PNS",
+      "from": "12382862192",
+      "to": "21625502",
+      "distM": 119.45,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "NT"
+      ],
+      "toOperators": [
+        "NT"
+      ]
+    },
+    {
+      "anchor": "RGW",
+      "crs": "RGW",
+      "from": "3502972741",
+      "to": "3502972737",
+      "distM": 16.47,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "NT"
+      ],
+      "toOperators": [
+        "NT"
+      ]
+    },
+    {
+      "anchor": "SBT",
+      "crs": "SBT",
+      "from": "1172981509",
+      "to": "S:SBJ",
+      "distM": 16.94,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "WMR"
+      ],
+      "toOperators": [
+        "WMR"
+      ]
+    },
+    {
+      "anchor": "EMP",
+      "crs": "EMP",
+      "from": "1341527159",
+      "to": "S:RMF",
+      "distM": 70.69,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "Liberty"
+      ],
+      "toOperators": [
+        "LE"
+      ]
+    },
+    {
+      "anchor": "HWN",
+      "crs": "HWN",
+      "from": "1637312604",
+      "to": "17280222",
+      "distM": 3.92,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "LE"
+      ],
+      "toOperators": [
+        "LE"
+      ]
+    },
+    {
+      "anchor": "BXB",
+      "crs": "BXB",
+      "from": "1637962126",
+      "to": "1236166333",
+      "distM": 119.46,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "LE"
+      ],
+      "toOperators": [
+        "LE"
+      ]
+    }
+  ],
+  "unbridged": [
+    {
+      "compIdx": 9,
+      "islandSize": 23,
+      "stations": [
+        "BUY",
+        "HBP",
+        "HDY",
+        "HGT",
+        "HRS",
+        "PNL",
+        "WET"
+      ],
+      "closestM": null,
+      "result": "gap-too-large",
+      "detail": null
+    },
+    {
+      "compIdx": 11,
+      "islandSize": 16,
+      "stations": [
+        "BDN",
+        "LKE",
+        "RYD",
+        "RYP",
+        "RYR",
+        "SAB",
+        "SAN",
+        "SHN"
+      ],
+      "closestM": null,
+      "result": "gap-too-large",
+      "detail": null
+    },
+    {
+      "compIdx": 21,
+      "islandSize": 10,
+      "stations": [
+        "CMR",
+        "GNT",
+        "HXM",
+        "NWA",
+        "RNR",
+        "SAH",
+        "WRT"
+      ],
+      "closestM": null,
+      "result": "gap-too-large",
+      "detail": null
+    },
+    {
+      "compIdx": 22,
+      "islandSize": 9,
+      "stations": [
+        "BNE",
+        "COO",
+        "FZP",
+        "MAI",
+        "MLW"
+      ],
+      "closestM": null,
+      "result": "gap-too-large",
+      "detail": null
+    },
+    {
+      "compIdx": 41,
+      "islandSize": 4,
+      "stations": [
+        "SHM",
+        "WRN"
+      ],
+      "closestM": null,
+      "result": "gap-too-large",
+      "detail": null
+    },
+    {
+      "compIdx": 50,
+      "islandSize": 3,
+      "stations": [
+        "CNE"
+      ],
+      "closestM": null,
+      "result": "gap-too-large",
+      "detail": null
+    },
+    {
+      "compIdx": 51,
+      "islandSize": 3,
+      "stations": [
+        "DBD"
+      ],
+      "closestM": null,
+      "result": "gap-too-large",
+      "detail": null
+    },
+    {
+      "compIdx": 76,
+      "islandSize": 2,
+      "stations": [
+        "CMF"
+      ],
+      "closestM": null,
+      "result": "gap-too-large",
+      "detail": null
+    },
+    {
+      "compIdx": 87,
+      "islandSize": 2,
+      "stations": [
+        "DFI"
+      ],
+      "closestM": null,
+      "result": "gap-too-large",
+      "detail": null
     }
   ]
 }
