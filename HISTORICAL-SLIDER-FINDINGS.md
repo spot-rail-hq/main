@@ -1036,3 +1036,217 @@ pipeline, and nothing in the current design depends on it.
    in a browser before launch? It 403s to automated fetching, so I could not read it directly.
 5. **Quarterly refresh cadence** — should `scope-ohm-coverage.mjs` fold into the existing
    station/operator content refresh documented in CLAUDE.md, or run on its own schedule?
+
+---
+---
+
+# Phase 2A — data pipeline build
+
+**Status:** data layer built. No map/UI code. PMTiles built **locally only — not uploaded to R2**.
+**Date:** 2026-07-26
+**Phases 1 and 1B above are unchanged.**
+
+## What was built
+
+| Artefact | What it is |
+|---|---|
+| `scripts/lib/historical-era.mjs` | Shared primitives — era bands, year parsing, company-name normalization, the licence allow-list, the GB clip. Follows the `operator-classify.mjs` precedent so the build scripts cannot drift on the things they must agree about. |
+| `scripts/build-big4-lookup.mjs` | → `data/big4-constituents.json` |
+| `scripts/build-historical-lines.mjs` | → `scripts/output/historical-lines.geojson` + report |
+| `scripts/build-historical-stations.mjs` | → `scripts/output/historical-stations.geojson` + report + review list |
+| `scripts/build-historical-tiles-geojson.mjs` | → tile-ready GeoJSON for both layers |
+| `scripts/build-attribution.mjs` | → `data/attribution.json` (also `--check-palette`) |
+| `tile-generation/build-historical-tiles.sh` | → `tile-generation/historical.pmtiles` (17.9 MB, 2 layers) |
+| `data/era-colors.json` | Hand-authored, separate from `operator-colors.json` |
+
+Full rebuild sequence:
+
+```
+node scripts/build-big4-lookup.mjs
+node scripts/build-historical-lines.mjs          # REFETCH=1 to re-query OHM
+node scripts/build-historical-stations.mjs       # REFETCH=1 to re-query Wikipedia
+node scripts/build-attribution.mjs
+bash tile-generation/build-historical-tiles.sh
+```
+
+---
+
+## Lines
+
+13,122 elements in the GB-clipped extract → 12,935 linear track ways → **11,021 emitted**.
+
+| | ways |
+|---|---:|
+| dropped, undated (hidden per locked decision) | 1,784 |
+| dropped, modern-only (starts ≥ 1994, belongs to the other source) | 130 |
+| dropped, no geometry | 0 |
+| **emitted** | **11,021** |
+
+Per-band attribution populated: `co_pre1923` 3,895 · `co_br` 10,304 · `co_big4` 1,185 · `co_modern` **0** (see flag 1).
+
+### Big Four match rate achieved
+
+The lookup itself was easy, exactly as Phase 1B predicted:
+
+| | |
+|---|---:|
+| companies in `data/big4-constituents.json` | **322** |
+| — from the Railways Act 1921 First Schedule (statutory) | 119 |
+| — from the four "List of constituents of…" articles | 203 |
+| by group | GWR 161 · LMS 71 · LNER 43 · SR 32 |
+| **joint railways excluded** | **15** |
+
+**Match rate achieved: 31.0% of company-named ways, 11.3% of the band.**
+
+| | ways |
+|---|---:|
+| alive during 1923–1947 | 10,465 |
+| …of those, carrying a usable company name | 3,823 |
+| …of those, resolved to a group | **1,185 (31.0%)** |
+| **share of the whole band coloured** | **11.3%** |
+
+Phase 1B predicted 34.5% / 10.8%. The small shortfall on match rate is deliberate and correct: **15 joint railways are now excluded rather than attributed**. The Act left the joint lines outside the Big Four — Midland & Great Northern, Somerset & Dorset, Cheshire Lines, Axholme, Swinton & Knottingley and 10 others were jointly operated by two successors. A first pass assigned each to whichever group claimed it first, which would have been a factual error rather than a rounding error. They now render neutral within the band.
+
+**So ~89% of the 1923–1947 band renders as "company unknown."** That is the known-only decision working as specified, not a bug, but it is now a measured number rather than an estimate and it should inform how the band is presented. `data/era-colors.json` gives `unknown` its own colour (cool blue-grey) deliberately distinct from the pre1923 neutral so the 1923 transition is still perceptible.
+
+### Licence gate — nothing tripped
+
+| `license=*` value | elements |
+|---|---:|
+| *(none — OHM CC0 default)* | 11,227 |
+| `CC-BY (NLS): Reproduced with the permission of the National Library of Scotland` | 1,895 |
+
+**No unexpected values. The allow-list did not fire.** Emitted features carry `license` as `CC0-1.0` (9,158) or `CC-BY-4.0` (1,863), and that property survives all the way into the vector tiles — verified by decoding a real tile — so NLS features can be credited individually rather than crediting NLS for the whole layer.
+
+The gate is a refusal, not a warning: an unreviewed licence value aborts the build.
+
+---
+
+## Stations
+
+9,421 candidate articles → **8,884 emitted**.
+
+| | stations |
+|---|---:|
+| no Wikidata coordinates | 228 |
+| outside the GB boundary polygon | **0** |
+| hidden by triage (buckets b/c/d) | 301 |
+| **emitted** | **8,884** |
+| — currently open (per `station-list.json`) | 2,565 |
+| — multi-period (closed then reopened) | **965** |
+| — opening year inherited from a line | 6 |
+
+**The GB polygon rejected nothing.** Phase 1B flagged that the "…in Great Britain" categories are "not perfectly policed"; measured, they are — zero of 9,193 geolocated stations fell outside England/Scotland/Wales. The real point-in-polygon clip is still the right mechanism (it is what proves the claim), but it turned out to be a safety net rather than a filter.
+
+### The 678 — triage bucket sizes
+
+Re-derived against the current data, the unevidenced-open population is **831**, not 678 — Phase 1B's figure came from a narrower title-matching pass. Buckets:
+
+| Bucket | Count | v1 treatment |
+|---|---:|---|
+| **(a) non-heavy-rail** — Underground, DLR, metro, tram, heritage/preserved, funicular | **530** | **RENDERED** — plausibly genuinely open and simply absent from a NaPTAN-derived list |
+| **(b) genuine closure, closure category missing** | **234** | **HIDDEN** |
+| **(c) name-match failure** — within 400 m of a station in `station-list.json` | **67** | **HIDDEN** |
+| **(d) out of scope** — NI / IoM / Channel Islands, by polygon or category | **0** | n/a |
+
+Bucket (a) is the only one rendered, on the reasoning that a Piccadilly Circus or a Manchester Metrolink stop being absent from a National Rail station list is expected rather than evidence of closure. Buckets (b) and (c) are hidden per the locked default — we do not render what we cannot place in time.
+
+**The 234 in bucket (b) are the prime correction-mechanism candidates.** They look like real closed heavy-rail stations whose closure year nobody has categorised on Wikipedia; each is one category edit away from being placeable. The full list with coordinates is in `scripts/output/historical-stations-review.json`.
+
+### Reopened stations and the review list
+
+Periods are derived by requiring opening/closing events to alternate. Results:
+
+| | stations |
+|---|---:|
+| clean alternation | 8,590 |
+| **resolved by same-year reordering** (flagged for verification) | **161** |
+| **genuine failures → review list, fallback applied** | **133** |
+| no opening year and no dated line within 1 km → dropped | 8 |
+
+**Same-year reordering** was added after the first build put 294 stations on the review list, the majority sharing one shape: Kilmarnock has openings 1812/1843/1846 and closings 1843/1846. Read open-before-close within a year that fails; read close-before-open it alternates perfectly as "closed and reopened in 1843, again in 1846". The categories are year-granular so the data itself gives no intra-year order — both orderings are attempted and whichever alternates wins. **This is completing the sort, not auto-resolving a conflict**, but every affected station is still recorded and listed for verification rather than silently accepted.
+
+**The 133 genuine failures fall back to one continuous period** from first opening to last closing, never asserting an intermediate closure. The dominant shape is *2 openings, 0 closings* (58 cases): Liverpool Lime Street opens 1836 **and** 1977, London Bridge 1836 **and** 1900 — these are **rebuilds**, not reopenings, and the fallback correctly collapses them to one continuous open period. That is the under-claiming behaviour working as intended.
+
+**Verified: 0 currently-open stations were given an end year.** That was the 421-station bug Phase 1B identified, and `station-list.json` overriding the closure categories prevents it. Spot-checked: Alloa `[1850–1968][2008–now]`, Aigburth `[1864–1972][1978–now]`, Ardrossan Town `[1831–1968][1987–now]`.
+
+Max periods on one station: **5**.
+
+---
+
+## Era palette
+
+`data/era-colors.json`, separate from `operator-colors.json` as locked. Colours are grounded in real liveries, then measured:
+
+| Entry | Dark | Livery |
+|---|---|---|
+| pre1923 | `#C9BBA4` | parchment/stone neutral |
+| Great Western Railway | `#D69A5C` | chocolate and cream |
+| London, Midland and Scottish | `#D4485C` | crimson lake |
+| London and North Eastern | `#9FC93C` | apple green |
+| Southern Railway | `#22A06B` | malachite green |
+| big4 / unknown | `#7E8AA0` | — |
+| British Railways | `#5580C4` | BR rail blue |
+
+GWR uses the chocolate-and-cream coaching livery rather than Brunswick green on purpose: GWR green, LNER apple green and SR malachite green would have put **three greens** in a four-colour band.
+
+**Measured** (`node scripts/build-attribution.mjs --check-palette`): minimum pairwise ΔE **27.5**; minimum ΔE from the reserved turquoise `--t` **32**. A first pass had pre1923 at `#C4A987`, only ΔE 22.8 from GWR chocolate — which would have made the 1923 band change nearly invisible across GWR territory, the largest of the four networks. Corrected before shipping.
+
+---
+
+## Attribution manifest
+
+`data/attribution.json` — **8 sources, 6 MANDATORY, 2 COURTESY**. The OHM entries are derived from the real extract's licence census rather than hand-written, so the manifest cannot drift from what shipped.
+
+MANDATORY: NLS (CC-BY) · OpenStreetMap (ODbL) · Wikipedia (CC BY-SA 4.0) · NaPTAN (OGL v3) · Stadia/Stamen · OpenRailwayMap.
+COURTESY: OpenHistoricalMap (CC0) · Wikidata (CC0).
+
+Each entry carries the exact required string, the licence URL, what it applies to, and feature counts where derived. `ui_guidance` records that MANDATORY entries may not be collapsed into an about page while COURTESY ones may.
+
+---
+
+## Tiles
+
+`tile-generation/historical.pmtiles` — **17.9 MB**, two layers, `historical_lines` (11,021) + `historical_stations` (8,884). Feature counts verified in and out. **Local only; not uploaded.**
+
+### Simplification tuning
+
+Measured against this dataset, the existing operator-pipeline settings (`--no-tile-size-limit --no-feature-limit`, no explicit simplification) produce a **~170× swing in tile payload across the zoom range**: 11,072 vertices/tile at z6 against 64 at z14, with low-zoom tiles effectively unbounded.
+
+Changed to `-S 0.5 --drop-densest-as-needed`, dropping the two no-limit flags:
+
+- `-S 0.5` retains ~1.5× more vertices at every zoom (Lancaster and Carlisle Railway: 59 → 94 vertices at z6, 121 → 179 at z8).
+- `--drop-densest-as-needed` bounds tile size by dropping whole features in dense areas at low zoom instead of crushing the geometry of every feature to fit. Verified no features were actually dropped at this dataset size — the valve is present without currently costing anything.
+
+**Honest limit: the visual result is unverified.** There is no browser in this environment, so I can confirm more vertices survive and payloads are bounded, but not that curves stop visibly popping. That needs a real browser check before Phase 2B wires it in.
+
+### Should `operators.pmtiles` be rebuilt to match? — investigated, recommendation: **no**
+
+| | z6 | z8 | z10 | z12 | z14 |
+|---|---:|---:|---:|---:|---:|
+| existing `operators.pmtiles` | 13,185 | 5,834 | 3,509 | 1,550 | 500 |
+| new `historical.pmtiles` | 14,106 | 5,349 | 2,109 | 564 | 75 |
+
+At the low zooms where simplification dominates, the two are **already closely matched** (within 7% at z6). The divergence at z10–z14 is **not a settings artefact — it is source density**: the modern segment graph averages **63.2 vertices per feature** against OHM's **19.1**. Rebuilding `operators.pmtiles` with the new flags would not close that gap, because the gap is real data.
+
+Against that, `operators.pmtiles` is live on R2 and read by `map.html`, so rebuilding means a production change and re-upload with its own verification burden, for a benefit I cannot demonstrate.
+
+**Separate, genuine reason to rebuild it eventually** (flagging, not acting): its `--no-tile-size-limit --no-feature-limit` flags mean its low-zoom tiles are unbounded, which is a latent payload issue independent of any of this work. That is its own decision on its own timetable.
+
+**Consequence for Phase 2B's cross-fade:** the modern linework is genuinely ~3.3× more detailed than the historical. At the 1994 transition the historical layer will look slightly coarser. This is inherent to the sources (Phase 1B measured 10–19 m median positional agreement but 3–9× vertex-density difference) and cannot be fixed by tile settings.
+
+---
+
+## Flagged — decisions I did not make silently
+
+**1. `co_modern` is always null.** The locked schema specifies four `co_*` fields for cheap paint expressions, but the locked source-switch means OHM features are only ever painted before 1994 — after that the map renders `line-segments.json`. So `co_modern` is structurally unreachable on an OHM feature and is emitted as a literal null on all 11,021. The field is kept rather than dropped because it is only meaningful if the modern segments are later emitted into **this same tileset** with `co_modern` populated from their operator codes — which would make the 1994 cross-fade a paint-expression change rather than a source swap, and is arguably the cleaner design. **Phase 2B decision, not one to make here.**
+
+**2. MVT cannot hold the `periods` array.** The locked station schema is an array of period objects, which is correct for the data — but vector tile properties are scalars only. Verified against tippecanoe 2.79.0: it does not drop the array, it **JSON-stringifies** it. That is fine for a popup and useless for a filter, and the whole feature is a year filter. So each station carries **both**: `periods` (the JSON string) and flattened `p1_start … p5_end` scalars. The build **fails rather than truncates** if a station ever exceeds 6 periods, since a dropped period would make a station vanish for years it was demonstrably open. The filter expression Phase 2B needs is documented in `scripts/build-historical-tiles-geojson.mjs`'s header.
+
+**3. Wikipedia's ShareAlike.** Station dates come from category *membership* — the year is in the category name, not extracted from prose — and whether a bare year is copyrightable at all is doubtful. The credit is given regardless. But CC BY-SA could in principle be read as reaching a derived dataset, and that is a lawyer's question, not mine. Recorded in `data/attribution.json`.
+
+**4. OHM's copyright page still 403s** to automated fetching (Phase 1B flag, unchanged). The licence is confirmed from OHM's documented policy and corroborated by the API's own response header, but the primary-source page has not been read directly. Still worth one human browser check before commercial launch.
+
+**5. 234 hidden stations** in triage bucket (b) are genuine content gaps, listed with coordinates in the review file as correction-mechanism candidates.
+
+**6. Repo size.** `historical.pmtiles` (17.9 MB) plus the GeoJSON intermediates and cached downloads add ~55 MB. Consistent with the repo already tracking `operators.pmtiles` and `gb-railways.pmtiles`, but worth a deliberate decision on whether the `scripts/output/` caches belong in git or in `.gitignore`.
