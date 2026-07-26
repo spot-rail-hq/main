@@ -20,11 +20,16 @@
       "key": "gwr-legacy",
       "display_name": "Great Western Railway (Legacy)",
       "short_name": "GWR (Legacy)",
-      "tile_matches": ["Great Western Railway"],
+      "tile_matches": [
+        "Great Western Railway"
+      ],
       "era_band": "big4",
       "description": "Incorporated in 1833 to link London with Bristol, the Great Western Railway was the only one of the Big Four to keep its pre-grouping identity through the 1923 Grouping, absorbing its constituents into an existing company rather than forming a new one. It ran until nationalisation on 1 January 1948.",
       "founded": 1833,
-      "dates_of_operation": { "start": 1833, "end": 1947 },
+      "dates_of_operation": {
+        "start": 1838,
+        "end": 1947
+      },
       "headquarters": "Paddington station, London",
       "predecessor": {
         "state": "nil",
@@ -33,37 +38,67 @@
       },
       "successor": {
         "state": "known",
-        "entities": [{ "key": "british-railways", "display_name": "British Railways", "kind": "historical" }]
+        "entities": [
+          {
+            "key": "british-railways",
+            "display_name": "British Railways",
+            "kind": "historical"
+          }
+        ]
       },
       "notable_features": [
         "Built to Brunel's 7 ft 1/4 in broad gauge, converted to standard gauge in 1892",
         "The only Big Four company to retain its pre-grouping name and identity",
         "Absorbed the Barry, Cambrian, Cardiff, Rhymney and Taff Vale railways at the 1923 Grouping"
       ],
-      "source_url": "https://en.wikipedia.org/wiki/Great_Western_Railway"
+      "source_url": "https://en.wikipedia.org/wiki/Great_Western_Railway",
+      "_dates_note": "FOUNDED and DATES OF OPERATION genuinely differ for this company, which is why it is the one that exposed the Rule 2 landing bug. Wikipedia's lead: 'founded in 1833, received its enabling act of Parliament on 31 August 1835 and ran its first trains in 1838'. founded=1833 is the incorporation; dates_of_operation.start=1838 is when it actually ran trains, which is what 'dates of operation' means in rail literature and what the slider must land on. The other four stubs were created and began operating in the same year, so their two dates coincide and the bug was invisible in them."
     },
     "lms": {
       "key": "lms",
       "display_name": "London, Midland and Scottish Railway",
       "short_name": "LMS",
-      "tile_matches": ["London, Midland and Scottish Railway"],
+      "tile_matches": [
+        "London, Midland and Scottish Railway"
+      ],
       "era_band": "big4",
       "description": "Formed at the 1923 Grouping from the London and North Western, Midland, Lancashire and Yorkshire, Caledonian and Highland railways among others, the LMS was the largest of the Big Four and, at the time, the largest joint-stock company in the world.",
       "founded": 1923,
-      "dates_of_operation": { "start": 1923, "end": 1947 },
+      "dates_of_operation": {
+        "start": 1923,
+        "end": 1947
+      },
       "headquarters": "Euston station, London",
       "predecessor": {
         "state": "known",
         "entities": [
-          { "key": null, "display_name": "London and North Western Railway", "kind": "historical" },
-          { "key": null, "display_name": "Midland Railway", "kind": "historical" },
-          { "key": null, "display_name": "Caledonian Railway", "kind": "historical" }
+          {
+            "key": null,
+            "display_name": "London and North Western Railway",
+            "kind": "historical"
+          },
+          {
+            "key": null,
+            "display_name": "Midland Railway",
+            "kind": "historical"
+          },
+          {
+            "key": null,
+            "display_name": "Caledonian Railway",
+            "kind": "historical"
+          }
         ],
         "_note": "key null = no content record yet, so the chip must render disabled rather than as a dead link. Full statutory constituent list is in data/big4-constituents.json."
       },
       "successor": {
         "state": "known",
-        "entities": [{ "key": "british-railways", "display_name": "British Railways", "kind": "historical" }]
+        "entities": [
+          {
+            "key": "british-railways",
+            "display_name": "British Railways",
+            "kind": "historical"
+          }
+        ]
       },
       "notable_features": [
         "The largest of the Big Four companies formed by the Railways Act 1921",
@@ -76,23 +111,46 @@
       "key": "lner",
       "display_name": "London and North Eastern Railway",
       "short_name": "LNER",
-      "tile_matches": ["London and North Eastern Railway"],
+      "tile_matches": [
+        "London and North Eastern Railway"
+      ],
       "era_band": "big4",
       "description": "Formed at the 1923 Grouping around the Great Northern, Great Eastern, Great Central and North Eastern railways. It never made a profit, partly because it inherited the debts the Great Central incurred building its London extension.",
       "founded": 1923,
-      "dates_of_operation": { "start": 1923, "end": 1947 },
+      "dates_of_operation": {
+        "start": 1923,
+        "end": 1947
+      },
       "headquarters": "King's Cross station, London",
       "predecessor": {
         "state": "known",
         "entities": [
-          { "key": null, "display_name": "Great Northern Railway", "kind": "historical" },
-          { "key": null, "display_name": "North Eastern Railway", "kind": "historical" },
-          { "key": null, "display_name": "Great Central Railway", "kind": "historical" }
+          {
+            "key": null,
+            "display_name": "Great Northern Railway",
+            "kind": "historical"
+          },
+          {
+            "key": null,
+            "display_name": "North Eastern Railway",
+            "kind": "historical"
+          },
+          {
+            "key": null,
+            "display_name": "Great Central Railway",
+            "kind": "historical"
+          }
         ]
       },
       "successor": {
         "state": "known",
-        "entities": [{ "key": "british-railways", "display_name": "British Railways", "kind": "historical" }]
+        "entities": [
+          {
+            "key": "british-railways",
+            "display_name": "British Railways",
+            "kind": "historical"
+          }
+        ]
       },
       "notable_features": [
         "Its Class A4 4468 Mallard set the world steam speed record of 126 mph on 3 July 1938",
@@ -105,23 +163,46 @@
       "key": "southern-railway-legacy",
       "display_name": "Southern Railway (Legacy)",
       "short_name": "SR (Legacy)",
-      "tile_matches": ["Southern Railway"],
+      "tile_matches": [
+        "Southern Railway"
+      ],
       "era_band": "big4",
       "description": "The smallest of the Big Four by route mileage but the busiest by passenger numbers, carrying over a quarter of all UK passenger traffic. Predominantly a passenger railway serving densely populated south-east England, it pursued electrification more vigorously than any of its peers.",
       "founded": 1923,
-      "dates_of_operation": { "start": 1923, "end": 1947 },
+      "dates_of_operation": {
+        "start": 1923,
+        "end": 1947
+      },
       "headquarters": "Waterloo station, London",
       "predecessor": {
         "state": "known",
         "entities": [
-          { "key": null, "display_name": "London and South Western Railway", "kind": "historical" },
-          { "key": null, "display_name": "London, Brighton and South Coast Railway", "kind": "historical" },
-          { "key": null, "display_name": "South Eastern and Chatham Railway", "kind": "historical" }
+          {
+            "key": null,
+            "display_name": "London and South Western Railway",
+            "kind": "historical"
+          },
+          {
+            "key": null,
+            "display_name": "London, Brighton and South Coast Railway",
+            "kind": "historical"
+          },
+          {
+            "key": null,
+            "display_name": "South Eastern and Chatham Railway",
+            "kind": "historical"
+          }
         ]
       },
       "successor": {
         "state": "known",
-        "entities": [{ "key": "british-railways", "display_name": "British Railways", "kind": "historical" }]
+        "entities": [
+          {
+            "key": "british-railways",
+            "display_name": "British Railways",
+            "kind": "historical"
+          }
+        ]
       },
       "notable_features": [
         "Carried more than a quarter of all UK passenger traffic despite being the smallest Big Four company",
@@ -134,19 +215,40 @@
       "key": "british-railways",
       "display_name": "British Railways",
       "short_name": "BR",
-      "tile_matches": ["British Railways"],
+      "tile_matches": [
+        "British Railways"
+      ],
       "era_band": "br",
       "description": "The nationalised operator formed on 1 January 1948 when the Big Four were taken into public ownership under the Transport Act 1947. It ran the national network until privatisation was completed in the mid-1990s.",
       "founded": 1948,
-      "dates_of_operation": { "start": 1948, "end": 1994 },
+      "dates_of_operation": {
+        "start": 1948,
+        "end": 1994
+      },
       "headquarters": "Marylebone, London",
       "predecessor": {
         "state": "known",
         "entities": [
-          { "key": "gwr-legacy", "display_name": "Great Western Railway (Legacy)", "kind": "historical" },
-          { "key": "lms", "display_name": "London, Midland and Scottish Railway", "kind": "historical" },
-          { "key": "lner", "display_name": "London and North Eastern Railway", "kind": "historical" },
-          { "key": "southern-railway-legacy", "display_name": "Southern Railway (Legacy)", "kind": "historical" }
+          {
+            "key": "gwr-legacy",
+            "display_name": "Great Western Railway (Legacy)",
+            "kind": "historical"
+          },
+          {
+            "key": "lms",
+            "display_name": "London, Midland and Scottish Railway",
+            "kind": "historical"
+          },
+          {
+            "key": "lner",
+            "display_name": "London and North Eastern Railway",
+            "kind": "historical"
+          },
+          {
+            "key": "southern-railway-legacy",
+            "display_name": "Southern Railway (Legacy)",
+            "kind": "historical"
+          }
         ]
       },
       "successor": {

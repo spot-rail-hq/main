@@ -5106,7 +5106,15 @@
         layout: { visibility: 'none' },
         paint: {
           'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, 1.6, 10, 3, 14, 5],
-          'circle-color': themeColors().bg,
+          // stationFill, NOT `bg` — THEME_COLORS has no `bg` key, so the first
+          // version of this passed `undefined` as circle-color. MapLibre's style
+          // validation then REJECTED the whole layer: addLayer fires an error
+          // event and returns without adding it, and every later setFilter /
+          // setPaintProperty on the missing layer also just fires an error and
+          // no-ops rather than throwing. Net effect was that the LINES worked
+          // perfectly while the stations silently never existed at any year.
+          // stationFill is the same token the live station circles use.
+          'circle-color': themeColors().stationFill,
           'circle-stroke-width': 1,
           'circle-stroke-color': eraColorFor('pre1923', null),
           'circle-opacity': 0,
@@ -5116,6 +5124,12 @@
         },
       });
     }
+    // Guard against exactly the failure above ever recurring silently: if a
+    // layer was rejected by style validation it simply will not be there, and
+    // every later call against it is a no-op error nobody sees.
+    [HIST_LINE_LAYER, HIST_STATION_LAYER].forEach(function (id) {
+      if (!map.getLayer(id)) console.error('History layer "' + id + '" was not added — check its paint/layout spec for an undefined value.');
+    });
     historyLayersReady = true;
     wireHistoryMapInteraction();
     applyHistoryPaint();
@@ -5147,7 +5161,7 @@
     }
     map.setPaintProperty(HIST_LINE_LAYER, 'line-color', expr);
     map.setPaintProperty(HIST_STATION_LAYER, 'circle-stroke-color', eraColorFor(band, null));
-    map.setPaintProperty(HIST_STATION_LAYER, 'circle-color', themeColors().bg);
+    map.setPaintProperty(HIST_STATION_LAYER, 'circle-color', themeColors().stationFill);
   }
 
   function applyHistoryFilters() {
@@ -5190,9 +5204,17 @@
     if (map.getLayer(HIST_LINE_LAYER)) {
       map.setPaintProperty(HIST_LINE_LAYER, 'line-opacity', showHistorical ? 1 : 0);
     }
+    // STATIONS ARE NOT PART OF THE 1994 SOURCE-SWITCH. That switch exists
+    // because there are two competing LINE datasets; there is only one station
+    // dataset and it spans the whole timeline (2,565 of its stations are open
+    // today). Gating station opacity on `showHistorical` — as the first version
+    // did — would have blanked every station from 1994 onward, where the live
+    // station markers are also hidden, leaving no stations at all in the modern
+    // band. Stations follow the MODE, lines follow the YEAR.
+    var showStations = mode === 'history';
     if (map.getLayer(HIST_STATION_LAYER)) {
-      map.setPaintProperty(HIST_STATION_LAYER, 'circle-opacity', showHistorical ? 1 : 0);
-      map.setPaintProperty(HIST_STATION_LAYER, 'circle-stroke-opacity', showHistorical ? 1 : 0);
+      map.setPaintProperty(HIST_STATION_LAYER, 'circle-opacity', showStations ? 1 : 0);
+      map.setPaintProperty(HIST_STATION_LAYER, 'circle-stroke-opacity', showStations ? 1 : 0);
     }
     // Modern operator-coloured lines. In History mode these render in FULL
     // COLOUR — the reverse-colour-reveal (grey until hover) is a Live-mode
@@ -5376,14 +5398,40 @@
   // `founded` and never `dates_of_operation`. GWR (Legacy) was incorporated
   // in 1833 but its first line opened in 1838 — following the founding year
   // would land the user on an empty map.
-  function applySliderFollow(range) {
+  // `range` is the MAP-COVERAGE range. `operatedFrom` is optional: the
+  // operator's own DATES OF OPERATION start year, used only to stop Rule 2
+  // landing on a year the company did not exist in — see below.
+  function applySliderFollow(range, operatedFrom) {
     activeSpanRange = range || null;
     if (!range) { syncSliderInstances(); return; } // RULE 3
     var max = historyMaxYear();
     var lo = range.first_year;
     var hi = range.last_year === null ? max : range.last_year;
     if (historyYear >= lo && historyYear <= hi) { syncSliderInstances(); return; } // RULE 1
-    setHistoryYear(lo, { source: 'follow' }); // RULE 2
+
+    // RULE 2 — land on max(map-coverage start, dates-of-operation start).
+    //
+    // Map coverage alone is not enough for a PRE-1923 operator. The coverage
+    // figure is clamped to its era band, and the pre1923 band's lower bound is
+    // just the slider minimum, so every pre-grouping company clamps to 1825
+    // regardless of when it actually existed. That sent someone opening GWR
+    // (Legacy) to 1825 — five years before the Liverpool and Manchester
+    // Railway, eight before GWR was even incorporated — which asserts
+    // something false about the company. It is not Rule 2 working literally;
+    // it is the clamp's floor leaking into the answer.
+    //
+    // Taking the later of the two guarantees BOTH that the operator existed at
+    // the landing year AND that there is map data to show there. GWR lands on
+    // 1838 (Paddington-Maidenhead) instead: sparse, but correctly sparse, with
+    // the active-span band showing there is more to see further right.
+    //
+    // Where dates_of_operation is not populated this falls through to raw map
+    // coverage exactly as before — a founding year is never guessed.
+    var landing = lo;
+    if (typeof operatedFrom === 'number' && operatedFrom > landing && operatedFrom <= hi) {
+      landing = operatedFrom;
+    }
+    setHistoryYear(landing, { source: 'follow' });
     syncSliderInstances();
   }
 
@@ -5419,7 +5467,10 @@
     expandSidebarIfCollapsed();
     animateSidebarTransition();
     setSelectedStationPoints([]);
-    applySliderFollow(coverageForHistoricalOperator(slug));
+    var rec = historicalOperators[slug];
+    var operatedFrom = rec && rec.dates_of_operation && typeof rec.dates_of_operation.start === 'number'
+      ? rec.dates_of_operation.start : null;
+    applySliderFollow(coverageForHistoricalOperator(slug), operatedFrom);
     pushHistoryForCurrentState();
   }
 
