@@ -736,18 +736,13 @@
   .sb-attrib-tag { font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink); }
 
   /* ── History-mode year slider (two instances, one state) ────────────────
-     .hist-slider is shared by the map-canvas instance (#history-panel) and the
-     sidebar instance (#sb-history-slider); only placement differs. Both are
-     hidden unless body.mode-history, so nothing here can leak into Live or
+     Only the sidebar instance remains (#sb-history-slider); the map-canvas one
+     was removed. .hist-slider is kept as the shared class so the styling stays
+     where it is and a second placement could be reintroduced without a rewrite.
+     Hidden unless body.mode-history, so nothing here leaks into Live or
      Database. */
   .hist-slider { display: none; }
   body.mode-history .hist-slider { display: block; }
-  #history-panel.hist-slider { position: absolute; z-index: 41; left: 50%; transform: translateX(-50%);
-    bottom: 54px; width: calc((100vw - var(--sidebar-edge)) / 2);
-    background: var(--sf); border: 0.5px solid var(--brh); border-radius: 16px;
-    padding: 10px 14px 8px;
-    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
-  @media (min-width: 769px) { #history-panel.hist-slider { left: calc(50% + (var(--sidebar-edge) / 2)); } }
   .sb-hist-slider { flex-shrink: 0; padding: 10px 16px 8px; border-bottom: 0.5px solid var(--br); }
 
   .hs-head { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
@@ -783,7 +778,11 @@
      track rather than being evenly spaced. The first and last sit ON the track
      ends, where a centred label would clip outside the box — see
      .hs-tick.edge-first/.edge-last for the anchoring fix. */
-  .hs-ticks { position: relative; height: 19px; margin-top: 4px; }
+  .hs-ticks { position: relative; height: 19px; margin-top: 4px; transition: height 0.15s ease; }
+  /* Grows only when a label actually had to stagger, so the common case keeps
+     its single-row height. */
+  .hs-ticks.two-row { height: 34px; }
+  .hs-tick.row-2 { top: 16px; }
   .hs-tick { position: absolute; transform: translateX(-50%); font-size: 13px; color: var(--ink);
     background: transparent; border: none; padding: 0; cursor: pointer; font-family: inherit;
     white-space: nowrap; }
@@ -822,7 +821,7 @@
   @media (max-width: 768px) {
     /* Edge-to-edge on narrow viewports, same treatment the old panel had.
        Raised clear of the bottom hint pills. */
-    #history-panel.hist-slider, #db-legend { bottom: 70px; left: var(--sidebar-gap); right: var(--sidebar-gap);
+    #db-legend { bottom: 70px; left: var(--sidebar-gap); right: var(--sidebar-gap);
       width: auto; transform: none; }
     /* Bigger touch target on the thumb — the default 16px is hard to grab
        without catching the map underneath. touch-action on the range stops the
@@ -831,6 +830,8 @@
     .hs-range::-webkit-slider-thumb { width: 22px; height: 22px; margin-top: -9.5px; }
     .hs-range::-moz-range-thumb { width: 22px; height: 22px; }
     .hs-ticks { height: 18px; }
+    .hs-ticks.two-row { height: 32px; }
+    .hs-tick.row-2 { top: 15px; }
     .hs-tick { font-size: 12px; }
   }
 
@@ -1106,34 +1107,9 @@
   </div>
 </div>
 
-<!-- HISTORY MODE — bottom-of-map year slider (instance A).
-     REPURPOSED, not newly invented: this element previously lived in Database
-     mode as a UI-only stub whose JS carried a literal
-     "TODO: swap in OpenHistoricalMap vector tiles for this year" — i.e. a
-     placeholder for exactly this feature, parked in the wrong mode. Building a
-     second slider alongside it would have been the parallel mechanism the brief
-     forbids, so the slider moves here and the Database-mode legend (which was
-     sharing the box) moves out to #db-legend below. Flagged in
-     HISTORICAL-SLIDER-FINDINGS.md Phase 2B — this DOES remove the year slider
-     from the Database tab.
-     Markup order matches instance B in the sidebar so one render function can
-     drive both; ticks are generated in JS from HISTORY_SNAP_YEARS rather than
-     hardcoded here, because the last one is the current year. -->
-<div id="history-panel" class="hist-slider" data-slider-instance="map">
-  <div class="hs-head">
-    <span class="hs-year" id="hs-year-map">TODAY</span>
-    <div class="hs-jump-wrap">
-      <input type="text" class="hs-jump" id="hs-jump-map" inputmode="numeric" autocomplete="off"
-             placeholder="Jump to" aria-label="Jump to year" />
-      <button type="button" class="field-clear" data-clear-for="hs-jump-map" aria-label="Clear year" hidden>×</button>
-    </div>
-  </div>
-  <div class="hs-track-wrap">
-    <div class="hs-span" id="hs-span-map" hidden></div>
-    <input type="range" class="hs-range" id="hs-range-map" step="1" aria-label="History year" />
-  </div>
-  <div class="hs-ticks" id="hs-ticks-map"></div>
-</div>
+<!-- The bottom-of-map year slider (instance A) was removed 2026-07-26 on request:
+     the sidebar slider is the only one wanted, on both Database and History, desktop
+     and mobile. Its CSS and its half of the two-instance sync went with it. -->
 
 <!-- Database-mode legend — split out of the old #history-panel when the year
      slider moved to History mode (above). Same collapsed-by-default behaviour
@@ -1187,6 +1163,15 @@
   var stationInteractionsWired = false;
   var operatorLineInteractionsWired = false;
   var bearingIconWired = false;
+  // Same one-time-binding contract as the three above. ensureHistoryLayers()
+  // now re-runs on every theme toggle (setStyle wipes runtime layers), so the
+  // map.on() handlers inside it MUST be guarded or each toggle would stack
+  // another set — which is precisely the progressive slowdown reported.
+  var historyInteractionsWired = false;
+  // Whether History layers have ever been added. Used to keep them LAZY: a
+  // user who never opens History should not pay for the historical tileset,
+  // but once they have, addMapLayers() must restore it on every style rebuild.
+  var historyLayersEverAdded = false;
   // ── Reverse color-reveal (Phase 2, 2026-07-21) ────────────────────────────
   // lockedOperatorHighlight persists across mouseleave (click/tap, or a
   // Regions chip click); hoveredOperatorHighlight is the transient desktop
@@ -2732,6 +2717,16 @@
     });
     if (!operatorLineInteractionsWired) { wireOperatorLineInteractions(); operatorLineInteractionsWired = true; }
     if (!bearingIconWired) { wireBearingIcon(); bearingIconWired = true; }
+    // History-mode layers go through this same single re-apply path, per this
+    // function's own rule above ("anything added at runtime gets its
+    // re-add/re-color logic here, in this function, only"). They were the one
+    // runtime layer set that broke that rule, which is why they alone did not
+    // survive a theme toggle. Only re-added once the user has actually entered
+    // History mode, so the historical tileset stays lazy for everyone else.
+    // A hovered segment cannot survive a style rebuild — its glow filter refers
+    // to layers that no longer exist.
+    hoveredHistoryFeature = null;
+    if (historyLayersEverAdded) { historyLayersReady = false; ensureHistoryLayers(); }
 
     // stationsData is built once by the Promise.all() below (station-list.json
     // + the major-station set both need to resolve first) — if it beat the
@@ -4899,7 +4894,12 @@
   }
 
   // ── Slider (two instances, one state) ────────────────────────────────────
-  var SLIDER_INSTANCES = ['map', 'sidebar'];
+  // Was ['map','sidebar']. The map-canvas instance is gone, but this stays an
+  // ARRAY and every render/wire path still loops it — the two-instance design
+  // is what guarantees no instance owns the year (setHistoryYear() is the only
+  // writer), and collapsing it to a single hardcoded element would quietly move
+  // ownership into the DOM. Adding a second instance back is a one-word change.
+  var SLIDER_INSTANCES = ['sidebar'];
   function sliderEl(instance, part) { return document.getElementById('hs-' + part + '-' + instance); }
 
   function renderTicks(instance) {
@@ -4928,38 +4928,37 @@
   // Tick POSITIONS are always strictly proportional to the year — that is the
   // point of them, and evenly spacing them would put a label above a year it
   // does not name. At 13px type on a 368px sidebar track, though, 1825 and 1845
-  // genuinely overlap (they are 20 years apart on a ~200-year range).
+  // genuinely overlap by ~3px: they are 20 years apart on a ~200-year range.
   //
-  // So rather than shrinking the type back down or faking the spacing, any
-  // label that would overlap its neighbour is HIDDEN. Measured from the real
-  // laid-out boxes via getBoundingClientRect, not estimated from a font metric,
-  // because the estimate was already wrong once. The first and last are always
-  // kept — they anchor the range — so when the last one collides it is the
-  // previous survivor that gives way, not the endpoint.
+  // The first version HID the colliding label, which silently dropped 1845 from
+  // the sidebar — a reported bug, and not one the removal of the second slider
+  // instance fixed, because the collision is purely a function of this track's
+  // own width. Labels now STAGGER onto a second row instead: every snap point
+  // stays visible and stays over its true year. Hiding is kept only as the last
+  // resort for a label that fits on neither row.
+  //
+  // Measured from real laid-out boxes via getBoundingClientRect, not estimated
+  // from a font metric — that estimate was already wrong once.
   function pruneOverlappingTicks(host) {
     if (!host || !host.offsetParent) return; // not laid out yet (mode hidden); re-run on show
     var ticks = Array.prototype.slice.call(host.querySelectorAll('.hs-tick'));
     if (ticks.length < 2) return;
     var MIN_GAP = 8;
-    ticks.forEach(function (t) { t.style.visibility = ''; });
+    ticks.forEach(function (t) { t.style.visibility = ''; t.classList.remove('row-2'); });
     var boxes = ticks.map(function (t) { return t.getBoundingClientRect(); });
-    var lastKept = 0;
-    for (var i = 1; i < ticks.length; i++) {
-      var isLast = i === ticks.length - 1;
-      if (boxes[i].left - boxes[lastKept].right >= MIN_GAP) { lastKept = i; continue; }
-      if (isLast) {
-        // The final tick wins: hide whichever label it collided with, then
-        // keep walking back if that was not enough.
-        var j = lastKept;
-        while (j > 0 && boxes[i].left - boxes[j].right < MIN_GAP) {
-          ticks[j].style.visibility = 'hidden';
-          j--;
-          while (j > 0 && ticks[j].style.visibility === 'hidden') j--;
-        }
-      } else {
-        ticks[i].style.visibility = 'hidden';
+    var rowRight = [-Infinity, -Infinity]; // right edge of the last tick placed on each row
+    var usedSecondRow = false;
+    ticks.forEach(function (t, i) {
+      if (boxes[i].left - rowRight[0] >= MIN_GAP) { rowRight[0] = boxes[i].right; return; }
+      if (boxes[i].left - rowRight[1] >= MIN_GAP) {
+        t.classList.add('row-2');
+        rowRight[1] = boxes[i].right;
+        usedSecondRow = true;
+        return;
       }
-    }
+      t.style.visibility = 'hidden'; // fits on neither row — genuinely no space
+    });
+    host.classList.toggle('two-row', usedSecondRow);
   }
   // Labels can only be measured once the panel is actually laid out, so both
   // instances are re-pruned when History mode opens and whenever the sidebar or
@@ -5081,8 +5080,16 @@
   var NO_HISTORY_FEATURE_FILTER = ['==', ['get', 'source'], '__no_history_feature__'];
   var hoveredHistoryFeature = null;
 
+  // Idempotent by design: every add below is guarded by getSource/getLayer, so
+  // this is safe to call on first entry into History mode AND again after every
+  // map.setStyle(), which destroys all runtime-added sources and layers. It
+  // used to early-return on `historyLayersReady`, which is a plain JS variable
+  // that setStyle cannot reset — so after a theme toggle the layers were gone
+  // but the flag still said they were present, and they never came back. That
+  // was the whole of the "toggle to light and the network disappears forever"
+  // bug. Same belt-and-braces shape as addMapLayers() itself.
   function ensureHistoryLayers() {
-    if (!map || historyLayersReady) return;
+    if (!map) return;
     ensurePmtilesProtocol();
     if (!map.getSource('history-vector')) {
       map.addSource('history-vector', {
@@ -5173,7 +5180,10 @@
       if (!map.getLayer(id)) console.error('History layer "' + id + '" was not added — check its paint/layout spec for an undefined value.');
     });
     historyLayersReady = true;
-    wireHistoryMapInteraction();
+    historyLayersEverAdded = true;
+    // Bound ONCE, ever — not per style rebuild. MapLibre keeps map-level
+    // handlers across setStyle(), so re-binding here would accumulate.
+    if (!historyInteractionsWired) { wireHistoryMapInteraction(); historyInteractionsWired = true; }
     applyHistoryPaint();
     applyHistoryFilters();
   }
@@ -5873,8 +5883,9 @@
       // the moment the user switched back mid-highlight.
       clearOperatorHighlight();
       ensureHistoryLayers();
-      renderTicks('map');
-      renderTicks('sidebar');
+      // Driven off SLIDER_INSTANCES rather than named calls, so removing or
+      // re-adding an instance is a one-line change in one place.
+      SLIDER_INSTANCES.forEach(renderTicks);
       syncSliderInstances();
       renderYearHighlight();
       applyHistoryFilters();
