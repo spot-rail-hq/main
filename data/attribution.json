@@ -1,0 +1,138 @@
+{
+  "generated_at": "2026-07-26T07:03:48.472Z",
+  "_notes": "Machine-readable licence/attribution manifest for srhq.uk map data. Built by scripts/build-attribution.mjs (sole writer). The OHM entries are DERIVED from the real extract's licence census so they cannot drift from what shipped; the rest are static facts about sources the repo already uses. Phase 2B must render the attribution bar FROM THIS FILE rather than hardcoding strings — that is the whole point of it existing. `attribution` is MANDATORY (the licence legally requires the credit) or COURTESY (the licence waives it — CC0 — but we credit anyway). A UI short on space may collapse COURTESY entries into an about/sources page; it may NOT collapse MANDATORY ones. Per-feature crediting is possible for the OHM/NLS split because every line feature carries its own `license` property all the way into the vector tiles.",
+  "ui_guidance": {
+    "map_bar_must_include": "every entry where attribution === \"MANDATORY\" and the layer is visible",
+    "about_page_should_include": "every entry regardless of MANDATORY/COURTESY",
+    "per_feature_credit": "line features carry a `license` property (CC0-1.0 | CC-BY-4.0); a feature-level popup can credit NLS only for the features that actually need it, rather than crediting NLS for the whole layer",
+    "open_decision": "Where the NLS credit sits — always-on in the bar, or only when an NLS feature is on screen / selected — is NOT decided here. Always-on is safe; conditional is tidier but needs the viewport test to be genuinely reliable, since a missed credit is a licence breach rather than a cosmetic slip."
+  },
+  "sources": [
+    {
+      "id": "ohm",
+      "source": "OpenHistoricalMap",
+      "applies_to": [
+        "scripts/output/historical-lines.geojson (pre-1994 lines)"
+      ],
+      "licence_code": "CC0-1.0",
+      "licence_label": "CC0 1.0 Universal (public domain dedication)",
+      "licence_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attribution": "COURTESY",
+      "attribution_string": "© OpenHistoricalMap contributors",
+      "feature_count": 11227,
+      "raw_license_tag": null,
+      "notes": "OHM's default. CC0 waives attribution entirely; credited by choice. Confirmed from OHM's copyright policy 2026-07-25. FLAGGED: openhistoricalmap.org/copyright returns HTTP 403 to automated fetching, so the primary-source page has not been read directly — worth one human browser check before commercial launch."
+    },
+    {
+      "id": "ohm-nls",
+      "source": "OpenHistoricalMap — National Library of Scotland tracings",
+      "applies_to": [
+        "scripts/output/historical-lines.geojson (pre-1994 lines)"
+      ],
+      "licence_code": "CC-BY-4.0",
+      "licence_label": "Creative Commons Attribution 4.0",
+      "licence_url": "https://creativecommons.org/licenses/by/4.0/",
+      "attribution": "MANDATORY",
+      "attribution_string": "Reproduced with the permission of the National Library of Scotland",
+      "feature_count": 1895,
+      "raw_license_tag": "CC-BY (NLS): Reproduced with the permission of the National Library of Scotland",
+      "notes": "Per-element override of OHM's CC0 default, carried through to the tiles as a per-feature `license` property so these can be credited individually. ~14% of GB railway ways by count but only ~2% by length (short yard/station-throat detail, two-thirds of it in Scotland)."
+    },
+    {
+      "id": "osm",
+      "source": "OpenStreetMap",
+      "applies_to": [
+        "data/line-segments.json (modern band, 1994+)",
+        "tile-generation/operators.pmtiles",
+        "tile-generation/gb-railways.pmtiles",
+        "stations-content.json (OSM-derived structured fields)"
+      ],
+      "licence_code": "ODbL-1.0",
+      "licence_label": "Open Database License 1.0",
+      "licence_url": "https://opendatacommons.org/licenses/odbl/1-0/",
+      "attribution": "MANDATORY",
+      "attribution_string": "© OpenStreetMap contributors",
+      "notes": "Share-alike. This is precisely why the historical layer is clipped with OHM's own CC0 boundary polygons rather than an OSM one — using an ODbL database to spatially filter CC0 data arguably produces a Derivative Database and would drag share-alike onto output that is otherwise unencumbered."
+    },
+    {
+      "id": "wikipedia",
+      "source": "Wikipedia (English)",
+      "applies_to": [
+        "scripts/output/historical-stations.geojson (station opening/closing years)",
+        "data/big4-constituents.json (Railways Act 1921 constituent lists)",
+        "stations-content.json / operators-content.json / routes-content.json (narrative fields)"
+      ],
+      "licence_code": "CC-BY-SA-4.0",
+      "licence_label": "Creative Commons Attribution-ShareAlike 4.0",
+      "licence_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "attribution": "MANDATORY",
+      "attribution_string": "Station dates from Wikipedia (CC BY-SA 4.0)",
+      "notes": "The station dates are taken from CATEGORY MEMBERSHIP (the year is in the category name), not from article prose. Whether a bare year extracted from a category name is even copyrightable is doubtful — individual raw facts generally are not — but the credit is given regardless rather than relying on that argument. FLAGGED: ShareAlike could in principle be read as reaching derived datasets. Worth a human view before launch."
+    },
+    {
+      "id": "wikidata",
+      "source": "Wikidata",
+      "applies_to": [
+        "scripts/output/historical-stations.geojson (P625 coordinates)"
+      ],
+      "licence_code": "CC0-1.0",
+      "licence_label": "CC0 1.0 Universal (public domain dedication)",
+      "licence_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attribution": "COURTESY",
+      "attribution_string": "Coordinates from Wikidata (CC0)",
+      "notes": "CC0 waives attribution. Credited by choice."
+    },
+    {
+      "id": "naptan",
+      "source": "NaPTAN (Department for Transport)",
+      "applies_to": [
+        "station-list.json",
+        "authoritative \"open now\" flag on historical stations"
+      ],
+      "licence_code": "OGL-3.0",
+      "licence_label": "Open Government Licence v3.0",
+      "licence_url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+      "attribution": "MANDATORY",
+      "attribution_string": "Contains public sector information licensed under the Open Government Licence v3.0",
+      "notes": "OGL permits commercial use and requires the standard acknowledgement above."
+    },
+    {
+      "id": "stadia",
+      "source": "Stadia Maps / Stamen / OpenMapTiles",
+      "applies_to": [
+        "base map tiles (Alidade Smooth Dark)"
+      ],
+      "licence_code": "proprietary-with-attribution",
+      "licence_label": "Stadia Maps terms of service",
+      "licence_url": "https://stadiamaps.com/attribution/",
+      "attribution": "MANDATORY",
+      "attribution_string": "© Stadia Maps © Stamen Design © OpenMapTiles © OpenStreetMap contributors",
+      "notes": "Required by the tile provider's terms independently of any data licence."
+    },
+    {
+      "id": "openrailwaymap",
+      "source": "OpenRailwayMap",
+      "applies_to": [
+        "ORM raster overlay"
+      ],
+      "licence_code": "CC-BY-SA-2.0",
+      "licence_label": "Creative Commons Attribution-ShareAlike 2.0",
+      "licence_url": "https://creativecommons.org/licenses/by-sa/2.0/",
+      "attribution": "MANDATORY",
+      "attribution_string": "© OpenRailwayMap contributors",
+      "notes": "Already required by CLAUDE.md for the existing overlay."
+    }
+  ],
+  "dataset_summary": {
+    "historical_lines": {
+      "features": 11021,
+      "by_licence": {
+        "CC0-1.0": 9158,
+        "CC-BY-4.0": 1863
+      }
+    },
+    "historical_stations": {
+      "features": 8884
+    }
+  }
+}

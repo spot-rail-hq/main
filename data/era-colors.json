@@ -1,0 +1,75 @@
+{
+  "generated_at": "2026-07-26",
+  "_notes": "Era-band colours for the historical map slider. DELIBERATELY SEPARATE FROM data/operator-colors.json and never to be merged into it: 'Great Western Railway' the 1923-1947 grouping company and 'GW' the modern TOC are DIFFERENT REAL ENTITIES that share a name, and this repo has already been bitten by exactly that collision (see operators-content.json's _notes on GW's wikipedia_title having pointed at the historic 1833-1947 company). Keying both in one file would make that collision structural. The two files never render simultaneously either — the locked source-switch means the map draws OHM historical lines before 1994 and data/line-segments.json after, so there is no zoom or year at which an era colour and an operator colour appear together. Structure mirrors operator-colors.json (dark/light per entry, light theme as the anchor) so map.html can load and read it with the same helper. CONSTRAINTS FROM CLAUDE.md, all checked: turquoise --t (#40E0D0) is reserved for UI meaning and is used by nothing here (closest is SR malachite: hue 155deg vs turquoise's 174deg, deltaE 32 — measured, not assumed); the literal --a delays/warnings amber (#F5B84B) is not used either. Colours are grounded in each company's real livery rather than picked for contrast alone, then checked for mutual distinguishability — see distinguishability_check below for the measured separations.",
+  "pre1923": {
+    "key": "pre1923",
+    "label": "Pre-grouping",
+    "range": "up to 1922",
+    "single_colour": true,
+    "_note": "The pre-grouping era had hundreds of independent companies and OHM carries a usable company name for only ~30% of the network, so per-company colouring is not honest at this scale — the band renders one neutral. A parchment/stone neutral rather than a grey: it reads as 'historic' without borrowing the --dim UI ink token (#9AA4B2), which would make map linework look like disabled UI text. Deliberately desaturated toward stone rather than a warm tan — a first pass used #C4A987 and measured only deltaE 22.8 against GWR chocolate, which would have made the 1923 band change nearly invisible across GWR territory (the largest of the four networks). At #C9BBA4 the nearest neighbour in the whole era palette is 32.3.",
+    "dark": "#C9BBA4",
+    "light": "#7D7361"
+  },
+  "big4": {
+    "key": "big4",
+    "label": "The Big Four",
+    "range": "1923-1947",
+    "single_colour": false,
+    "_note": "KNOWN-ONLY colouring per the locked decision. Only lines whose OHM company name resolves through data/big4-constituents.json get a company colour; everything else in the band takes `unknown`. MEASURED: 11.3% of ways alive in this band resolve, so ~89% renders as `unknown`. That is a deliberate honesty trade — no territorial inference — but it means `unknown` must be visually distinct from the pre1923 neutral or the 1923 band change will be nearly invisible on the map. It is: a cool blue-grey (deltaE 32.8) against pre1923's warm stone.",
+    "companies": {
+      "Great Western Railway": {
+        "livery": "chocolate and cream (coaching stock)",
+        "_note": "GWR's Brunswick green locomotive green would collide with both LNER apple green and SR malachite green — three greens in a four-colour band is unusable. The chocolate-and-cream coaching livery is equally real, equally iconic, and the only one of GWR's identities that is not a green.",
+        "dark": "#D69A5C",
+        "light": "#9C5B22"
+      },
+      "London, Midland and Scottish Railway": {
+        "livery": "crimson lake",
+        "dark": "#D4485C",
+        "light": "#9E1B2F"
+      },
+      "London and North Eastern Railway": {
+        "livery": "apple green",
+        "dark": "#9FC93C",
+        "light": "#6B8E23"
+      },
+      "Southern Railway": {
+        "livery": "malachite green",
+        "_note": "Pulled deliberately greener/darker than true malachite so it stays clear of the reserved turquoise --t (#40E0D0). Measured hue separation ~22deg plus a large lightness gap.",
+        "dark": "#22A06B",
+        "light": "#0E6E48"
+      }
+    },
+    "unknown": {
+      "label": "Company unknown",
+      "_note": "Not 'no company' — these lines had an owner, we just cannot evidence which one from open sources. The UI should say so rather than implying the line was unowned or unimportant.",
+      "dark": "#7E8AA0",
+      "light": "#5A6577"
+    }
+  },
+  "br": {
+    "key": "br",
+    "label": "British Railways",
+    "range": "1948-1993",
+    "single_colour": true,
+    "livery": "BR rail blue (BS 4800 18 E 53 / monastral blue)",
+    "_note": "A single nationalised operator needs no lookup, which is why Phase 1's finding that the string 'British Railways' appears exactly once in OHM's entire GB tag set turned out not to matter — co_br is written as a constant. Checked against the modern palette's deep blues (NT #1310C9/#0F0D78, SW #2D4ED0/#24398C): distinct, and in any case they never render at the same slider position.",
+    "dark": "#5580C4",
+    "light": "#1F3F73"
+  },
+  "modern": {
+    "key": "modern",
+    "label": "Present day",
+    "range": "1994 to current year",
+    "single_colour": false,
+    "_note": "NO COLOURS HERE BY DESIGN. The modern band renders from data/line-segments.json using data/operator-colors.json, per the locked source-switch at 1994. Duplicating any operator hex into this file would create exactly the two-sources-of-truth problem this file exists to avoid. The upper bound of this band is the CURRENT YEAR resolved at runtime, never a hardcoded literal.",
+    "colours_from": "data/operator-colors.json"
+  },
+  "distinguishability_check": {
+    "method": "Pairwise CIE76 deltaE over the dark-theme values, plus explicit hue separation from the reserved turquoise --t (#40E0D0). Run by scripts/build-attribution.mjs --check-palette.",
+    "_note": "Measured 2026-07-26: every pair in the era palette is at least deltaE 27.5 apart (closest pair big4/unknown vs br); every entry is at least deltaE 32 from the reserved turquoise. See HISTORICAL-SLIDER-FINDINGS.md Phase 2A.",
+    "min_pairwise_delta_e": 27.5,
+    "closest_pair": "big4/unknown vs br",
+    "min_delta_e_from_reserved_turquoise": 32
+  }
+}

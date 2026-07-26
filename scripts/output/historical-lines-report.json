@@ -1,0 +1,1169 @@
+{
+  "generated_at": "2026-07-26T06:48:01.042Z",
+  "source": "OpenHistoricalMap via overpass-api.openhistoricalmap.org, GB polygon clip",
+  "ohm_timestamp": "2026-07-26T06:47:02Z",
+  "stats": {
+    "elements_total": 13122,
+    "linear": 12935,
+    "dropped_undated": 1784,
+    "dropped_no_geometry": 0,
+    "dropped_modern_only": 130,
+    "emitted": 11021,
+    "start_precision": {
+      "exact": 11021
+    },
+    "end_precision": {
+      "unknown": 5703,
+      "exact": 5318
+    },
+    "co_pre1923": 3895,
+    "co_big4": 1185,
+    "co_br": 10304,
+    "big4_band_alive": 10465,
+    "big4_candidates": 3823,
+    "by_licence": {
+      "CC0-1.0": 9158,
+      "CC-BY-4.0": 1863
+    }
+  },
+  "big4_match_rate": 31,
+  "big4_band_coverage": 11.3,
+  "licence_census": {
+    "(none — OHM CC0 default)": 11227,
+    "CC-BY (NLS): Reproduced with the permission of the National Library of Scotland": 1895
+  },
+  "unresolved_big4_names": [
+    {
+      "name": "Formartine and Buchan Railway",
+      "ways": 189
+    },
+    {
+      "name": "Glasgow, Paisley and Greenock Railway",
+      "ways": 178
+    },
+    {
+      "name": "Aberdeen Railway",
+      "ways": 165
+    },
+    {
+      "name": "Scottish Central Railway",
+      "ways": 152
+    },
+    {
+      "name": "General Terminus and Glasgow Harbour Railway",
+      "ways": 125
+    },
+    {
+      "name": "Inverness and Perth Junction Railway",
+      "ways": 106
+    },
+    {
+      "name": "East Lancashire Railway",
+      "ways": 96
+    },
+    {
+      "name": "Glasgow, Barrhead and Neilston Direct Railway",
+      "ways": 92
+    },
+    {
+      "name": "Inverness and Aberdeen Junction Railway",
+      "ways": 80
+    },
+    {
+      "name": "Manchester and Leeds Railway",
+      "ways": 75
+    },
+    {
+      "name": "North British, Arbroath and Montrose Railway",
+      "ways": 68
+    },
+    {
+      "name": "Liverpool, St Helens and South Lancashire Railway",
+      "ways": 50
+    },
+    {
+      "name": "East London Railway",
+      "ways": 38
+    },
+    {
+      "name": "Glasgow City and District Railway",
+      "ways": 34
+    },
+    {
+      "name": "Scottish Midland Junction Railway",
+      "ways": 32
+    },
+    {
+      "name": "Mineral Railway",
+      "ways": 31
+    },
+    {
+      "name": "Stirlingshire Midland Junction Railway",
+      "ways": 31
+    },
+    {
+      "name": "Dundee and Perth Railway",
+      "ways": 29
+    },
+    {
+      "name": "Manchester, Bury and Rossendale Railway",
+      "ways": 29
+    },
+    {
+      "name": "Dundee and Arbroath Railway",
+      "ways": 29
+    },
+    {
+      "name": "Wakefield, Pontefract and Goole Railway",
+      "ways": 28
+    },
+    {
+      "name": "Banff, Portsoy and Strathisla Railway",
+      "ways": 28
+    },
+    {
+      "name": "Metropolitan Railway",
+      "ways": 27
+    },
+    {
+      "name": "Morayshire Railway",
+      "ways": 27
+    },
+    {
+      "name": "Alford Valley Railway",
+      "ways": 27
+    },
+    {
+      "name": "Whitby and Pickering Railway",
+      "ways": 23
+    },
+    {
+      "name": "Gourock Extension Railway",
+      "ways": 23
+    },
+    {
+      "name": "Hertford and Welwyn Junction Railway",
+      "ways": 22
+    },
+    {
+      "name": "Manchester and Wigan Railway",
+      "ways": 19
+    },
+    {
+      "name": "Bradford, Wakefield and Leeds Railway",
+      "ways": 19
+    },
+    {
+      "name": "Kettering, Thrapston and Huntingdon Railway",
+      "ways": 18
+    },
+    {
+      "name": "Stanhope and Tyne Railway",
+      "ways": 18
+    },
+    {
+      "name": "Manchester and Southport Railway",
+      "ways": 18
+    },
+    {
+      "name": "Inverury and Old Meldrum Junction Railway",
+      "ways": 18
+    },
+    {
+      "name": "Whitehaven Junction Railway",
+      "ways": 16
+    },
+    {
+      "name": "North Midland Railway",
+      "ways": 14
+    },
+    {
+      "name": "Liverpool, Ormskirk and Preston Railway",
+      "ways": 14
+    },
+    {
+      "name": "Wrexham, Mold and Connah's Quay Railway",
+      "ways": 13
+    },
+    {
+      "name": "Cheshire Lines Railway",
+      "ways": 13
+    },
+    {
+      "name": "Deeside Railway",
+      "ways": 12
+    },
+    {
+      "name": "Durham and Sunderland Railway",
+      "ways": 11
+    },
+    {
+      "name": "Burry Port and Gwendraeth Valley Railway",
+      "ways": 9
+    },
+    {
+      "name": "Stockport, Timperley and Altrincham Junction Railway",
+      "ways": 9
+    },
+    {
+      "name": "Stirling and Dunfermline Railway",
+      "ways": 9
+    },
+    {
+      "name": "Deeside Extension Railway",
+      "ways": 9
+    },
+    {
+      "name": "London, Tilbury and Southend Railway",
+      "ways": 8
+    },
+    {
+      "name": "Bristol & Gloucester Railway",
+      "ways": 8
+    },
+    {
+      "name": "Sheffield, Ashton-under-Lyne and Manchester Railway",
+      "ways": 8
+    },
+    {
+      "name": "Clarence Railway",
+      "ways": 8
+    },
+    {
+      "name": "Alyth Railway",
+      "ways": 8
+    },
+    {
+      "name": "Polloc and Govan Railway",
+      "ways": 8
+    },
+    {
+      "name": "Edgware, Highgate & London Railway",
+      "ways": 7
+    },
+    {
+      "name": "Spalding and Bourn Railway",
+      "ways": 7
+    },
+    {
+      "name": "Liverpool and Bury Railway",
+      "ways": 7
+    },
+    {
+      "name": "York and North Midland Railway",
+      "ways": 7
+    },
+    {
+      "name": "Bredisholm Railways",
+      "ways": 7
+    },
+    {
+      "name": "North Devon Railway",
+      "ways": 6
+    },
+    {
+      "name": "Cromford and High Peak Railway",
+      "ways": 6
+    },
+    {
+      "name": "Bourne and Sleaford Railway",
+      "ways": 6
+    },
+    {
+      "name": "South Durham and Lancashire Union Railway",
+      "ways": 6
+    },
+    {
+      "name": "Deerness Valley Railway",
+      "ways": 6
+    },
+    {
+      "name": "Busby Railway",
+      "ways": 6
+    },
+    {
+      "name": "Liverpool and Manchester Railway",
+      "ways": 5
+    },
+    {
+      "name": "Midland Counties Railway",
+      "ways": 5
+    },
+    {
+      "name": "St Andrews Railway",
+      "ways": 5
+    },
+    {
+      "name": "Launceston Steam Railway",
+      "ways": 5
+    },
+    {
+      "name": "Southport and Cheshire Lines Extension Railway",
+      "ways": 5
+    },
+    {
+      "name": "Bolton and Leigh Railway",
+      "ways": 5
+    },
+    {
+      "name": "Weardale Extension Railway",
+      "ways": 5
+    },
+    {
+      "name": "Wensleydale Railway",
+      "ways": 5
+    },
+    {
+      "name": "Hereford, Hay and Brecon Railway",
+      "ways": 5
+    },
+    {
+      "name": "Pontop & Jarrow Railway",
+      "ways": 5
+    },
+    {
+      "name": "Eastern Counties and Thames Junction Railway",
+      "ways": 4
+    },
+    {
+      "name": "District Railway-Wimbledon Branch",
+      "ways": 4
+    },
+    {
+      "name": "Eastern Counties Railway",
+      "ways": 4
+    },
+    {
+      "name": "Manchester, South Junction and Altrincham Railway",
+      "ways": 4
+    },
+    {
+      "name": "Perth and Dunkeld Railway",
+      "ways": 4
+    },
+    {
+      "name": "Northampton and Peterborough railway",
+      "ways": 4
+    },
+    {
+      "name": "Swansea & Mumbles Railway",
+      "ways": 4
+    },
+    {
+      "name": "Bangor and Carnarvon Railway",
+      "ways": 4
+    },
+    {
+      "name": "Brandling Junction Railway",
+      "ways": 4
+    },
+    {
+      "name": "Southampton and Dorchester railway",
+      "ways": 4
+    },
+    {
+      "name": "Newcastle & Carlisle Railway",
+      "ways": 4
+    },
+    {
+      "name": "East and West Junction Railway",
+      "ways": 4
+    },
+    {
+      "name": "Grand Junction Railway",
+      "ways": 4
+    },
+    {
+      "name": "Wellington to Craven Arms Railway",
+      "ways": 4
+    },
+    {
+      "name": "Mansfield and Pinxton Railway",
+      "ways": 4
+    },
+    {
+      "name": "Wigan Junction Railway",
+      "ways": 4
+    },
+    {
+      "name": "Oldham, Ashton and Guide Bridge Railway",
+      "ways": 4
+    },
+    {
+      "name": "Stockport and Woodley Junction Railway",
+      "ways": 4
+    },
+    {
+      "name": "Leeds, Bradford and Halifax Junction Railway",
+      "ways": 4
+    },
+    {
+      "name": "Whitby, Redcar and Middlesbrough Union Railway",
+      "ways": 4
+    },
+    {
+      "name": "Darlington and Barnard Castle Railway",
+      "ways": 4
+    },
+    {
+      "name": "Ravenglass and Eskdale Railway",
+      "ways": 4
+    },
+    {
+      "name": "Rye and Camber Tramways Company Ltd",
+      "ways": 4
+    },
+    {
+      "name": "Glasgow, Dumbarton and Helensburgh Railway",
+      "ways": 4
+    },
+    {
+      "name": "Strabathie Light Railway",
+      "ways": 4
+    },
+    {
+      "name": "Londonderry Railway",
+      "ways": 4
+    },
+    {
+      "name": "West End of London & Crystal Palace Railway",
+      "ways": 3
+    },
+    {
+      "name": "Wells and Fakenham railway",
+      "ways": 3
+    },
+    {
+      "name": "Stour Valley Railway",
+      "ways": 3
+    },
+    {
+      "name": "Bedford Railway",
+      "ways": 3
+    },
+    {
+      "name": "Wansbeck Railway",
+      "ways": 3
+    },
+    {
+      "name": "Bodmin and Wadebridge Railway",
+      "ways": 3
+    },
+    {
+      "name": "Portishead Railway",
+      "ways": 3
+    },
+    {
+      "name": "Birmingham West Suburban Railway",
+      "ways": 3
+    },
+    {
+      "name": "Birmingham and Gloucester Railway",
+      "ways": 3
+    },
+    {
+      "name": "Denbigh, Ruthin and Corwen Railway",
+      "ways": 3
+    },
+    {
+      "name": "Leicester and Swannington Railway",
+      "ways": 3
+    },
+    {
+      "name": "Ashby and Nuneaton Joint Railway",
+      "ways": 3
+    },
+    {
+      "name": "Liverpool, Crosby & Southport Railway",
+      "ways": 3
+    },
+    {
+      "name": "Hull and South Yorkshire Extension Railway",
+      "ways": 3
+    },
+    {
+      "name": "Barnsley Coal Railway",
+      "ways": 3
+    },
+    {
+      "name": "Scarborough and Whitby Railway",
+      "ways": 3
+    },
+    {
+      "name": "Leeds and Thirsk Railway",
+      "ways": 3
+    },
+    {
+      "name": "Eden Valley Railway",
+      "ways": 3
+    },
+    {
+      "name": "Hartlepool Dock & Railway",
+      "ways": 3
+    },
+    {
+      "name": "Bishop Auckland and Weardale Railway",
+      "ways": 3
+    },
+    {
+      "name": "Lanchester Valley Railway",
+      "ways": 3
+    },
+    {
+      "name": "Anglesey Central Railway",
+      "ways": 3
+    },
+    {
+      "name": "Scottish Midland Junction Railway, Blairgowrie Branch",
+      "ways": 3
+    },
+    {
+      "name": "Stockton & Darlington Railway",
+      "ways": 3
+    },
+    {
+      "name": "Weatherhill and Rookhope Railway",
+      "ways": 3
+    },
+    {
+      "name": "Aboyne and Braemar Railway",
+      "ways": 3
+    },
+    {
+      "name": "Chatham and District Light Railway Company",
+      "ways": 3
+    },
+    {
+      "name": "Millwall Extension Railway",
+      "ways": 2
+    },
+    {
+      "name": "London Necropolis Railway",
+      "ways": 2
+    },
+    {
+      "name": "District Railway",
+      "ways": 2
+    },
+    {
+      "name": "St Helens and Runcorn Gap Railway",
+      "ways": 2
+    },
+    {
+      "name": "Wimbledon and Sutton Railway",
+      "ways": 2
+    },
+    {
+      "name": "Cambridge and St Ives branch railway",
+      "ways": 2
+    },
+    {
+      "name": "Saffron Walden Railway",
+      "ways": 2
+    },
+    {
+      "name": "Benwick Goods Railway",
+      "ways": 2
+    },
+    {
+      "name": "Rugby and Stamford railway",
+      "ways": 2
+    },
+    {
+      "name": "Rumney Railway",
+      "ways": 2
+    },
+    {
+      "name": "Newcastle and Berwick Railway",
+      "ways": 2
+    },
+    {
+      "name": "Elham Valley railway",
+      "ways": 2
+    },
+    {
+      "name": "Kent and East Sussex Railway",
+      "ways": 2
+    },
+    {
+      "name": "Truro and Newquay Railway",
+      "ways": 2
+    },
+    {
+      "name": "Weston, Clevedon and Portishead Light Railway",
+      "ways": 2
+    },
+    {
+      "name": "Severn Bridge Railway",
+      "ways": 2
+    },
+    {
+      "name": "Oxford, Witney and Fairford Railway",
+      "ways": 2
+    },
+    {
+      "name": "Aylesbury and Buckingham Railway",
+      "ways": 2
+    },
+    {
+      "name": "Northampton and Banbury Junction Railway",
+      "ways": 2
+    },
+    {
+      "name": "Evesham & Redditch Railway",
+      "ways": 2
+    },
+    {
+      "name": "Tewkesbury and Malvern Railway",
+      "ways": 2
+    },
+    {
+      "name": "Ledbury & Gloucester Railway",
+      "ways": 2
+    },
+    {
+      "name": "Bishops Castle Railway",
+      "ways": 2
+    },
+    {
+      "name": "Oswestry, Ellesmere and Whitchurch Railway",
+      "ways": 2
+    },
+    {
+      "name": "Oswestry and Newtown Railway",
+      "ways": 2
+    },
+    {
+      "name": "Grantham and Lincoln railway line",
+      "ways": 2
+    },
+    {
+      "name": "Axholme Joint Railway",
+      "ways": 2
+    },
+    {
+      "name": "Garston and Liverpool Railway",
+      "ways": 2
+    },
+    {
+      "name": "West Lancashire Railway",
+      "ways": 2
+    },
+    {
+      "name": "Ashton, Stalybridge and Liverpool Junction Railway",
+      "ways": 2
+    },
+    {
+      "name": "Kenyon and Leigh Junction Railway",
+      "ways": 2
+    },
+    {
+      "name": "Holmfield to St Pauls (Halifax high level railway)",
+      "ways": 2
+    },
+    {
+      "name": "South Yorkshire Railway",
+      "ways": 2
+    },
+    {
+      "name": "Hull and Selby Railway",
+      "ways": 2
+    },
+    {
+      "name": "Pilmoor, Boroughbridge and Knaresborough Railway",
+      "ways": 2
+    },
+    {
+      "name": "Middlesbrough and Guisborough Railway",
+      "ways": 2
+    },
+    {
+      "name": "Castle Eden Railway",
+      "ways": 2
+    },
+    {
+      "name": "Hexham and Allendale Railway",
+      "ways": 2
+    },
+    {
+      "name": "Lancaster and Carlisle Railway",
+      "ways": 2
+    },
+    {
+      "name": "Garstang and Knot-End Railway",
+      "ways": 2
+    },
+    {
+      "name": "\"Little\" North Western Railway",
+      "ways": 2
+    },
+    {
+      "name": "Lakeside and Haverthwaite Railway",
+      "ways": 2
+    },
+    {
+      "name": "Carlisle and Silloth Bay Railway",
+      "ways": 2
+    },
+    {
+      "name": "Cockermouth and Workington Railway",
+      "ways": 2
+    },
+    {
+      "name": "Grimsby and Immingham Electric Railway",
+      "ways": 2
+    },
+    {
+      "name": "Great Central and Midland Joint Railway",
+      "ways": 2
+    },
+    {
+      "name": "Derwent Valley Light Railway",
+      "ways": 2
+    },
+    {
+      "name": "Babbacombe Cliff Railway",
+      "ways": 2
+    },
+    {
+      "name": "Pelaw Main Railway",
+      "ways": 2
+    },
+    {
+      "name": "Black Boy Colliery Railway",
+      "ways": 2
+    },
+    {
+      "name": "Crowtrees Railway",
+      "ways": 2
+    },
+    {
+      "name": "Liverpool Overhead Railway Company",
+      "ways": 2
+    },
+    {
+      "name": "Glasgow, Paisley, Kilmarnock and Ayr Railway",
+      "ways": 2
+    },
+    {
+      "name": "Oldham Branch Railway",
+      "ways": 1
+    },
+    {
+      "name": "Bolton and Preston railway",
+      "ways": 1
+    },
+    {
+      "name": "Sheppey Light Railway",
+      "ways": 1
+    },
+    {
+      "name": "Hampstead Junction Railway",
+      "ways": 1
+    },
+    {
+      "name": "Waterloo and City Railway",
+      "ways": 1
+    },
+    {
+      "name": "Chipstead Valley Railway",
+      "ways": 1
+    },
+    {
+      "name": "Bexley Heath Railway",
+      "ways": 1
+    },
+    {
+      "name": "Bourn and Essendine Railway",
+      "ways": 1
+    },
+    {
+      "name": "Glenlossie Railway",
+      "ways": 1
+    },
+    {
+      "name": "Birmingham and Derby Junction Railway",
+      "ways": 1
+    },
+    {
+      "name": "Cambridge to Mildenhall railway",
+      "ways": 1
+    },
+    {
+      "name": "London and Croydon Railway",
+      "ways": 1
+    },
+    {
+      "name": "Mid-Kent Railway",
+      "ways": 1
+    },
+    {
+      "name": "Watford and Rickmansworth Railway",
+      "ways": 1
+    },
+    {
+      "name": "Yarmouth & Norwich railway",
+      "ways": 1
+    },
+    {
+      "name": "Halesworth, Beccles and Haddiscoe Railway",
+      "ways": 1
+    },
+    {
+      "name": "Lowestoft and Beccles Railway",
+      "ways": 1
+    },
+    {
+      "name": "Wells & Fakenham railway",
+      "ways": 1
+    },
+    {
+      "name": "Yarmouth to Lowestoft railway",
+      "ways": 1
+    },
+    {
+      "name": "Ramsey and Somersham Junction Railway",
+      "ways": 1
+    },
+    {
+      "name": "Mid Suffolk Light Railway",
+      "ways": 1
+    },
+    {
+      "name": "Hadleigh railway",
+      "ways": 1
+    },
+    {
+      "name": "Elsenham & Thaxted Light Railway",
+      "ways": 1
+    },
+    {
+      "name": "Buckinghamshire Railway",
+      "ways": 1
+    },
+    {
+      "name": "Syston and Peterborough Railway",
+      "ways": 1
+    },
+    {
+      "name": "Rugby and Stamford Railway",
+      "ways": 1
+    },
+    {
+      "name": "Clydach Vale Railway",
+      "ways": 1
+    },
+    {
+      "name": "Welsh Highland Railway",
+      "ways": 1
+    },
+    {
+      "name": "Pontypridd, Caerphilly and Newport Railway",
+      "ways": 1
+    },
+    {
+      "name": "Canterbury & Whitstable railway",
+      "ways": 1
+    },
+    {
+      "name": "Mid-Wales Railway",
+      "ways": 1
+    },
+    {
+      "name": "Bluebell Railway",
+      "ways": 1
+    },
+    {
+      "name": "West Sussex Railway",
+      "ways": 1
+    },
+    {
+      "name": "Bordon Light Railway",
+      "ways": 1
+    },
+    {
+      "name": "Basingstoke and Alton Light Railway",
+      "ways": 1
+    },
+    {
+      "name": "Stert and Westbury Railway",
+      "ways": 1
+    },
+    {
+      "name": "Swanage Railway",
+      "ways": 1
+    },
+    {
+      "name": "Chinnor and Princes Risborough Railway",
+      "ways": 1
+    },
+    {
+      "name": "Newport, Godshill and St Lawrence Railway",
+      "ways": 1
+    },
+    {
+      "name": "Isle of WIght Steam Railway",
+      "ways": 1
+    },
+    {
+      "name": "Ryde and Newport Railway",
+      "ways": 1
+    },
+    {
+      "name": "Wrington Vale Light Railway",
+      "ways": 1
+    },
+    {
+      "name": "Bodmin and Wenford Railway",
+      "ways": 1
+    },
+    {
+      "name": "Bodmin & Wenford Railway",
+      "ways": 1
+    },
+    {
+      "name": "Bodmin & Wadebridge Railway",
+      "ways": 1
+    },
+    {
+      "name": "North Devon & Cornwall Junction Light Railway",
+      "ways": 1
+    },
+    {
+      "name": "Avon Valley Railway",
+      "ways": 1
+    },
+    {
+      "name": "Dursley and Midland Junction Railway",
+      "ways": 1
+    },
+    {
+      "name": "Stonehouse & Nailsworth Railway",
+      "ways": 1
+    },
+    {
+      "name": "Redditch Railway",
+      "ways": 1
+    },
+    {
+      "name": "Evesham, Redditch and Stratford-upon-Avon Junction Railway",
+      "ways": 1
+    },
+    {
+      "name": "Edge Hill Light Railway",
+      "ways": 1
+    },
+    {
+      "name": "Crewe and Shrewsbury Railway",
+      "ways": 1
+    },
+    {
+      "name": "West Cheshire Railway",
+      "ways": 1
+    },
+    {
+      "name": "Llanelly Railway, Carmarthen Line",
+      "ways": 1
+    },
+    {
+      "name": "Vale of Clwyd Railway",
+      "ways": 1
+    },
+    {
+      "name": "Wrexham and Minera Railway",
+      "ways": 1
+    },
+    {
+      "name": "Whitchurch & Tattenhall Railway",
+      "ways": 1
+    },
+    {
+      "name": "Spilsby and Firsby Railway",
+      "ways": 1
+    },
+    {
+      "name": "Stonebridge Railway",
+      "ways": 1
+    },
+    {
+      "name": "South Yorkshire Joint Railway",
+      "ways": 1
+    },
+    {
+      "name": "Sheffield and Rotherham Railway",
+      "ways": 1
+    },
+    {
+      "name": "Sheffield and Rotherham railway",
+      "ways": 1
+    },
+    {
+      "name": "Stockport, Disley and Whaley Bridge Railway",
+      "ways": 1
+    },
+    {
+      "name": "Manchester and Bolton Railway",
+      "ways": 1
+    },
+    {
+      "name": "Wigan Branch Railway",
+      "ways": 1
+    },
+    {
+      "name": "Stalybridge Junction Railway",
+      "ways": 1
+    },
+    {
+      "name": "Keighley & Worth Valley Railway",
+      "ways": 1
+    },
+    {
+      "name": "Leeds and Bradford Railway",
+      "ways": 1
+    },
+    {
+      "name": "Leeds and Selby Railway",
+      "ways": 1
+    },
+    {
+      "name": "Hull & Hornsea Railway",
+      "ways": 1
+    },
+    {
+      "name": "Trent, Ancholme and Grimsby Railway",
+      "ways": 1
+    },
+    {
+      "name": "Deane Valley Junction Railway",
+      "ways": 1
+    },
+    {
+      "name": "Malton and Driffield Junction Railway",
+      "ways": 1
+    },
+    {
+      "name": "Stockton and Darlington Railway",
+      "ways": 1
+    },
+    {
+      "name": "Easingwold Railway",
+      "ways": 1
+    },
+    {
+      "name": "Nidd Valley Railway",
+      "ways": 1
+    },
+    {
+      "name": "Nidd Valley Light Railway",
+      "ways": 1
+    },
+    {
+      "name": "Cleveland Railway",
+      "ways": 1
+    },
+    {
+      "name": "Middlesbrough and Redcar Railway",
+      "ways": 1
+    },
+    {
+      "name": "Seaham and Sunderland Railway",
+      "ways": 1
+    },
+    {
+      "name": "Vale of Rheidol Railway",
+      "ways": 1
+    },
+    {
+      "name": "Lancaster and Preston Junction Railway",
+      "ways": 1
+    },
+    {
+      "name": "Whittingham Hospital Railway",
+      "ways": 1
+    },
+    {
+      "name": "Ulverstone and Lancaster Railway",
+      "ways": 1
+    },
+    {
+      "name": "Kendal and Windermere Railway",
+      "ways": 1
+    },
+    {
+      "name": "Somerset & Dorset Joint Railway",
+      "ways": 1
+    },
+    {
+      "name": "Lanchester Railway extension",
+      "ways": 1
+    },
+    {
+      "name": "Border Counties Railway",
+      "ways": 1
+    },
+    {
+      "name": "Barton and Immingham Light Railway",
+      "ways": 1
+    },
+    {
+      "name": "Tees Valley Railway",
+      "ways": 1
+    },
+    {
+      "name": "Kington and Presteigne Railway",
+      "ways": 1
+    },
+    {
+      "name": "Shropshire and Montgomeryshire Railway",
+      "ways": 1
+    },
+    {
+      "name": "Mold Railway",
+      "ways": 1
+    },
+    {
+      "name": "Wrexham and Minera Joint Railway",
+      "ways": 1
+    },
+    {
+      "name": "Cawood, Wistow and Selby Light Railway",
+      "ways": 1
+    },
+    {
+      "name": "South Shields, Marsden & Whitburn Colliery Railway",
+      "ways": 1
+    },
+    {
+      "name": "NER",
+      "ways": 1
+    },
+    {
+      "name": "Bowden Close Railway",
+      "ways": 1
+    },
+    {
+      "name": "South Durham Colliery Railway",
+      "ways": 1
+    },
+    {
+      "name": "Surtees Railway",
+      "ways": 1
+    },
+    {
+      "name": "Westerton Colliery Railway",
+      "ways": 1
+    },
+    {
+      "name": "Weardale Lead Company",
+      "ways": 1
+    },
+    {
+      "name": "Hetton Colliery Railway",
+      "ways": 1
+    },
+    {
+      "name": "North Sunderland Railway",
+      "ways": 1
+    }
+  ]
+}

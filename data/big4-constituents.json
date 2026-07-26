@@ -1,0 +1,2593 @@
+{
+  "generated_at": "2026-07-26T06:44:00.768Z",
+  "_notes": "Constituent-company -> Big Four group lookup for the historical map slider's 1923-1947 band. Built by scripts/build-big4-lookup.mjs (sole writer) from Wikipedia wikitext — deterministic, no AI, every entry traceable to a parsed wikilink. KEYS ARE NORMALIZED: use normalizeCompanyName() from scripts/lib/historical-era.mjs on the lookup side too, or the match rate silently collapses. `role` distinguishes the Act's own statutory constituent/subsidiary categories from `absorbed` (a company taken over by a constituent BEFORE 1923, sourced from the lower-precedence per-group list articles). This lookup is intentionally NOT transitive: OHM names lines after the company that built them, and resolving those to a 1923 group needs a built-by -> absorbed-by -> group chain that Wikidata only supports for some companies (3 of 5 sampled in Phase 1B), so a chain-walk would be confidently wrong rather than honestly incomplete. Per the locked decision the big4 band is KNOWN-ONLY: colour what resolves here, leave everything else neutral, never infer ownership from territory.",
+  "groups": {
+    "GWR": "Great Western Railway",
+    "LMS": "London, Midland and Scottish Railway",
+    "LNER": "London and North Eastern Railway",
+    "SR": "Southern Railway"
+  },
+  "stats": {
+    "total_companies": 322,
+    "from_act_schedule": 119,
+    "from_list_articles": 203,
+    "by_group": {
+      "SR": 32,
+      "GWR": 161,
+      "LMS": 71,
+      "LNER": 43
+    },
+    "joint_excluded": 15
+  },
+  "act_schedule": {
+    "SR": {
+      "constituents": [
+        "London and South Western Railway",
+        "London, Brighton and South Coast Railway",
+        "South Eastern Railway (England)",
+        "London, Chatham and Dover Railway",
+        "South Eastern and Chatham Railway"
+      ],
+      "subsidiaries": [
+        "Bridgwater Railway",
+        "Brighton and Dyke Railway",
+        "Freshwater, Yarmouth and Newport Railway",
+        "Hayling Railways",
+        "Isle of Wight Railway",
+        "Isle of Wight Central Railway",
+        "Lee-on-the-Solent Railway",
+        "London and Greenwich Railway",
+        "Mid-Kent Railway (Bromley to Saint Mary Cray)",
+        "North Cornwall Railway",
+        "Plymouth and Dartmoor Railway",
+        "Plymouth, Devonport and South Western Junction Railway",
+        "Sidmouth Railway",
+        "Victoria Station and Pimlico Railway"
+      ]
+    },
+    "GWR": {
+      "constituents": [
+        "Great Western Railway",
+        "Barry Railway",
+        "Cambrian Railways",
+        "Cardiff Railway",
+        "Rhymney Railway",
+        "Taff Vale Railway",
+        "Alexandra (Newport and South Wales) Docks and Railway"
+      ],
+      "subsidiaries": [
+        "Brecon and Merthyr Tydfil Junction Railway",
+        "Burry Port and Gwendreath Valley Railway",
+        "Cleobury Mortimer and Ditton Priors Light Railway",
+        "Didcot, Newbury and Southampton Railway",
+        "Exeter Railway",
+        "Forest of Dean Central Railway",
+        "Gwendreath Valleys Railway",
+        "Lampeter, Aberayron and New Quay Light Railway",
+        "Liskeard and Looe Railway",
+        "Llanelly and Mynydd Mawr Railway",
+        "Mawddwy Railway",
+        "Midland and South Western Junction Railway",
+        "Neath and Brecon Railway",
+        "Penarth Extension Railway",
+        "Penarth Harbour, Dock and Railway",
+        "Port Talbot Railway and Docks",
+        "Princetown Railway",
+        "Rhondda and Swansea Bay Railway",
+        "Ross and Monmouth Railway",
+        "South Wales Mineral Railway",
+        "Teign Valley Railway",
+        "Vale of Glamorgan Railway",
+        "Van Railway",
+        "Welshpool and Llanfair Light Railway",
+        "West Somerset Railway",
+        "Wrexham and Ellesmere Railway"
+      ]
+    },
+    "LMS": {
+      "constituents": [
+        "London and North Western Railway",
+        "Midland Railway",
+        "Lancashire and Yorkshire Railway",
+        "North Staffordshire Railway",
+        "Furness Railway",
+        "Caledonian Railway",
+        "Glasgow and South Western Railway",
+        "Highland Railway"
+      ],
+      "subsidiaries": [
+        "Arbroath and Forfar Railway",
+        "Brechin and Edzell District Railway",
+        "Callander and Oban Railway",
+        "Cathcart District Railway",
+        "Charnwood Forest Railway",
+        "Cleator and Workington Junction Railway",
+        "Cockermouth, Keswick and Penrith Railway",
+        "Dearne Valley Railway",
+        "Dornoch Light Railway",
+        "Dundee and Newtyle Railway",
+        "Harborne Railway",
+        "Killin Railway",
+        "Lanarkshire and Ayrshire Railway",
+        "Knott End Railway",
+        "Leek and Manifold Valley Light Railway",
+        "Maryport and Carlisle Railway",
+        "Mold and Denbigh Junction Railway",
+        "North and South Western Junction Railway",
+        "North London Railway",
+        "Portpatrick and Wigtownshire Joint Railways",
+        "Shropshire Union Railways and Canal",
+        "Solway Junction Railway",
+        "Stratford-upon-Avon and Midland Junction Railway",
+        "Tottenham and Forest Gate Railway",
+        "Wick and Lybster Light Railway",
+        "Wirral Railway",
+        "Yorkshire Dales Railway"
+      ]
+    },
+    "LNER": {
+      "constituents": [
+        "North Eastern Railway (United Kingdom)",
+        "Great Central Railway",
+        "Great Eastern Railway",
+        "Great Northern Railway (Great Britain)",
+        "Hull and Barnsley Railway",
+        "North British Railway",
+        "Great North of Scotland Railway"
+      ],
+      "subsidiaries": [
+        "Brackenhill Light Railway",
+        "Colne Valley and Halstead Railway",
+        "East and West Yorkshire Union Railways",
+        "East Lincolnshire Railway",
+        "Edinburgh and Bathgate Railway",
+        "Forcett Railway",
+        "Forth and Clyde Junction Railway",
+        "Gifford and Garvald Railway",
+        "Great North of England, Clarence and Hartlepool Junction Railway",
+        "Horncastle Railway",
+        "Humber Commercial Railway and Dock",
+        "Kilsyth and Bonnybridge Railway",
+        "Lauder Light Railway",
+        "London and Blackwall Railway",
+        "Mansfield Railway",
+        "Mid-Suffolk Light Railway",
+        "Newburgh and North Fife Railway",
+        "North Lindsey Light Railways",
+        "Nottingham and Grantham Railway and Canal",
+        "Nottingham Joint Station Committee",
+        "Nottingham Suburban Railway",
+        "Seaforth and Sefton Junction Railway",
+        "Sheffield District Railway",
+        "South Yorkshire Junction Railway",
+        "Stamford and Essendine Railway",
+        "West Riding and Grimsby Railway"
+      ]
+    }
+  },
+  "lookup": {
+    "london and south western railway": "SR",
+    "london brighton and south coast railway": "SR",
+    "south eastern railway": "SR",
+    "london chatham and dover railway": "SR",
+    "south eastern and chatham railway": "SR",
+    "bridgwater railway": "SR",
+    "brighton and dyke railway": "SR",
+    "freshwater yarmouth and newport railway": "SR",
+    "hayling railways": "SR",
+    "isle of wight railway": "SR",
+    "isle of wight central railway": "SR",
+    "lee on the": "SR",
+    "london and greenwich railway": "SR",
+    "north cornwall railway": "SR",
+    "plymouth and dartmoor railway": "SR",
+    "plymouth devonport and south western junction railway": "SR",
+    "sidmouth railway": "SR",
+    "victoria station and pimlico railway": "SR",
+    "great western railway": "GWR",
+    "barry railway": "GWR",
+    "cambrian railways": "GWR",
+    "cardiff railway": "GWR",
+    "rhymney railway": "GWR",
+    "taff vale railway": "GWR",
+    "alexandra docks and railway": "GWR",
+    "brecon and merthyr tydfil junction railway": "GWR",
+    "burry port and gwendreath valley railway": "GWR",
+    "cleobury mortimer and ditton priors light railway": "GWR",
+    "didcot newbury and southampton railway": "GWR",
+    "exeter railway": "GWR",
+    "forest of dean central railway": "GWR",
+    "gwendreath valleys railway": "GWR",
+    "lampeter aberayron and new quay light railway": "GWR",
+    "liskeard and looe railway": "GWR",
+    "llanelly and mynydd mawr railway": "GWR",
+    "mawddwy railway": "GWR",
+    "midland and south western junction railway": "GWR",
+    "neath and brecon railway": "GWR",
+    "penarth extension railway": "GWR",
+    "penarth harbour dock and railway": "GWR",
+    "port talbot railway and docks": "GWR",
+    "princetown railway": "GWR",
+    "rhondda and swansea bay railway": "GWR",
+    "ross and monmouth railway": "GWR",
+    "south wales mineral railway": "GWR",
+    "teign valley railway": "GWR",
+    "vale of glamorgan railway": "GWR",
+    "van railway": "GWR",
+    "welshpool and llanfair light railway": "GWR",
+    "west somerset railway": "GWR",
+    "wrexham and ellesmere railway": "GWR",
+    "london and north western railway": "LMS",
+    "midland railway": "LMS",
+    "lancashire and yorkshire railway": "LMS",
+    "north staffordshire railway": "LMS",
+    "furness railway": "LMS",
+    "caledonian railway": "LMS",
+    "glasgow and south western railway": "LMS",
+    "highland railway": "LMS",
+    "arbroath and forfar railway": "LMS",
+    "brechin and edzell district railway": "LMS",
+    "callander and oban railway": "LMS",
+    "cathcart district railway": "LMS",
+    "charnwood forest railway": "LMS",
+    "cleator and workington junction railway": "LMS",
+    "cockermouth keswick and penrith railway": "LMS",
+    "dearne valley railway": "LMS",
+    "dornoch light railway": "LMS",
+    "dundee and newtyle railway": "LMS",
+    "harborne railway": "LMS",
+    "killin railway": "LMS",
+    "lanarkshire and ayrshire railway": "LMS",
+    "knott end railway": "LMS",
+    "leek and manifold valley light railway": "LMS",
+    "maryport and carlisle railway": "LMS",
+    "mold and denbigh junction railway": "LMS",
+    "north and south western junction railway": "LMS",
+    "north london railway": "LMS",
+    "portpatrick and wigtownshire joint railways": "LMS",
+    "shropshire union railways and canal": "LMS",
+    "solway junction railway": "LMS",
+    "stratford upon": "LMS",
+    "tottenham and forest gate railway": "LMS",
+    "wick and lybster light railway": "LMS",
+    "wirral railway": "LMS",
+    "yorkshire dales railway": "LMS",
+    "north eastern railway": "LNER",
+    "great central railway": "LNER",
+    "great eastern railway": "LNER",
+    "great northern railway": "LNER",
+    "hull and barnsley railway": "LNER",
+    "north british railway": "LNER",
+    "great north of scotland railway": "LNER",
+    "brackenhill light railway": "LNER",
+    "colne valley and halstead railway": "LNER",
+    "east and west yorkshire union railways": "LNER",
+    "east lincolnshire railway": "LNER",
+    "edinburgh and bathgate railway": "LNER",
+    "forcett railway": "LNER",
+    "forth and clyde junction railway": "LNER",
+    "gifford and garvald railway": "LNER",
+    "great north of england clarence and hartlepool junction railway": "LNER",
+    "horncastle railway": "LNER",
+    "humber commercial railway and dock": "LNER",
+    "kilsyth and bonnybridge railway": "LNER",
+    "lauder light railway": "LNER",
+    "london and blackwall railway": "LNER",
+    "mansfield railway": "LNER",
+    "newburgh and north fife railway": "LNER",
+    "north lindsey light railways": "LNER",
+    "nottingham and grantham railway and canal": "LNER",
+    "nottingham joint station committee": "LNER",
+    "nottingham suburban railway": "LNER",
+    "seaforth and sefton junction railway": "LNER",
+    "sheffield district railway": "LNER",
+    "south yorkshire junction railway": "LNER",
+    "stamford and essendine railway": "LNER",
+    "west riding and grimsby railway": "LNER",
+    "cheltenham and great western union railway": "GWR",
+    "oxford railway": "GWR",
+    "oxford and rugby railway": "GWR",
+    "berks and hants railway": "GWR",
+    "monmouth and hereford railway": "GWR",
+    "great western and uxbridge railway": "GWR",
+    "birmingham and oxford junction railway": "GWR",
+    "wilts somerset and weymouth railway": "GWR",
+    "shrewsbury and birmingham railway": "GWR",
+    "shrewsbury and chester railway": "GWR",
+    "shrewsbury oswestry and chester junction railway": "GWR",
+    "north wales mineral railway": "GWR",
+    "hereford ross and gloucester railway": "GWR",
+    "south wales railway": "GWR",
+    "forest of dean railway": "GWR",
+    "bullo pill railway": "GWR",
+    "west midland railway": "GWR",
+    "newport abergavenny and hereford railway": "GWR",
+    "oxford worcester and wolverhampton railway": "GWR",
+    "stratford and moreton railway": "GWR",
+    "worcester and hereford railway": "GWR",
+    "vale of neath railway": "GWR",
+    "swansea and neath railway": "GWR",
+    "aberdare valley railway": "GWR",
+    "wellington and drayton railway": "GWR",
+    "wycombe railway": "GWR",
+    "bristol and south wales union railway": "GWR",
+    "tenbury and bewdley railway": "GWR",
+    "stourbridge railway": "GWR",
+    "severn valley railway": "GWR",
+    "great western and brentford railway": "GWR",
+    "wallingford and watlington railway": "GWR",
+    "llanelly railway": "GWR",
+    "briton ferry dock and railway": "GWR",
+    "gloucester and dean forest railway": "GWR",
+    "east somerset railway": "GWR",
+    "burton on water railway": "GWR",
+    "bristol and exeter railway": "GWR",
+    "chard and taunton railway": "GWR",
+    "chedder valley and yatton railway": "GWR",
+    "exe valley railway": "GWR",
+    "south devon railway company": "GWR",
+    "dartmouth and torbay railway": "GWR",
+    "south devon and tavistock railway": "GWR",
+    "launceston and south devon railway": "GWR",
+    "moretonhampstead and south devon railway": "GWR",
+    "west cornwall railway": "GWR",
+    "hayle railway": "GWR",
+    "pontypool caerleon and newport railway": "GWR",
+    "bala and dolgelley railway": "GWR",
+    "monmouthshire railway and canal company": "GWR",
+    "culm valley light railway": "GWR",
+    "mitcheldean road and forest of dean junction railway": "GWR",
+    "ely and clydach valleys railway": "GWR",
+    "carmarthen and cardigan railway": "GWR",
+    "berks and hants extension railway": "GWR",
+    "swindon and highworth railway": "GWR",
+    "torbay and brixham railway": "GWR",
+    "stratford on avon railway": "GWR",
+    "alcester railway": "GWR",
+    "watlington and princes risborough railway": "GWR",
+    "llynvi and ogmore railway": "GWR",
+    "llynvi valley railway": "GWR",
+    "duffryn llynvi and porthcawl railway": "GWR",
+    "ogmore valley railway": "GWR",
+    "ely valley extension railway": "GWR",
+    "cardiff and ogmore valley railway": "GWR",
+    "coleford railway": "GWR",
+    "bristol and portishead pier and railway": "GWR",
+    "bristol and north somerset railway": "GWR",
+    "faringdon railway": "GWR",
+    "coleford monmouth usk and pontypool railway": "GWR",
+    "worcester bromyard and leominster railway": "GWR",
+    "leominster and bromyard railway": "GWR",
+    "kingsbridge and salcombe railway": "GWR",
+    "cornwall railway": "GWR",
+    "whitland and cardigan railway": "GWR",
+    "witney railway": "GWR",
+    "east gloucestershire railway": "GWR",
+    "calne railway": "GWR",
+    "newent railway": "GWR",
+    "ross and ledbury railway": "GWR",
+    "wellington and severn junction railway": "GWR",
+    "east usk railway": "GWR",
+    "oldbury railway": "GWR",
+    "tiverton and north devon railway": "GWR",
+    "cornwall minerals railway": "GWR",
+    "newquay and cornwall junction railway": "GWR",
+    "lostwithiel and fowey railway": "GWR",
+    "abbotsbury railway": "GWR",
+    "corwen and bala railway": "GWR",
+    "llangollen and corwen railway": "GWR",
+    "marlborough railway": "GWR",
+    "milford railway": "GWR",
+    "much wenlock and severn junction railway": "GWR",
+    "vale of llangollen railway": "GWR",
+    "wenlock railway": "GWR",
+    "banbury and cheltenham direct railway": "GWR",
+    "buckfastleigh totnes and south devon railway": "GWR",
+    "great marlow railway": "GWR",
+    "kington and eardisley railway": "GWR",
+    "nantwich and market drayton railway": "GWR",
+    "pembroke and tenby railway": "GWR",
+    "woodstock railway": "GWR",
+    "minehead railway": "GWR",
+    "north pembrokeshire and fishguard railway": "GWR",
+    "narberth road and maenclochog railway": "GWR",
+    "helston railway": "GWR",
+    "leominster and kington railway": "GWR",
+    "golden valley railway": "GWR",
+    "birmingham and henley in": "GWR",
+    "birmingham north warwickshire and stratford on avon railway": "GWR",
+    "staines and west drayton railway": "GWR",
+    "bridport railway": "GWR",
+    "devon and somerset railway": "GWR",
+    "ely valley railway": "GWR",
+    "abingdon railway": "GWR",
+    "lambourn valley railway": "GWR",
+    "wye valley railway": "GWR",
+    "liskeard and caradon railway": "GWR",
+    "bala and festiniog railway": "GWR",
+    "festiniog and blaenau railway": "GWR",
+    "manchester and milford railway": "GWR",
+    "cleobury mortimer and ditton priors railway": "GWR",
+    "port talbot railway": "GWR",
+    "powlesland and mason": "GWR",
+    "corris railway": "GWR",
+    "list of early british railway companies": "GWR",
+    "shropshire union railways and canal company": "LMS",
+    "portpatrick and wigtownshire joint railway": "LMS",
+    "carlisle citadel railway station": "LMS",
+    "ashby and nuneaton railway": "LMS",
+    "enderby railway": "LMS",
+    "lancashire union railway": "LMS",
+    "north union railway": "LMS",
+    "preston and longridge railway": "LMS",
+    "preston and wyre joint railway": "LMS",
+    "furness and midland joint railway": "LMS",
+    "whitehaven cleator and egremont railway": "LMS",
+    "glasgow barrhead and kilmarnock joint railway": "LMS",
+    "glasgow and paisley joint railway": "LMS",
+    "city of glasgow union railway": "LMS",
+    "dumbarton and balloch joint railway": "LMS",
+    "great central hull and barnsley and midland joint railway": "LMS",
+    "macclesfield bollington and marple railway": "LMS",
+    "halifax and ovenden railway": "LMS",
+    "halifax high level railway": "LMS",
+    "methley joint railway": "LMS",
+    "otley and ilkley joint railway": "LMS",
+    "birkenhead railway": "LMS",
+    "brecon and merthyr railway and london and north western joint railway": "LMS",
+    "brynmawr and western valleys railway": "LMS",
+    "clifton extension railway": "LMS",
+    "halesowen railway": "LMS",
+    "nantybwch and rhymney railway": "LMS",
+    "severn and wye railway": "LMS",
+    "shrewsbury and hereford railway": "LMS",
+    "tenbury railway": "LMS",
+    "vale of towy railway": "LMS",
+    "west london railway": "LMS",
+    "whitechapel and bow railway": "LMS",
+    "dundalk newry and greenore railway": "LMS",
+    "london electric railway": "LMS",
+    "great southern railways": "LMS",
+    "north lindsey light railway": "LNER",
+    "edinburgh and northern railway": "LNER",
+    "glasgow and milngavie junction railway": "LNER",
+    "great northern and great eastern joint railway": "LNER",
+    "hull and barnsley and great central joint railway": "LNER",
+    "caledonian and dunbartonshire junction railway": "LNER",
+    "great central and north staffordshire joint railway": "LNER",
+    "halifax and ovenden junction railway": "LNER",
+    "methley railway": "LNER",
+    "otley and ilkley railway": "LNER",
+    "great western and great central joint railway": "LNER",
+    "hayling railway": "SR",
+    "cranbrook and paddock wood railway": "SR",
+    "crowhurst sidley and bexhill railway": "SR",
+    "lynton and barnstaple railway": "SR",
+    "croydon and oxted joint railway": "SR",
+    "dover and deal railway": "SR",
+    "epsom and leatherhead railway": "SR",
+    "portsmouth and ryde joint railway": "SR",
+    "tooting merton and wimbledon railway": "SR",
+    "woodside and south croydon railway": "SR",
+    "easton and church hope railway": "SR",
+    "west london extension railway": "SR",
+    "weymouth and portland railway": "SR",
+    "list of railway companies involved in the 1923 grouping": "SR"
+  },
+  "joint_railways": {
+    "mid": {
+      "name": "Mid-Kent Railway (Bromley to Saint Mary Cray)",
+      "groups": [
+        "LNER",
+        "SR"
+      ]
+    },
+    "wrexham and minera railway": {
+      "name": "Wrexham and Minera Railway",
+      "groups": [
+        "GWR",
+        "LMS"
+      ]
+    },
+    "axholme joint railway": {
+      "name": "Axholme Joint Railway",
+      "groups": [
+        "LMS",
+        "LNER"
+      ]
+    },
+    "dundee and arbroath railway": {
+      "name": "Dundee and Arbroath Railway",
+      "groups": [
+        "LMS",
+        "LNER"
+      ]
+    },
+    "great central and midland joint railway": {
+      "name": "Great Central and Midland Joint Railway",
+      "groups": [
+        "LMS",
+        "LNER"
+      ]
+    },
+    "great northern and london and north western joint railway": {
+      "name": "Great Northern and London and North Western Joint Railway",
+      "groups": [
+        "LMS",
+        "LNER"
+      ]
+    },
+    "manchester south junction and altrincham railway": {
+      "name": "Manchester South Junction and Altrincham Railway",
+      "groups": [
+        "LMS",
+        "LNER"
+      ]
+    },
+    "midland and great northern joint railway": {
+      "name": "Midland and Great Northern Joint Railway",
+      "groups": [
+        "LMS",
+        "LNER"
+      ]
+    },
+    "norfolk and suffolk joint railway": {
+      "name": "Norfolk and Suffolk Joint Railway",
+      "groups": [
+        "LMS",
+        "LNER"
+      ]
+    },
+    "oldham ashton and guide bridge railway": {
+      "name": "Oldham, Ashton and Guide Bridge Railway",
+      "groups": [
+        "LMS",
+        "LNER"
+      ]
+    },
+    "south yorkshire joint railway": {
+      "name": "South Yorkshire Joint Railway",
+      "groups": [
+        "LMS",
+        "LNER"
+      ]
+    },
+    "swinton and knottingley joint railway": {
+      "name": "Swinton and Knottingley Joint Railway",
+      "groups": [
+        "LMS",
+        "LNER"
+      ]
+    },
+    "tottenham and hampstead junction railway": {
+      "name": "Tottenham and Hampstead Junction Railway",
+      "groups": [
+        "LMS",
+        "LNER"
+      ]
+    },
+    "somerset and dorset joint railway": {
+      "name": "Somerset and Dorset Joint Railway",
+      "groups": [
+        "LMS",
+        "SR"
+      ]
+    },
+    "east london railway": {
+      "name": "East London Railway",
+      "groups": [
+        "LNER",
+        "SR"
+      ]
+    }
+  },
+  "companies": {
+    "london and south western railway": {
+      "name": "London and South Western Railway",
+      "group": "SR",
+      "role": "constituent",
+      "source": "railways_act_1921"
+    },
+    "london brighton and south coast railway": {
+      "name": "London, Brighton and South Coast Railway",
+      "group": "SR",
+      "role": "constituent",
+      "source": "railways_act_1921"
+    },
+    "south eastern railway": {
+      "name": "South Eastern Railway (England)",
+      "group": "SR",
+      "role": "constituent",
+      "source": "railways_act_1921"
+    },
+    "london chatham and dover railway": {
+      "name": "London, Chatham and Dover Railway",
+      "group": "SR",
+      "role": "constituent",
+      "source": "railways_act_1921"
+    },
+    "south eastern and chatham railway": {
+      "name": "South Eastern and Chatham Railway",
+      "group": "SR",
+      "role": "constituent",
+      "source": "railways_act_1921"
+    },
+    "bridgwater railway": {
+      "name": "Bridgwater Railway",
+      "group": "SR",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "brighton and dyke railway": {
+      "name": "Brighton and Dyke Railway",
+      "group": "SR",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "freshwater yarmouth and newport railway": {
+      "name": "Freshwater, Yarmouth and Newport Railway",
+      "group": "SR",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "hayling railways": {
+      "name": "Hayling Railways",
+      "group": "SR",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "isle of wight railway": {
+      "name": "Isle of Wight Railway",
+      "group": "SR",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "isle of wight central railway": {
+      "name": "Isle of Wight Central Railway",
+      "group": "SR",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "lee on the": {
+      "name": "Lee-on-the-Solent Railway",
+      "group": "SR",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "london and greenwich railway": {
+      "name": "London and Greenwich Railway",
+      "group": "SR",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "mid": {
+      "name": "Mid-Kent Railway (Bromley to Saint Mary Cray)",
+      "group": "SR",
+      "role": "subsidiary",
+      "source": "railways_act_1921",
+      "joint": true,
+      "groups": [
+        "LNER",
+        "SR"
+      ]
+    },
+    "north cornwall railway": {
+      "name": "North Cornwall Railway",
+      "group": "SR",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "plymouth and dartmoor railway": {
+      "name": "Plymouth and Dartmoor Railway",
+      "group": "SR",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "plymouth devonport and south western junction railway": {
+      "name": "Plymouth, Devonport and South Western Junction Railway",
+      "group": "SR",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "sidmouth railway": {
+      "name": "Sidmouth Railway",
+      "group": "SR",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "victoria station and pimlico railway": {
+      "name": "Victoria Station and Pimlico Railway",
+      "group": "SR",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "great western railway": {
+      "name": "Great Western Railway",
+      "group": "GWR",
+      "role": "constituent",
+      "source": "railways_act_1921"
+    },
+    "barry railway": {
+      "name": "Barry Railway",
+      "group": "GWR",
+      "role": "constituent",
+      "source": "railways_act_1921"
+    },
+    "cambrian railways": {
+      "name": "Cambrian Railways",
+      "group": "GWR",
+      "role": "constituent",
+      "source": "railways_act_1921"
+    },
+    "cardiff railway": {
+      "name": "Cardiff Railway",
+      "group": "GWR",
+      "role": "constituent",
+      "source": "railways_act_1921"
+    },
+    "rhymney railway": {
+      "name": "Rhymney Railway",
+      "group": "GWR",
+      "role": "constituent",
+      "source": "railways_act_1921"
+    },
+    "taff vale railway": {
+      "name": "Taff Vale Railway",
+      "group": "GWR",
+      "role": "constituent",
+      "source": "railways_act_1921"
+    },
+    "alexandra docks and railway": {
+      "name": "Alexandra (Newport and South Wales) Docks and Railway",
+      "group": "GWR",
+      "role": "constituent",
+      "source": "railways_act_1921"
+    },
+    "brecon and merthyr tydfil junction railway": {
+      "name": "Brecon and Merthyr Tydfil Junction Railway",
+      "group": "GWR",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "burry port and gwendreath valley railway": {
+      "name": "Burry Port and Gwendreath Valley Railway",
+      "group": "GWR",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "cleobury mortimer and ditton priors light railway": {
+      "name": "Cleobury Mortimer and Ditton Priors Light Railway",
+      "group": "GWR",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "didcot newbury and southampton railway": {
+      "name": "Didcot, Newbury and Southampton Railway",
+      "group": "GWR",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "exeter railway": {
+      "name": "Exeter Railway",
+      "group": "GWR",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "forest of dean central railway": {
+      "name": "Forest of Dean Central Railway",
+      "group": "GWR",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "gwendreath valleys railway": {
+      "name": "Gwendreath Valleys Railway",
+      "group": "GWR",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "lampeter aberayron and new quay light railway": {
+      "name": "Lampeter, Aberayron and New Quay Light Railway",
+      "group": "GWR",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "liskeard and looe railway": {
+      "name": "Liskeard and Looe Railway",
+      "group": "GWR",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "llanelly and mynydd mawr railway": {
+      "name": "Llanelly and Mynydd Mawr Railway",
+      "group": "GWR",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "mawddwy railway": {
+      "name": "Mawddwy Railway",
+      "group": "GWR",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "midland and south western junction railway": {
+      "name": "Midland and South Western Junction Railway",
+      "group": "GWR",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "neath and brecon railway": {
+      "name": "Neath and Brecon Railway",
+      "group": "GWR",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "penarth extension railway": {
+      "name": "Penarth Extension Railway",
+      "group": "GWR",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "penarth harbour dock and railway": {
+      "name": "Penarth Harbour, Dock and Railway",
+      "group": "GWR",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "port talbot railway and docks": {
+      "name": "Port Talbot Railway and Docks",
+      "group": "GWR",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "princetown railway": {
+      "name": "Princetown Railway",
+      "group": "GWR",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "rhondda and swansea bay railway": {
+      "name": "Rhondda and Swansea Bay Railway",
+      "group": "GWR",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "ross and monmouth railway": {
+      "name": "Ross and Monmouth Railway",
+      "group": "GWR",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "south wales mineral railway": {
+      "name": "South Wales Mineral Railway",
+      "group": "GWR",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "teign valley railway": {
+      "name": "Teign Valley Railway",
+      "group": "GWR",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "vale of glamorgan railway": {
+      "name": "Vale of Glamorgan Railway",
+      "group": "GWR",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "van railway": {
+      "name": "Van Railway",
+      "group": "GWR",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "welshpool and llanfair light railway": {
+      "name": "Welshpool and Llanfair Light Railway",
+      "group": "GWR",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "west somerset railway": {
+      "name": "West Somerset Railway",
+      "group": "GWR",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "wrexham and ellesmere railway": {
+      "name": "Wrexham and Ellesmere Railway",
+      "group": "GWR",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "london and north western railway": {
+      "name": "London and North Western Railway",
+      "group": "LMS",
+      "role": "constituent",
+      "source": "railways_act_1921"
+    },
+    "midland railway": {
+      "name": "Midland Railway",
+      "group": "LMS",
+      "role": "constituent",
+      "source": "railways_act_1921"
+    },
+    "lancashire and yorkshire railway": {
+      "name": "Lancashire and Yorkshire Railway",
+      "group": "LMS",
+      "role": "constituent",
+      "source": "railways_act_1921"
+    },
+    "north staffordshire railway": {
+      "name": "North Staffordshire Railway",
+      "group": "LMS",
+      "role": "constituent",
+      "source": "railways_act_1921"
+    },
+    "furness railway": {
+      "name": "Furness Railway",
+      "group": "LMS",
+      "role": "constituent",
+      "source": "railways_act_1921"
+    },
+    "caledonian railway": {
+      "name": "Caledonian Railway",
+      "group": "LMS",
+      "role": "constituent",
+      "source": "railways_act_1921"
+    },
+    "glasgow and south western railway": {
+      "name": "Glasgow and South Western Railway",
+      "group": "LMS",
+      "role": "constituent",
+      "source": "railways_act_1921"
+    },
+    "highland railway": {
+      "name": "Highland Railway",
+      "group": "LMS",
+      "role": "constituent",
+      "source": "railways_act_1921"
+    },
+    "arbroath and forfar railway": {
+      "name": "Arbroath and Forfar Railway",
+      "group": "LMS",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "brechin and edzell district railway": {
+      "name": "Brechin and Edzell District Railway",
+      "group": "LMS",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "callander and oban railway": {
+      "name": "Callander and Oban Railway",
+      "group": "LMS",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "cathcart district railway": {
+      "name": "Cathcart District Railway",
+      "group": "LMS",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "charnwood forest railway": {
+      "name": "Charnwood Forest Railway",
+      "group": "LMS",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "cleator and workington junction railway": {
+      "name": "Cleator and Workington Junction Railway",
+      "group": "LMS",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "cockermouth keswick and penrith railway": {
+      "name": "Cockermouth, Keswick and Penrith Railway",
+      "group": "LMS",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "dearne valley railway": {
+      "name": "Dearne Valley Railway",
+      "group": "LMS",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "dornoch light railway": {
+      "name": "Dornoch Light Railway",
+      "group": "LMS",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "dundee and newtyle railway": {
+      "name": "Dundee and Newtyle Railway",
+      "group": "LMS",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "harborne railway": {
+      "name": "Harborne Railway",
+      "group": "LMS",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "killin railway": {
+      "name": "Killin Railway",
+      "group": "LMS",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "lanarkshire and ayrshire railway": {
+      "name": "Lanarkshire and Ayrshire Railway",
+      "group": "LMS",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "knott end railway": {
+      "name": "Knott End Railway",
+      "group": "LMS",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "leek and manifold valley light railway": {
+      "name": "Leek and Manifold Valley Light Railway",
+      "group": "LMS",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "maryport and carlisle railway": {
+      "name": "Maryport and Carlisle Railway",
+      "group": "LMS",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "mold and denbigh junction railway": {
+      "name": "Mold and Denbigh Junction Railway",
+      "group": "LMS",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "north and south western junction railway": {
+      "name": "North and South Western Junction Railway",
+      "group": "LMS",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "north london railway": {
+      "name": "North London Railway",
+      "group": "LMS",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "portpatrick and wigtownshire joint railways": {
+      "name": "Portpatrick and Wigtownshire Joint Railways",
+      "group": "LMS",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "shropshire union railways and canal": {
+      "name": "Shropshire Union Railways and Canal",
+      "group": "LMS",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "solway junction railway": {
+      "name": "Solway Junction Railway",
+      "group": "LMS",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "stratford upon": {
+      "name": "Stratford-upon-Avon and Midland Junction Railway",
+      "group": "LMS",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "tottenham and forest gate railway": {
+      "name": "Tottenham and Forest Gate Railway",
+      "group": "LMS",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "wick and lybster light railway": {
+      "name": "Wick and Lybster Light Railway",
+      "group": "LMS",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "wirral railway": {
+      "name": "Wirral Railway",
+      "group": "LMS",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "yorkshire dales railway": {
+      "name": "Yorkshire Dales Railway",
+      "group": "LMS",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "north eastern railway": {
+      "name": "North Eastern Railway (United Kingdom)",
+      "group": "LNER",
+      "role": "constituent",
+      "source": "railways_act_1921"
+    },
+    "great central railway": {
+      "name": "Great Central Railway",
+      "group": "LNER",
+      "role": "constituent",
+      "source": "railways_act_1921"
+    },
+    "great eastern railway": {
+      "name": "Great Eastern Railway",
+      "group": "LNER",
+      "role": "constituent",
+      "source": "railways_act_1921"
+    },
+    "great northern railway": {
+      "name": "Great Northern Railway (Great Britain)",
+      "group": "LNER",
+      "role": "constituent",
+      "source": "railways_act_1921"
+    },
+    "hull and barnsley railway": {
+      "name": "Hull and Barnsley Railway",
+      "group": "LNER",
+      "role": "constituent",
+      "source": "railways_act_1921"
+    },
+    "north british railway": {
+      "name": "North British Railway",
+      "group": "LNER",
+      "role": "constituent",
+      "source": "railways_act_1921"
+    },
+    "great north of scotland railway": {
+      "name": "Great North of Scotland Railway",
+      "group": "LNER",
+      "role": "constituent",
+      "source": "railways_act_1921"
+    },
+    "brackenhill light railway": {
+      "name": "Brackenhill Light Railway",
+      "group": "LNER",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "colne valley and halstead railway": {
+      "name": "Colne Valley and Halstead Railway",
+      "group": "LNER",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "east and west yorkshire union railways": {
+      "name": "East and West Yorkshire Union Railways",
+      "group": "LNER",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "east lincolnshire railway": {
+      "name": "East Lincolnshire Railway",
+      "group": "LNER",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "edinburgh and bathgate railway": {
+      "name": "Edinburgh and Bathgate Railway",
+      "group": "LNER",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "forcett railway": {
+      "name": "Forcett Railway",
+      "group": "LNER",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "forth and clyde junction railway": {
+      "name": "Forth and Clyde Junction Railway",
+      "group": "LNER",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "gifford and garvald railway": {
+      "name": "Gifford and Garvald Railway",
+      "group": "LNER",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "great north of england clarence and hartlepool junction railway": {
+      "name": "Great North of England, Clarence and Hartlepool Junction Railway",
+      "group": "LNER",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "horncastle railway": {
+      "name": "Horncastle Railway",
+      "group": "LNER",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "humber commercial railway and dock": {
+      "name": "Humber Commercial Railway and Dock",
+      "group": "LNER",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "kilsyth and bonnybridge railway": {
+      "name": "Kilsyth and Bonnybridge Railway",
+      "group": "LNER",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "lauder light railway": {
+      "name": "Lauder Light Railway",
+      "group": "LNER",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "london and blackwall railway": {
+      "name": "London and Blackwall Railway",
+      "group": "LNER",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "mansfield railway": {
+      "name": "Mansfield Railway",
+      "group": "LNER",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "newburgh and north fife railway": {
+      "name": "Newburgh and North Fife Railway",
+      "group": "LNER",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "north lindsey light railways": {
+      "name": "North Lindsey Light Railways",
+      "group": "LNER",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "nottingham and grantham railway and canal": {
+      "name": "Nottingham and Grantham Railway and Canal",
+      "group": "LNER",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "nottingham joint station committee": {
+      "name": "Nottingham Joint Station Committee",
+      "group": "LNER",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "nottingham suburban railway": {
+      "name": "Nottingham Suburban Railway",
+      "group": "LNER",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "seaforth and sefton junction railway": {
+      "name": "Seaforth and Sefton Junction Railway",
+      "group": "LNER",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "sheffield district railway": {
+      "name": "Sheffield District Railway",
+      "group": "LNER",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "south yorkshire junction railway": {
+      "name": "South Yorkshire Junction Railway",
+      "group": "LNER",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "stamford and essendine railway": {
+      "name": "Stamford and Essendine Railway",
+      "group": "LNER",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "west riding and grimsby railway": {
+      "name": "West Riding and Grimsby Railway",
+      "group": "LNER",
+      "role": "subsidiary",
+      "source": "railways_act_1921"
+    },
+    "cheltenham and great western union railway": {
+      "name": "Cheltenham and Great Western Union Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "oxford railway": {
+      "name": "Oxford Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "oxford and rugby railway": {
+      "name": "Oxford and Rugby Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "berks and hants railway": {
+      "name": "Berks and Hants Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "monmouth and hereford railway": {
+      "name": "Monmouth and Hereford Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "great western and uxbridge railway": {
+      "name": "Great Western and Uxbridge Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "birmingham and oxford junction railway": {
+      "name": "Birmingham and Oxford Junction Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "wilts somerset and weymouth railway": {
+      "name": "Wilts, Somerset and Weymouth Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "shrewsbury and birmingham railway": {
+      "name": "Shrewsbury and Birmingham Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "shrewsbury and chester railway": {
+      "name": "Shrewsbury and Chester Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "shrewsbury oswestry and chester junction railway": {
+      "name": "Shrewsbury, Oswestry and Chester Junction Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "north wales mineral railway": {
+      "name": "North Wales Mineral Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "hereford ross and gloucester railway": {
+      "name": "Hereford, Ross and Gloucester Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "south wales railway": {
+      "name": "South Wales Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "forest of dean railway": {
+      "name": "Forest of Dean Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "bullo pill railway": {
+      "name": "Bullo Pill Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "west midland railway": {
+      "name": "West Midland Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "newport abergavenny and hereford railway": {
+      "name": "Newport, Abergavenny and Hereford Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "oxford worcester and wolverhampton railway": {
+      "name": "Oxford, Worcester and Wolverhampton Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "stratford and moreton railway": {
+      "name": "Stratford and Moreton Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "worcester and hereford railway": {
+      "name": "Worcester and Hereford Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "vale of neath railway": {
+      "name": "Vale of Neath Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "swansea and neath railway": {
+      "name": "Swansea and Neath Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "aberdare valley railway": {
+      "name": "Aberdare Valley Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "wellington and drayton railway": {
+      "name": "Wellington and Drayton Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "wycombe railway": {
+      "name": "Wycombe Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "bristol and south wales union railway": {
+      "name": "Bristol and South Wales Union Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "tenbury and bewdley railway": {
+      "name": "Tenbury and Bewdley Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "stourbridge railway": {
+      "name": "Stourbridge Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "severn valley railway": {
+      "name": "Severn Valley Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "great western and brentford railway": {
+      "name": "Great Western and Brentford Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "wallingford and watlington railway": {
+      "name": "Wallingford and Watlington Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "wrexham and minera railway": {
+      "name": "Wrexham and Minera Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article",
+      "joint": true,
+      "groups": [
+        "GWR",
+        "LMS"
+      ]
+    },
+    "llanelly railway": {
+      "name": "Llanelly Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "briton ferry dock and railway": {
+      "name": "Briton Ferry Dock and Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "gloucester and dean forest railway": {
+      "name": "Gloucester and Dean Forest Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "east somerset railway": {
+      "name": "East Somerset Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "burton on water railway": {
+      "name": "Burton on Water Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "bristol and exeter railway": {
+      "name": "Bristol and Exeter Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "chard and taunton railway": {
+      "name": "Chard and Taunton Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "chedder valley and yatton railway": {
+      "name": "Chedder Valley and Yatton Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "exe valley railway": {
+      "name": "Exe Valley Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "south devon railway company": {
+      "name": "South Devon Railway Company",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "dartmouth and torbay railway": {
+      "name": "Dartmouth and Torbay Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "south devon and tavistock railway": {
+      "name": "South Devon and Tavistock Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "launceston and south devon railway": {
+      "name": "Launceston and South Devon Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "moretonhampstead and south devon railway": {
+      "name": "Moretonhampstead and South Devon Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "west cornwall railway": {
+      "name": "West Cornwall Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "hayle railway": {
+      "name": "Hayle Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "pontypool caerleon and newport railway": {
+      "name": "Pontypool, Caerleon and Newport Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "bala and dolgelley railway": {
+      "name": "Bala and Dolgelley Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "monmouthshire railway and canal company": {
+      "name": "Monmouthshire Railway and Canal Company",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "culm valley light railway": {
+      "name": "Culm Valley Light Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "mitcheldean road and forest of dean junction railway": {
+      "name": "Mitcheldean Road and Forest of Dean Junction Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "ely and clydach valleys railway": {
+      "name": "Ely and Clydach Valleys Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "carmarthen and cardigan railway": {
+      "name": "Carmarthen and Cardigan Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "berks and hants extension railway": {
+      "name": "Berks and Hants Extension Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "swindon and highworth railway": {
+      "name": "Swindon and Highworth Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "torbay and brixham railway": {
+      "name": "Torbay and Brixham Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "stratford on avon railway": {
+      "name": "Stratford on Avon Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "alcester railway": {
+      "name": "Alcester Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "watlington and princes risborough railway": {
+      "name": "Watlington and Princes Risborough Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "llynvi and ogmore railway": {
+      "name": "Llynvi and Ogmore Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "llynvi valley railway": {
+      "name": "Llynvi Valley Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "duffryn llynvi and porthcawl railway": {
+      "name": "Duffryn, Llynvi and Porthcawl Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "ogmore valley railway": {
+      "name": "Ogmore Valley Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "ely valley extension railway": {
+      "name": "Ely Valley Extension Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "cardiff and ogmore valley railway": {
+      "name": "Cardiff and Ogmore Valley Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "coleford railway": {
+      "name": "Coleford Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "bristol and portishead pier and railway": {
+      "name": "Bristol and Portishead Pier and Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "bristol and north somerset railway": {
+      "name": "Bristol and North Somerset Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "faringdon railway": {
+      "name": "Faringdon Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "coleford monmouth usk and pontypool railway": {
+      "name": "Coleford, Monmouth, Usk and Pontypool Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "worcester bromyard and leominster railway": {
+      "name": "Worcester, Bromyard and Leominster Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "leominster and bromyard railway": {
+      "name": "Leominster and Bromyard Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "kingsbridge and salcombe railway": {
+      "name": "Kingsbridge and Salcombe Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "cornwall railway": {
+      "name": "Cornwall Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "whitland and cardigan railway": {
+      "name": "Whitland and Cardigan Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "witney railway": {
+      "name": "Witney Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "east gloucestershire railway": {
+      "name": "East Gloucestershire Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "calne railway": {
+      "name": "Calne Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "newent railway": {
+      "name": "Newent Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "ross and ledbury railway": {
+      "name": "Ross and Ledbury Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "wellington and severn junction railway": {
+      "name": "Wellington and Severn Junction Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "east usk railway": {
+      "name": "East Usk Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "oldbury railway": {
+      "name": "Oldbury Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "tiverton and north devon railway": {
+      "name": "Tiverton and North Devon Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "cornwall minerals railway": {
+      "name": "Cornwall Minerals Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "newquay and cornwall junction railway": {
+      "name": "Newquay and Cornwall Junction Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "lostwithiel and fowey railway": {
+      "name": "Lostwithiel and Fowey Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "abbotsbury railway": {
+      "name": "Abbotsbury Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "corwen and bala railway": {
+      "name": "Corwen and Bala Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "llangollen and corwen railway": {
+      "name": "Llangollen and Corwen Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "marlborough railway": {
+      "name": "Marlborough Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "milford railway": {
+      "name": "Milford Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "much wenlock and severn junction railway": {
+      "name": "Much Wenlock and Severn Junction Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "vale of llangollen railway": {
+      "name": "Vale of Llangollen Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "wenlock railway": {
+      "name": "Wenlock Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "banbury and cheltenham direct railway": {
+      "name": "Banbury and Cheltenham Direct Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "buckfastleigh totnes and south devon railway": {
+      "name": "Buckfastleigh, Totnes and South Devon Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "great marlow railway": {
+      "name": "Great Marlow Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "kington and eardisley railway": {
+      "name": "Kington and Eardisley Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "nantwich and market drayton railway": {
+      "name": "Nantwich and Market Drayton Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "pembroke and tenby railway": {
+      "name": "Pembroke and Tenby Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "woodstock railway": {
+      "name": "Woodstock Railway (UK)",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "minehead railway": {
+      "name": "Minehead Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "north pembrokeshire and fishguard railway": {
+      "name": "North Pembrokeshire and Fishguard Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "narberth road and maenclochog railway": {
+      "name": "Narberth Road and Maenclochog Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "helston railway": {
+      "name": "Helston Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "leominster and kington railway": {
+      "name": "Leominster and Kington Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "golden valley railway": {
+      "name": "Golden Valley Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "birmingham and henley in": {
+      "name": "Birmingham and Henley-in-Arden Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "birmingham north warwickshire and stratford on avon railway": {
+      "name": "Birmingham, North Warwickshire and Stratford on Avon Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "staines and west drayton railway": {
+      "name": "Staines and West Drayton Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "bridport railway": {
+      "name": "Bridport Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "devon and somerset railway": {
+      "name": "Devon and Somerset Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "ely valley railway": {
+      "name": "Ely Valley Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "abingdon railway": {
+      "name": "Abingdon Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "lambourn valley railway": {
+      "name": "Lambourn Valley Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "wye valley railway": {
+      "name": "Wye Valley Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "liskeard and caradon railway": {
+      "name": "Liskeard and Caradon Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "bala and festiniog railway": {
+      "name": "Bala and Festiniog Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "festiniog and blaenau railway": {
+      "name": "Festiniog and Blaenau Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "manchester and milford railway": {
+      "name": "Manchester and Milford Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "cleobury mortimer and ditton priors railway": {
+      "name": "Cleobury, Mortimer and Ditton Priors Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "port talbot railway": {
+      "name": "Port Talbot Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "powlesland and mason": {
+      "name": "Powlesland and Mason (railway shunting contractors)",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "corris railway": {
+      "name": "Corris Railway",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "list of early british railway companies": {
+      "name": "List of early British railway companies",
+      "group": "GWR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "shropshire union railways and canal company": {
+      "name": "Shropshire Union Railways and Canal Company",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "portpatrick and wigtownshire joint railway": {
+      "name": "Portpatrick and Wigtownshire Joint Railway",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "carlisle citadel railway station": {
+      "name": "Carlisle Citadel railway station",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "ashby and nuneaton railway": {
+      "name": "Ashby and Nuneaton Railway",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "enderby railway": {
+      "name": "Enderby Railway",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "lancashire union railway": {
+      "name": "Lancashire Union Railway",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "north union railway": {
+      "name": "North Union Railway",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "preston and longridge railway": {
+      "name": "Preston and Longridge Railway",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "preston and wyre joint railway": {
+      "name": "Preston and Wyre Joint Railway",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "furness and midland joint railway": {
+      "name": "Furness and Midland Joint Railway",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "whitehaven cleator and egremont railway": {
+      "name": "Whitehaven Cleator and Egremont Railway",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "glasgow barrhead and kilmarnock joint railway": {
+      "name": "Glasgow, Barrhead and Kilmarnock Joint Railway",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "glasgow and paisley joint railway": {
+      "name": "Glasgow and Paisley Joint Railway",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "axholme joint railway": {
+      "name": "Axholme Joint Railway",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article",
+      "joint": true,
+      "groups": [
+        "LMS",
+        "LNER"
+      ]
+    },
+    "city of glasgow union railway": {
+      "name": "City of Glasgow Union Railway",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "dumbarton and balloch joint railway": {
+      "name": "Dumbarton and Balloch Joint Railway",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "dundee and arbroath railway": {
+      "name": "Dundee and Arbroath Railway",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article",
+      "joint": true,
+      "groups": [
+        "LMS",
+        "LNER"
+      ]
+    },
+    "great central and midland joint railway": {
+      "name": "Great Central and Midland Joint Railway",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article",
+      "joint": true,
+      "groups": [
+        "LMS",
+        "LNER"
+      ]
+    },
+    "great central hull and barnsley and midland joint railway": {
+      "name": "Great Central, Hull and Barnsley, and Midland Joint Railway",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "macclesfield bollington and marple railway": {
+      "name": "Macclesfield, Bollington and Marple Railway",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "great northern and london and north western joint railway": {
+      "name": "Great Northern and London and North Western Joint Railway",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article",
+      "joint": true,
+      "groups": [
+        "LMS",
+        "LNER"
+      ]
+    },
+    "halifax and ovenden railway": {
+      "name": "Halifax and Ovenden Railway",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "halifax high level railway": {
+      "name": "Halifax High Level Railway",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "manchester south junction and altrincham railway": {
+      "name": "Manchester South Junction and Altrincham Railway",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article",
+      "joint": true,
+      "groups": [
+        "LMS",
+        "LNER"
+      ]
+    },
+    "methley joint railway": {
+      "name": "Methley Joint Railway",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "midland and great northern joint railway": {
+      "name": "Midland and Great Northern Joint Railway",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article",
+      "joint": true,
+      "groups": [
+        "LMS",
+        "LNER"
+      ]
+    },
+    "norfolk and suffolk joint railway": {
+      "name": "Norfolk and Suffolk Joint Railway",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article",
+      "joint": true,
+      "groups": [
+        "LMS",
+        "LNER"
+      ]
+    },
+    "oldham ashton and guide bridge railway": {
+      "name": "Oldham, Ashton and Guide Bridge Railway",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article",
+      "joint": true,
+      "groups": [
+        "LMS",
+        "LNER"
+      ]
+    },
+    "otley and ilkley joint railway": {
+      "name": "Otley and Ilkley Joint Railway",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "south yorkshire joint railway": {
+      "name": "South Yorkshire Joint Railway",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article",
+      "joint": true,
+      "groups": [
+        "LMS",
+        "LNER"
+      ]
+    },
+    "swinton and knottingley joint railway": {
+      "name": "Swinton and Knottingley Joint Railway",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article",
+      "joint": true,
+      "groups": [
+        "LMS",
+        "LNER"
+      ]
+    },
+    "tottenham and hampstead junction railway": {
+      "name": "Tottenham and Hampstead Junction Railway",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article",
+      "joint": true,
+      "groups": [
+        "LMS",
+        "LNER"
+      ]
+    },
+    "birkenhead railway": {
+      "name": "Birkenhead Railway",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "brecon and merthyr railway and london and north western joint railway": {
+      "name": "Brecon and Merthyr Railway & London and North Western Joint Railway",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "brynmawr and western valleys railway": {
+      "name": "Brynmawr and Western Valleys Railway",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "clifton extension railway": {
+      "name": "Clifton Extension Railway",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "halesowen railway": {
+      "name": "Halesowen Railway",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "nantybwch and rhymney railway": {
+      "name": "Nantybwch and Rhymney Railway",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "severn and wye railway": {
+      "name": "Severn and Wye Railway",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "shrewsbury and hereford railway": {
+      "name": "Shrewsbury and Hereford Railway",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "tenbury railway": {
+      "name": "Tenbury Railway",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "vale of towy railway": {
+      "name": "Vale of Towy Railway",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "west london railway": {
+      "name": "West London Railway",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "somerset and dorset joint railway": {
+      "name": "Somerset and Dorset Joint Railway",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article",
+      "joint": true,
+      "groups": [
+        "LMS",
+        "SR"
+      ]
+    },
+    "whitechapel and bow railway": {
+      "name": "Whitechapel and Bow Railway",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "dundalk newry and greenore railway": {
+      "name": "Dundalk, Newry and Greenore Railway",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "london electric railway": {
+      "name": "London Electric Railway",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "great southern railways": {
+      "name": "Great Southern Railways",
+      "group": "LMS",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "north lindsey light railway": {
+      "name": "North Lindsey Light Railway",
+      "group": "LNER",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "edinburgh and northern railway": {
+      "name": "Edinburgh and Northern Railway",
+      "group": "LNER",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "glasgow and milngavie junction railway": {
+      "name": "Glasgow and Milngavie Junction Railway",
+      "group": "LNER",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "east london railway": {
+      "name": "East London Railway",
+      "group": "LNER",
+      "role": "absorbed",
+      "source": "constituent_list_article",
+      "joint": true,
+      "groups": [
+        "LNER",
+        "SR"
+      ]
+    },
+    "great northern and great eastern joint railway": {
+      "name": "Great Northern and Great Eastern Joint Railway",
+      "group": "LNER",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "hull and barnsley and great central joint railway": {
+      "name": "Hull and Barnsley and Great Central Joint Railway",
+      "group": "LNER",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "caledonian and dunbartonshire junction railway": {
+      "name": "Caledonian and Dunbartonshire Junction Railway",
+      "group": "LNER",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "great central and north staffordshire joint railway": {
+      "name": "Great Central and North Staffordshire Joint Railway",
+      "group": "LNER",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "halifax and ovenden junction railway": {
+      "name": "Halifax and Ovenden Junction Railway",
+      "group": "LNER",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "methley railway": {
+      "name": "Methley Railway",
+      "group": "LNER",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "otley and ilkley railway": {
+      "name": "Otley and Ilkley Railway",
+      "group": "LNER",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "great western and great central joint railway": {
+      "name": "Great Western and Great Central Joint Railway",
+      "group": "LNER",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "hayling railway": {
+      "name": "Hayling Railway",
+      "group": "SR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "cranbrook and paddock wood railway": {
+      "name": "Cranbrook and Paddock Wood Railway",
+      "group": "SR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "crowhurst sidley and bexhill railway": {
+      "name": "Crowhurst, Sidley and Bexhill Railway",
+      "group": "SR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "lynton and barnstaple railway": {
+      "name": "Lynton and Barnstaple Railway",
+      "group": "SR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "croydon and oxted joint railway": {
+      "name": "Croydon and Oxted Joint Railway",
+      "group": "SR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "dover and deal railway": {
+      "name": "Dover and Deal Railway",
+      "group": "SR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "epsom and leatherhead railway": {
+      "name": "Epsom and Leatherhead Railway",
+      "group": "SR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "portsmouth and ryde joint railway": {
+      "name": "Portsmouth and Ryde Joint Railway",
+      "group": "SR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "tooting merton and wimbledon railway": {
+      "name": "Tooting, Merton and Wimbledon Railway",
+      "group": "SR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "woodside and south croydon railway": {
+      "name": "Woodside and South Croydon Railway",
+      "group": "SR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "easton and church hope railway": {
+      "name": "Easton and Church Hope Railway",
+      "group": "SR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "west london extension railway": {
+      "name": "West London Extension Railway",
+      "group": "SR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "weymouth and portland railway": {
+      "name": "Weymouth and Portland Railway",
+      "group": "SR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    },
+    "list of railway companies involved in the 1923 grouping": {
+      "name": "List of railway companies involved in the 1923 grouping",
+      "group": "SR",
+      "role": "absorbed",
+      "source": "constituent_list_article"
+    }
+  }
+}

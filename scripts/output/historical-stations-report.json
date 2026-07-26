@@ -1,0 +1,30 @@
+{
+  "generated_at": "2026-07-26T07:00:23.094Z",
+  "source": "Wikipedia year categories + Wikidata P625, GB polygon clip",
+  "stats": {
+    "candidate_articles": 9421,
+    "no_coordinates": 228,
+    "outside_gb": 0,
+    "emitted": 8884,
+    "open_now": 2565,
+    "reopened_multi_period": 965,
+    "uncertain_periods": 133,
+    "same_year_reordered": 161,
+    "inherited_start_year": 6,
+    "unknown_start_year": 8,
+    "triage": {
+      "b_closure_unrecorded": 234,
+      "a_non_heavy_rail": 530,
+      "c_name_match_failure": 67
+    },
+    "hidden_untriaged": 301,
+    "max_periods": 5
+  },
+  "triage_legend": {
+    "a_non_heavy_rail": "Underground/metro/tram/heritage — may be genuinely open but absent from a NaPTAN-derived list. RENDERED.",
+    "b_closure_unrecorded": "Looks like a real closed heavy-rail station whose closure year was never categorised. HIDDEN in v1.",
+    "c_name_match_failure": "Within 400 m of a station in station-list.json — probably the same station under a different title. HIDDEN in v1.",
+    "d_out_of_scope_geo": "Coordinates fall outside the GB boundary polygon. HIDDEN.",
+    "d_out_of_scope_category": "Categorised as Northern Ireland / Isle of Man / Channel Islands. HIDDEN."
+  }
+}
