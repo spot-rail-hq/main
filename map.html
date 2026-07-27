@@ -1187,6 +1187,19 @@
   var lockedOperatorHighlight = null;
   var hoveredOperatorHighlight = null;
   var initialCameraVerified = false; // see verifyInitialCameraPosition() below
+  // ── User-gesture counter (2026-07-27) ────────────────────────────────────
+  // Bumped ONLY by camera moves the user started themselves. MapLibre attaches
+  // the triggering DOM event as `originalEvent` on movestart/zoomstart for real
+  // gestures (wheel, drag, pinch, keyboard) and omits it for programmatic
+  // flyTo/easeTo/jumpTo — that is the documented discriminator, and it is what
+  // stops the watchdog below reacting to its own corrections.
+  //
+  // Exists because two things in this file move the camera on a TIMER, several
+  // seconds after the event that scheduled them, and neither had any way to
+  // tell "the camera drifted / the tiles finally loaded" from "the user is
+  // scrolling right now". Both are read below; see their own comments.
+  var userCameraGestureSeq = 0;
+  function noteUserCameraGesture(e) { if (e && e.originalEvent) userCameraGestureSeq++; }
 
   // A real, if intermittent, MapLibre race confirmed via headless testing
   // (2026-07-15): shortly after map creation, the camera occasionally
@@ -1205,9 +1218,24 @@
   // mapInitCenter/mapInitZoom (NOT getCenter()/getZoom(), which could
   // already reflect the drift) a few times over the first few seconds after
   // load, since testing showed the drift isn't perfectly synchronous either.
+  //
+  // 2026-07-27 — THE SNAP-BACK BUG. This is a jumpTo (instant, uninterruptible)
+  // on a 500ms timer for the first ~3 seconds after load, and its "has the
+  // camera moved?" test was a bare distance check: anything more than 0.3 zoom
+  // levels or 0.3 degrees from the initial view counted as drift. A user
+  // scroll-zooming in those first seconds trips that on every tick and gets
+  // yanked back to z5.5 — which is exactly the reported "jumps back to the
+  // previous zoom level", and why COASTING made it worse: an inertial scroll
+  // stays in motion across several 500ms ticks where discrete clicks usually
+  // land between them.
+  // The watchdog cannot tell drift from intent by looking at the camera alone,
+  // so it now asks who moved it. One real user gesture retires it for good:
+  // past that point the user owns the camera, and a stale anti-drift
+  // correction is strictly worse than the drift it was guarding against.
   function verifyInitialCameraPosition(attempt) {
     attempt = attempt || 1;
     if (initialCameraVerified || !map) return;
+    if (userCameraGestureSeq > 0) { initialCameraVerified = true; return; }
     var z = map.getZoom(), c = map.getCenter();
     var drifted = Math.abs(z - mapInitZoom) > 0.3 || Math.abs(c.lng - mapInitCenter[0]) > 0.3 || Math.abs(c.lat - mapInitCenter[1]) > 0.3;
     if (drifted) map.jumpTo({ center: mapInitCenter, zoom: mapInitZoom });
@@ -2122,6 +2150,11 @@
     // without needing to re-read them back from the map.
     map.jumpTo({ center: initCenter, zoom: initZoom, padding: regionJumpFlyToPadding() });
 
+    // Registered on the Map instance, so they survive setStyle()/theme toggles
+    // and need no re-binding. movestart covers drag/pan; zoomstart covers
+    // wheel, pinch and keyboard zoom.
+    map.on('movestart', noteUserCameraGesture);
+    map.on('zoomstart', noteUserCameraGesture);
     map.on('load', addMapLayers);
     map.on('load', function () { verifyInitialCameraPosition(); }); // separate listener, not folded into addMapLayers — that also re-runs on every theme toggle via setStyle, and this correction is a true-first-load-only concern
   })();
@@ -4586,6 +4619,7 @@
     // loadDepartureBoard elsewhere in this file — if the user picks a
     // different pair (or clears the selection) before this resolves, this
     // result is silently dropped instead of clobbering the newer one.
+    var gestureAtSelect = userCameraGestureSeq;
     routingGraphPromise.then(function () {
       if (mySeq !== selectionSeq) return;
       var result = computeFromToPath(from.crs, to.crs);
@@ -4606,7 +4640,13 @@
           if (!pathBounds) pathBounds = new maplibregl.LngLatBounds(c, c); else pathBounds.extend(c);
         });
       });
-      if (pathBounds) flyToBoundsZoomedOut(pathBounds, FROMTO_FIT_PADDING, FROMTO_ZOOM_OUT, 800);
+      // Same reasoning as flyToOperatorNetwork's guard: this fires only once
+      // routing-graph.json has resolved, which can be well after the user has
+      // gone back to scrolling. The endpoint-bounds fly earlier in
+      // selectFromTo() is synchronous with the click and needs no guard.
+      if (pathBounds && userCameraGestureSeq === gestureAtSelect) {
+        flyToBoundsZoomedOut(pathBounds, FROMTO_FIT_PADDING, FROMTO_ZOOM_OUT, 800);
+      }
 
       // Bugfix, found via a headless check on a real long route (KGX->EDB,
       // 93 edges): a single map.once('idle', ...) is NOT reliable here.
@@ -6696,8 +6736,13 @@
   });
 
   // ── Map controls ─────────────────────────────────────────────────────────
-  document.getElementById('zoom-in').addEventListener('click', function () { map.zoomIn(); });
-  document.getElementById('zoom-out').addEventListener('click', function () { map.zoomOut(); });
+  // map.zoomIn()/zoomOut() are PROGRAMMATIC, so they fire movestart/zoomstart
+  // with no originalEvent and would not register as intent on their own — but a
+  // button press is unambiguously the user driving the camera, so it is counted
+  // here explicitly. Without this the anti-drift watchdog could undo a button
+  // zoom in the first few seconds after load.
+  document.getElementById('zoom-in').addEventListener('click', function () { userCameraGestureSeq++; map.zoomIn(); });
+  document.getElementById('zoom-out').addEventListener('click', function () { userCameraGestureSeq++; map.zoomOut(); });
   var layersBtn = document.getElementById('layers-btn');
   layersBtn.addEventListener('click', function () {
     if (!map || !map.getLayer('railway-lines')) return;
@@ -6859,11 +6904,23 @@
   var OPERATOR_FIT_PADDING = 60;
   var OPERATOR_ZOOM_OUT = 0;
   var OPERATOR_FIT_MAX_ZOOM = 11;
-  function flyToOperatorNetwork(code, mySeq, attempt) {
+  // `gestureAtStart` is userCameraGestureSeq as it stood when the search was
+  // submitted (2026-07-27). This function retries for up to 15 x 300ms = 4.5
+  // SECONDS waiting for the operator's tiles to load, then flies — so without
+  // this guard a user who searched an operator and then started scrolling got
+  // the camera pulled out from under them seconds later. The last batch made
+  // that worse rather than causing it: dropping OPERATOR_ZOOM_OUT from 2 to 0
+  // and adding the z5 floor moved the destination further from wherever a
+  // zoomed-out user had scrolled to, so the same yank became a bigger one.
+  // A superseded SELECTION is already handled by mySeq; this is the separate
+  // case of the same selection still being current while the user has since
+  // moved the camera by hand, which mySeq cannot see.
+  function flyToOperatorNetwork(code, mySeq, attempt, gestureAtStart) {
     attempt = attempt || 1;
     if (mySeq !== selectionSeq) return; // a newer selection superseded this one — abandon
+    if (gestureAtStart !== undefined && userCameraGestureSeq !== gestureAtStart) return; // user took the camera — their gesture wins
     if (!map || !map.getSource('operator-vector')) {
-      if (attempt < 15) setTimeout(function () { flyToOperatorNetwork(code, mySeq, attempt + 1); }, 300);
+      if (attempt < 15) setTimeout(function () { flyToOperatorNetwork(code, mySeq, attempt + 1, gestureAtStart); }, 300);
       return;
     }
     var feats = map.querySourceFeatures('operator-vector', { sourceLayer: 'operators', filter: ['==', ['get', 'operators'], code] });
@@ -6876,7 +6933,7 @@
       });
     });
     if (!bounds) {
-      if (attempt < 15) setTimeout(function () { flyToOperatorNetwork(code, mySeq, attempt + 1); }, 300);
+      if (attempt < 15) setTimeout(function () { flyToOperatorNetwork(code, mySeq, attempt + 1, gestureAtStart); }, 300);
       return; // give up quietly after 15 attempts (~4.5s) — same tolerance as this file's other bounded retries
     }
     flyToBoundsZoomedOut(bounds, OPERATOR_FIT_PADDING, OPERATOR_ZOOM_OUT, 800, OPERATOR_FIT_MAX_ZOOM);
@@ -7313,7 +7370,10 @@
       lockedOperatorHighlight = picked.code;
       applyOperatorHighlightPaint();
       map.jumpTo({ center: mapInitCenter, zoom: mapInitZoom, padding: regionJumpFlyToPadding() });
-      flyToOperatorNetwork(picked.code, selectionSeq);
+      // Captured AFTER the jumpTo above, which is programmatic and so does not
+      // itself count as a gesture — this is the baseline the retry loop
+      // compares against.
+      flyToOperatorNetwork(picked.code, selectionSeq, 1, userCameraGestureSeq);
     }
   }
   wireAutocomplete(operatorInput, document.getElementById('sb-ac-operator'), function (picked) {
