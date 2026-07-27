@@ -72,13 +72,6 @@
 
   :root {
     --t: #40E0D0; --m: #F25CC1; --a: #F5B84B; --l: #B8F266;
-    /* Heritage line colour, mirroring data/operator-colors.json's `heritage`
-       entry (2026-07-27, was an amber that clashed with West Midlands Railway
-       — see that file's own note for the measurements). Only the legend swatch
-       reads this var; the map itself takes the value straight from the JSON,
-       so the two are duplicated in exactly one place and that is on purpose:
-       the legend is static markup rendered before any fetch resolves. */
-    --heritage: #FC7B64;
     --ink: #9AA4B2; --ink-primary: #ffffff; --bg: #07090C; --sf: rgba(14,18,24,0.96);
     --br: rgba(64,224,208,0.14); --brh: rgba(64,224,208,0.28);
     --font-display: 'Archivo', system-ui, sans-serif;
@@ -115,7 +108,6 @@
        was a slightly different turquoise, #0AABA0, than the rest of the
        site's #1A9E8F). */
     --t: #1A9E8F; --m: #C4237A; --a: #B8860B; --l: #4A7C00;
-    --heritage: #DE6454;
     --ink: #444444; --ink-primary: #07090C; --bg: #f0f0f0; --sf: rgba(255,255,255,0.95);
     --br: rgba(0,0,0,0.06); --brh: rgba(0,0,0,0.12);
 
@@ -270,6 +262,23 @@
   :root[data-theme="light"] .header-tab.live-on,
   :root[data-theme="light"] .header-tab.db-on,
   :root[data-theme="light"] .header-tab.history-on { color: #FFFFFF; }
+  /* …and the INACTIVE labels, which is what "the tab labels render black"
+     was actually about (2026-07-27, second attempt). The rule above works —
+     verified by resolving the cascade rather than by eye: light+active wins at
+     specificity 0,4,0 against the 0,2,0 base rule and resolves to #FFFFFF.
+     But only ONE tab is active at a time; the other two fall through to
+     .header-tab's own `color: var(--ink)`, which in light theme is #444444 —
+     9.74:1 against the near-white sidebar, i.e. black-looking body text. Dark
+     theme's equivalent is #9AA4B2 at 7.45:1, which reads as genuinely dimmed.
+     So the two themes were not giving the same treatment at all.
+     #6B7687 sits at 4.60:1 — unmistakably secondary next to the active pill,
+     still above the 4.5 AA floor for 13.5px text.
+     SCOPED TO THE TABS ON PURPOSE: --ink is shared by .ghost-btn and
+     .sb-search-mode-tab in the same header, and those are 14px icons and
+     uppercase 14px labels respectively, where the same hex does not read the
+     same way. Widening this to the token is a design call, flagged for Aaron
+     rather than taken here. */
+  :root[data-theme="light"] .header-tab { color: #6B7687; }
   /* Predecessor/successor chip with no content record behind it — rendered
      visibly disabled rather than suppressed, so a real historical relationship
      ("the LMS succeeded the Caledonian Railway") still shows even before that
@@ -840,20 +849,7 @@
     font-family: inherit; font-size: 13px; box-sizing: border-box; padding: 0; }
   .field-clear:hover { color: var(--ink-primary); }
 
-  /* Database-mode legend — was sharing #history-panel with the year slider
-     until the slider moved to History mode. */
-  #db-legend { display: none; position: absolute; z-index: 41; left: 50%; transform: translateX(-50%);
-    bottom: 54px; width: calc((100vw - var(--sidebar-edge)) / 2);
-    background: var(--sf); border: 0.5px solid var(--brh); border-radius: 16px;
-    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
-  body.mode-database #db-legend { display: block; }
-  @media (min-width: 769px) { #db-legend { left: calc(50% + (var(--sidebar-edge) / 2)); } }
-
   @media (max-width: 768px) {
-    /* Edge-to-edge on narrow viewports, same treatment the old panel had.
-       Raised clear of the bottom hint pills. */
-    #db-legend { bottom: 70px; left: var(--sidebar-gap); right: var(--sidebar-gap);
-      width: auto; transform: none; }
     /* Bigger touch target on the thumb — the default 16px is hard to grab
        without catching the map underneath. touch-action on the range stops the
        browser handing a horizontal drag to the map's own pan gesture. */
@@ -893,42 +889,24 @@
   .sb-dep-pane, .sb-news-pane { flex: 1 1 50%; min-height: 0; overflow-y: auto; overflow-x: hidden; }
   .sb-news-pane { border-top: 0.5px solid var(--br); }
 
-  /* The old "History panel (Database mode)" block lived here. The year slider
-     is GONE from Database mode entirely, on every breakpoint — it belongs to
-     History mode now and is styled under .hist-slider / #history-panel.hist-slider
-     further up. Its `body.mode-database #history-panel { display: block }` rule
-     was left behind in the first pass and would have shown the History slider on
-     the Database tab; removed. #db-legend keeps the legend for Database. */
-
-  .hp-head { display: flex; align-items: center; gap: 10px; padding: 10px 14px; }
-  #hp-toggle { flex-shrink: 0; }
-  #hp-toggle i { transition: transform 0.2s; }
-  /* Opposite convention from the sidebar's own toggle, per instruction:
-     expanded = down (base icon, unrotated), collapsed = up (rotated 180°). */
-  #db-legend.collapsed #hp-toggle i { transform: rotate(180deg); }
-  /* Matches the Live/Database pill label size (13.5px) per feedback that the
-     reference mockup's own size read a touch small. */
-  .hp-title { font-size: 13.5px; font-weight: 500; color: var(--ink-primary); }
-  .legend-items { display: flex; gap: 14px; flex-wrap: wrap; margin-left: auto; }
-  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--ink); }
-  .legend-line { width: 14px; height: 2px; }
-  .legend-line.closed { background-image: repeating-linear-gradient(to right, rgba(64,224,208,0.4) 0 4px, transparent 4px 7px); }
-  /* Heritage: coral, and DOTTED to match how the map now draws it (2026-07-27).
-     The swatch has to carry the pattern too, or the legend teaches the wrong
-     visual language — dots here, a solid line on the map. Deliberately a
-     different gradient shape from .closed above: round dots on a short pitch,
-     against .closed's longer rectangular dashes, so the two never read as the
-     same thing at 14px wide. Colour comes from --heritage (both themes defined
-     in :root) rather than a hardcoded rgba like its neighbours, since this one
-     value now also has to stay in step with data/operator-colors.json. */
-  .legend-line.heritage { background-image: radial-gradient(circle at center, var(--heritage) 0 1px, transparent 1px); background-size: 3px 2px; background-repeat: repeat-x; }
-
-  /* .hp-body / .hp-era used to style the old Database-mode history panel's
-     expandable body and its era caption. Both were orphaned when the year
-     slider moved to History mode — #db-legend has no .hp-body element and
-     nothing renders .hp-era — so they are gone (2026-07-27). Checked before
-     deleting: no markup and no JS references either. */
-
+  /* The map LEGEND (National Rail / Metro/LRT / Heritage / Closed) was removed
+     on 2026-07-27, together with the Database-mode panel that held it and its
+     collapse toggle. It dated from the original four-colour map: routes are now
+     coloured per operator, and hovering or clicking one names it directly, so a
+     four-category key described something the map no longer draws — misleading
+     rather than merely redundant.
+     Everything that existed only to serve it went with it: #db-legend and its
+     mobile override, .hp-head / .hp-title / #hp-toggle, .legend-items /
+     .legend-item / .legend-line and its .closed and .heritage pattern variants,
+     and the wireDbLegend() IIFE. The --heritage :root token went too — the
+     legend swatch was its only reader; the map takes heritage's colour straight
+     from data/operator-colors.json. (.hp-body / .hp-era had already been
+     removed earlier as orphans of the year slider that used to share this
+     panel.)
+     KNOWN GAP, accepted and recorded rather than worked around: two things the
+     legend carried are line PATTERNS, not colours, so hover cannot explain them
+     — Closed (dashed) and Heritage (dotted). Flagged for a future map UI pass;
+     deliberately not replaced here. */
 
 </style>
 </head>
@@ -1152,22 +1130,6 @@
 <!-- The bottom-of-map year slider (instance A) was removed 2026-07-26 on request:
      the sidebar slider is the only one wanted, on both Database and History, desktop
      and mobile. Its CSS and its half of the two-instance sync went with it. -->
-
-<!-- Database-mode legend — split out of the old #history-panel when the year
-     slider moved to History mode (above). Same collapsed-by-default behaviour
-     and same bottom-anchored placement it had before. -->
-<div id="db-legend" class="collapsed">
-  <div class="hp-head">
-    <button class="ghost-btn" id="hp-toggle" aria-label="Expand or collapse legend"><i class="ti ti-chevron-down"></i></button>
-    <span class="hp-title">Legend</span>
-    <div class="legend-items">
-      <span class="legend-item"><span class="legend-line" style="background:rgba(64,224,208,0.7);"></span>National Rail</span>
-      <span class="legend-item"><span class="legend-line" style="background:rgba(178,90,210,0.6);"></span>Metro/LRT</span>
-      <span class="legend-item"><span class="legend-line heritage"></span>Heritage</span>
-      <span class="legend-item"><span class="legend-line closed"></span>Closed</span>
-    </div>
-  </div>
-</div>
 
 <noscript>
   <div style="max-width:900px;margin:40px auto;padding:24px;line-height:1.6;color:#fff;">
@@ -7651,22 +7613,6 @@
   document.getElementById('cc-accept').addEventListener('click', function () { persistCookieChoice(true); });
   document.getElementById('cc-reject').addEventListener('click', function () { persistCookieChoice(false); });
 
-  // ── Database mode: legend collapse ────────────────────────────────────────
-  // The year slider that used to live in this panel is GONE from Database mode
-  // entirely (desktop and mobile) — it now belongs to History mode. What
-  // remains here is the legend and its collapse toggle.
-  //
-  // The old slider's JS used to sit here and was left behind when the markup
-  // moved: `document.getElementById('year-slider')` returned null and the very
-  // next line, `parseInt(yearSlider.min, 10)`, threw a TypeError that aborted
-  // the rest of this IIFE. That is why History mode looked half-dead on the
-  // deployed build — a thrown exception, not a data problem.
-  (function wireDbLegend() {
-    var legend = document.getElementById('db-legend');
-    var toggle = document.getElementById('hp-toggle');
-    if (!legend || !toggle) return;
-    toggle.addEventListener('click', function () { legend.classList.toggle('collapsed'); });
-  })();
 })();
 </script>
 </body>
