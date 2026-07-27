@@ -256,7 +256,12 @@
   .filter-chip.is-disabled { opacity: 0.45; cursor: default; border-style: dashed; }
   /* Honest labelling for inferred/unknown dates — deliberately quiet, but
      always present when the underlying precision is not "exact". */
-  .db-precision-note { font-size: 11px; line-height: 1.5; color: var(--ink); opacity: 0.85; margin: 6px 0 0; }
+  /* Horizontal padding matches .db-field's 16px so this lines up with the
+     field labels it sits between, rather than against the sidebar edge — the
+     same misalignment reported against the History station panel's SOURCE
+     link (which was missing its .db-field wrapper). Only History uses this
+     class, on the station and route panels; both were affected. */
+  .db-precision-note { font-size: 11px; line-height: 1.5; color: var(--ink); opacity: 0.85; margin: 6px 0 0; padding: 0 16px; }
 
   /* ── "Jump to" bar + zoom/layers/location cluster ────────────────────────
      Independent floating siblings now (not nested — see the HTML comment).
@@ -787,6 +792,10 @@
     background: transparent; border: none; padding: 0; cursor: pointer; font-family: inherit;
     white-space: nowrap; }
   .hs-tick:hover, .hs-tick.on { color: var(--t); }
+  /* Temporarily suppressed tick label — see HIDDEN_TICK_LABEL_YEARS. Same
+     visibility:hidden the pruner already uses for a label that fits nowhere,
+     so the year keeps its true position in the DOM and nothing else shifts. */
+  .hs-tick.label-hidden { visibility: hidden; }
   .hs-tick.edge-first { transform: none; left: 0 !important; }
   .hs-tick.edge-last { transform: none; left: auto !important; right: 0; }
   /* Tick labels are 13px to match the panel/news-feed text scale rather than
@@ -2723,9 +2732,12 @@
     // runtime layer set that broke that rule, which is why they alone did not
     // survive a theme toggle. Only re-added once the user has actually entered
     // History mode, so the historical tileset stays lazy for everyone else.
-    // A hovered segment cannot survive a style rebuild — its glow filter refers
-    // to layers that no longer exist.
+    // A hovered or LOCKED segment cannot survive a style rebuild — their glow
+    // filter refers to layers that no longer exist. Same for a hovered station.
     hoveredHistoryFeature = null;
+    lockedHistoryFeature = null;
+    lockedHistoryFeatureSpan = null;
+    hoveredHistoryStation = null;
     if (historyLayersEverAdded) { historyLayersReady = false; ensureHistoryLayers(); }
 
     // stationsData is built once by the Promise.all() below (station-list.json
@@ -2760,9 +2772,27 @@
   // reveal, but user feedback after seeing it live was to unify all three
   // to the mid tier's size (e.g. Tamworth, Salisbury) — mid's radius/stroke
   // is the one shared paint every tier's circle layer now uses.
-  function stationsCirclePaint() {
+  //
+  // 2026-07-27: this is now THE ONE definition of what a station dot looks
+  // like, shared verbatim by Live, Database AND History. History used to carry
+  // a parallel paint block of its own (smaller radius ramp, stroke-width 1,
+  // and an ERA-TINTED stroke colour) which is how the three tabs drifted into
+  // rendering visibly different dots at the same place and zoom — see
+  // applyHistoryPaint()'s comment for the stale-band bug that tinting also
+  // caused. `hoverExpr` is the ONLY thing a caller may vary, and only because
+  // the historical tiles cannot use feature-state the way the live geojson
+  // source does (no promoted id — see applyHistoryHighlightPaint()'s note on
+  // why this file keys historical highlights off a property instead). History
+  // passes a constant `false` here and draws its hover state as a separate
+  // filtered overlay layer using this same function with `true`, so the two
+  // states still come from one place. Radius/fill/stroke/width are NOT
+  // parameterised and must not become so.
+  function stationsCirclePaint(hoverExpr) {
     var c = themeColors();
-    var hoverExpr = ['boolean', ['feature-state', 'hover'], false];
+    // Explicit undefined check, not `||` — `false` is a legitimate value here
+    // (History's resting layer passes it) and would otherwise fall through to
+    // the feature-state default against a source that has no feature state.
+    if (hoverExpr === undefined) hoverExpr = ['boolean', ['feature-state', 'hover'], false];
     return {
       'circle-radius': ['interpolate', ['linear'], ['zoom'], 7, 2.8, 12, 4.0],
       // 2026-07-18: hover used to be a translucent stationHoverFill wash
@@ -2903,13 +2933,17 @@
   // untouched. A quick opacity transition (160ms) just smooths the
   // appear/disappear snap — it is not a loop/pulse, the value is a single
   // constant while hovering, unlike the ring's continuous per-frame drive.
-  function stationsHoverGlowPaint() {
+  // Same one-definition rule as stationsCirclePaint above: History reuses this
+  // with a constant `true` on a layer filtered down to the single hovered
+  // station, rather than owning a second glow spec.
+  function stationsHoverGlowPaint(hoverExpr) {
     var c = themeColors();
+    if (hoverExpr === undefined) hoverExpr = ['boolean', ['feature-state', 'hover'], false];
     return {
       'circle-radius': ['interpolate', ['linear'], ['zoom'], 7, 7, 12, 9.5],
       'circle-color': c.accent,
       'circle-blur': 0.6,
-      'circle-opacity': ['case', ['boolean', ['feature-state', 'hover'], false], 0.4, 0],
+      'circle-opacity': ['case', hoverExpr, 0.4, 0],
       'circle-opacity-transition': { duration: 160 },
     };
   }
@@ -3083,6 +3117,9 @@
       }),
     };
     tryAddStationsLayer();
+    // History mode borrows this exact tier assignment for the historical
+    // stations that are still open today — see computeHistoryStationTierFilters().
+    computeHistoryStationTierFilters();
   });
   // Bug found live 2026-07-19 (reported as "station dots sometimes don't
   // appear until I reload or toggle the theme twice"): the single
@@ -4456,6 +4493,9 @@
     animateSidebarTransition();
     setSelectedStationPoints([]);
     clearOperatorHighlight();
+    // History's per-segment lock is the same kind of state as the operator
+    // highlight above — dismissing the panel drops the map highlight with it.
+    clearHistoryLock();
     pushHistoryForCurrentState();
   }
   document.getElementById('sb-clear-btn').addEventListener('click', clearSelection);
@@ -4858,6 +4898,16 @@
   var HISTORY_MIN_YEAR = 1825;
   function historyMaxYear() { return new Date().getUTCFullYear(); }
   function historySnapYears() { return [1825, 1845, 1880, 1923, 1963, 1994, historyMaxYear()]; }
+  // ── TEMPORARY (2026-07-27): suppress the 1845 tick LABEL ──────────────────
+  // 1845 stays in historySnapYears() above, so it remains a snap point at its
+  // true proportional position and nothing about the slider's value handling
+  // changes — only its label is not drawn, and it is skipped by
+  // pruneOverlappingTicks() so it cannot push a neighbour onto the second row.
+  // With 1845 out, the sidebar track has no collisions left and the tick row
+  // collapses back to a single row on its own; the staggering/pruning logic is
+  // untouched and still applies at other widths and after a resize.
+  // TO RE-ENABLE 1845: set this back to [].
+  var HIDDEN_TICK_LABEL_YEARS = [1845];
   // The 1994 source-switch. Below this the map draws the OHM historical
   // tileset; at or above it, the existing operators.pmtiles. Never both at
   // rest — see setHistoryLayerVisibility().
@@ -4915,7 +4965,8 @@
       // no transform) so they stay inside the box while every interior tick
       // stays centred on its true position. Handled in CSS via .edge-first /
       // .edge-last rather than with a magic inset here.
-      var cls = 'hs-tick' + (i === 0 ? ' edge-first' : '') + (i === years.length - 1 ? ' edge-last' : '');
+      var cls = 'hs-tick' + (i === 0 ? ' edge-first' : '') + (i === years.length - 1 ? ' edge-last' : '') +
+        (HIDDEN_TICK_LABEL_YEARS.indexOf(y) !== -1 ? ' label-hidden' : '');
       var label = y === max ? 'Today' : String(y);
       return '<button type="button" class="' + cls + '" style="left:' + pct + '%" data-year="' + y + '">' + label + '</button>';
     }).join('');
@@ -4941,7 +4992,11 @@
   // from a font metric — that estimate was already wrong once.
   function pruneOverlappingTicks(host) {
     if (!host || !host.offsetParent) return; // not laid out yet (mode hidden); re-run on show
-    var ticks = Array.prototype.slice.call(host.querySelectorAll('.hs-tick'));
+    // Ticks whose label is suppressed (HIDDEN_TICK_LABEL_YEARS) are excluded
+    // from the collision pass entirely — they still have a layout box, so
+    // leaving them in would let an invisible label push a visible one onto the
+    // second row for no reason the user can see.
+    var ticks = Array.prototype.slice.call(host.querySelectorAll('.hs-tick:not(.label-hidden)'));
     if (ticks.length < 2) return;
     var MIN_GAP = 8;
     ticks.forEach(function (t) { t.style.visibility = ''; t.classList.remove('row-2'); });
@@ -5074,11 +5129,124 @@
   var HIST_LINE_LAYER = 'history-lines';
   var HIST_LINE_HIT_LAYER = 'history-lines-hit';
   var HIST_GLOW_PREFIX = 'history-lines-hover-glow-';
-  var HIST_STATION_LAYER = 'history-stations';
+  var HIST_STATION_HOVER_LAYER = 'history-stations-hover';
+  var HIST_STATION_HOVER_GLOW_LAYER = 'history-stations-hover-glow';
   // Matches nothing — blanks the hover-glow rings until a segment is hovered.
   // Same idiom as NO_OPERATOR_FILTER on the operator layer.
   var NO_HISTORY_FEATURE_FILTER = ['==', ['get', 'source'], '__no_history_feature__'];
   var hoveredHistoryFeature = null;
+  // Click-LOCKED segment (2026-07-27). Locked and hovered are INDEPENDENT and
+  // may both be active at once — hovering another route while one is locked
+  // must still preview that other route, exactly as the Database tab behaves
+  // (see applyOperatorHighlightPaint()'s locked/hovered pair). The span is
+  // kept alongside the key so a slider move that takes the locked segment out
+  // of its own year range can drop the lock without re-querying the tiles.
+  var lockedHistoryFeature = null;
+  var lockedHistoryFeatureSpan = null;
+  // Hovered historical STATION, keyed the same way (by `source`) — see
+  // applyHistoryStationHoverFilter().
+  var hoveredHistoryStation = null;
+
+  // ── History station tiering (INTERIM — see the 2026-07-27 report) ─────────
+  // The historical station tiles carry NO importance signal: their properties
+  // are name, wikipedia_title, periods, p1..p5_start/_end, start_year,
+  // end_year, start/end_precision, source, wikidata_qid, license, crs, triage
+  // and two data-quality flags. There is no tier, no platform count, nothing
+  // that could drive STATION_TIERS-equivalent reveal ordering. Real tiering
+  // needs a score computed at BUILD time (the same platform-count + local-
+  // density blend computeStationTiers() does client-side for the live set) and
+  // that means retiling — deliberately not done here.
+  //
+  // What IS available today: `crs`, present on the 2,565 historical stations
+  // still open, and every one of those codes also exists in station-list.json
+  // (verified: 2,565/2,565, and all 53 curated 'major' stations are present).
+  // So those stations can borrow the LIVE tier verbatim — not an approximation
+  // of it, the same assignment keyed on the same code, which is what makes
+  // Database and History finally reveal the same stations at the same zoom.
+  // The remaining ~6,300 closed-only stations have no signal of any kind and
+  // share one late-revealing tier; their LABELS come later still, because at
+  // 1923 there are ~4,900 of them and letting MapLibre's collision detection
+  // arbitrarily choose which to drop is not legibility.
+  var HISTORY_STATION_CLOSED_TIER = { id: 'closed', minzoom: 8, labelMinzoom: 10 };
+  var HISTORY_STATION_TIERS = STATION_TIERS.concat([HISTORY_STATION_CLOSED_TIER]);
+  function historyStationLayerIds(tierId) {
+    return {
+      circle: 'history-stations-' + tierId,
+      hit: 'history-stations-' + tierId + '-hit',
+      label: 'history-stations-label-' + tierId,
+    };
+  }
+  // THE single list of every history-station layer id. setHistoryLayerVisibility()
+  // and the add-time sanity guard both read from this, so a tier or a layer
+  // kind added in one place cannot be forgotten in the other — the same
+  // symmetry rule restoreLiveLayersAfterHistory() already follows for the
+  // layers History borrows from Live.
+  function historyStationLayerList() {
+    var ids = [HIST_STATION_HOVER_LAYER, HIST_STATION_HOVER_GLOW_LAYER];
+    HISTORY_STATION_TIERS.forEach(function (t) {
+      var l = historyStationLayerIds(t.id);
+      ids.push(l.circle, l.hit, l.label);
+    });
+    return ids;
+  }
+  function historyStationHitLayers() {
+    return HISTORY_STATION_TIERS.map(function (t) { return historyStationLayerIds(t.id).hit; });
+  }
+  // Same rule the live station labels use: 'major' has no minzoom of its own,
+  // so its label borrows the first non-major tier's rather than sitting alone
+  // on an otherwise empty first frame. A tier may override with labelMinzoom.
+  function historyStationLabelMinzoom(t) {
+    if (t.labelMinzoom !== undefined) return t.labelMinzoom;
+    return t.minzoom !== undefined ? t.minzoom : STATION_TIERS[1].minzoom;
+  }
+  var NO_HISTORY_STATION_FILTER = ['==', ['get', 'source'], '__no_history_station__'];
+  // GRACEFUL DEGRADE, same choice computeRouteTierFilters() makes: until
+  // stationsData exists (it needs station-list.json + stations.geojson +
+  // stations-content.json to all resolve), every station falls in the
+  // always-visible tier rather than being hidden by a slow or failed fetch.
+  var historyStationTierFilters = null;
+  function historyStationTierFilter(tierId) {
+    if (!historyStationTierFilters) return tierId === 'major' ? ['==', 1, 1] : NO_HISTORY_STATION_FILTER;
+    return historyStationTierFilters[tierId] || NO_HISTORY_STATION_FILTER;
+  }
+  function computeHistoryStationTierFilters() {
+    if (!stationsData) return;
+    var byTier = {}, allTiered = [];
+    STATION_TIERS.forEach(function (t) { byTier[t.id] = []; });
+    stationsData.features.forEach(function (f) {
+      var p = f.properties;
+      if (!p.crs || !byTier[p.tier]) return;
+      byTier[p.tier].push(p.crs);
+      allTiered.push(p.crs);
+    });
+    var filters = {};
+    STATION_TIERS.forEach(function (t) {
+      // `match`, not `in` — MapLibre compiles a match's labels to a hash
+      // lookup, while `in` scans the literal array linearly. These filters are
+      // re-evaluated across ~8,900 features every time the slider crosses a
+      // year, and the 'small' tier alone holds ~1,800 codes.
+      filters[t.id] = byTier[t.id].length
+        ? ['match', ['coalesce', ['get', 'crs'], ''], byTier[t.id], true, false]
+        : NO_HISTORY_STATION_FILTER;
+    });
+    // Defined as the COMPLEMENT of the tiered set, not as ['!', ['has','crs']]
+    // — a historical station carrying a CRS that station-list.json doesn't
+    // know about (none today, but the two datasets refresh independently)
+    // would otherwise match no tier at all and silently vanish from the map.
+    filters.closed = allTiered.length
+      ? ['!', ['match', ['coalesce', ['get', 'crs'], ''], allTiered, true, false]]
+      : ['==', 1, 1];
+    historyStationTierFilters = filters;
+    // History layers may already be on the map (the user can be in History
+    // mode before these fetches land) — re-apply, no-op if not.
+    applyHistoryFilters();
+  }
+  // queryRenderedFeatures THROWS on an unknown layer id, and these layers only
+  // exist once History mode has been entered at least once.
+  function existingLayers(ids) {
+    if (!map) return [];
+    return ids.filter(function (id) { return !!map.getLayer(id); });
+  }
 
   // Idempotent by design: every add below is guarded by getSource/getLayer, so
   // this is safe to call on first entry into History mode AND again after every
@@ -5135,30 +5303,71 @@
         },
       });
     });
-    if (!map.getLayer(HIST_STATION_LAYER)) {
-      map.addLayer({
-        id: HIST_STATION_LAYER, type: 'circle', source: 'history-vector', 'source-layer': 'historical_stations',
+    // ── Historical stations ──────────────────────────────────────────────────
+    // 2026-07-27 rewrite. These used to be ONE untiered layer with its own
+    // hand-written paint block — a smaller radius ramp, stroke-width 1, and an
+    // era-tinted stroke colour — which is how History ended up drawing visibly
+    // different dots from Live/Database at the same place and zoom (reported
+    // with side-by-side screenshots: turquoise ring in Database, amber ring in
+    // History). Everything visual now comes from stationsCirclePaint() /
+    // stationsHoverGlowPaint() / stationsHitPaint(), the same three functions
+    // the live markers use, so the three tabs cannot drift apart again. The
+    // era colours belong to the LINES; a station dot is brand furniture.
+    //
+    // THE FADE IS GONE ON PURPOSE. The old layer drove circle-opacity /
+    // circle-stroke-opacity 0↔1 with a HISTORY_FADE_MS transition for mode
+    // entry — but layout visibility was flipped on the same tick, so the fade
+    // only ever played on the way IN and was a hard cut on the way out, and
+    // the live dots have no such fade at all. Keeping it would have meant
+    // overriding opacity on top of the shared paint, i.e. a second definition
+    // of the dot. Stations follow the MODE via visibility alone now; the
+    // LINES keep their own cross-fade, which is load-bearing (it hides the
+    // 1994 source-switch, see setHistoryLayerVisibility()).
+    //
+    // Hover glow first so it stacks BENEATH every dot — one layer, not one per
+    // tier, because it is filtered to the single hovered station and a station
+    // can only be hovered where its own tier is already visible/hit-testable.
+    addLayerOnce({
+      id: HIST_STATION_HOVER_GLOW_LAYER, type: 'circle', source: 'history-vector', 'source-layer': 'historical_stations',
+      filter: NO_HISTORY_STATION_FILTER,
+      layout: { visibility: 'none' },
+      // Constant `true`: the layer's FILTER decides which station is hovered,
+      // the paint just renders the hovered look. The live equivalent gets a
+      // 160ms opacity fade out of its feature-state case; a filter swap is
+      // instant, so History's glow appears/disappears without that easing.
+      // Same colour, radius and blur — only the timing differs.
+      paint: stationsHoverGlowPaint(true),
+    });
+    HISTORY_STATION_TIERS.forEach(function (t) {
+      addLayerOnce({
+        id: historyStationLayerIds(t.id).circle, type: 'circle', source: 'history-vector', 'source-layer': 'historical_stations',
+        filter: historyStationTierFilter(t.id),
         layout: { visibility: 'none' },
-        paint: {
-          'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, 1.6, 10, 3, 14, 5],
-          // stationFill, NOT `bg` — THEME_COLORS has no `bg` key, so the first
-          // version of this passed `undefined` as circle-color. MapLibre's style
-          // validation then REJECTED the whole layer: addLayer fires an error
-          // event and returns without adding it, and every later setFilter /
-          // setPaintProperty on the missing layer also just fires an error and
-          // no-ops rather than throwing. Net effect was that the LINES worked
-          // perfectly while the stations silently never existed at any year.
-          // stationFill is the same token the live station circles use.
-          'circle-color': themeColors().stationFill,
-          'circle-stroke-width': 1,
-          'circle-stroke-color': eraColorFor('pre1923', null),
-          'circle-opacity': 0,
-          'circle-stroke-opacity': 0,
-          'circle-opacity-transition': { duration: HISTORY_FADE_MS },
-          'circle-stroke-opacity-transition': { duration: HISTORY_FADE_MS },
-        },
-      });
-    }
+        // Constant `false` — the resting dot. The historical source declares
+        // no promoted id, so feature-state is not available here; the hovered
+        // look is drawn by HIST_STATION_HOVER_LAYER below instead.
+        paint: stationsCirclePaint(false),
+      }, t.minzoom);
+    });
+    // The hovered dot, drawn over every tier. Same function, `true` branch.
+    addLayerOnce({
+      id: HIST_STATION_HOVER_LAYER, type: 'circle', source: 'history-vector', 'source-layer': 'historical_stations',
+      filter: NO_HISTORY_STATION_FILTER,
+      layout: { visibility: 'none' },
+      paint: stationsCirclePaint(true),
+    });
+    // Labels, matching the live treatment exactly (text-size 10, labelColor /
+    // labelHalo tokens, halo width 1, anchored top with a 0.6 offset). `name`
+    // is present on 100% of the historical stations, so nothing degrades.
+    HISTORY_STATION_TIERS.forEach(function (t) {
+      var c = themeColors();
+      addLayerOnce({
+        id: historyStationLayerIds(t.id).label, type: 'symbol', source: 'history-vector', 'source-layer': 'historical_stations',
+        filter: historyStationTierFilter(t.id),
+        layout: { visibility: 'none', 'text-field': ['get', 'name'], 'text-size': 10, 'text-anchor': 'top', 'text-offset': [0, 0.6] },
+        paint: { 'text-color': c.labelColor, 'text-halo-color': c.labelHalo, 'text-halo-width': 1 },
+      }, historyStationLabelMinzoom(t));
+    });
     // TRANSPARENT WIDE HIT LAYER, added LAST so it sits on top of everything
     // it needs to catch. This was missing entirely: History mode was binding
     // click/hover straight to the visible line, which is 0.9-3.2px wide, so
@@ -5173,10 +5382,29 @@
         paint: { 'line-color': '#000000', 'line-opacity': 0, 'line-width': 18 },
       });
     }
+    // Stations had NO hit layer at all until 2026-07-27 — click was bound
+    // straight to the visible dot, which is the same 2.8-4.0px target the live
+    // markers long ago stopped relying on, and hover was not bound to anything
+    // that could drive a highlight. Exactly the gap the LINES had before
+    // history-lines-hit existed. Same paint as the live station hit circles
+    // (stationsHitPaint), one per tier carrying that tier's own filter and
+    // minzoom, so a not-yet-revealed tier is not secretly clickable in
+    // empty-looking space. Added after the line hit layer so a station wins
+    // the z-order where the two overlap — the click handlers also resolve that
+    // precedence explicitly, see wireHistoryMapInteraction().
+    HISTORY_STATION_TIERS.forEach(function (t) {
+      addLayerOnce({
+        id: historyStationLayerIds(t.id).hit, type: 'circle', source: 'history-vector', 'source-layer': 'historical_stations',
+        filter: historyStationTierFilter(t.id),
+        layout: { visibility: 'none' },
+        paint: stationsHitPaint(),
+      }, t.minzoom);
+    });
     // Guard against exactly the failure above ever recurring silently: if a
     // layer was rejected by style validation it simply will not be there, and
     // every later call against it is a no-op error nobody sees.
-    [HIST_LINE_LAYER, HIST_LINE_HIT_LAYER, HIST_STATION_LAYER].forEach(function (id) {
+    [HIST_LINE_LAYER, HIST_LINE_HIT_LAYER, HIST_STATION_HOVER_LAYER, HIST_STATION_HOVER_GLOW_LAYER]
+      .concat(historyStationLayerList()).forEach(function (id) {
       if (!map.getLayer(id)) console.error('History layer "' + id + '" was not added — check its paint/layout spec for an undefined value.');
     });
     historyLayersReady = true;
@@ -5212,36 +5440,33 @@
       expr = eraColorFor(band, null);
     }
     map.setPaintProperty(HIST_LINE_LAYER, 'line-color', expr);
-    map.setPaintProperty(HIST_STATION_LAYER, 'circle-stroke-color', eraColorFor(band, null));
-    map.setPaintProperty(HIST_STATION_LAYER, 'circle-color', themeColors().stationFill);
+    // STATIONS ARE NOT ERA-TINTED. This function used to also set the station
+    // layer's circle-stroke-color to eraColorFor(band) — while RETURNING EARLY
+    // three lines above whenever band === 'modern'. So at TODAY the stroke kept
+    // whichever band was written last, which in practice meant the pre1923
+    // neutral: the amber/yellow ring reported against Database's turquoise one.
+    // The colour was therefore a function of the user's DRAG HISTORY, not of
+    // anything on screen. Both the tint and the stale value are gone — the dot
+    // is defined once, by stationsCirclePaint(), and only LINES carry era
+    // colour. Do not reintroduce a per-band station stroke here.
   }
 
-  function applyHistoryFilters() {
-    if (!map || !historyLayersReady || !map.getLayer(HIST_LINE_LAYER)) return;
+  // Lines: present if built on or before y and not yet closed. Undated lines
+  // were dropped at build time, so there is nothing to exclude here. Split out
+  // of applyHistoryFilters() so the highlight filter can reuse the identical
+  // expression rather than keeping its own copy in step by hand.
+  function historyLineYearFilter() {
     var y = historyYear;
-    // Lines: present if built on or before y and not yet closed. Undated
-    // lines were dropped at build time, so there is nothing to exclude here.
-    var lineFilter = ['all',
+    return ['all',
       ['<=', ['coalesce', ['get', 'start_year'], 9999], y],
       ['any', ['!', ['has', 'end_year']], ['>=', ['coalesce', ['get', 'end_year'], 9999], y]],
     ];
-    map.setFilter(HIST_LINE_LAYER, lineFilter);
-    // The hit layer MUST carry the identical year filter. Without it the
-    // invisible 18px hit lines would cover every line that ever existed, so
-    // hovering blank map in 1850 would report a route built in 1900 — the
-    // "hover does nothing over empty map" guarantee comes from this, not from
-    // the visible layer.
-    if (map.getLayer(HIST_LINE_HIT_LAYER)) map.setFilter(HIST_LINE_HIT_LAYER, lineFilter);
-    // A hovered segment that just filtered out must stop glowing.
-    if (hoveredHistoryFeature) {
-      GLOW_RINGS.forEach(function (ring, i) {
-        var id = HIST_GLOW_PREFIX + i;
-        if (map.getLayer(id)) map.setFilter(id, ['all', lineFilter, ['==', ['get', 'source'], hoveredHistoryFeature]]);
-      });
-    }
-    // Stations: visible if y falls inside ANY period. Uses the FLATTENED
-    // p1_start..p5_end scalars, never the `periods` JSON string — MVT cannot
-    // query inside a string, which is exactly why 2A emitted both.
+  }
+  // Stations: visible if y falls inside ANY period. Uses the FLATTENED
+  // p1_start..p5_end scalars, never the `periods` JSON string — MVT cannot
+  // query inside a string, which is exactly why 2A emitted both.
+  function historyStationYearFilter() {
+    var y = historyYear;
     var any = ['any'];
     for (var i = 1; i <= 5; i++) {
       any.push(['all',
@@ -5250,7 +5475,53 @@
         ['any', ['!', ['has', 'p' + i + '_end']], ['>=', ['get', 'p' + i + '_end'], y]],
       ]);
     }
-    map.setFilter(HIST_STATION_LAYER, any);
+    return any;
+  }
+  // Does a locked/hovered feature's own span still contain the slider year?
+  // Cheap numeric check against the span captured at click time — avoids
+  // re-querying the tiles just to find out whether a lock is still valid.
+  function historySpanCoversYear(span, y) {
+    if (!span) return true;
+    if (span.start_year !== undefined && span.start_year !== null && span.start_year > y) return false;
+    if (span.end_year !== undefined && span.end_year !== null && span.end_year < y) return false;
+    return true;
+  }
+
+  function applyHistoryFilters() {
+    if (!map || !historyLayersReady || !map.getLayer(HIST_LINE_LAYER)) return;
+    var lineFilter = historyLineYearFilter();
+    map.setFilter(HIST_LINE_LAYER, lineFilter);
+    // The hit layer MUST carry the identical year filter. Without it the
+    // invisible 18px hit lines would cover every line that ever existed, so
+    // hovering blank map in 1850 would report a route built in 1900 — the
+    // "hover does nothing over empty map" guarantee comes from this, not from
+    // the visible layer.
+    if (map.getLayer(HIST_LINE_HIT_LAYER)) map.setFilter(HIST_LINE_HIT_LAYER, lineFilter);
+    // A LOCK on a segment that the slider has just moved out of range of is
+    // dropped rather than left hanging as invisible toggle state — otherwise
+    // clicking that segment again after scrubbing back would read as "the
+    // first click did nothing". Hover needs no equivalent: the glow filter
+    // below carries the year filter, and the next mouse move re-establishes it.
+    if (lockedHistoryFeature && !historySpanCoversYear(lockedHistoryFeatureSpan, historyYear)) {
+      lockedHistoryFeature = null;
+      lockedHistoryFeatureSpan = null;
+    }
+    // Re-applies the locked/hovered glow with the new year filter folded in,
+    // so a highlighted segment that just filtered out stops glowing.
+    applyHistoryHighlightPaint();
+    var stationYear = historyStationYearFilter();
+    HISTORY_STATION_TIERS.forEach(function (t) {
+      var l = historyStationLayerIds(t.id);
+      var f = ['all', stationYear, historyStationTierFilter(t.id)];
+      // The HIT layer carries the identical year AND tier filter as its
+      // visible dot — same guarantee as the line hit layer above: no invisible
+      // click target for a station that had not opened yet in this year, and
+      // none for a tier that has not been revealed at this zoom.
+      [l.circle, l.hit, l.label].forEach(function (id) {
+        if (map.getLayer(id)) map.setFilter(id, f);
+      });
+    });
+    applyHistoryStationHoverFilter();
     applyHistoryPaint();
     setHistoryLayerVisibility();
   }
@@ -5262,7 +5533,7 @@
     if (!map || !historyLayersReady) return;
     var showHistorical = mode === 'history' && historyYear < HISTORY_MODERN_FROM;
     var showModern = mode === 'history' && historyYear >= HISTORY_MODERN_FROM;
-    var histLayers = [HIST_LINE_LAYER, HIST_LINE_HIT_LAYER, HIST_STATION_LAYER];
+    var histLayers = [HIST_LINE_LAYER, HIST_LINE_HIT_LAYER].concat(historyStationLayerList());
     GLOW_RINGS.forEach(function (ring, i) { histLayers.push(HIST_GLOW_PREFIX + i); });
     histLayers.forEach(function (id) {
       if (!map.getLayer(id)) return;
@@ -5279,7 +5550,9 @@
     if (map.getLayer(HIST_LINE_HIT_LAYER)) {
       map.setLayoutProperty(HIST_LINE_HIT_LAYER, 'visibility', showHistorical ? 'visible' : 'none');
     }
-    if (!showHistorical) clearHistoryHover();
+    // Nothing historical is drawn or clickable at 1994+, so neither a hover
+    // nor a LOCK may survive the source-switch.
+    if (!showHistorical) { clearHistoryHover(); clearHistoryLock(); }
     // STATIONS ARE NOT PART OF THE 1994 SOURCE-SWITCH. That switch exists
     // because there are two competing LINE datasets; there is only one station
     // dataset and it spans the whole timeline (2,565 of its stations are open
@@ -5287,11 +5560,11 @@
     // did — would have blanked every station from 1994 onward, where the live
     // station markers are also hidden, leaving no stations at all in the modern
     // band. Stations follow the MODE, lines follow the YEAR.
-    var showStations = mode === 'history';
-    if (map.getLayer(HIST_STATION_LAYER)) {
-      map.setPaintProperty(HIST_STATION_LAYER, 'circle-opacity', showStations ? 1 : 0);
-      map.setPaintProperty(HIST_STATION_LAYER, 'circle-stroke-opacity', showStations ? 1 : 0);
-    }
+    // The mode gate is the layout `visibility` set in the histLayers loop
+    // above — there is no separate opacity gate any more. See the station
+    // block in ensureHistoryLayers() for why the old opacity cross-fade was
+    // dropped (it could not survive sharing one paint definition with the live
+    // dots, and only ever played in one direction anyway).
     // Modern operator-coloured lines. In History mode these render in FULL
     // COLOUR — the reverse-colour-reveal (grey until hover) is a Live-mode
     // affordance and is bypassed entirely here, see applyHistoryModernPaint().
@@ -5545,6 +5818,7 @@
   function selectHistoricalOperator(slug, fallbackName) {
     ++selectionSeq;
     selection = { type: 'histop', slug: slug, fallbackName: fallbackName || slug };
+    clearHistoryLock(); // same "moved on to another kind of selection" rule as selectHistoricalStation()
     renderSelectionChrome();
     expandSidebarIfCollapsed();
     animateSidebarTransition();
@@ -5636,8 +5910,14 @@
       // "WIKIPEDIA"), not a generic "Source" — the reader can tell what they
       // are about to open.
       var srcLabel = /wikipedia\.org/.test(rec.source_url) ? 'Wikipedia' : 'Source';
-      html += '<div class="db-links" data-anim-row><a class="db-link" href="' + escapeAttr(rec.source_url) +
-        '" target="_blank" rel="noopener">' + srcLabel + '</a></div>';
+      // The .db-field WRAPPER is what carries the panel's 10px/16px field
+      // padding — .db-links itself is only a flex row and has no padding of its
+      // own. Both History panels emitted a bare .db-links here, so the link sat
+      // hard against the sidebar's left edge while every label above it
+      // (Founded, Headquarters, …) was indented. The Database tab's own link
+      // row has always used this wrapper; History was the outlier.
+      html += '<div class="db-field" data-anim-row><div class="db-links"><a class="db-link" href="' + escapeAttr(rec.source_url) +
+        '" target="_blank" rel="noopener">' + srcLabel + '</a></div></div>';
     }
     // NOTE: no fleet chips, no region chips, no departure elements. History
     // operator panels are history-focused regardless of whether the operator
@@ -5704,8 +5984,10 @@
     if (props.crs) html += dbFieldHtml('Still open', 'Yes');
     if (props.source) {
       var title = String(props.source).replace(/^wikipedia:/, '');
-      html += '<div class="db-links" data-anim-row><a class="db-link" href="https://en.wikipedia.org/wiki/' +
-        escapeAttr(title.replace(/ /g, '_')) + '" target="_blank" rel="noopener">Source</a></div>';
+      // Same missing .db-field wrapper as the operator panel above — see its
+      // comment. This is the one the misalignment was reported against.
+      html += '<div class="db-field" data-anim-row><div class="db-links"><a class="db-link" href="https://en.wikipedia.org/wiki/' +
+        escapeAttr(title.replace(/ /g, '_')) + '" target="_blank" rel="noopener">Source</a></div></div>';
     }
     return html;
   }
@@ -5725,6 +6007,10 @@
   function selectHistoricalStation(props) {
     ++selectionSeq;
     selection = { type: 'histstation', station: props, fallbackName: props.name || 'Station' };
+    // Moving on to a DIFFERENT kind of selection releases the segment lock —
+    // the same rule selectStation() follows in the other tabs, where it calls
+    // clearOperatorHighlight() for exactly this reason.
+    clearHistoryLock();
     renderSelectionChrome();
     expandSidebarIfCollapsed();
     animateSidebarTransition();
@@ -5765,29 +6051,56 @@
     return null; // nothing to say — see the no-name finding in the report
   }
 
-  function applyHistoryHoverPaint() {
+  // 2026-07-27: was applyHistoryHoverPaint(), driven by a single
+  // hoveredHistoryFeature. It now takes a SET — locked and hovered are
+  // independent states that can both be on at once, so hovering another route
+  // while one is locked still previews that other route. That is the Database
+  // tab's behaviour (see applyOperatorHighlightPaint()'s locked/hovered pair)
+  // and the whole reason the filter can no longer key on one value.
+  //
+  // LOCKED AND HOVERED LOOK IDENTICAL, deliberately. Database does not
+  // distinguish them either — there, each simply takes its own operator's real
+  // colour, and when the same operator is both, it is one colour. History has
+  // no per-segment operator colour to draw on (~36% of pre-1923 and Big Four
+  // features have no operator attributed at all), so both states share the one
+  // accent highlight. Inventing a separate locked colour here would be a
+  // History-only affordance the rest of the site does not have.
+  function historyHighlightSources() {
+    var out = [];
+    if (lockedHistoryFeature) out.push(lockedHistoryFeature);
+    if (hoveredHistoryFeature && hoveredHistoryFeature !== lockedHistoryFeature) out.push(hoveredHistoryFeature);
+    return out;
+  }
+  function applyHistoryHighlightPaint() {
     if (!map || !map.getLayer(HIST_GLOW_PREFIX + '0')) return;
-    var theme = currentTheme();
-    if (!hoveredHistoryFeature) {
+    var active = historyHighlightSources();
+    if (!active.length) {
+      // Still filtered to nothing by default, so the other ~11,000 features
+      // never pay for a blurred line — unchanged from the hover-only version.
       GLOW_RINGS.forEach(function (ring, i) {
         if (map.getLayer(HIST_GLOW_PREFIX + i)) map.setFilter(HIST_GLOW_PREFIX + i, NO_HISTORY_FEATURE_FILTER);
       });
       return;
     }
     // `source` ("ohm:way/{id}") is the only per-feature unique identifier in
-    // the tiles, so it doubles as the hover key. promoteId/feature-state would
-    // be the usual route, but the glow needs a FILTER anyway (to keep the other
-    // ~11,000 features off the blur render path entirely), and filtering on a
+    // the tiles, so it doubles as the highlight key. promoteId/feature-state
+    // would be the usual route, but the glow needs a FILTER anyway (to keep the
+    // other features off the blur render path entirely), and filtering on a
     // property avoids depending on a promoted id this source does not declare.
-    var filter = ['==', ['get', 'source'], hoveredHistoryFeature];
+    // `in` over a literal, not `==` — at most two keys, so the linear scan the
+    // `in` expression does is irrelevant here.
+    //
+    // The YEAR filter is folded in so a highlighted segment that the slider has
+    // just moved out of range of stops glowing immediately.
+    var filter = ['all', historyLineYearFilter(), ['in', ['get', 'source'], ['literal', active]]];
     // Highlight colour must read against a flat single-colour network — that
     // is the whole point. Using the UI accent rather than the band colour makes
-    // the hovered segment unambiguously "the thing under your cursor" instead
+    // the highlighted segment unambiguously "the thing you picked" instead
     // of a slightly brighter version of its neighbours.
-    // NOTE: --t/accent is reserved for UI meaning, and a hover highlight IS UI
-    // meaning rather than operator identity, so this does not breach the
+    // NOTE: --t/accent is reserved for UI meaning, and a selection highlight IS
+    // UI meaning rather than operator identity, so this does not breach the
     // palette rule the era colours follow.
-    var color = THEME_COLORS[theme].accent;
+    var color = THEME_COLORS[currentTheme()].accent;
     GLOW_RINGS.forEach(function (ring, i) {
       var id = HIST_GLOW_PREFIX + i;
       if (!map.getLayer(id)) return;
@@ -5799,7 +6112,36 @@
   function clearHistoryHover() {
     if (hoveredHistoryFeature === null) return;
     hoveredHistoryFeature = null;
-    applyHistoryHoverPaint();
+    applyHistoryHighlightPaint();
+    hideHoverTooltip();
+  }
+  // Clears ONLY the lock. The open sidebar panel is deliberately left alone —
+  // see the click handler in wireHistoryMapInteraction() for the reasoning.
+  function clearHistoryLock() {
+    if (lockedHistoryFeature === null) return;
+    lockedHistoryFeature = null;
+    lockedHistoryFeatureSpan = null;
+    applyHistoryHighlightPaint();
+  }
+
+  // Station hover is a FILTER swap on the two overlay layers, not a
+  // feature-state write — same reason as the line highlight above (no promoted
+  // id on this source). The year filter is folded in so a slider move while
+  // the pointer is stationary cannot leave a hover dot on a station that no
+  // longer exists in the current year.
+  function applyHistoryStationHoverFilter() {
+    if (!map) return;
+    var f = hoveredHistoryStation === null
+      ? NO_HISTORY_STATION_FILTER
+      : ['all', historyStationYearFilter(), ['==', ['coalesce', ['get', 'source'], ''], hoveredHistoryStation]];
+    [HIST_STATION_HOVER_LAYER, HIST_STATION_HOVER_GLOW_LAYER].forEach(function (id) {
+      if (map.getLayer(id)) map.setFilter(id, f);
+    });
+  }
+  function clearHistoryStationHover() {
+    if (hoveredHistoryStation === null) return;
+    hoveredHistoryStation = null;
+    applyHistoryStationHoverFilter();
     hideHoverTooltip();
   }
 
@@ -5815,7 +6157,7 @@
       var props = e.features[0].properties;
       if (hoveredHistoryFeature !== props.source) {
         hoveredHistoryFeature = props.source;
-        applyHistoryHoverPaint();
+        applyHistoryHighlightPaint();
       }
       var label = historyHoverLabel(props);
       if (label) showHoverTooltip(e.lngLat, label);
@@ -5824,10 +6166,14 @@
     map.on('mouseleave', HIST_LINE_HIT_LAYER, function () {
       if (mode !== 'history') return;
       map.getCanvas().style.cursor = '';
+      // Hover only — a LOCK deliberately survives mouseleave. That is what
+      // "locks" means, and it is the difference this handler must not erase.
       clearHistoryHover();
     });
     map.on('zoomstart', clearHistoryHover);
     map.on('dragstart', clearHistoryHover);
+    map.on('zoomstart', clearHistoryStationHover);
+    map.on('dragstart', clearHistoryStationHover);
     // Surface a missing/unreachable historical tileset instead of rendering an
     // empty map. Confirmed live 2026-07-26: historical.pmtiles was returning
     // HTTP 404 from R2 (never uploaded), which is indistinguishable on screen
@@ -5839,19 +6185,75 @@
       console.warn('historical.pmtiles could not be loaded — History mode will show no pre-1994 features.', e && e.error);
       if (mode === 'history') rebuildSidebarContent();
     });
+    // Click/tap LOCKS the segment's highlight; a second click on the SAME
+    // segment toggles it off. Per-SEGMENT, not per-operator — same reason the
+    // hover above is per-segment, see historyHoverLabel()'s comment.
+    //
+    // THE PANEL STAYS OPEN ON UNLOCK. selectHistoricalLine() fires only on the
+    // lock-ON transition, exactly as the Database tab's selectOperator() does,
+    // and neither the toggle-off nor the empty-space clear touches the sidebar.
+    // Two reasons: Database already behaves this way (clearing
+    // lockedOperatorHighlight never closes its panel), and this file already
+    // treats these panels as reference material rather than a view of the map
+    // — the Jump-to field deliberately leaves a panel open when the year moves
+    // outside the entity's own span. Closing the sidebar on a stray click into
+    // empty sea would be the surprising behaviour, not the useful one.
+    // FLAGGED for Aaron rather than assumed — a one-line change if he wants
+    // the opposite.
     map.on('click', HIST_LINE_HIT_LAYER, function (e) {
       if (mode !== 'history' || !e.features || !e.features.length) return;
-      selectHistoricalLine(e.features[0].properties);
+      // Stations sit ON the line, and this hit layer is a generously wide
+      // (18px) invisible strip, so it always also overlaps whichever station
+      // marker sits on that track. Without this guard MapLibre fires BOTH this
+      // handler and the station handler below for the same click, so clicking a
+      // station would also lock the route under it and replace the station
+      // panel. Identical guard, and identical reason, to the Database tab's
+      // route click — stations are the more specific target, so let them win.
+      if (map.queryRenderedFeatures(e.point, { layers: existingLayers(historyStationHitLayers()) }).length) return;
+      var props = e.features[0].properties;
+      var wasLocked = lockedHistoryFeature === props.source;
+      lockedHistoryFeature = wasLocked ? null : props.source;
+      lockedHistoryFeatureSpan = wasLocked ? null : { start_year: props.start_year, end_year: props.end_year };
+      applyHistoryHighlightPaint();
+      if (!wasLocked) selectHistoricalLine(props);
     });
-    map.on('click', HIST_STATION_LAYER, function (e) {
+    // Empty-map-space clears the lock. Re-queries the point rather than relying
+    // on handler ordering — same shape as the Database tab's equivalent: if a
+    // segment WAS under the click, leave whatever the handler above just set.
+    map.on('click', function (e) {
+      if (mode !== 'history' || !lockedHistoryFeature) return;
+      var layers = existingLayers([HIST_LINE_HIT_LAYER]);
+      if (!layers.length) return;
+      if (map.queryRenderedFeatures(e.point, { layers: layers }).length) return;
+      clearHistoryLock();
+    });
+    // Stations: click, hover-highlight and cursor all bound to the HIT layers
+    // (history-stations-<tier>-hit), never to the visible dot — the dot is
+    // 2.8-4.0px across. Before 2026-07-27 click was bound straight to the
+    // visible layer and hover was not bound at all, which is why History dots
+    // had no hover reaction while Database dots did.
+    var histStationHits = historyStationHitLayers();
+    map.on('click', histStationHits, function (e) {
       if (mode !== 'history' || !e.features || !e.features.length) return;
       selectHistoricalStation(e.features[0].properties);
     });
-    // Lines get their cursor from the mousemove handler above (bound to the hit
-    // layer); stations only need the simple enter/leave pair. Same pointer
-    // convention as the Live and Database tabs.
-    map.on('mouseenter', HIST_STATION_LAYER, function () { if (mode === 'history') map.getCanvas().style.cursor = 'pointer'; });
-    map.on('mouseleave', HIST_STATION_LAYER, function () { if (mode === 'history') map.getCanvas().style.cursor = ''; });
+    map.on('mousemove', histStationHits, function (e) {
+      if (mode !== 'history' || !e.features || !e.features.length) return;
+      map.getCanvas().style.cursor = 'pointer';
+      var f = e.features[0];
+      if (hoveredHistoryStation !== f.properties.source) {
+        hoveredHistoryStation = f.properties.source;
+        applyHistoryStationHoverFilter();
+      }
+      // Anchored on the marker, not the pointer — same as the live station
+      // tooltip (wireStationInteractions passes the feature's coordinates).
+      if (f.properties.name) showHoverTooltip(f.geometry.coordinates, f.properties.name);
+    });
+    map.on('mouseleave', histStationHits, function () {
+      if (mode !== 'history') return;
+      map.getCanvas().style.cursor = '';
+      clearHistoryStationHover();
+    });
   }
 
   // ── Header: mode switching (Live / Database / History) ───────────────────
@@ -5897,6 +6299,8 @@
       // Without this the full-colour History paint and the hidden station dots
       // would persist into Live/Database.
       clearHistoryHover();
+      clearHistoryLock();
+      clearHistoryStationHover();
       restoreLiveLayersAfterHistory();
       applyOperatorHighlightPaint();
     }
