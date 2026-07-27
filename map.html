@@ -72,6 +72,13 @@
 
   :root {
     --t: #40E0D0; --m: #F25CC1; --a: #F5B84B; --l: #B8F266;
+    /* Heritage line colour, mirroring data/operator-colors.json's `heritage`
+       entry (2026-07-27, was an amber that clashed with West Midlands Railway
+       — see that file's own note for the measurements). Only the legend swatch
+       reads this var; the map itself takes the value straight from the JSON,
+       so the two are duplicated in exactly one place and that is on purpose:
+       the legend is static markup rendered before any fetch resolves. */
+    --heritage: #FC7B64;
     --ink: #9AA4B2; --ink-primary: #ffffff; --bg: #07090C; --sf: rgba(14,18,24,0.96);
     --br: rgba(64,224,208,0.14); --brh: rgba(64,224,208,0.28);
     --font-display: 'Archivo', system-ui, sans-serif;
@@ -108,6 +115,7 @@
        was a slightly different turquoise, #0AABA0, than the rest of the
        site's #1A9E8F). */
     --t: #1A9E8F; --m: #C4237A; --a: #B8860B; --l: #4A7C00;
+    --heritage: #DE6454;
     --ink: #444444; --ink-primary: #07090C; --bg: #f0f0f0; --sf: rgba(255,255,255,0.95);
     --br: rgba(0,0,0,0.06); --brh: rgba(0,0,0,0.12);
 
@@ -891,6 +899,15 @@
   .legend-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--ink); }
   .legend-line { width: 14px; height: 2px; }
   .legend-line.closed { background-image: repeating-linear-gradient(to right, rgba(64,224,208,0.4) 0 4px, transparent 4px 7px); }
+  /* Heritage: coral, and DOTTED to match how the map now draws it (2026-07-27).
+     The swatch has to carry the pattern too, or the legend teaches the wrong
+     visual language — dots here, a solid line on the map. Deliberately a
+     different gradient shape from .closed above: round dots on a short pitch,
+     against .closed's longer rectangular dashes, so the two never read as the
+     same thing at 14px wide. Colour comes from --heritage (both themes defined
+     in :root) rather than a hardcoded rgba like its neighbours, since this one
+     value now also has to stay in step with data/operator-colors.json. */
+  .legend-line.heritage { background-image: radial-gradient(circle at center, var(--heritage) 0 1px, transparent 1px); background-size: 3px 2px; background-repeat: repeat-x; }
 
   .hp-body { padding: 14px 14px 0; }
   #db-legend.collapsed .hp-body { display: none; }
@@ -989,6 +1006,7 @@
     <button class="icon-btn" id="zoom-in" aria-label="Zoom in" data-tooltip="Zoom In"><i class="ti ti-plus"></i></button>
     <button class="icon-btn" id="zoom-out" aria-label="Zoom out" data-tooltip="Zoom Out"><i class="ti ti-minus"></i></button>
     <button class="icon-btn" id="layers-btn" aria-label="Toggle base rail network overlay" aria-pressed="false" data-tooltip="Show Base Rail Network"><i class="ti ti-layers-intersect"></i></button>
+    <button class="icon-btn" id="labels-btn" aria-label="Toggle base map labels" aria-pressed="true" data-tooltip="Hide Map Labels"><i class="ti ti-tag"></i></button>
     <button class="icon-btn" id="my-location" aria-label="Find my location" data-tooltip="My Location"><i class="ti ti-current-location"></i></button>
     <button class="icon-btn" id="reset-bearing" aria-label="Reset map orientation" data-tooltip="Reset North"><i class="ti ti-navigation" id="reset-bearing-icon"></i></button>
   </div>
@@ -1130,7 +1148,7 @@
     <div class="legend-items">
       <span class="legend-item"><span class="legend-line" style="background:rgba(64,224,208,0.7);"></span>National Rail</span>
       <span class="legend-item"><span class="legend-line" style="background:rgba(178,90,210,0.6);"></span>Metro/LRT</span>
-      <span class="legend-item"><span class="legend-line" style="background:rgba(245,184,75,0.6);"></span>Heritage</span>
+      <span class="legend-item"><span class="legend-line heritage"></span>Heritage</span>
       <span class="legend-item"><span class="legend-line closed"></span>Closed</span>
     </div>
   </div>
@@ -2160,6 +2178,51 @@
     });
   }
 
+  // ── "Show map labels" toggle (2026-07-27) ─────────────────────────────────
+  // Hides the BASE STYLE's place labels (countries, states, cities, towns,
+  // villages, suburbs) and its road labels and shields, for a clean map focused
+  // on stations and routes. DEFAULT ON — the opposite default to the base-rail
+  // toggle above it, because labels are the normal expectation and their
+  // absence is the deliberate choice.
+  //
+  // TARGETED BY SOURCE-LAYER, NOT BY LAYER ID. Checked against the live Stadia
+  // style JSON for both themes (alidade_smooth_dark and alidade_smooth, 53
+  // layers each, 24 of them symbol layers): 17 symbol layers draw from the two
+  // source-layers below, identically in both themes —
+  //   place                → place-continent, place_country_major,
+  //                          place_country_other, place_state, place_capital_gen0,
+  //                          place_capital_gen1, place_city_large, place_city,
+  //                          place_town, place_village, place_suburb, place_other
+  //   transportation_name  → highway_name_major, highway_name_other,
+  //                          highway_shield_other, highway_shield_us_other,
+  //                          highway_shield_us_interstate
+  // Matching on source-layer rather than hardcoding those 17 ids means a Stadia
+  // rename or a new place tier is picked up automatically, and it is also what
+  // makes this safe: OUR labels (stations-label-*, history-stations-label-*)
+  // read from the 'stations' and 'history-vector' sources and can never match,
+  // so station names and route tooltips are untouched by design, not by an
+  // exclusion list that could drift. Deliberately NOT included: poi_*,
+  // aerodrome_label, and water_name_* — POIs and airports are not what was
+  // asked for, and the ocean labels are already permanently hidden above.
+  var BASE_LABEL_SOURCE_LAYERS = ['place', 'transportation_name'];
+  var baseLabelsVisible = true;
+  function applyBaseLabelVisibility() {
+    if (!map || !map.getStyle) return;
+    var style;
+    try { style = map.getStyle(); } catch (e) { return; }
+    if (!style || !style.layers) return;
+    style.layers.forEach(function (l) {
+      if (l.type !== 'symbol') return;
+      if (BASE_LABEL_SOURCE_LAYERS.indexOf(l['source-layer']) === -1) return;
+      try { map.setLayoutProperty(l.id, 'visibility', baseLabelsVisible ? 'visible' : 'none'); } catch (e) {}
+    });
+    var btn = document.getElementById('labels-btn');
+    if (btn) {
+      btn.setAttribute('aria-pressed', String(baseLabelsVisible));
+      btn.setAttribute('data-tooltip', baseLabelsVisible ? 'Hide Map Labels' : 'Show Map Labels');
+    }
+  }
+
   function railwayLineColorExpression(rc) {
     // status/kind come from the tileset schema defined in the runbook —
     // status: 'active' | 'disused' | 'abandoned' | 'construction'; kind:
@@ -2339,31 +2402,59 @@
   // than something inferred from data we don't have (no real network-extent
   // property exists per system).
   var HYPERLOCAL_METRO_EXTRA = ['Glasgow Subway'];
+  // A DOTTED pattern for heritage, and why it is a tier of its own
+  // (2026-07-27). line-dasharray is NOT a data-driven paint property in
+  // MapLibre — it takes one constant per layer — so "heritage renders dotted"
+  // cannot be expressed as an expression on a shared layer. Heritage therefore
+  // gets its own entry here and is filtered OUT of 'regional', which is
+  // otherwise where it sat. Adding it to ROUTE_TIERS rather than hand-rolling a
+  // parallel layer is what makes it free everywhere else: every loop in this
+  // file that adds, filters, colours, hides or restores operator lines already
+  // iterates ROUTE_TIERS, so the new layer and its hit layer are picked up by
+  // all of them (including History's hide/restore symmetry) without a second
+  // list to keep in step.
+  //
+  // DOTTED, not dashed: the Database legend already uses a dash for Closed, and
+  // a dashed heritage line would read as disused or planned — the opposite of
+  // what it means. [0, 2] with the round line-cap these layers already use is
+  // the standard way to get round dots rather than rectangles; dash units are
+  // multiples of line width, so it stays proportional as the zoom-interpolated
+  // width changes.
+  var HERITAGE_DASH = ['literal', [0, 2]];
+  // "No dash" as an explicit value — see applyOperatorHighlightPaint() for why
+  // null/undefined cannot be used to clear line-dasharray.
+  var SOLID_DASH = ['literal', [1, 0]];
   var ROUTE_TIERS = [
     { id: 'trunk', minzoom: undefined },
     { id: 'regional', minzoom: 7.5 },
+    { id: 'heritage', minzoom: 7.5, dash: HERITAGE_DASH },
     { id: 'hyperlocal', minzoom: 10 },
   ];
   // Default: everything is 'trunk' (i.e. the old "show everything, always"
   // behavior) until operatorColorsData has loaded and computeRouteTierFilters()
   // below can build the real category filters — graceful degrade on a slow/
   // failed fetch rather than hiding regional/hyperlocal networks by default.
-  var routeTierFilterById = { trunk: ['==', 1, 1], regional: NO_OPERATOR_FILTER, hyperlocal: NO_OPERATOR_FILTER };
+  var routeTierFilterById = { trunk: ['==', 1, 1], regional: NO_OPERATOR_FILTER, heritage: NO_OPERATOR_FILTER, hyperlocal: NO_OPERATOR_FILTER };
+  var HERITAGE_OPERATOR_KEY = 'Heritage'; // the canonical key operator-colors.json files preserved lines under
   function computeRouteTierFilters() {
     if (!operatorColorsData) return;
     var hyperlocalKeys = Object.keys(operatorColorsData.tfl_lines || {}).concat(HYPERLOCAL_METRO_EXTRA);
+    // Heritage NO LONGER rides along in 'regional' — it has its own tier so it
+    // can carry the dotted dash, see ROUTE_TIERS. Same minzoom, so nothing
+    // about WHEN heritage lines appear changes; only which layer draws them.
     var regionalKeys = Object.keys(operatorColorsData.metro || {})
-      .filter(function (k) { return HYPERLOCAL_METRO_EXTRA.indexOf(k) === -1; })
-      .concat(['Heritage']);
+      .filter(function (k) { return HYPERLOCAL_METRO_EXTRA.indexOf(k) === -1; });
     var regionalFilter = ['in', ['get', 'operators'], ['literal', regionalKeys]];
     var hyperlocalFilter = ['in', ['get', 'operators'], ['literal', hyperlocalKeys]];
+    var heritageFilter = ['==', ['get', 'operators'], HERITAGE_OPERATOR_KEY];
     routeTierFilterById = {
-      // Anything NOT recognized as regional/hyperlocal defaults to trunk —
-      // a real TOC key, or (defensively) an unrecognized future key, both
-      // stay always-visible rather than risk silently hiding an uncategorized
-      // segment.
-      trunk: ['!', ['any', regionalFilter, hyperlocalFilter]],
+      // Anything NOT recognized as regional/heritage/hyperlocal defaults to
+      // trunk — a real TOC key, or (defensively) an unrecognized future key,
+      // both stay always-visible rather than risk silently hiding an
+      // uncategorized segment.
+      trunk: ['!', ['any', regionalFilter, hyperlocalFilter, heritageFilter]],
       regional: regionalFilter,
+      heritage: heritageFilter,
       hyperlocal: hyperlocalFilter,
     };
     if (map) {
@@ -2402,6 +2493,27 @@
 
     map.setFilter('operator-lines-active', filter);
     map.setPaintProperty('operator-lines-active', 'line-color', colorExpr);
+    // Carry the heritage dash onto the crisp highlighted line, so a
+    // highlighted heritage route does not silently turn solid — this layer is
+    // shared by every operator, and line-dasharray cannot be data-driven, so
+    // it has to be set imperatively from whatever is active. Only applied when
+    // EVERY active operator is heritage: with a heritage route locked and a
+    // National Rail route hovered, one layer cannot draw both patterns, and
+    // solid is the safer of the two (a solid heritage line is a missing hint;
+    // a dotted National Rail line would be a false one). The GLOW rings stay
+    // solid regardless — dash units scale with line width, so the same [0, 2]
+    // on rings 3.6-7x wider would produce gaps several times longer than the
+    // line's own, reading as a broken halo rather than a matching one.
+    //
+    // SOLID_DASH, not null/undefined, to turn the dash back off. Verified
+    // against the MapLibre style spec: `line-dasharray: null` and `: undefined`
+    // are BOTH rejected ("array expected"), and a rejected setPaintProperty()
+    // returns false and applies nothing — so clearing it the obvious way would
+    // silently leave the previous route's dash on the layer for every operator
+    // highlighted afterwards. [1, 0] is a 1-unit dash with a zero-length gap,
+    // i.e. continuous.
+    var heritageOnly = activeOps.every(function (op) { return op === HERITAGE_OPERATOR_KEY; });
+    map.setPaintProperty('operator-lines-active', 'line-dasharray', heritageOnly ? HERITAGE_DASH : SOLID_DASH);
     // Glow rings are "same color" as the highlighted line per spec, not a
     // fixed white/dark neutral halo — opacity is NOT touched here, each
     // ring's own opacity is fixed for its lifetime (set once at creation,
@@ -2491,6 +2603,13 @@
   function addMapLayers() {
     greyOutLandcover(currentTheme());
     hideOceanLabels();
+    // MUST be re-applied here, not just on click. map.setStyle() (every theme
+    // toggle) replaces the whole style, and the base label layers come back
+    // from Stadia's JSON with their own default visibility — so without this
+    // line, hidden labels would silently reappear on every theme switch. Same
+    // failure class as the History layers and the ORM overlay, and the reason
+    // this function is the single re-apply point for everything runtime-owned.
+    applyBaseLabelVisibility();
 
     // Guarded with getSource/getLayer checks — belt-and-suspenders alongside
     // { diff: false } on setStyle() below. Without diff:false, MapLibre's
@@ -2650,15 +2769,21 @@
     // loader, and again below in case that already resolved before this
     // first run) replaces it with the real category split.
     ROUTE_TIERS.forEach(function (t) {
+      var basePaint = {
+        'line-color': rc.railwayMain, // always flat grey now — see applyOperatorHighlightPaint()'s comment
+        'line-width': operatorLineWidthExpression(ROUTE_BASE_WIDTH_MULTIPLIER),
+        'line-offset': operatorLineOffsetExpression(),
+      };
+      // Only the heritage tier declares one — see ROUTE_TIERS. The dash rides
+      // on the layer, so heritage reads as dotted in its resting grey state
+      // AND wherever it is coloured (History's modern band paints these same
+      // tier layers), not only when highlighted.
+      if (t.dash) basePaint['line-dasharray'] = t.dash;
       addLayerOnce({
         id: 'operator-lines-' + t.id, type: 'line', source: 'operator-vector', 'source-layer': 'operators',
         filter: routeTierFilterById[t.id],
         layout: { 'line-cap': 'round', 'line-join': 'round' },
-        paint: {
-          'line-color': rc.railwayMain, // always flat grey now — see applyOperatorHighlightPaint()'s comment
-          'line-width': operatorLineWidthExpression(ROUTE_BASE_WIDTH_MULTIPLIER),
-          'line-offset': operatorLineOffsetExpression(),
-        },
+        paint: basePaint,
       }, t.minzoom);
     });
     // Crisp, real-color line for whichever operator(s) are active, filtered
@@ -2902,7 +3027,12 @@
     { id: 'large', minzoom: 6 },
     { id: 'medium', minzoom: 7.5 },
     { id: 'small', minzoom: 9 },
-    { id: 'dense', minzoom: 11 },
+    // 2026-07-27: was 11. Lowered to 10 so the densest tier reveals one zoom
+    // step earlier. This array is the SINGLE definition of the station tiers —
+    // Live and Database read it directly, and History derives
+    // HISTORY_STATION_TIERS from it by concat — so this one number moves the
+    // dot layer, the hit layer AND the label layer in all three tabs at once.
+    { id: 'dense', minzoom: 10 },
   ];
   function stationTierFilter(tierId) { return ['==', ['get', 'tier'], tierId]; }
   // Shared by both the station tiers and the route category tiers below —
@@ -2988,6 +3118,20 @@
     // ensureSelectedMarkersOnTop's comment) — re-assert it's still on top
     // regardless, since this function just added fresh layers of its own.
     ensureSelectedMarkersOnTop();
+    // LIVE STATION LAYERS MUST NOT COME BACK VISIBLE WHILE HISTORY IS OPEN
+    // (2026-07-27). addLayerOnce() creates them with MapLibre's default
+    // visibility, i.e. visible — and addMapLayers() re-adds History's layers
+    // BEFORE it re-adds these, so on a theme toggle taken while in History
+    // mode, setHistoryLayerVisibility() ran against station layers that did
+    // not exist yet and then this function recreated them, visible and fully
+    // hit-testable, on top of the historical map. Clicking one of those ghost
+    // markers called selectStation() — which is what actually produced the
+    // reported "clicking a station in History throws me to the Live panel"
+    // (departure board, live updates and all) while the tab still said
+    // History. Re-asserting the mode's own visibility rules here fixes it at
+    // the source, and covers the other caller (tryAddStationsLayer's bounded
+    // retry) for free.
+    if (mode === 'history') setHistoryLayerVisibility();
   }
 
   // ── Full station marker set (2,637 stations, not just the curated ~50) ───
@@ -3316,8 +3460,22 @@
   // specific hit layers is a drop-in replacement for the old single
   // 'operator-lines-hit' string everywhere below.
   var OPERATOR_HIT_LAYERS = ROUTE_TIERS.map(function (t) { return 'operator-lines-hit-' + t.id; });
+  // 2026-07-27: EVERY handler in here now no-ops in History mode, matching the
+  // guard History's own handlers already carry.
+  //
+  // The bug this fixes: in History mode at 1994+ the modern operator layers
+  // ARE on screen (that is the whole point of the 1994 source-switch) and
+  // their hit layers are interactive, so these handlers still fired — and
+  // applyOperatorHighlightPaint() repaints every operator-lines-<tier> layer
+  // flat grey, because grey-until-hovered is the LIVE-mode reverse-colour-
+  // reveal. So hovering any line greyed out the entire network, and only
+  // dragging the slider brought the colour back (that re-runs
+  // applyHistoryModernPaint()). While History mode is active,
+  // applyHistoryModernPaint() is the sole owner of those layers' paint;
+  // nothing else may write to them.
   function wireOperatorLineInteractions() {
     map.on('mousemove', OPERATOR_HIT_LAYERS, function (e) {
+      if (mode === 'history') return;
       map.getCanvas().style.cursor = 'pointer';
       if (!e.features.length) return;
       var op = e.features[0].properties.operators;
@@ -3328,6 +3486,7 @@
       showHoverTooltip(e.lngLat, resolveOperatorDisplayName(op));
     });
     map.on('mouseleave', OPERATOR_HIT_LAYERS, function () {
+      if (mode === 'history') return;
       map.getCanvas().style.cursor = '';
       if (hoveredOperatorHighlight !== null) {
         hoveredOperatorHighlight = null;
@@ -3369,6 +3528,7 @@
     // modes identically, only the panel navigation + mode switch happen
     // here.
     map.on('click', OPERATOR_HIT_LAYERS, function (e) {
+      if (mode === 'history') return; // History owns its own per-segment click-lock, see wireHistoryMapInteraction()
       if (!e.features.length) return;
       // Stations sit ON the rail line, and this hit layer is a generously
       // wide (18px) invisible strip specifically so a real click near a
@@ -3398,6 +3558,7 @@
     // under the click, do nothing (leave whatever the handler above just
     // set), only clear when genuinely nothing was hit.
     map.on('click', function (e) {
+      if (mode === 'history') return;
       if (!lockedOperatorHighlight) return;
       var hits = map.queryRenderedFeatures(e.point, { layers: OPERATOR_HIT_LAYERS });
       if (hits.length) return;
@@ -3489,7 +3650,7 @@
       // only. The favourites feature saves stations and is untouched here.
       starBtn.style.display = 'none';
     } else if (type === 'histline') {
-      selTitleEl.textContent = selection.fallbackName || 'Railway line';
+      selTitleEl.textContent = selection.fallbackName || UNNAMED_LINE_LABEL;
       starBtn.style.display = 'none';
     } else if (type === 'histstation') {
       selTitleEl.textContent = (selection.station && selection.station.name) || 'Station';
@@ -3784,10 +3945,21 @@
   // scripts/fetch-osm-facts.mjs (s.wheelchair), just no longer rendered
   // here. wheelchairLabel()/WHEELCHAIR_LABELS removed with it — this was
   // their only caller.
-  function stationDatabaseSkeletonHtml() {
-    var crs = (selectedStationCrs || '').toUpperCase();
+  // `opts` (2026-07-27) exists so History mode can render this exact panel for
+  // a still-open station WITHOUT going through selectStation() — i.e. without
+  // touching selectedStationCrs/selectedStationName, without a departure-board
+  // fetch, and without the mode flag moving. Called with no argument this is
+  // byte-for-byte the Database-tab behaviour it always had.
+  //   opts.crs / opts.name  — render this station instead of the live selection
+  //   opts.omitBottomLinks  — caller supplies its own link row (History uses a
+  //                           lat/lon Google Map link, not a Place ID — closed
+  //                           stations have no Place ID and the panel should
+  //                           not switch link styles depending on the station)
+  function stationDatabaseSkeletonHtml(opts) {
+    opts = opts || {};
+    var crs = (opts.crs || selectedStationCrs || '').toUpperCase();
     var s = stationsContent[crs];
-    if (!s) return dbComingSoonHtml(selectedStationName || crs);
+    if (!s) return dbComingSoonHtml(opts.name || selectedStationName || crs);
     var html = '';
     // Headline now renders BEFORE the photo (2026-07-19 feedback — directly
     // under the title, ahead of the image). Photo (2026-07-17: always shown
@@ -3838,7 +4010,7 @@
     // _google.placeId (scripts/fetch-station-place-ids.mjs), falling back to
     // a lat/lon-constructed link when no placeId is set yet. Street View
     // link removed (2026-07-16, per the approved mockup).
-    html += dbBottomLinksHtml(s, coordsForCrs(crs));
+    if (!opts.omitBottomLinks) html += dbBottomLinksHtml(s, coordsForCrs(crs));
     return html || dbComingSoonHtml(s.name);
   }
   function wireStationDatabaseDetail() {
@@ -4059,7 +4231,7 @@
     if (selection.type === 'saved') return '<div class="sv-list" id="sv-list" data-anim-row>' + savedListRowsHtml() + '</div>';
     if (selection.type === 'histop') return historicalOperatorSkeletonHtml();
     if (selection.type === 'histline') return historicalLineSkeletonHtml();
-    if (selection.type === 'histstation') return historicalStationSkeletonHtml(selection.station || {});
+    if (selection.type === 'histstation') return historicalStationSkeletonHtml(selection.station || {}, selection.stationCoords);
     if (selection.type === 'route') return routeDetailSkeletonHtml();
     if (selection.type === 'operator') return operatorDetailSkeletonHtml();
     if (selection.type === 'fromto') return mode === 'database' ? fromToDatabaseSkeletonHtml() : fromToSkeletonHtml();
@@ -4086,6 +4258,11 @@
     contentBlock.innerHTML = sidebarSkeletonHtml();
     if (selection.type === 'histop' || selection.type === 'histline' || selection.type === 'histstation') {
       wireHistoryPanel();
+      // A still-open History station panel now embeds the Database reference
+      // block, which carries the Services operator chips — wire them with the
+      // same handler the Database tab uses. No-ops for closed-only stations
+      // and for the operator/line panels, which have no such element.
+      wireStationDatabaseDetail();
       // No schema.org JSON-LD for history entities yet — the stub content set
       // is too small for structured data to be meaningful, and emitting a
       // half-populated Organization record would be worse than none.
@@ -4931,6 +5108,29 @@
   // more than one band and half span all four (Phase 1B).
   var BAND_PROPERTY = { pre1923: 'co_pre1923', big4: 'co_big4', br: 'co_br' };
 
+  // The SELECTION-GLOW colour for a band, mirroring eraColorFor()'s lookup
+  // shape exactly but reading each entry's `highlight` sub-object (added to
+  // data/era-colors.json 2026-07-27 — see its _highlight_notes for how the
+  // values were derived and measured). Falls back to the band's own base
+  // colour if a highlight is missing, never to the UI accent: a missing value
+  // should look like "no highlight applied", not like the old behaviour.
+  function eraHighlightColorFor(bandKey, companyName) {
+    var theme = currentTheme();
+    var band = eraColors[bandKey];
+    if (!band) return eraColorFor(bandKey, companyName);
+    if (companyName && band.companies && band.companies[companyName]) {
+      var c = band.companies[companyName].highlight;
+      if (c && c[theme]) return c[theme];
+      return eraColorFor(bandKey, companyName);
+    }
+    // A single-colour band keeps its highlight at the top level; a band with
+    // companies keeps the "no company resolved" one under `unknown`.
+    var h = (band.companies ? (band.unknown && band.unknown.highlight) : band.highlight) ||
+      band.highlight || (band.unknown && band.unknown.highlight);
+    if (h && h[theme]) return h[theme];
+    return eraColorFor(bandKey, null);
+  }
+
   function eraColorFor(bandKey, companyName) {
     var theme = currentTheme();
     var band = eraColors[bandKey];
@@ -5601,6 +5801,18 @@
         'stations-label-' + t.id,
       );
     });
+    // THE SELECTED-STATION OVERLAY, TOO (2026-07-27). This is a separate
+    // GeoJSON source from the tiered markers above and was not in either list,
+    // so a station selected in Live/Database left its large turquoise dot (and
+    // its animated ring, and both From/To endpoint markers, which share these
+    // same two layers) floating over the historical map — reported as a ghost
+    // marker. Exactly the same class of leftover as the live station markers
+    // and the operator hit layers before them. Its opacity is driven
+    // imperatively by setSelectedStationPoints/syncSelectedMarkerLayers, so
+    // hiding by layout visibility here does not fight that animation, and
+    // restoring visibility does not force a marker back on screen when nothing
+    // is selected.
+    liveStationLayers.push(SELECTED_STATIONS_LAYER_ID, SELECTED_STATIONS_GLOW_LAYER_ID);
     liveStationLayers.forEach(function (id) {
       if (!map.getLayer(id)) return;
       if (mode === 'history') map.setLayoutProperty(id, 'visibility', 'none');
@@ -5621,6 +5833,9 @@
       ids.push('stations-circle-' + t.id, 'stations-circle-' + t.id + '-hit',
         'stations-hover-glow-' + t.id, 'stations-label-' + t.id);
     });
+    // Must mirror setHistoryLayerVisibility()'s hide list exactly — see the
+    // selected-station overlay comment there.
+    ids.push(SELECTED_STATIONS_LAYER_ID, SELECTED_STATIONS_GLOW_LAYER_ID);
     ids.forEach(function (id) {
       if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', 'visible');
     });
@@ -5835,7 +6050,7 @@
 
   function selectHistoricalLine(props) {
     ++selectionSeq;
-    selection = { type: 'histline', line: props, fallbackName: props.name || 'Railway line' };
+    selection = { type: 'histline', line: props, fallbackName: props.name || UNNAMED_LINE_LABEL };
     renderSelectionChrome();
     expandSidebarIfCollapsed();
     animateSidebarTransition();
@@ -5941,7 +6156,7 @@
     var html = '';
     var band = eraBandForYear(historyYear);
     var company = p[BAND_PROPERTY[band]] || null;
-    html += dbFieldHtml('Name', p.name || 'Unnamed line');
+    html += dbFieldHtml('Name', p.name || UNNAMED_LINE_LABEL);
     html += dbFieldHtml('On this map',
       (p.start_year !== undefined ? p.start_year : '?') + '–' +
       (p.end_year === undefined || p.end_year === null ? 'present' : p.end_year));
@@ -5965,9 +6180,57 @@
     return html;
   }
 
+  // Bottom link row for a History station panel: GOOGLE MAP | WIKIPEDIA.
+  //
+  // LAT/LON, NEVER A PLACE ID — deliberately different from dbBottomLinksHtml()
+  // (2026-07-27). Closed stations have no Google Place ID and never will, and a
+  // panel whose link silently changes shape depending on whether the station
+  // survives would be inconsistent for no reader-visible reason. Coordinates
+  // come from the clicked feature's own geometry, so open and closed stations
+  // are treated identically.
+  //
+  // "WIKIPEDIA", not "Source": verified across the whole dataset, all 8,884
+  // historical stations carry a `source` of the form "wikipedia:<article
+  // title>" — there are no other prefixes — so the generic label was hiding
+  // information the reader could have had. The prefix is still CHECKED rather
+  // than assumed, because the URL below is constructed from it: a future
+  // non-Wikipedia source would otherwise be given a wrong link under a wrong
+  // label instead of simply being omitted.
+  function historyStationLinksHtml(props, coords) {
+    var parts = [];
+    if (coords && coords.length === 2) {
+      parts.push('<a href="https://www.google.com/maps/search/?api=1&query=' +
+        encodeURIComponent(coords[1] + ',' + coords[0]) + '" target="_blank" rel="noopener">Google Map</a>');
+    }
+    var src = String(props.source || '');
+    if (/^wikipedia:/.test(src)) {
+      parts.push('<a href="https://en.wikipedia.org/wiki/' +
+        escapeAttr(src.replace(/^wikipedia:/, '').replace(/ /g, '_')) +
+        '" target="_blank" rel="noopener">Wikipedia</a>');
+    }
+    if (!parts.length) return '';
+    return '<div class="db-field" data-anim-row><div class="db-links">' +
+      parts.join('<span class="db-link-sep">|</span>') + '</div></div>';
+  }
+
   // Station panel in History mode — shows the FULL open/closed history, not
   // just the current period. 965 stations have more than one.
-  function historicalStationSkeletonHtml(props) {
+  //
+  // STILL-OPEN STATIONS ALSO GET THE DATABASE REFERENCE CONTENT (2026-07-27).
+  // The 2,565 historical stations that carry a `crs` are the same stations the
+  // Database tab documents, joined on the same code, so there is no reason for
+  // History to show a thinner panel for them. What it must NOT show is
+  // anything live: no departure board, no live updates. Tonight's departures
+  // next to a slider resting on 1891 is incoherent, and that is also what the
+  // old behaviour accidentally produced (see addStationsLayer()'s note on the
+  // ghost live markers). stationDatabaseSkeletonHtml() is REUSED rather than
+  // forked — it holds no live content of its own, so it needed only an opts
+  // argument to render a station other than the live selection.
+  //
+  // Closed-only stations (no crs) keep exactly the layout they had.
+  // The mode flag is never touched by any of this: History stays History, and
+  // the slider stays on screen and usable.
+  function historicalStationSkeletonHtml(props, coords) {
     var html = '';
     var periods = [];
     try { periods = JSON.parse(props.periods || '[]'); } catch (e) { periods = []; }
@@ -5981,14 +6244,18 @@
         }).join('<br>') + '</div></div>';
     }
     html += histPrecisionNoteHtml(props.start_precision, props.end_precision);
+    // STILL FLAGGED, still not removed without Aaron's say-so: this only ever
+    // renders when `crs` is present, and for all 2,565 such stations the last
+    // open period already ends in "present" — so it restates the row directly
+    // above it and can never say "No". Now that the Database block below adds
+    // a second, richer statement of the same fact, it is more redundant than
+    // when it was first raised, not less.
     if (props.crs) html += dbFieldHtml('Still open', 'Yes');
-    if (props.source) {
-      var title = String(props.source).replace(/^wikipedia:/, '');
-      // Same missing .db-field wrapper as the operator panel above — see its
-      // comment. This is the one the misalignment was reported against.
-      html += '<div class="db-field" data-anim-row><div class="db-links"><a class="db-link" href="https://en.wikipedia.org/wiki/' +
-        escapeAttr(title.replace(/ /g, '_')) + '" target="_blank" rel="noopener">Source</a></div></div>';
+    var crs = props.crs ? String(props.crs).toUpperCase() : null;
+    if (crs && stationsContent[crs]) {
+      html += stationDatabaseSkeletonHtml({ crs: crs, name: props.name, omitBottomLinks: true });
     }
+    html += historyStationLinksHtml(props, coords);
     return html;
   }
 
@@ -6004,9 +6271,14 @@
     });
   }
 
-  function selectHistoricalStation(props) {
+  // `coords` is the clicked feature's own [lon, lat] — the historical station
+  // properties carry no coordinates of their own, and the panel's Google Map
+  // link needs them (see historyStationLinksHtml). Not restored from the URL
+  // because histstation is not a serialised selection type; if that ever
+  // changes, the link degrades to Wikipedia-only rather than breaking.
+  function selectHistoricalStation(props, coords) {
     ++selectionSeq;
-    selection = { type: 'histstation', station: props, fallbackName: props.name || 'Station' };
+    selection = { type: 'histstation', station: props, stationCoords: coords || null, fallbackName: props.name || 'Station' };
     // Moving on to a DIFFERENT kind of selection releases the segment lock —
     // the same rule selectStation() follows in the other tabs, where it calls
     // clearOperatorHighlight() for exactly this reason.
@@ -6036,19 +6308,27 @@
   // Four features have no operator attributed at all, so for most of the map
   // there is no network to highlight. Per-segment is the only behaviour that
   // works across every band.
+  // ONE string for an unnamed line, used by the hover tooltip, the sidebar
+  // title and the panel's own Name field (2026-07-27). Those three used to
+  // disagree — the tooltip showed nothing at all, the title said "Railway
+  // line" and the field said "Unnamed line". The earlier decision to suppress
+  // the tooltip entirely is reversed now that it has been seen on screen: a
+  // segment that reacts to hover but shows no tooltip reads as broken, not as
+  // missing data.
+  var UNNAMED_LINE_LABEL = 'Unnamed railway line';
   function historyHoverLabel(props) {
     // The operator shown is the one for the CURRENT BAND only — never a
     // fallback to another band's attribution, which would silently claim e.g.
     // a Big Four company for a year it did not run the line.
     var band = eraBandForYear(historyYear);
     var company = BAND_PROPERTY[band] ? props[BAND_PROPERTY[band]] : null;
-    var name = props.name || null;
+    // An unnamed line still gets a tooltip — see UNNAMED_LINE_LABEL. The
+    // operator, when one IS attributed for this band, keeps its place in front
+    // of it exactly as before.
+    var name = props.name || UNNAMED_LINE_LABEL;
     // No operator attributed: show the line name ALONE. No "unknown", no empty
     // operator row — an absent attribution is not a fact worth a line of UI.
-    if (name && company) return company + ': ' + name;
-    if (name) return name;
-    if (company) return company;
-    return null; // nothing to say — see the no-name finding in the report
+    return company ? company + ': ' + name : name;
   }
 
   // 2026-07-27: was applyHistoryHoverPaint(), driven by a single
@@ -6093,20 +6373,39 @@
     // The YEAR filter is folded in so a highlighted segment that the slider has
     // just moved out of range of stops glowing immediately.
     var filter = ['all', historyLineYearFilter(), ['in', ['get', 'source'], ['literal', active]]];
-    // Highlight colour must read against a flat single-colour network — that
-    // is the whole point. Using the UI accent rather than the band colour makes
-    // the highlighted segment unambiguously "the thing you picked" instead
-    // of a slightly brighter version of its neighbours.
-    // NOTE: --t/accent is reserved for UI meaning, and a selection highlight IS
-    // UI meaning rather than operator identity, so this does not breach the
-    // palette rule the era colours follow.
-    var color = THEME_COLORS[currentTheme()].accent;
+    // 2026-07-27: was a flat UI accent (--t turquoise) for every band. Each
+    // band now highlights in ITS OWN colour family — a brighter Rail Blue for
+    // BR, a brighter version of the company's own livery inside the Big Four,
+    // and near-white/near-black for the two neutral bands, where a merely
+    // lighter grey would not register as a highlight at all against a grey
+    // network. Values and their measured separations live in
+    // data/era-colors.json; nothing is hardcoded here.
+    //
+    // A per-feature MATCH, not one flat colour, for the same reason
+    // applyHistoryPaint() uses one: locked and hovered can be two different
+    // segments belonging to two different Big Four companies at once, and a
+    // single colour would paint one of them with the other's highlight.
+    var color = eraHighlightExpression(eraBandForYear(historyYear));
     GLOW_RINGS.forEach(function (ring, i) {
       var id = HIST_GLOW_PREFIX + i;
       if (!map.getLayer(id)) return;
       map.setFilter(id, filter);
       map.setPaintProperty(id, 'line-color', color);
     });
+  }
+  // Same shape as applyHistoryPaint()'s base-colour expression, reading the
+  // highlight values instead. `modern` never reaches here — at 1994+ the
+  // historical lines and their hit layer are hidden, so nothing is hoverable.
+  function eraHighlightExpression(band) {
+    var bandData = eraColors[band] || {};
+    if (!bandData.companies) return eraHighlightColorFor(band, null);
+    var prop = BAND_PROPERTY[band];
+    var match = ['match', ['coalesce', ['get', prop], '']];
+    Object.keys(bandData.companies).forEach(function (name) {
+      match.push(name, eraHighlightColorFor(band, name));
+    });
+    match.push(eraHighlightColorFor(band, null));
+    return match;
   }
 
   function clearHistoryHover() {
@@ -6235,7 +6534,7 @@
     var histStationHits = historyStationHitLayers();
     map.on('click', histStationHits, function (e) {
       if (mode !== 'history' || !e.features || !e.features.length) return;
-      selectHistoricalStation(e.features[0].properties);
+      selectHistoricalStation(e.features[0].properties, e.features[0].geometry.coordinates);
     });
     map.on('mousemove', histStationHits, function (e) {
       if (mode !== 'history' || !e.features || !e.features.length) return;
@@ -6333,7 +6632,13 @@
     // History-only selection types — the history-focused operator/station/line
     // panels. Same reasoning as liveOnly/dbOnly: carrying one into a mode that
     // cannot render it would leave the sidebar showing an inapplicable view.
-    var historyOnly = selection.type === 'histop' || selection.type === 'histline';
+    // 'histstation' was missing here (2026-07-27) — the other two history
+    // types were listed but the station one was not, so a History station
+    // panel survived a switch to Live/Database and rendered its open-periods
+    // block under the wrong tab. Same reasoning as histop/histline: a mode
+    // that cannot render this view should not keep it.
+    var historyOnly = selection.type === 'histop' || selection.type === 'histline' ||
+      selection.type === 'histstation';
     if ((mode === 'database' && liveOnly) || (mode === 'live' && dbOnly) ||
         (mode !== 'history' && historyOnly) || (mode === 'history' && (liveOnly || dbOnly))) {
       selection = { type: 'none' };
@@ -6399,6 +6704,18 @@
     // update just above.
     layersBtn.setAttribute('data-tooltip', ormVisible ? 'Hide Base Rail Network' : 'Show Base Rail Network');
   });
+
+  // Sibling of the base-rail toggle above, same interaction shape: flip the
+  // flag, re-apply, and keep the tooltip describing what the NEXT click will
+  // do. The visibility work itself lives in applyBaseLabelVisibility() rather
+  // than here precisely because addMapLayers() has to call it too.
+  var labelsBtn = document.getElementById('labels-btn');
+  if (labelsBtn) {
+    labelsBtn.addEventListener('click', function () {
+      baseLabelsVisible = !baseLabelsVisible;
+      applyBaseLabelVisibility();
+    });
+  }
   document.getElementById('my-location').addEventListener('click', function () {
     if (!navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition(function (pos) {

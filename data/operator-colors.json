@@ -256,8 +256,9 @@
     }
   },
   "heritage": {
-    "dark": "#E79945",
-    "light": "#C67620"
+    "_note": "2026-07-27: was amber (#E79945/#C67620), changed to a warm coral/salmon because the amber clashed with West Midlands Railway — measured deltaE2000 4.5 in dark theme and 11.1 in light, the WORST pair in the whole palette for the old value. Coral separates cleanly in hue from WMR's amber, from the reserved turquoise --t (which means 'selected' everywhere and so cannot carry a resting state), and from BR rail blue; the warm/cool split also survives CVD better than an amber-vs-red split would. Measured against every toc/metro/tfl_lines entry in both themes and under protanopia and deuteranopia simulation: WMR separation rises to 21.4 (dark) / 21.5 (light), and the worst-case separation against ANY other operator improves from 4.1 to 6.3 (dark) and from 1.8 to 7.3 (light). Those worst cases are still below the palette's nominal 15 threshold, but so were the amber's — this palette is dense (221 flagged pairs overall, 0 of them known-adjacent) and the change is strictly better on every axis, not a new compromise. The remaining nearest neighbours are the TfL Central line (dark) and Transport for Wales (light); heritage now also renders DOTTED (see map.html's operator-lines-heritage layer), which no TfL line or TOC does, so the one genuinely adjacent case — the Epping Ongar Railway sitting at the end of the Central line — is separated by line pattern as well as hue. NOT derived by toVividLightTheme/toDarkThemeFromLight: those clamp saturation to >=72 and lightness into 38-54, which cannot express a coral at all (they pull it to a vivid red, measured worst-case CVD 3.2). Hand-set constants with the same gate check Blackpool Tramway already uses — see scripts/build-operator-palette.mjs.",
+    "dark": "#FC7B64",
+    "light": "#DE6454"
   },
   "assignment_report": [
     {

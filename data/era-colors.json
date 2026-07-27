@@ -14,6 +14,15 @@
       "_note": "INTENTIONALLY IDENTICAL to this band's own dark/light values. The locked decision makes pre1923 a single neutral band, so co_pre1923 drives the POPUP only and never paint — there is no attributed-vs-unknown colour distinction to make here. The key exists so all three bands expose the same shape to map.html (one lookup path, no per-band special-casing) and so it can be given its own value later if the band ever stops being single-colour. 6,859 of 10,754 pre1923-band features have no company name, and they render exactly like the 3,895 that do.",
       "dark": "#C9BBA4",
       "light": "#7D7361"
+    },
+    "highlight": {
+      "_dE2000_vs_base": {
+        "dark": 18.2,
+        "light": 36.6
+      },
+      "_note": "Neutral band — the hard case flagged in the brief. A \"brighter grey\" against a grey network would not register, so these are pushed all the way to pure white / pure black. 18.2 in dark is the LOWEST of any band and is a hard ceiling, not a tuning choice: the base #C9BBA4 is already a light stone at L*76, so white is only 24 L* away. The glow is 3.6-7x the line width and blurred, so most of the \"this one is selected\" signal is the halo itself; the colour only has to say which line it belongs to.",
+      "dark": "#FFFFFF",
+      "light": "#000000"
     }
   },
   "big4": {
@@ -27,30 +36,72 @@
         "livery": "chocolate and cream (coaching stock)",
         "_note": "GWR's Brunswick green locomotive green would collide with both LNER apple green and SR malachite green — three greens in a four-colour band is unusable. The chocolate-and-cream coaching livery is equally real, equally iconic, and the only one of GWR's identities that is not a green.",
         "dark": "#D69A5C",
-        "light": "#9C5B22"
+        "light": "#9C5B22",
+        "highlight": {
+          "_dE2000_vs_base": {
+            "dark": 16,
+            "light": 18.6
+          },
+          "dark": "#FFBD0F",
+          "light": "#F45905"
+        }
       },
       "London, Midland and Scottish Railway": {
         "livery": "crimson lake",
         "dark": "#D4485C",
-        "light": "#9E1B2F"
+        "light": "#9E1B2F",
+        "highlight": {
+          "_dE2000_vs_base": {
+            "dark": 15.2,
+            "light": 25.3
+          },
+          "dark": "#FF766B",
+          "light": "#FE4B39"
+        }
       },
       "London and North Eastern Railway": {
         "livery": "apple green",
         "dark": "#9FC93C",
-        "light": "#6B8E23"
+        "light": "#6B8E23",
+        "highlight": {
+          "_dE2000_vs_base": {
+            "dark": 16.7,
+            "light": 9.3
+          },
+          "dark": "#F5FF19",
+          "light": "#39A106",
+          "_note": "FLAGGED, BELOW THE BAR: 9.3 dE in LIGHT theme, against a 15 target. Apple green is the one company colour whose light-theme value (#6B8E23) already sits at the contrast floor — its luminance is 0.227 against a 0.253 ceiling for contrast 3.0 on the light basemap — so there is almost no room to go brighter without the highlight becoming less visible than the resting line. Two alternatives were measured and rejected as defaults, both available if Aaron prefers them: #156300 (deep vivid green, dE 19.0, contrast 6.69) clears the bar but goes DARKER, inconsistent with the other three companies, and sits only 12.5 from Southern Railway base; #A48904 (mustard, dE 17.5, contrast 3.06, clears SR by 34.2) clears everything but stops reading as apple green. The shipped value keeps both the direction and the hue identity and clears every band-mate by >= 15 — its weakness is only against its own base."
+        }
       },
       "Southern Railway": {
         "livery": "malachite green",
         "_note": "Pulled deliberately greener/darker than true malachite so it stays clear of the reserved turquoise --t (#40E0D0). Measured hue separation ~22deg plus a large lightness gap.",
         "dark": "#22A06B",
-        "light": "#0E6E48"
+        "light": "#0E6E48",
+        "highlight": {
+          "_dE2000_vs_base": {
+            "dark": 25.5,
+            "light": 18.8
+          },
+          "dark": "#A7FFB3",
+          "light": "#11A15B"
+        }
       }
     },
     "unknown": {
       "label": "Company unknown",
       "_note": "Not 'no company' — these lines had an owner, we just cannot evidence which one from open sources. The UI should say so rather than implying the line was unowned or unimportant. THIS IS THE ONLY per-band unknown that actually renders: measured 9,280 of 10,465 big4-band features (88.7%) fall here. Its distinctness from the pre1923 band colour is therefore what makes the 1923 transition visible at all for the majority of the map — measured deltaE 32.8 against pre1923 #C9BBA4, and 27.5 against BR rail blue for the 1948 transition. Tune with those two numbers in mind rather than in isolation.",
       "dark": "#7E8AA0",
-      "light": "#5A6577"
+      "light": "#5A6577",
+      "highlight": {
+        "_dE2000_vs_base": {
+          "dark": 31.7,
+          "light": 31.1
+        },
+        "_note": "The other neutral. Far more headroom than pre1923 because the blue-grey base is mid-lightness in both themes.",
+        "dark": "#FFFFFF",
+        "light": "#000000"
+      }
     }
   },
   "br": {
@@ -67,6 +118,15 @@
       "_note": "UNREACHABLE IN PRACTICE — present for schema symmetry only. co_br is written as the constant 'British Railways' on every feature alive in 1948-1993, so measured attribution in this band is 10,304/10,304 = 100.0% and this value can never be selected. Kept so map.html's band lookup has a uniform shape; if it ever renders, something upstream has broken and that is worth noticing rather than silently falling back to a company colour.",
       "dark": "#3F5478",
       "light": "#2A3B57"
+    },
+    "highlight": {
+      "_dE2000_vs_base": {
+        "dark": 19.3,
+        "light": 31.2
+      },
+      "_note": "\"A brighter blue in the Rail Blue family\" — hue held within ~12deg of BS 4800 18 E 53 in both themes.",
+      "dark": "#ABB3FF",
+      "light": "#0191E8"
     }
   },
   "modern": {
@@ -88,5 +148,6 @@
       "pre1923_to_big4_transition_delta_e": 32.8,
       "big4_to_br_transition_delta_e": 27.5
     }
-  }
+  },
+  "_highlight_notes": "2026-07-27. The colour of the SELECTION GLOW for a highlighted (hovered or click-locked) segment in this band. Was the flat UI accent (--t turquoise) for every band regardless of era; now each band highlights in its own colour family so the highlight reads as \"a brighter version of this line\" rather than an unrelated UI colour. Values were optimised, not eyeballed: for each one, maximise CIEDE2000 against the band base subject to (a) contrast >= 3.0 against the real Stadia basemap background (#333333 dark, rgb(242,243,240) light — read from the live style JSON, not assumed), (b) never less saturated than the base, and (c) >= 15 dE from every OTHER colour rendered in the same band at the same time. Direction differs by theme because the bases do: dark-theme bases are light-on-dark so highlights go BRIGHTER, and the two neutral bands go to pure white; light-theme bases are dark-on-light so the neutrals go to pure BLACK (near-white would dissolve into the basemap) while the chromatics go brighter and more vivid. See each entry for its measured dE."
 }

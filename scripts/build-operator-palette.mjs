@@ -362,8 +362,30 @@ const BLACKPOOL_TRAMWAY_DARK = '#932B64';
   placedLight['Blackpool Tramway'] = BLACKPOOL_TRAMWAY_LIGHT;
 }
 
-const HERITAGE_COLOR = '#B8752E';
-const heritageLight = toVividLightTheme(HERITAGE_COLOR);
+// ── Heritage — hand-set constants, NOT derived (2026-07-27) ──────────────
+// Was `toVividLightTheme('#B8752E')`, an amber. That amber's single worst
+// pair in the entire palette was West Midlands Railway (#FFA342/#FF8300):
+// measured ΔE2000 4.5 in dark theme, 11.1 in light. Replaced with a warm
+// coral/salmon, which lifts WMR separation to 21.4 (dark) / 21.5 (light) and
+// improves the worst-case separation against ANY other operator from 4.1 to
+// 6.3 (dark) and 1.8 to 7.3 (light), under normal vision and under both
+// protanopia and deuteranopia simulation.
+//
+// DERIVATION IS BYPASSED ON PURPOSE. toVividLightTheme() forces saturation
+// >= 72 and lightness into 38-54, and toDarkThemeFromLight() lifts from
+// there — that band cannot express a coral at all. Every seed hue in the
+// coral range comes out of the pair as a vivid red (#C52115 / #EF3F32),
+// which both misses the requested colour and measures WORSE than the amber
+// it replaces (worst-case CVD separation 3.2). Same escape hatch Blackpool
+// Tramway above already uses for the same class of reason — though note that
+// heritage has never been run through passesGates() (it did not go through
+// the placement search at all, before or after this change), so these two
+// values are verified by the measurements recorded in
+// data/operator-colors.json's heritage._note and nothing here will catch it
+// if a future TOC placement lands on top of them. Change the pair together.
+const HERITAGE_LIGHT = '#DE6454';
+const HERITAGE_DARK = '#FC7B64';
+const heritageLight = HERITAGE_LIGHT;
 
 // ═══ Dark theme — derived from light (lift lightness, preserve hue) ══════
 // Same direction as tfl_lines already used: the (real or best-available)
@@ -408,7 +430,8 @@ for (const key of [...tocOrder, ...Object.keys(METRO_BASE)]) {
   if (!gateDark.ok) throw new Error(`Blackpool Tramway dark candidate no longer clears gates (${gateDark.reason}) — re-run the search, don't just ignore this.`);
   darkByKey['Blackpool Tramway'] = BLACKPOOL_TRAMWAY_DARK;
 }
-const heritageDark = toDarkThemeFromLight(heritageLight);
+// Hand-set, not lifted from light — see HERITAGE_LIGHT/HERITAGE_DARK above.
+const heritageDark = HERITAGE_DARK;
 
 // ═══ TfL individual line colors — unchanged from the prior round (already
 // real-corporate-anchored, light=official/unmodified, dark=lift) ═════════
