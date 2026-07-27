@@ -256,6 +256,20 @@
      magenta-for-Live/turquoise-for-Database split). */
   .header-tab { display: flex; align-items: center; padding: 8px 14px; border-radius: 999px; font-size: 13.5px; font-weight: 500; color: var(--ink); }
   .header-tab.live-on, .header-tab.db-on, .header-tab.history-on { background: var(--t); color: #07090C; }
+  /* LIGHT THEME: the ACTIVE pill's label goes white (2026-07-27). The rule
+     above sets a near-black label, which is right on dark theme's bright
+     #40E0D0 pill (contrast 12.14) but wrong on light theme's much darker
+     #1A9E8F pill, where near-black on dark teal is what was reported as "the
+     tab labels render black". This is not a new treatment — .nav-link.active,
+     the site-standard pill this control was explicitly built to match, has
+     carried exactly this override since it was written; .header-tab simply
+     copied the dark-theme rule and never got the light-theme sibling.
+     INACTIVE tabs were already correct and are untouched: they use var(--ink),
+     the same token .ghost-btn uses, so they already match the buttons beside
+     them in both themes. */
+  :root[data-theme="light"] .header-tab.live-on,
+  :root[data-theme="light"] .header-tab.db-on,
+  :root[data-theme="light"] .header-tab.history-on { color: #FFFFFF; }
   /* Predecessor/successor chip with no content record behind it — rendered
      visibly disabled rather than suppressed, so a real historical relationship
      ("the LMS succeeded the Caledonian Railway") still shows even before that
@@ -909,10 +923,11 @@
      value now also has to stay in step with data/operator-colors.json. */
   .legend-line.heritage { background-image: radial-gradient(circle at center, var(--heritage) 0 1px, transparent 1px); background-size: 3px 2px; background-repeat: repeat-x; }
 
-  .hp-body { padding: 14px 14px 0; }
-  #db-legend.collapsed .hp-body { display: none; }
-  .hp-era { display: block; font-family: var(--font-display); font-size: 20px; font-weight: 600;
-    letter-spacing: -0.5px; color: var(--t); margin-bottom: 10px; }
+  /* .hp-body / .hp-era used to style the old Database-mode history panel's
+     expandable body and its era caption. Both were orphaned when the year
+     slider moved to History mode — #db-legend has no .hp-body element and
+     nothing renders .hp-era — so they are gone (2026-07-27). Checked before
+     deleting: no markup and no JS references either. */
 
 
 </style>
@@ -4961,6 +4976,12 @@
   // knowledge of which caller it's for. Extracted from what used to be
   // renderRoutePolylineGeometry()'s body so From/To didn't need to
   // duplicate the whole add-source/add-layer/wire-handlers-once dance.
+  // History mode never shows the present-day path highlight — see
+  // setHistoryLayerVisibility()'s note. Consulted at every point this function
+  // sets the layers' visibility, because addMapLayers() re-runs the whole
+  // redraw on a theme toggle and would otherwise hand History a visible
+  // modern route back.
+  function routeHighlightVisibility() { return mode === 'history' ? 'none' : 'visible'; }
   function drawMagentaHighlightGeometry(coords) {
     // No isStyleLoaded() guard here on purpose: style.load firing does not
     // guarantee isStyleLoaded() returns true immediately (same MapLibre gap
@@ -4977,7 +4998,7 @@
     if (!map.getLayer(ROUTE_LAYER_ID)) {
       map.addLayer({
         id: ROUTE_LAYER_ID, type: 'line', source: ROUTE_SOURCE_ID,
-        layout: { 'line-cap': 'round', 'line-join': 'round', visibility: 'visible' },
+        layout: { 'line-cap': 'round', 'line-join': 'round', visibility: routeHighlightVisibility() },
         paint: {
           'line-color': '#F25CC1', // --m design token
           // Zoom-interpolated so the highlight reads consistently at any
@@ -4987,7 +5008,7 @@
         },
       });
     } else {
-      map.setLayoutProperty(ROUTE_LAYER_ID, 'visibility', 'visible');
+      map.setLayoutProperty(ROUTE_LAYER_ID, 'visibility', routeHighlightVisibility());
     }
     // Same invisible-wide-hit-layer treatment as operator-lines-hit above —
     // this highlight only renders 1.5-4px wide, too thin to hit-test
@@ -4996,11 +5017,11 @@
     if (!map.getLayer(ROUTE_HIT_LAYER_ID)) {
       map.addLayer({
         id: ROUTE_HIT_LAYER_ID, type: 'line', source: ROUTE_SOURCE_ID,
-        layout: { 'line-cap': 'round', 'line-join': 'round', visibility: 'visible' },
+        layout: { 'line-cap': 'round', 'line-join': 'round', visibility: routeHighlightVisibility() },
         paint: { 'line-color': '#000000', 'line-opacity': 0, 'line-width': 18 },
       });
     } else {
-      map.setLayoutProperty(ROUTE_HIT_LAYER_ID, 'visibility', 'visible');
+      map.setLayoutProperty(ROUTE_HIT_LAYER_ID, 'visibility', routeHighlightVisibility());
     }
     if (!routeHandlersWired) {
       // map.on(event, layerId, handler) listeners live on the Map instance,
@@ -5813,6 +5834,13 @@
     // restoring visibility does not force a marker back on screen when nothing
     // is selected.
     liveStationLayers.push(SELECTED_STATIONS_LAYER_ID, SELECTED_STATIONS_GLOW_LAYER_ID);
+    // AND THE MAGENTA PATH LINE ITSELF (2026-07-27). Its two endpoint markers
+    // were hidden in History a batch earlier but the line between them was
+    // not, which left a present-day routing path drawn across an 1891 network
+    // with no endpoints — worse than either showing both or hiding both. Both
+    // the visible line and its invisible hit layer go, so the path is not
+    // silently clickable either.
+    liveStationLayers.push(ROUTE_LAYER_ID, ROUTE_HIT_LAYER_ID);
     liveStationLayers.forEach(function (id) {
       if (!map.getLayer(id)) return;
       if (mode === 'history') map.setLayoutProperty(id, 'visibility', 'none');
@@ -5836,6 +5864,14 @@
     // Must mirror setHistoryLayerVisibility()'s hide list exactly — see the
     // selected-station overlay comment there.
     ids.push(SELECTED_STATIONS_LAYER_ID, SELECTED_STATIONS_GLOW_LAYER_ID);
+    // The path line is the ONE deliberate asymmetry, and it has to be: unlike
+    // every other layer here, visibility:'none' on ROUTE_LAYER_ID is also how
+    // clearRoutePolyline() says "there is no route to show". A blanket restore
+    // would resurrect a route the user had already cleared. So it is restored
+    // only when a selection that owns a path is actually live.
+    if (selection.type === 'fromto' || selection.type === 'route') {
+      ids.push(ROUTE_LAYER_ID, ROUTE_HIT_LAYER_ID);
+    }
     ids.forEach(function (id) {
       if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', 'visible');
     });
@@ -6244,13 +6280,13 @@
         }).join('<br>') + '</div></div>';
     }
     html += histPrecisionNoteHtml(props.start_precision, props.end_precision);
-    // STILL FLAGGED, still not removed without Aaron's say-so: this only ever
-    // renders when `crs` is present, and for all 2,565 such stations the last
-    // open period already ends in "present" — so it restates the row directly
-    // above it and can never say "No". Now that the Database block below adds
-    // a second, richer statement of the same fact, it is more redundant than
-    // when it was first raised, not less.
-    if (props.crs) html += dbFieldHtml('Still open', 'Yes');
+    // "Still open" was removed here on 2026-07-27 (approved). It only ever
+    // rendered when `crs` was present, and for all 2,565 such stations the
+    // last open period already ends in "present" — so it restated the Open
+    // periods row directly above it and could never say "No". The Database
+    // reference block below now states the same fact far more richly. Do not
+    // reintroduce it: "is this station still open" is answered by the period
+    // list, and by whether that block renders at all.
     var crs = props.crs ? String(props.crs).toUpperCase() : null;
     if (crs && stationsContent[crs]) {
       html += stationDatabaseSkeletonHtml({ crs: crs, name: props.name, omitBottomLinks: true });
@@ -6627,6 +6663,17 @@
     // the path's own facts in Database — and the map highlight is the same
     // either way, so switching tabs keeps the route you searched for
     // instead of silently throwing it away.
+    //
+    // HISTORY IS THE EXCEPTION TO THAT (2026-07-27), and only on the MAP, not
+    // in the selection: the fromto selection itself still survives a switch
+    // into History exactly as above, so switching back restores it untouched.
+    // What History hides is the map HIGHLIGHT — the magenta path line, its hit
+    // layer, and the two endpoint markers (see setHistoryLayerVisibility()).
+    // A present-day routing path drawn over an 1891 network is not a route
+    // anyone could have travelled, and half of it was already being hidden,
+    // which is what made the inconsistency visible. Live and Database are
+    // unaffected: both show real present-day track, so the path means
+    // something there.
     var liveOnly = selection.type === 'saved';
     var dbOnly = selection.type === 'route' || selection.type === 'operator';
     // History-only selection types — the history-focused operator/station/line
@@ -6776,10 +6823,42 @@
   // camera fitBounds() would (via cameraForBounds(), the exact function
   // fitBounds() calls internally) and then flies there with `zoomOut`
   // subtracted, instead of handing bounds straight to fitBounds().
-  function flyToBoundsZoomedOut(bounds, padding, zoomOut, duration) {
+  //
+  // ── THE ZOOM FLOOR (2026-07-27) ──────────────────────────────────────────
+  // operators.pmtiles is built `-Z5 -z14`, i.e. its minzoom is 5, and MapLibre
+  // does NOT synthesise tiles below a source's minzoom — covering_tiles.ts
+  // returns an empty list outright (`if (z < options.minzoom) return []`).
+  // Below z5 there is therefore no operator data on the map at all: no route
+  // lines, and querySourceFeatures('operator-vector', …) returns nothing.
+  //
+  // Every caller of this helper depends on that source, and every one of them
+  // was landing under the floor. Measured against real bounds at a 1440x900
+  // viewport with the old padding 100 / zoomOut 2: GB-wide fits at z5.04 and
+  // flew to z3.04; an LNER-sized network fits at z5.63 and flew to z3.63;
+  // London-to-Edinburgh fits at z6.01 and flew to z4.01. All three land in
+  // empty space. That single fact caused two separately-reported bugs:
+  //   · the operator search "flies out far enough to show Iceland,
+  //     Scandinavia and Iberia" — z3.6 on a Mercator world map is exactly
+  //     that view; and
+  //   · a From/To search drawing no path highlight at all, because
+  //     resolveFromToGeometry() reads the path's geometry out of those very
+  //     tiles and got nothing back on all ten of its retries.
+  // Clamping here fixes both at the source rather than tuning each caller.
+  // Verified the clamp is enough on its own: decoding a real z5 operator tile,
+  // the worst-case drawn-length ratio against the graph's stored length_m is
+  // 0.905, comfortably inside edgeGeometryIsPlausible()'s 0.5 floor — so z5
+  // geometry is faithful enough for the resolver, and the floor does not need
+  // to be raised above the tileset's own minimum.
+  var OPERATOR_TILES_MIN_ZOOM = 5;
+  function flyToBoundsZoomedOut(bounds, padding, zoomOut, duration, maxZoom) {
     var cam = map.cameraForBounds(bounds, { padding: padding });
-    if (!cam) { map.fitBounds(bounds, { padding: padding, duration: duration }); return; } // shouldn't happen (only returns undefined if the bounds can't fit at all), fall back to the normal path just in case
-    map.flyTo({ center: cam.center, zoom: Math.max(0, cam.zoom - zoomOut), duration: duration });
+    if (!cam) { map.fitBounds(bounds, { padding: padding, maxZoom: maxZoom, duration: duration }); return; } // shouldn't happen (only returns undefined if the bounds can't fit at all), fall back to the normal path just in case
+    var z = cam.zoom - zoomOut;
+    // Clamped here rather than passed to cameraForBounds as a maxZoom option —
+    // this arithmetic is guaranteed to behave the same across MapLibre
+    // versions, and it has to run after the zoomOut subtraction anyway.
+    if (maxZoom !== undefined) z = Math.min(z, maxZoom);
+    map.flyTo({ center: cam.center, zoom: Math.max(OPERATOR_TILES_MIN_ZOOM, z), duration: duration });
   }
   var FROMTO_ZOOM_OUT = 2;
 
@@ -6795,8 +6874,29 @@
   // camera happened to be sitting before this search. Same bounded-retry
   // shape as resolveFromToGeometry()/tryResolveGeometry() elsewhere in this
   // file: keep asking until real bounds come back or give up quietly.
-  var OPERATOR_FIT_PADDING = FROMTO_FIT_PADDING;
-  var OPERATOR_ZOOM_OUT = FROMTO_ZOOM_OUT;
+  // 2026-07-27: these used to alias the Destination values (padding 100,
+  // zoomOut 2). An operator search is not the same job as a Destination
+  // search — the point is to SHOW THE NETWORK, so it should fill the
+  // viewport, not sit in the middle of one.
+  //   padding 60  — the file's existing route-fit padding (drawRoutePolyline
+  //                 fits a named route with `{ padding: 60 }`), reused rather
+  //                 than inventing a third number. 100 was Destination's own,
+  //                 chosen for two points needing breathing room, not for a
+  //                 network that IS the subject.
+  //   zoomOut 0   — no deliberate pull-back at all. This was the single
+  //                 biggest contributor to the "shows Iceland and Iberia"
+  //                 report: two whole zoom levels off an already-fitted
+  //                 country-scale network quadruples the visible area twice
+  //                 over.
+  //   maxZoom 11  — a floor-level guard for the opposite case: a small
+  //                 operator (a single heritage line, Glasgow Subway) fits at
+  //                 a very high zoom, and slamming to z15 reads as a bug too.
+  //                 11 is the same zoom flyToAndSelectStation() uses for a
+  //                 single station, so "as close as we ever auto-fly".
+  // The z5 floor in flyToBoundsZoomedOut() applies underneath all of this.
+  var OPERATOR_FIT_PADDING = 60;
+  var OPERATOR_ZOOM_OUT = 0;
+  var OPERATOR_FIT_MAX_ZOOM = 11;
   function flyToOperatorNetwork(code, mySeq, attempt) {
     attempt = attempt || 1;
     if (mySeq !== selectionSeq) return; // a newer selection superseded this one — abandon
@@ -6817,7 +6917,7 @@
       if (attempt < 15) setTimeout(function () { flyToOperatorNetwork(code, mySeq, attempt + 1); }, 300);
       return; // give up quietly after 15 attempts (~4.5s) — same tolerance as this file's other bounded retries
     }
-    flyToBoundsZoomedOut(bounds, OPERATOR_FIT_PADDING, OPERATOR_ZOOM_OUT, 800);
+    flyToBoundsZoomedOut(bounds, OPERATOR_FIT_PADDING, OPERATOR_ZOOM_OUT, 800, OPERATOR_FIT_MAX_ZOOM);
   }
 
   var regionJumpBtns = document.querySelectorAll('#region-jump button[data-lng]');

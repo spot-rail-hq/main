@@ -1591,3 +1591,55 @@ genuinely coincide.
 - **`historical.pmtiles` URL** points at the same R2 bucket as the other two tilesets. If the
   file is not uploaded under that name yet, the historical layers will fail to load and
   History mode will show an empty map — the rest of the UI degrades cleanly.
+
+---
+
+# Accepted exception — LNER's light-theme highlight (2026-07-27)
+
+**Status: reviewed and ACCEPTED by Aaron. This is not a bug. Do not "fix" it.**
+
+The era-band selection highlights in `data/era-colors.json` were derived against a stated
+floor of **ΔE2000 ≥ 15 against the band's own base colour**, with contrast ≥ 3.0 against the
+real basemap background and chroma never below the base. Every band clears that floor in both
+themes except one:
+
+| band | theme | base | highlight | ΔE2000 |
+|---|---|---|---|---|
+| London and North Eastern Railway | light | `#6B8E23` | `#39A106` | **9.3** |
+
+## Why it cannot clear the floor
+
+Apple green is the one Big Four colour whose **light-theme value already sits at the contrast
+floor**. `#6B8E23` has a relative luminance of 0.227; the ceiling for contrast 3.0 against the
+light basemap (`rgb(242,243,240)`) is 0.253. That leaves roughly three L\* points of headroom,
+so there is nowhere for a *brighter* version of the colour to go without the highlight becoming
+less visible than the resting line it is meant to emphasise. This is a property of the colour,
+not of the search — the optimiser explored the full Lab volume.
+
+## The alternatives, measured and rejected
+
+Both were computed and are available if this is ever revisited:
+
+- **`#156300`** — deep vivid green. ΔE 19.0, contrast 6.69. Clears the floor, but goes
+  *darker* where GWR, LMS and SR all go brighter, and sits only **12.5** from Southern
+  Railway's base colour, which renders in the same band at the same time.
+- **`#A48904`** — mustard. ΔE 17.5, contrast 3.06, clears SR by 34.2. Clears everything, but
+  stops reading as apple green at all, which defeats the point of a per-company highlight.
+
+## Why the shipped value is right anyway
+
+1. **The failure mode is not reachable in use.** ΔE against the band's *own base* only matters
+   if the user can see a line and its own highlight side by side. They cannot — a segment is
+   either highlighted or it is not, and the same segment is never both at once.
+2. **What IS reachable is separation from the other colours on screen**, and the shipped value
+   clears every band-mate (GWR, LMS, SR, and the `unknown` neutral) by ≥ 15.
+3. **The highlight is a glow, not a recolour.** It renders as three progressively wider,
+   blurred rings at 3.6–7× the line width. The "this one is selected" signal is carried mostly
+   by the halo's presence and size; colour separation is what tells you *which operator* it
+   belongs to, and that is the test the value passes.
+4. It keeps both the direction (brighter) and the hue identity (apple green) consistent with
+   the other three companies, so the band reads as one system.
+
+If the floor is ever re-run mechanically, this entry will flag again. That is expected. The
+reason it is accepted is recorded here and in the `_note` on the entry itself in
+`data/era-colors.json`.

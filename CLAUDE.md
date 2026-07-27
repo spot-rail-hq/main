@@ -141,8 +141,11 @@ consistently without duplicating the table.
   distinguishable hue each) · `metro` (light rail/tram/subway systems —
   purple family, kept visually distinct from TOCs so the category reads at
   a glance, matching the legend's "Metro/LRT (purple)") · `heritage`
-  (preserved lines — one shared amber-family color; never the literal
-  `--a` "delays/warnings" amber, to avoid reading as a service alert) ·
+  (preserved lines — one shared warm coral/salmon, and the only category
+  rendered with a DOTTED line pattern; never dashed, which the legend
+  already uses for Closed. Was an amber family until 2026-07-27, changed
+  because it collided with West Midlands Railway — see the hand-set note
+  below) ·
   `tfl_lines` (London Underground's 11 lines + the 6 real 2024-renamed
   London Overground lines, each with its own real official color —
   route-name-based line-splitting is confirmed working, see the pipeline
@@ -150,6 +153,33 @@ consistently without duplicating the table.
   already live in the `metro`/`toc` categories respectively, not here).
 - **Never uses `--t` (turquoise)** for any operator/category color — reserved
   exclusively for UI meaning (links, the From/To selected-path highlight).
+- **Two entries are HAND-SET and bypass the generator's placement search, so
+  regenerating the palette will NOT re-verify them.**
+  `scripts/build-operator-palette.mjs` normally derives each color through
+  `toVividLightTheme()` (light) and `toDarkThemeFromLight()` (dark), then
+  clears it against every already-placed color via `passesGates()`. These two
+  skip that:
+  - **Blackpool Tramway** — a hand-verified constant pair that IS still run
+    through `passesGates()`, and throws if it ever stops clearing.
+  - **Heritage** — a hand-set constant pair that has **never** been through
+    `passesGates()` at all, before or after the 2026-07-27 coral change,
+    because heritage was never part of the placement search. Nothing in the
+    build will catch it if a future TOC placement lands on top of it.
+    It is hand-set because the derivation *cannot express the color*:
+    `toVividLightTheme()` forces saturation ≥ 72 and lightness into 38–54,
+    and `toDarkThemeFromLight()` lifts from there — every seed hue in the
+    coral range comes out of that pair as a vivid red (`#C52115`/`#EF3F32`),
+    which both misses the intended color and measures *worse* than the amber
+    it replaced (worst-case CVD separation 3.2). Loosening those clamps is
+    not an option: they are what keeps the ~60 generated colors mutually
+    consistent.
+  - **Therefore: any palette regeneration must re-check heritage by hand** —
+    measure `data/operator-colors.json`'s `heritage` value against every
+    `toc`/`metro`/`tfl_lines` entry in both themes, under normal vision and
+    under protanopia and deuteranopia simulation. The figures the current
+    value was accepted on are recorded in that file's `heritage._note`;
+    compare against those rather than against the bare 15 ΔE threshold, since
+    this palette is dense enough that plenty of pairs sit below it.
 - Canonicalization (which raw OSM operator/brand tag maps to which
   category/color) is a *separate, broader* mapping than
   operators-content.json's own `aliases` — that field is scoped to station-
