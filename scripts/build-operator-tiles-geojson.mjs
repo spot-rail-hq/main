@@ -43,9 +43,24 @@
  * the group's mean (and therefore everyone's absolute offset by a shared,
  * small amount) shifts when the local set actually changes.
  *
- * Emits `lane_offset` (a plain number, already mean-centered) instead of
- * operator_index/operator_total — map.html's operatorLineOffsetExpression()
- * just scales this by zoom, no index/total math needed client-side anymore.
+ * Magnitude-weighted optimiser (2026-07-28): assignStableLanes()+relaxLanes()
+ * are now only a SEED. Both minimise how MANY neighbours disagree about an
+ * operator's lane and never by HOW MUCH, so a 5-lane jump costs them the same
+ * as a 1-lane one — which is why the shipped tileset had Lumo and CrossCountry
+ * swapping sides mid-corridor on the ECML while LNER stayed stable.
+ * optimiseLanes() below minimises sum(|delta lane|^POWER) over every adjacency
+ * boundary by local search to a genuine fixed point, and treats "distinct lanes
+ * per segment" as a hard constraint. On the post-dedupe graph: boundaries at
+ * >=2 lane units 52 -> 4 (nothing left above 2u), lane collisions 513 -> 0.
+ * See each constant for its swept alternatives and why they were rejected.
+ *
+ * Emits `lane_offset` (a plain number, already centred on its component's lane
+ * range midpoint) instead of operator_index/operator_total — map.html's
+ * operatorLineOffsetExpression() just scales this by zoom, no index/total math
+ * needed client-side anymore. NOTE for anyone retuning the fan: the optimiser's
+ * lane span is 7.0 units, not the 5.0 the pre-optimiser build produced, and
+ * map.html's LANE_FAN_ZOOM_STOPS is scaled to match. Changing the optimiser
+ * constants can change the span — re-check that pairing.
  * `id` is still segment_id * 10 + enumeration-index (unrelated to the lane
  * number — only needs to be unique per fan-out feature, see the original
  * per-feature promoteId reasoning below).
@@ -231,6 +246,25 @@ function relaxLanes(segments, laneById, neighborsOf, passes) {
       }
       const assignment = new Map();
       const taken = new Set();
+      // KNOWN BUG, DELIBERATELY NOT FIXED HERE (2026-07-28). This loop does not
+      // check `taken`, so two operators on one segment can both be voted onto
+      // the SAME lane and render exactly on top of each other — one of them
+      // invisible. Measured in the shipped pre-dedupe tileset: 699 segments
+      // (11.4%), 816 operator-pairs, ~3,774 km of track; post-dedupe 513 / 577
+      // / ~2,251 km. Every major TOC affected (XC 194, AW 171, TP 149, ...).
+      //
+      // Why it is not fixed in place: relaxLanes' output is now only the SEED
+      // for optimiseLanes() below, which treats "distinct lanes per segment" as
+      // a hard constraint (COLLISION_PENALTY) and drives collisions to zero
+      // regardless of what it is handed — enforced by a build-time assertion,
+      // so the invariant is guaranteed, not merely expected. Adding a `taken`
+      // check HERE changes the seed and measurably degrades the final result:
+      // A/B on the post-dedupe graph gave >=2u 4 -> 8 and, decisively, split
+      // Lumo across two lanes on the ECML Northallerton-York corridor
+      // (`{1.7778: 18, 0.7778: 2}`) — the exact defect this whole rewrite was
+      // commissioned to fix. The one thing the fixed seed does buy is a lane
+      // span of exactly 5.0 instead of 7.0 (no LANE_FAN_ZOOM_STOPS rescale
+      // needed); that was judged not worth reintroducing the defect.
       for (const op of s.operators) {
         const votes = proposals.get(op);
         if (!votes) continue;
@@ -261,7 +295,263 @@ function relaxLanes(segments, laneById, neighborsOf, passes) {
 const RELAXATION_PASSES = 8;
 const built = assignStableLanes(graph.segments);
 const { componentOf, conflictCount, componentCount, neighborsOf } = built;
-const laneById = relaxLanes(graph.segments, built.laneById, neighborsOf, RELAXATION_PASSES);
+const seedLanes = relaxLanes(graph.segments, built.laneById, neighborsOf, RELAXATION_PASSES);
+
+// ── Magnitude-weighted lane optimiser (2026-07-28) ────────────────────────
+// assignStableLanes()+relaxLanes() above are now only a SEED. They minimise
+// how MANY adjacent segments disagree about an operator's lane (majority vote,
+// smallest-lane tiebreak) and never consider by HOW MUCH: a 5-lane jump and a
+// 1-lane jump cost them exactly the same. That is why the shipped tileset had
+// Lumo and CrossCountry visibly swapping sides mid-corridor on the ECML while
+// LNER stayed rock solid — a 1-unit jog is ~2px at z8 and invisible, a 3-5 unit
+// one is a step the eye reads as a break.
+//
+// This pass minimises sum(|delta lane|^JOG_COST_POWER) over every adjacency
+// boundary instead, by local search to a genuine fixed point. Measured on the
+// post-dedupe graph (5,371 segments): boundaries >=2 lane units 52 -> 4,
+// nothing left above 2u, and 513 -> 0 lane collisions.
+const JOG_COST_POWER = 2;
+// Superlinear so magnitude dominates count. Swept 1/2/3/4 -> >=2u of 9/4/1/2.
+// POWER=1 is the current algorithm's failure mode restated (minimises count,
+// leaves four 4-unit jogs). POWER=3 scores best nationally at 1 but SPLITS
+// LUMO on the ECML again, so it is rejected on the same veto as everything
+// else here. 2 is the only setting that both hits the target and keeps the
+// corridor this rewrite exists to fix.
+const COLLISION_PENALTY = 50;
+// Two operators on one segment must never share a lane (they would draw on top
+// of each other). Set well above any plausible single-boundary jog cost — max
+// ~25 at POWER=2 — so this behaves as a hard constraint rather than something
+// the optimiser can trade away. Asserted after the run.
+const COMPACTNESS = 0;
+// A mild |lane| pull toward zero, to stop a run parking at lane -4 for a
+// marginal gain and widening the fan. KEPT AT ZERO, i.e. disabled. Do not
+// re-derive this: it was built and swept (0.005 / 0.01 / 0.02 / 0.03 / 0.05 /
+// 0.1 / 0.25) and it splits Lumo back into 2-3 lanes at EVERY non-zero weight,
+// including the mildest. It is not a cost tradeoff — at w=0.005 the compactness
+// saving on a 20-segment run is 0.1 against a jog cost of 1.0, far too weak to
+// buy that split. What actually happens is the perturbation tips the local
+// search into a different, worse basin (sweeps jump 4 -> 7; >=2u sits flat at 6
+// across 0.005-0.03, i.e. the same wrong basin, before degrading further).
+// Scaling the weight cannot fix a basin problem. The most it ever bought was
+// span 7.0 -> 6.0; it never approached 5.0.
+const LANE_WINDOW = 4;   // candidate lanes searched either side; wider found nothing more
+const MAX_SWEEPS = 60;   // a bound, never reached — converges at 3-4 sweeps
+
+// Every adjacency boundary that actually matters: a pair of segments sharing an
+// endpoint node, and the operators they have in common.
+const nodeToSegsAll = new Map();
+for (const s of graph.segments) {
+  for (const n of [s.nodes[0], s.nodes[s.nodes.length - 1]]) {
+    if (!nodeToSegsAll.has(n)) nodeToSegsAll.set(n, []);
+    nodeToSegsAll.get(n).push(s.id);
+  }
+}
+const segByIdAll = new Map(graph.segments.map((s) => [s.id, s]));
+const boundaries = [];
+{
+  const seenPair = new Set();
+  for (const [, ids] of nodeToSegsAll) {
+    if (ids.length < 2) continue;
+    for (let i = 0; i < ids.length; i++) {
+      for (let j = i + 1; j < ids.length; j++) {
+        const a = ids[i], b = ids[j];
+        const key = `${Math.min(a, b)}|${Math.max(a, b)}`;
+        if (seenPair.has(key)) continue;
+        seenPair.add(key);
+        const opsA = new Set(segByIdAll.get(a).operators || []);
+        const shared = (segByIdAll.get(b).operators || []).filter((o) => opsA.has(o));
+        if (shared.length) boundaries.push({ a, b, ops: shared });
+      }
+    }
+  }
+}
+const boundaryIndex = new Map();
+for (const bd of boundaries) {
+  if (!boundaryIndex.has(bd.a)) boundaryIndex.set(bd.a, []);
+  if (!boundaryIndex.has(bd.b)) boundaryIndex.set(bd.b, []);
+  boundaryIndex.get(bd.a).push(bd);
+  boundaryIndex.get(bd.b).push(bd);
+}
+
+function optimiseLanes(seed) {
+  const lanes = new Map();
+  for (const [id, asg] of seed) lanes.set(id, new Map(asg));
+  const allOperators = [...new Set(graph.segments.flatMap((s) => s.operators || []))];
+
+  const jogCost = (d) => Math.pow(d, JOG_COST_POWER);
+  function boundaryCost(bd) {
+    const la = lanes.get(bd.a), lb = lanes.get(bd.b);
+    if (!la || !lb) return 0;
+    let c = 0;
+    for (const op of bd.ops) {
+      const x = la.get(op), y = lb.get(op);
+      if (x === undefined || y === undefined) continue;
+      const d = Math.abs(x - y);
+      if (d > 0) c += jogCost(d);
+    }
+    return c;
+  }
+  function segmentPenalty(segId) {
+    const asg = lanes.get(segId);
+    if (!asg) return 0;
+    const perLane = new Map();
+    let c = 0;
+    for (const l of asg.values()) {
+      perLane.set(l, (perLane.get(l) || 0) + 1);
+      c += COMPACTNESS * Math.abs(l);
+    }
+    for (const k of perLane.values()) if (k > 1) c += (COLLISION_PENALTY * k * (k - 1)) / 2;
+    return c;
+  }
+  // Cost of everything touching a set of segments. Only ever compared against
+  // itself before/after a candidate move, so double-counting inside the set is
+  // harmless as long as the same set is used both times.
+  function localCost(segIds) {
+    let c = 0;
+    const doneBoundaries = new Set();
+    for (const id of segIds) {
+      c += segmentPenalty(id);
+      for (const bd of boundaryIndex.get(id) || []) {
+        if (doneBoundaries.has(bd)) continue;
+        doneBoundaries.add(bd);
+        c += boundaryCost(bd);
+      }
+    }
+    return c;
+  }
+  // Maximal connected groups of segments on which `op` currently holds one lane.
+  function operatorRuns(op) {
+    const inOp = new Set(graph.segments.filter((s) => (s.operators || []).includes(op)).map((s) => s.id));
+    const visited = new Set(), runs = [];
+    for (const start of inOp) {
+      if (visited.has(start)) continue;
+      const lane = lanes.get(start)?.get(op);
+      if (lane === undefined) { visited.add(start); continue; }
+      const run = [], queue = [start];
+      visited.add(start);
+      while (queue.length) {
+        const id = queue.shift();
+        run.push(id);
+        for (const nb of neighborsOf(id)) {
+          if (!inOp.has(nb) || visited.has(nb)) continue;
+          if (lanes.get(nb)?.get(op) !== lane) continue;
+          visited.add(nb);
+          queue.push(nb);
+        }
+      }
+      runs.push({ lane, segs: run });
+    }
+    return runs;
+  }
+
+  let sweeps = 0, converged = false;
+  for (; sweeps < MAX_SWEEPS; sweeps++) {
+    let changed = 0;
+
+    // MOVE 1 — RUN-LEVEL. Relocate an operator's whole same-lane run, swapping
+    // with whichever operator holds the target lane on each segment. This is
+    // the move that actually fixes a swapped run: a single-segment swap only
+    // relocates the jog to the next segment along, which is why a purely
+    // per-segment optimiser got Lumo from 17/5 to 18/4 and no further.
+    for (const op of allOperators) {
+      for (const run of operatorRuns(op)) {
+        const touched = new Set(run.segs);
+        for (const id of run.segs) for (const nb of neighborsOf(id)) touched.add(nb);
+        let bestCost = localCost(touched), bestLane = null;
+        const candidates = new Set();
+        for (const id of run.segs) for (const nb of neighborsOf(id)) {
+          const l = lanes.get(nb)?.get(op);
+          if (l !== undefined && l !== run.lane) candidates.add(l);
+        }
+        for (let d = -2; d <= 2; d++) candidates.add(run.lane + d);
+        candidates.delete(run.lane);
+        for (const cand of candidates) {
+          const undo = [];
+          for (const id of run.segs) {
+            const asg = lanes.get(id);
+            let occupant = null;
+            for (const [o, l] of asg) if (l === cand && o !== op) { occupant = o; break; }
+            undo.push([id, asg.get(op), occupant, occupant ? asg.get(occupant) : null]);
+            asg.set(op, cand);
+            if (occupant) asg.set(occupant, run.lane);
+          }
+          const after = localCost(touched);
+          if (after < bestCost - 1e-9) { bestCost = after; bestLane = cand; }
+          for (let k = undo.length - 1; k >= 0; k--) {
+            const [id, oldLane, occupant, occupantOld] = undo[k];
+            const asg = lanes.get(id);
+            asg.set(op, oldLane);
+            if (occupant) asg.set(occupant, occupantOld);
+          }
+        }
+        if (bestLane !== null) {
+          for (const id of run.segs) {
+            const asg = lanes.get(id);
+            let occupant = null;
+            for (const [o, l] of asg) if (l === bestLane && o !== op) { occupant = o; break; }
+            asg.set(op, bestLane);
+            if (occupant) asg.set(occupant, run.lane);
+          }
+          changed++;
+        }
+      }
+    }
+
+    // MOVE 2/3 — per-segment polish: relabel one operator to a nearby lane, or
+    // swap two operators. Cleans up what the run pass leaves at junction throats.
+    for (const s of graph.segments) {
+      const asg = lanes.get(s.id);
+      if (!asg || !asg.size) continue;
+      const touched = new Set([s.id]);
+      for (const nb of neighborsOf(s.id)) touched.add(nb);
+      let best = localCost(touched);
+      let improved = true;
+      while (improved) {
+        improved = false;
+        for (const op of s.operators) {
+          const cur = asg.get(op);
+          if (cur === undefined) continue;
+          for (let cand = cur - LANE_WINDOW; cand <= cur + LANE_WINDOW && !improved; cand++) {
+            if (cand === cur) continue;
+            asg.set(op, cand);
+            const c = localCost(touched);
+            if (c < best - 1e-9) { best = c; improved = true; changed++; }
+            else asg.set(op, cur);
+          }
+          if (improved) break;
+        }
+        if (improved) continue;
+        for (let i = 0; i < s.operators.length && !improved; i++) {
+          for (let j = i + 1; j < s.operators.length && !improved; j++) {
+            const o1 = s.operators[i], o2 = s.operators[j];
+            const l1 = asg.get(o1), l2 = asg.get(o2);
+            if (l1 === undefined || l2 === undefined || l1 === l2) continue;
+            asg.set(o1, l2); asg.set(o2, l1);
+            const c = localCost(touched);
+            if (c < best - 1e-9) { best = c; improved = true; changed++; }
+            else { asg.set(o1, l1); asg.set(o2, l2); }
+          }
+        }
+      }
+    }
+
+    if (changed === 0) { converged = true; break; }
+  }
+  return { lanes, sweeps, converged };
+}
+
+const optStart = Date.now();
+const { lanes: laneById, sweeps: optSweeps, converged: optConverged } = optimiseLanes(seedLanes);
+const optMs = Date.now() - optStart;
+
+// The invariant the optimiser exists to guarantee — asserted, not assumed. See
+// the collision-bug note in relaxLanes() for what this is protecting against.
+for (const [segId, asg] of laneById) {
+  const vals = [...asg.values()];
+  if (new Set(vals).size !== vals.length) {
+    throw new Error(`Segment ${segId} has two operators on the same lane after optimisation (${[...asg.entries()].map(([o, l]) => `${o}=${l}`).join(', ')}) — COLLISION_PENALTY failed to hold the distinct-lane invariant.`);
+  }
+}
 
 // Centering constant is ONE FIXED VALUE PER CONNECTED COMPONENT, not
 // recomputed per segment. This is the actual fix for the offset-jog bug
@@ -283,18 +573,35 @@ const laneById = relaxLanes(graph.segments, built.laneById, neighborsOf, RELAXAT
 // ambiguity relaxLanes() can't fully resolve (see its own comment on why a
 // fixed pass count is used instead of running to convergence), not routine
 // junction churn.
-const componentLaneSums = new Map(); // componentId -> {sum, count} over DISTINCT operator->lane pairs
+// 2026-07-28: this was the MEAN of each component's distinct operator->lane
+// pairs. It is now the component's lane RANGE MIDPOINT. Why the change:
+//
+//  - The centring constant's only job is to decide where zero sits, so the fan
+//    reads as symmetric about the corridor. The mean does that badly when lane
+//    usage is lopsided — the optimiser's output ran -4.222..+2.778, a range
+//    skew of -0.206, i.e. the fan visibly hangs to one side of the track.
+//    The midpoint gives exactly -3.5..+3.5, skew 0.000, by definition.
+//
+//  - It is free. Subtracting a different CONSTANT per component shifts every
+//    lane in that component by the same amount, so no boundary delta changes
+//    anywhere: jog magnitudes and lane collisions are both invariant under it
+//    BY CONSTRUCTION, not merely as an observed result. Nothing measured above
+//    can regress because of this line.
+//
+// Both endpoints come from the same component, so cross-component boundaries
+// (which would see two different constants) cannot exist.
+const componentLaneRange = new Map(); // componentId -> {min, max}
 for (const [segId, assignment] of laneById) {
   const c = componentOf.get(segId);
-  if (!componentLaneSums.has(c)) componentLaneSums.set(c, new Map()); // operator -> lane, de-duped
-  const seen = componentLaneSums.get(c);
-  for (const [op, lane] of assignment) seen.set(op, lane); // same value every time (stable) — just overwrite
+  let r = componentLaneRange.get(c);
+  if (!r) { r = { min: Infinity, max: -Infinity }; componentLaneRange.set(c, r); }
+  for (const lane of assignment.values()) {
+    if (lane < r.min) r.min = lane;
+    if (lane > r.max) r.max = lane;
+  }
 }
-const componentMean = new Map();
-for (const [c, opLanes] of componentLaneSums) {
-  const vals = [...opLanes.values()];
-  componentMean.set(c, vals.reduce((a, b) => a + b, 0) / vals.length);
-}
+const componentMean = new Map(); // name kept: still "the centring constant", now the midpoint
+for (const [c, r] of componentLaneRange) componentMean.set(c, (r.min + r.max) / 2);
 
 const features = [];
 for (const s of graph.segments) {
@@ -334,7 +641,13 @@ writeFileSync(OUT_PATH, features.map((f) => JSON.stringify(f)).join('\n'));
 
 console.log(`Wrote ${features.length} fan-out features (from ${graph.segments.length} segments, max operator_total ${maxOperatorTotal}) to ${OUT_PATH}`);
 console.log(`Source: ${graph.scope} scope, generated_at ${graph.generated_at}`);
-console.log(`Lane assignment: ${componentCount} connected components, ${conflictCount} initial BFS-pass lane conflicts, ${RELAXATION_PASSES} relaxation passes applied on top`);
+console.log(`Lane seed: ${componentCount} connected components, ${conflictCount} initial BFS-pass lane conflicts, ${RELAXATION_PASSES} relaxation passes`);
+console.log(`Lane optimiser: POWER=${JOG_COST_POWER} COLLISION_PENALTY=${COLLISION_PENALTY} COMPACTNESS=${COMPACTNESS} LANE_WINDOW=${LANE_WINDOW} — ${optSweeps} sweeps in ${optMs}ms, converged=${optConverged}`);
+{
+  const offs = features.map((f) => f.properties.lane_offset);
+  const lo = Math.min(...offs), hi = Math.max(...offs);
+  console.log(`Lane offsets: ${lo.toFixed(3)}..${hi.toFixed(3)} (span ${(hi - lo).toFixed(3)}, range skew ${((hi + lo) / (hi - lo)).toFixed(3)}), 0 collisions asserted`);
+}
 if (graph.scope !== 'national') {
   console.warn(`WARNING: line-segments.json scope is '${graph.scope}', not 'national' — this will tile a bbox-bounded checkpoint, not the full network. Re-run with LINE_SEGMENTS_NATIONAL=1 first if that's not intended.`);
 }

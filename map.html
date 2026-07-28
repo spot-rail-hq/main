@@ -2634,12 +2634,21 @@
   // lane_offset, so nothing here can limit the delta ACROSS a boundary. That
   // needs lane_offset regenerated in assignStableLanes()/relaxLanes(), i.e.
   // retile work.
+  // RESCALED 2026-07-28 by 5/7 (0.714). The stops below were originally derived
+  // against a lane span of 5.0 units, which is what the pre-optimiser tile build
+  // produced. The magnitude-weighted lane optimiser in
+  // build-operator-tiles-geojson.mjs spreads lanes over 7.0 units, so the same
+  // stops would have rendered the fan 40% wider than every measurement above
+  // (7px at z8 instead of 5, 1.75px at z4 instead of 1.25). Scaling by 5/7
+  // restores the measured pixel widths exactly. If the optimiser's constants
+  // ever change, re-check its reported span and rescale again — the build logs
+  // it on every run.
   var LANE_FAN_ZOOM_STOPS = [
-    [4, 0.25],
-    [6, 0.5],
-    [8, 1.0],
-    [12, 3.2],
-    [16, 4.5],
+    [4, 0.179],
+    [6, 0.357],
+    [8, 0.714],
+    [12, 2.286],
+    [16, 3.214],
   ];
   function operatorLineOffsetExpression() {
     // Same top-level-zoom-expression constraint as the width expression above:
