@@ -1033,6 +1033,100 @@
       ]
     }
   },
+  "GTR": {
+    "name": "Greater Thameslink Railway",
+    "wikipedia_title": "Greater Thameslink Railway",
+    "aliases": [
+      "Govia Thameslink Railway",
+      "GTR",
+      "Thameslink Southern Great Northern",
+      "TSGN"
+    ],
+    "legal_entity": "Thameslink Southern Great Northern Limited — the operating company behind the Thameslink, Southern, Great Northern and Gatwick Express brands, which are separate passenger brands of this one operator rather than separate companies",
+    "stations_operated": 236,
+    "headline": "Britain's largest train operator, running Thameslink, Southern, Great Northern and Gatwick Express, entered public ownership in May 2026",
+    "parent_company": "DfT Operator (Department for Transport)",
+    "franchises": [
+      {
+        "name": "Govia Thameslink Railway",
+        "start": "14 September 2014",
+        "end": "31 May 2026"
+      },
+      {
+        "name": "Greater Thameslink Railway",
+        "start": "31 May 2026",
+        "end": null
+      }
+    ],
+    "regions_served": {
+      "main": [
+        "Greater London",
+        "South East England",
+        "East of England"
+      ],
+      "other": []
+    },
+    "notable_features": [
+      "Umbrella operator for four passenger brands — Thameslink, Southern, Great Northern and Gatwick Express — which share a single operating company rather than being separate businesses",
+      "Britain's largest train operator, serving 236 stations across London, the South East and the East of England",
+      "Taken into public ownership on 31 May 2026, transferring from Govia (Go-Ahead 65%, Keolis 35%) to DfT Operator",
+      "Timetables, ticketing terms and staff roles were unaffected by nationalisation — the legal entity, Thameslink Southern Great Northern Limited, carried over and only the trading name changed",
+      "Thameslink's central London core route runs automatic train operation over ETCS Level 2 signalling, a world first on a main line",
+      "Fleet spans six classes across the four brands, from Class 171 Turbostar diesel units to Class 700 and 717 Desiro City electrics",
+      "Gatwick Express services between London Victoria and Gatwick Airport are due to double from December 2026",
+      "Recruiting 75 additional drivers for Thameslink and Great Northern, and 40 for Southern and Gatwick Express, during 2026",
+      "Transport for London submitted an outline business case in September 2025 to absorb Great Northern's Moorgate services into London Overground, potentially from autumn 2027",
+      "Due to be absorbed into Great British Railways once that body is legally established"
+    ],
+    "_wikipedia": {
+      "fetched_at": "2026-07-28T00:00:00.000Z",
+      "title": "Greater Thameslink Railway",
+      "url": "https://en.wikipedia.org/wiki/Greater_Thameslink_Railway",
+      "license": "CC BY-SA 4.0",
+      "_note": "Hand-authored 2026-07-28, not written by scripts/fetch-wikipedia-facts.mjs. Facts verified against the Greater Thameslink Railway and Thameslink, Southern and Great Northern franchise articles rather than from model memory, because this operator's ownership changed on 31 May 2026. stations_operated (236) is the franchise article's figure, sourced to ORR March 2025 statistics; the operator article's infobox says 238. The per-brand counts already in this file (Southern 191, Thameslink 138, Great Northern 54, Gatwick Express 7) sum to 390 and double-count shared stations, so they are NOT the network figure and must not be added together."
+    },
+    "website": "https://www.gtrailway.com",
+    "fleet_classes": [
+      {
+        "id": "171",
+        "display": "Class 171"
+      },
+      {
+        "id": "377",
+        "display": "Class 377"
+      },
+      {
+        "id": "379",
+        "display": "Class 379"
+      },
+      {
+        "id": "387",
+        "display": "Class 387"
+      },
+      {
+        "id": "700",
+        "display": "Class 700"
+      },
+      {
+        "id": "717",
+        "display": "Class 717"
+      }
+    ],
+    "schema_jsonld": {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Greater Thameslink Railway",
+      "parentOrganization": {
+        "@type": "Organization",
+        "name": "DfT Operator (Department for Transport)"
+      },
+      "areaServed": [
+        "Greater London",
+        "South East England",
+        "East of England"
+      ]
+    }
+  },
   "CC": {
     "name": "c2c",
     "headline": "State-owned DfT Operator takes over c2c's East London-Essex rail services in July 2025",
