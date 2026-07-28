@@ -2597,17 +2597,60 @@
   // at high zoom to usefully separate lanes, tighter at low zoom where
   // showing every lane separately isn't legible anyway). Same
   // top-level-zoom-expression constraint as width above, same fix shape.
+  //
+  // ── LANE_FAN_ZOOM_STOPS — the fan-width knob (2026-07-28) ────────────────
+  // [zoom, laneWidthPx] pairs. Each feature's `lane_offset` (already in lane
+  // units) is multiplied by the interpolated laneWidthPx to give its final
+  // pixel offset. This is the ONE constant to touch when tuning how wide the
+  // fan reads — Aaron tunes these by eye; nothing else needs to change.
+  //
+  // Why the old stops (5:1.2, 8:2, 12:3.2, 16:4.5) needed retuning: line-offset
+  // is in PIXELS, so a lane width that looks right at z16 is geographically
+  // enormous at z5. Ground scale changes by 2048x between z5 and z16 while
+  // those stops only changed by 3.75x, so the fan grew hugely in real terms as
+  // you zoomed OUT. It went unnoticed until the 2026-07-27 -Z0 retile: at -Z5
+  // MapLibre returned no tiles at all below z5, so the worst of the range was
+  // simply never drawn. Measured against the real data (full fan span is 5.0
+  // lane units, lane_offset runs -2.083..+2.917):
+  //     old:  z4  6.0px = 34.5 km on the ground · z8 10.0px = 3.6 km
+  //     new:  z4 1.25px =  7.2 km               · z8  5.0px = 1.8 km
+  // (below its first stop an `interpolate` CLAMPS rather than continuing to
+  // shrink, so the z4 stop is what z0-z4 all get — at the old 6px that was
+  // 552 km of fan at z0, wider than Britain.)
+  //
+  // Median distance between two DIFFERENT rail corridors is 102 m, so the fan
+  // is still wider than real corridor spacing below ~z14. It cannot not be, at
+  // any pixel width a user can actually see — the goal is only that it stays
+  // PROPORTIONATE: tight enough at whole-UK view that a corridor reads as one
+  // line and the highlighted line (1.6px at z5) covers its own parallel
+  // neighbours, opening up as you zoom in. The z12/z16 stops are deliberately
+  // UNCHANGED: 22.5px at z16 is ~31 m on the ground, about a real multi-track
+  // formation, so the top of the range was already right.
+  //
+  // Side effect, not a fix: this shrinks the mid-corridor lane JOGS in the same
+  // proportion (the worst, a 5-lane-unit step, was 10px at z8 and is now 5px;
+  // 6px at z5, now 1.9px). The jogs themselves are a DATA problem — a paint
+  // expression is evaluated per feature and cannot see a neighbour's
+  // lane_offset, so nothing here can limit the delta ACROSS a boundary. That
+  // needs lane_offset regenerated in assignStableLanes()/relaxLanes(), i.e.
+  // retile work.
+  var LANE_FAN_ZOOM_STOPS = [
+    [4, 0.25],
+    [6, 0.5],
+    [8, 1.0],
+    [12, 3.2],
+    [16, 4.5],
+  ];
   function operatorLineOffsetExpression() {
-    var offsetUnits = ['get', 'lane_offset'];
-    function stopValue(laneWidth) {
-      return ['*', offsetUnits, laneWidth];
-    }
-    return ['interpolate', ['linear'], ['zoom'],
-      5, stopValue(1.2),
-      8, stopValue(2),
-      12, stopValue(3.2),
-      16, stopValue(4.5),
-    ];
+    // Same top-level-zoom-expression constraint as the width expression above:
+    // ['zoom'] is only valid as the DIRECT input to interpolate, so the per-
+    // stop lane width is folded into each stop's own value rather than
+    // multiplying the interpolate's result.
+    var expr = ['interpolate', ['linear'], ['zoom']];
+    LANE_FAN_ZOOM_STOPS.forEach(function (stop) {
+      expr.push(stop[0], ['*', ['get', 'lane_offset'], stop[1]]);
+    });
+    return expr;
   }
 
   function addMapLayers() {
