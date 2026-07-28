@@ -5132,7 +5132,9 @@
     var coords = renderRoutePolylineGeometry(id);
     if (!coords) return;
     var bounds = coords.reduce(function (b, c) { return b.extend(c); }, new maplibregl.LngLatBounds(coords[0], coords[0]));
-    map.fitBounds(bounds, { padding: 60, duration: 800 });
+    // boundsFitPadding(60), not a bare 60 — a curated route is a bounds fit like
+    // any other and has to clear the same floating chrome. See that function.
+    map.fitBounds(bounds, { padding: boundsFitPadding(60), duration: 800 });
   }
   function clearRoutePolyline() {
     currentRouteId = null;
@@ -6849,9 +6851,55 @@
   // the pixel value needed — no need to duplicate that width math here.
   // Not applied on tablet/mobile, where the sidebar is a top sheet rather
   // than a left-side overlay, so there's no horizontal offset to correct.
+  // Per-side insets for every bounds-fitting camera move, measured from the
+  // ACTUAL floating chrome rather than hardcoded, so it tracks CSS changes and
+  // the responsive breakpoints on its own.
+  //
+  // 2026-07-28: this used to return `{ left: <sidebar edge>, top: 0, right: 0,
+  // bottom: 0 }`, which reserved space for the sidebar and nothing else. A
+  // long north-south network (Lumo on the ECML) fitted to the full canvas
+  // height therefore ran UNDER the floating "Jump to" bar at the top and
+  // straight off the bottom edge — the fit believed it had the whole canvas
+  // when two overlays were sitting on top of it. Only `left` was ever right.
+  //
+  // Deliberately NOT solved by zooming out globally: that would waste screen
+  // for every operator whose network already fits. Reserving the real occupied
+  // strips is the same fix without the cost.
+  //
+  // NOTE on how this composes — see the long note below on sticky padding.
+  // This is the AMBIENT padding (passed to jumpTo/flyTo as `padding`), which
+  // MapLibre keeps on the transform and uses to re-anchor the centre on every
+  // later frame. The flat numbers passed to cameraForBounds (FROMTO_FIT_PADDING
+  // / OPERATOR_FIT_PADDING) layer ON TOP of this for the zoom-fit and stay a
+  // symmetric "breathing room" value — do not put chrome dimensions there too,
+  // that is the exact double-count that pushed From/To results off-centre.
+  var MAP_FIT_MARGIN = 24; // small uniform breathing gap so lines never touch an edge
   function regionJumpFlyToPadding() {
-    if (window.innerWidth <= 768) return undefined;
-    return { left: regionJumpEl.getBoundingClientRect().left, top: 0, right: 0, bottom: 0 };
+    var pad = { left: MAP_FIT_MARGIN, top: MAP_FIT_MARGIN, right: MAP_FIT_MARGIN, bottom: MAP_FIT_MARGIN };
+    // The Jump-to bar floats over the top of the canvas in BOTH layouts, so its
+    // bottom edge is the real top of the usable area either way.
+    if (regionJumpEl) {
+      var rj = regionJumpEl.getBoundingClientRect();
+      if (rj.height) pad.top = rj.bottom + MAP_FIT_MARGIN;
+    }
+    var sb = sidebarEl && sidebarEl.getBoundingClientRect();
+    if (sb && sb.width && sb.height) {
+      if (window.innerWidth <= 768) {
+        // Mobile: the sidebar is a bottom sheet spanning the full width, so it
+        // eats from the BOTTOM, not the left.
+        pad.bottom = Math.max(pad.bottom, window.innerHeight - sb.top + MAP_FIT_MARGIN);
+      } else {
+        pad.left = Math.max(pad.left, sb.right + MAP_FIT_MARGIN);
+      }
+    }
+    // MapLibre throws if padding exceeds the canvas, which a collapsed/animating
+    // sidebar or a very small window can produce. Clamp to half each axis so a
+    // degenerate measurement can never break the camera outright.
+    var maxX = Math.max(0, map.getCanvas().clientWidth / 2 - 1);
+    var maxY = Math.max(0, map.getCanvas().clientHeight / 2 - 1);
+    pad.left = Math.min(pad.left, maxX); pad.right = Math.min(pad.right, maxX);
+    pad.top = Math.min(pad.top, maxY); pad.bottom = Math.min(pad.bottom, maxY);
+    return pad;
   }
 
   // 2026-07-22 bugfix (was fromToFitPadding(), which added ITS OWN sidebar-
@@ -6909,9 +6957,37 @@
   // geometry is faithful enough for the resolver, and the floor does not need
   // to be raised above the tileset's own minimum.
   var OPERATOR_TILES_MIN_ZOOM = 5;
+  // `padding` here is the flat symmetric breathing-room number (60 for an
+  // operator network, 100 for a From/To path) — NOT chrome dimensions.
+  //
+  // 2026-07-28: every bounds fit now reserves the floating chrome as well, so
+  // a fitted network can no longer sit under the Jump-to bar or run off the
+  // bottom. Getting this right needs MapLibre's actual composition rule, which
+  // was read from the pinned 4.7.1 bundle rather than assumed —
+  // _cameraForBoxAndBearing computes its scale as
+  //     (transform.width  - (transform.padding.left + .right + options.padding.left + .right)) / boxWidth
+  //     (transform.height - (transform.padding.top + .bottom + options.padding.top + .bottom)) / boxHeight
+  // i.e. the AMBIENT (sticky) padding and the EXPLICIT option ADD for the
+  // zoom-fit. So passing the chrome insets explicitly while the transform is
+  // already carrying them would count them twice — the exact bug the note above
+  // records. Instead we ask the transform what it is currently carrying
+  // (map.getPadding()) and pass only the DIFFERENCE needed to reach
+  // chrome + breathing-room. That makes the fit correct on the very first call
+  // regardless of what the ambient padding happens to be, rather than only
+  // after some other camera move has refreshed it.
+  function boundsFitPadding(flat) {
+    var chrome = regionJumpFlyToPadding();
+    var ambient = (typeof map.getPadding === 'function' && map.getPadding()) || { top: 0, bottom: 0, left: 0, right: 0 };
+    var out = {};
+    ['top', 'bottom', 'left', 'right'].forEach(function (side) {
+      out[side] = Math.max(0, (chrome[side] || 0) + flat - (ambient[side] || 0));
+    });
+    return out;
+  }
   function flyToBoundsZoomedOut(bounds, padding, zoomOut, duration, maxZoom) {
-    var cam = map.cameraForBounds(bounds, { padding: padding });
-    if (!cam) { map.fitBounds(bounds, { padding: padding, maxZoom: maxZoom, duration: duration }); return; } // shouldn't happen (only returns undefined if the bounds can't fit at all), fall back to the normal path just in case
+    var fitPad = boundsFitPadding(padding);
+    var cam = map.cameraForBounds(bounds, { padding: fitPad });
+    if (!cam) { map.fitBounds(bounds, { padding: fitPad, maxZoom: maxZoom, duration: duration }); return; } // shouldn't happen (only returns undefined if the bounds can't fit at all), fall back to the normal path just in case
     var z = cam.zoom - zoomOut;
     // Clamped here rather than passed to cameraForBounds as a maxZoom option —
     // this arithmetic is guaranteed to behave the same across MapLibre
