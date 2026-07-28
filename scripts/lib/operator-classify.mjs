@@ -32,7 +32,25 @@ export const CANONICAL_TOC = {
   'Southern Railway': 'SN', 'Abellio Greater Anglia': 'LE',
   'Northern Rail': 'NT', 'Northern Trains': 'NT', 'Arriva Trains North': 'NT',
   'Arriva Rail North': 'NT', 'Transpennine Express': 'TP',
-  'GTS Rail Operations': 'LD', 'Island Line Trains': 'IL',
+  // 2026-07-28 BUGFIX: this mapped to 'LD' (Lumo). GTS Rail Operations is the
+  // ELIZABETH LINE's operator — the Go-Ahead / Tokyo Metro / Sumitomo joint
+  // venture that took over the TfL concession from MTR in November 2024, which
+  // operators-content.json's XR entry already records as its parent_company.
+  // OSM tags 24 route relations `operator=GTS Rail Operations` and 11
+  // `operator=Lumo`; folding the former into LD put the whole Elizabeth line —
+  // Reading/Maidenhead through Paddington and the central core out to Shenfield
+  // and Abbey Wood, ~442 km — onto Lumo, and left XR with no segments at all.
+  // Reported as "selecting Lumo highlights a horizontal route across London".
+  // The OSM data was correct throughout; only this line was wrong.
+  //
+  // The SHIPPED TILESET was corrected separately by a narrow in-place relabel of
+  // line-segments.json (segment ids and geometry untouched), because a full
+  // build-line-segments.mjs re-run rebuilds the graph from the current Overpass
+  // extract and would shift ids/geometry — deferred to the October quarterly OSM
+  // refresh, where that cost is absorbed anyway. THIS line therefore has no
+  // effect until that next full rebuild; it is here so the relabel does not have
+  // to be repeated.
+  'GTS Rail Operations': 'XR', 'Island Line Trains': 'IL',
   'Eurostar International Ltd': 'ES',
   // Line-data-only variants — legal_entity/welsh_name strings and casing/
   // plural forms found live, none of them in station data's `aliases`

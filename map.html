@@ -1163,6 +1163,75 @@
     pmtilesProtocolRegistered = true;
   }
 
+  // ── Which operators actually HAVE track in the tileset ────────────────────
+  // Read from the PMTiles archive's own metadata, NOT by querying rendered
+  // features. tippecanoe writes a `tilestats` block listing every distinct
+  // value of each attribute (capped at 100 values per attribute); `operators`
+  // has 54 distinct values, so the list is COMPLETE rather than truncated —
+  // verified against the built archive. That makes this an exact answer to
+  // "does this operator have any segments at all", available from one small
+  // range request at load time, with no tiles rendered and no camera movement.
+  //
+  // Why it matters: a search for an operator with no track (XR before the
+  // 2026-07-28 relabel; GN/GX/TL/LN, whose services are tagged in OSM under a
+  // parent company; HT, genuinely absent) used to jump the camera to the whole-
+  // UK view to force tile loading, then find nothing and stop — stranding the
+  // user at a zoom they never asked for and giving no reason. Knowing the
+  // answer BEFORE that jump means the failing case now moves the camera zero
+  // times, rather than moving it and moving back.
+  var operatorTilesetKeysPromise = null;
+  function operatorTilesetKeys() {
+    if (operatorTilesetKeysPromise) return operatorTilesetKeysPromise;
+    operatorTilesetKeysPromise = (function () {
+      if (typeof pmtiles === 'undefined' || !pmtiles.PMTiles) return Promise.resolve(null);
+      try {
+        return new pmtiles.PMTiles(OPERATOR_TILES_URL).getMetadata().then(function (meta) {
+          var ts = meta && meta.tilestats;
+          if (typeof ts === 'string') { try { ts = JSON.parse(ts); } catch (e) { return null; } }
+          if (!ts || !ts.layers) return null;
+          for (var i = 0; i < ts.layers.length; i++) {
+            var attrs = ts.layers[i].attributes || [];
+            for (var j = 0; j < attrs.length; j++) {
+              if (attrs[j].attribute !== 'operators') continue;
+              var vals = attrs[j].values || [];
+              // If tippecanoe truncated the list (distinct count > values
+              // listed), it is no longer authoritative for ABSENCE — a key
+              // missing from a truncated list may still have track. Return null
+              // so callers fall back to the old behaviour rather than wrongly
+              // reporting "no route data".
+              if (attrs[j].count && attrs[j].count > vals.length) return null;
+              var set = {};
+              vals.forEach(function (v) { set[v] = true; });
+              return set;
+            }
+          }
+          return null;
+        }).catch(function () { return null; });
+      } catch (e) { return Promise.resolve(null); }
+    })();
+    return operatorTilesetKeysPromise;
+  }
+  // Warmed at startup so the first operator search doesn't pay for the round
+  // trip. Failure is silent and non-blocking — callers treat null as "unknown"
+  // and keep the previous behaviour.
+  operatorTilesetKeys();
+
+  // Operators whose services ARE on the map, but tagged in OSM under a parent
+  // company rather than their own brand, so they have no key of their own. This
+  // is not an error and the panel says so by name. See CLAUDE.md's note on the
+  // "Greater Thameslink Railway" finding for why OSM tags them this way.
+  var OPERATOR_FOLDED_INTO = {
+    GN: 'GTR', GX: 'GTR', TL: 'GTR', SN: 'GTR',
+    LN: 'WMR',
+  };
+  // Set only by submitOperatorPick(), once the metadata above has CONFIRMED the
+  // operator has no track — never while that lookup is in flight, so a slow
+  // fetch cannot flash a false negative. Cleared by selectOperator() on every
+  // new selection, so the notice can never outlive the operator it describes.
+  // Declared here beside OPERATOR_FOLDED_INTO rather than next to its writer,
+  // so neither reader has to rely on `var` hoisting across the file.
+  var operatorNoTrackCode = null;
+
   var stationsData = null;   // parsed /data/stations.geojson, ids assigned
   var stationInteractionsWired = false;
   var operatorLineInteractionsWired = false;
@@ -4199,10 +4268,29 @@
       : '<span class="db-value">Not available</span>';
     return '<div class="db-field" data-anim-row><div class="db-label">' + label + '</div><div class="db-chip-row">' + chips + '</div></div>';
   }
+  // Shown only when the tileset metadata has positively told us this operator
+  // has no track — never while that lookup is still in flight, so a slow fetch
+  // cannot flash a false "no route data". Same .db-hint degraded-state pattern
+  // as the historical-tileset failure notice.
+  function operatorNoTrackNoticeHtml(code) {
+    if (!code || operatorNoTrackCode !== code) return '';
+    var parent = OPERATOR_FOLDED_INTO[code];
+    if (parent) {
+      var parentName = (operatorsContent[parent] && operatorsContent[parent].name) || parent;
+      // Not an error — the services are on the map, just drawn under the parent
+      // brand because that is how OSM tags them.
+      return '<div class="db-hint" data-anim-row>These services run on the map under <strong>' +
+        escapeAttr(parentName) + '</strong>, which is how they are recorded in the underlying map data. ' +
+        'Search for ' + escapeAttr(parentName) + ' to highlight the network.</div>';
+    }
+    return '<div class="db-hint" data-anim-row>Route data for this operator isn’t available yet, so there’s nothing to highlight on the map. ' +
+      'The details below still apply.</div>';
+  }
   function operatorDetailSkeletonHtml() {
     var o = selection.code && operatorsContent[selection.code];
     if (!o) return dbComingSoonHtml(selection.fallbackName || selection.code);
     var html = '';
+    html += operatorNoTrackNoticeHtml(selection.code);
     html += dbHeadlineHtml(o.headline);
     html += dbFieldHtml('Parent company', o.parent_company);
     html += operatorFranchiseListHtml(o.franchises);
@@ -4766,6 +4854,7 @@
   }
   function selectOperator(identifier) {
     ++selectionSeq;
+    operatorNoTrackCode = null;
     var code = operatorsContent[identifier] ? identifier : (operatorNameToCode[identifier] || null);
     selection = { type: 'operator', code: code, fallbackName: (code && operatorsContent[code].name) || identifier };
     renderSelectionChrome();
@@ -7494,15 +7583,28 @@
     // something to find — the user only ever sees ONE animated camera
     // move (the flyTo inside flyToOperatorNetwork), not a visible jump-to-
     // wrong-place-then-fly-to-right-place.
-    if (picked.code) {
+    if (!picked.code) return;
+    var mySeq = selectionSeq;
+    // ASKED BEFORE THE JUMP, not after. If this operator has no track in the
+    // tileset there is nothing to fly to, so the whole camera sequence is
+    // skipped — no jump, no fly, no restore. The camera does not move at all;
+    // the panel explains why instead. See operatorTilesetKeys().
+    operatorTilesetKeys().then(function (keys) {
+      if (mySeq !== selectionSeq) return; // superseded by a newer selection
+      if (keys && !keys[picked.code]) {
+        operatorNoTrackCode = picked.code;
+        rebuildSidebarContent();
+        return;
+      }
+      operatorNoTrackCode = null;
       lockedOperatorHighlight = picked.code;
       applyOperatorHighlightPaint();
       map.jumpTo({ center: mapInitCenter, zoom: mapInitZoom, padding: regionJumpFlyToPadding() });
       // Captured AFTER the jumpTo above, which is programmatic and so does not
       // itself count as a gesture — this is the baseline the retry loop
       // compares against.
-      flyToOperatorNetwork(picked.code, selectionSeq, 1, userCameraGestureSeq);
-    }
+      flyToOperatorNetwork(picked.code, mySeq, 1, userCameraGestureSeq);
+    });
   }
   wireAutocomplete(operatorInput, document.getElementById('sb-ac-operator'), function (picked) {
     operatorPick = picked;

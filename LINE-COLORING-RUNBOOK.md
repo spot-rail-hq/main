@@ -361,3 +361,56 @@ that step for you.
 
 `operator-colors.json` at 68KB needs no format decision — same pattern as
 every other `data/*.json` file already committed directly to the repo.
+
+---
+
+## Task 7 — Quarterly OSM refresh checklist (next: October 2026)
+
+The pipeline is pinned to whatever Overpass extract was loaded when the segment
+graph was last built (currently OSM base **2026-07-12**). A quarterly refresh
+re-runs `build-line-segments.mjs` from a fresh extract, which rebuilds the graph
+— segment ids, geometry and counts all move. Everything below was verified
+against the PRE-refresh graph and **must be re-measured afterwards**; none of it
+carries over.
+
+**1. Re-measure the lane optimiser.** `build-operator-tiles-geojson.mjs` reports
+all three on every run — compare against the values it was accepted on:
+
+| figure | pre-refresh value |
+|---|---|
+| same-operator boundaries at ≥2 lane units | **4** (acceptance target was ≤10) |
+| lane collisions | **0** (asserted at build time — a regression throws) |
+| lane offset span / range skew | **7.000** / **0.000** (range −3.500..+3.500) |
+
+If the span moves off 7.0, `LANE_FAN_ZOOM_STOPS` in `map.html` must be rescaled
+with it — those stops are derived as `5/7 ×` a 5.0-unit baseline and the pairing
+is documented at both ends.
+
+**2. Drop the XR narrow relabel.** The Elizabeth line was relabelled from `LD` to
+`XR` **in place** in `line-segments.json` (52 segments, matched by the member way
+ids of the 24 `operator=GTS Rail Operations` route relations) because a full
+graph rebuild was too costly at the time. `operator-classify.mjs` now maps
+`'GTS Rail Operations': 'XR'` directly, so the refresh produces the correct
+attribution on its own — **do not re-apply the relabel**, and check afterwards
+that `XR` has ~52 segments (bbox roughly lon −0.97..0.33, lat 51.46..51.63,
+Reading/Maidenhead to Shenfield plus the Abbey Wood branch) and that `LD` no
+longer reaches east of the Greenwich meridian.
+
+**3. Re-check the operators present in the tileset.** `map.html` reads the
+PMTiles `tilestats` operator-value list to decide whether an operator has any
+track before moving the camera (see `operatorTilesetKeys()`). That is only
+authoritative while the list is complete — tippecanoe caps `values` at 100 per
+attribute and there are currently 54 distinct operators. If a refresh pushes
+that past 100, the list silently truncates; the client already detects this
+(`count > values.length`) and falls back, but the pre-check stops working and
+should be replaced rather than left degraded.
+
+**4. Re-run the downstream graph.** `build-station-graph-links.mjs` →
+`build-graph-bridges.mjs` → `build-routing-graph.mjs`, in that order, as Task 4/4b
+already require after any segment-graph change.
+
+**5. Known open attribution questions to re-check while the fresh data is
+loaded** (found 2026-07-28, deliberately not chased): `LD` carries 68 features
+around Glasgow (lat ~55.87) and two short fragments near Berkhamsted on the WCML
+— Lumo runs neither. Possibly further classifier folds of the same class as the
+GTS/Elizabeth bug, possibly legitimate OSM tagging of planned services.
