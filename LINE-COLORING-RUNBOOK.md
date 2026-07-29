@@ -409,8 +409,164 @@ should be replaced rather than left degraded.
 `build-graph-bridges.mjs` → `build-routing-graph.mjs`, in that order, as Task 4/4b
 already require after any segment-graph change.
 
-**5. Known open attribution questions to re-check while the fresh data is
+**5. Re-check the heritage canonicalisation map — it is load-bearing.**
+`scripts/lib/heritage-canonical.mjs` maps 247 raw OSM name/operator variants
+onto 183 canonical railways. It is a JOIN, not a lookup table: a heritage
+railway whose OSM name string is absent from the map is **dropped silently**,
+with no error and no visible change to any total. OSM renames happen, and each
+one moves a railway out of the graph without a warning. The build prints the
+misses; check them on every refresh:
+
+```bash
+LINE_SEGMENTS_NATIONAL=1 node scripts/build-line-segments.mjs 2>&1 | grep -A100 'UNMAPPED HERITAGE'
+```
+
+Currently **90 strings** are reported unmapped. Most are sidings, works
+railways, and museum yard track that are correctly excluded — the list is not a
+to-do, it is a review queue. What matters is watching for a name you recognise
+as a real passenger heritage railway appearing in it, which means the map has
+gone stale against a rename.
+
+**6. Confirm the geometry-integrity guard passed.** `build-line-segments.mjs`
+refetches a 250-way deterministic sample after the way-fetch step and asserts
+the geometry comes back identical, throwing if not. A clean run prints:
+
+```
+geometry integrity: 250 sampled ways refetched, all identical
+```
+
+Its absence means the guard was removed or the build did not reach that step —
+either way the graph's lengths are unverified. See "Geometry integrity" below
+for why this check is a refetch and not a shape heuristic.
+
+**7. Known open attribution questions to re-check while the fresh data is
 loaded** (found 2026-07-28, deliberately not chased): `LD` carries 68 features
 around Glasgow (lat ~55.87) and two short fragments near Berkhamsted on the WCML
 — Lumo runs neither. Possibly further classifier folds of the same class as the
 GTS/Elizabeth bug, possibly legitimate OSM tagging of planned services.
+
+
+## Task 8 — Heritage railway extraction (2026-07-29)
+
+Heritage went from a token presence to real coverage in this pass: **122 → 2,506
+segments** and **225 → 1,048 km**, spanning **174 distinct railways** in the
+graph (169 reach the tileset as distinct `heritage_slug` values; the remainder
+are canonical entries whose track is entirely outside live-railway scope).
+Segment split by `heritage_type`: operating 2,262 · museum 129 · tramway 81 ·
+funicular 21.
+
+Every heritage segment carries `heritage_slug`, `heritage_type`,
+`heritage_type_secondary` (only when a railway genuinely has two characters) and
+`band` (`trunk`/`regional`/`local`/`micro`). These are attached **only to the
+`Heritage` lane** of a segment — a shared segment like `["GW", "Heritage"]`
+emits two features and the GW one is main-line track that must not inherit the
+heritage railway's identity.
+
+### Manual additions
+
+**Statfold Barn Railway** is in the canonical map by hand. It is a genuine
+operating narrow-gauge passenger railway but its OSM track carries no operator
+or name tag that the extraction can key on, so no automated pass will ever find
+it. If a future refresh reports it as unmapped or it vanishes from the graph,
+the cause is upstream tagging, not the pipeline. Treat any similar hand-added
+entry the same way: they are invisible to the extraction by construction.
+
+### Character, not gauge, decides what counts
+
+The include/exclude rule for miniature and narrow-gauge lines is **character,
+not gauge**. A 15" line running a scheduled public passenger service over a
+route between destinations (Romney Hythe & Dymchurch, Ravenglass & Eskdale) is a
+railway and is included. A line of the same or wider gauge running circuits
+inside a park, zoo, or garden centre is a ride and is excluded, regardless of
+how substantial its equipment is. Gauge was tried first as the cheap rule and
+rejected — it splits the wrong way at both ends, admitting park circuits while
+excluding some of the best-known miniature main lines.
+
+### History-mode candidates, deliberately not in the live graph
+
+**Butterley Gangroad** and the **Cromford and High Peak Railway** were found
+during the sweep and left out. Both are historically significant, neither runs a
+present-day passenger service over the alignment in question, and the live
+graph's contract is current operating railways. They belong to History mode's
+OpenHistoricalMap layer, which already handles closed alignments — adding them
+here would mean the live layer quietly carrying dead track, which is exactly
+what the live-railway filter exists to prevent.
+
+### Main-line expansion was declined, with figures
+
+The heritage pass was constrained to be **purely additive**: it must not change
+main-line attribution. That was measured, not assumed.
+
+- Non-heritage track, previous graph vs this one (both post-dedupe): **5,249 →
+  5,238 segments**, **21,485 → 21,499 km** — a **+0.07%** change on a pass that
+  more than doubled total heritage coverage.
+- The 11 fewer segments are accounted for: six were `railway=disused`,
+  `construction`, or `razed` ways (the Maritime Line, a Huddersfield Line
+  construction way, and three razed Clarkston-area goods branches) correctly
+  removed by the live-railway filter, and the rest is re-segmentation around
+  them.
+- Introducing `classifyTags()` — the heritage-aware classifier that runs ahead
+  of the legacy operator chain — changed main-line coverage at **zero of the 40
+  coverage probes**. Southern, Merseyrail, c2c and Island Line all resolve
+  exactly as before. The classifier is additive by construction (it only
+  overrides when the legacy result is neither `toc` nor `metro`), and this is
+  the measurement confirming it.
+
+Route relations tagged `route=railway` are admitted **only when heritage**. The
+containment test showed admitting them generally had zero effect on non-heritage
+coverage while risking exactly the main-line contamination above, so the narrow
+gate was kept.
+
+### Geometry integrity — what was actually wrong, and what was not
+
+A large apparent geometry gain (~+6,800 km of non-heritage track, on an
+identical way set) drove a truncated-geometry investigation. The conclusion has
+since been **corrected**, and it matters because the wrong version is easy to
+rediscover:
+
+- The comparison was **new PRE-dedupe against old POST-dedupe**. Dedupe removes
+  parallel duplicate corridors and drops ~9% of segments; comparing across it
+  manufactures most of the difference. Like-for-like the figure is +0.07% (see
+  above). **28,285 km is the pre-dedupe national total and never ships** —
+  21,499 km is what reaches the tileset.
+- Ways 313501251, 384138096 and 380888776 were suspected stubs. All three are
+  **complete**, matching Overpass exactly (498 m, 860 m, 1,585 m), in both the
+  old and the new graph.
+- A 250-way refetch sample found **zero** truncation. There is currently no
+  evidence any way is being truncated.
+
+**The guard that shipped, and why it is not a shape heuristic.** The obvious
+check — flag ways whose point count looks implausibly low for their span — was
+implemented, measured, and rejected. At ≥300 m on ≤3 points it flagged **1,488
+ways**, and all 15 sampled were verified against Overpass as genuinely straight
+(long fen and embankment straights, appearing in matching up/down pairs at
+identical spans). Real rail geometry is straight often enough that shape carries
+no signal at any threshold. What shipped instead re-requests a deterministic
+250-way sample in a second, independent Overpass call and asserts identical
+geometry — it tests the actual failure mode (a response delivering less than was
+asked for) rather than guessing from the result's shape, has no false-positive
+rate, and needs no threshold. It **throws**: a mismatch means every length in
+the graph is suspect.
+
+## Task 9 — Operator coverage gaps (findings, 2026-07-29)
+
+Found by `scripts/verify-operator-coverage.mjs` (40 hand-verified probes, 700 m
+tolerance, exit 1 on regression). Recorded, not fixed.
+
+**Southern (SN).** 14 of 18 probes resolve to the GTR parent rather than to
+Southern — most of the Southern/Thameslink/Great Northern/Gatwick Express
+network is tagged at the Govia Thameslink Railway parent level in OSM, not per
+sub-brand. Splitting them back out needs route-name matching shaped like
+`splitTflLine()`; deferred, and the harness records GTR as a legitimate pass so
+the state is explicit rather than silently green.
+
+**Hull Trains, Grand Central, Lumo.** All three are open-access operators with
+no route relation in OSM at all, so they have no network to extract — their
+track exists only under the franchised operator that shares it. Nothing in this
+pipeline can recover them; it needs either upstream relations or a timetable
+source, neither of which is in scope.
+
+**Merseyrail Kirkby.** No ME-keyed track within tolerance of Kirkby. Merseyrail
+terminates there on a platform shared with Northern's Wigan service and the
+approach is tagged for the Northern route. Recorded in the harness as a known
+gap so it does not mask a future regression.

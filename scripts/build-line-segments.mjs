@@ -130,6 +130,76 @@ function edgeKey(a, b) { return a < b ? `${a}_${b}` : `${b}_${a}`; }
 const LIVE_RAILWAY_VALUES = ['rail', 'narrow_gauge', 'preserved', 'light_rail', 'tram', 'subway', 'funicular', 'monorail'];
 const LIVE_RAILWAY_CLAUSE = `["railway"~"^(${LIVE_RAILWAY_VALUES.join('|')})$"]`;
 const rejectedWayIds = new Set();
+// Integrity sample for the way-fetch step (see verifyGeometrySample).
+const GEOM_VERIFY_SAMPLE = 250;
+
+// Per-segment heritage attributes. A segment can in principle touch more than
+// one heritage railway (shared approach track); the FIRST alphabetically wins
+// for the scalar fields so the tile schema stays flat, and the full set is kept
+// in heritage_railways for anything that needs it. Non-heritage segments get
+// nothing — the fields are simply absent, so the tile build emits no keys.
+// GEOMETRY INTEGRITY GUARD (2026-07-29).
+//
+// The previous national graph was missing ~6,800 km of track across the same
+// 61,431 ways — the ways were all present, but a minority came back holding
+// only part of their geometry. A truncated way is structurally valid and just
+// draws short, so nothing downstream noticed.
+//
+// WHY NOT A SHAPE HEURISTIC: the obvious guard — flag ways whose point count
+// looks low for their span — was tried and rejected. At >=300 m on <=3 points
+// it flagged 1,488 ways, and all 15 sampled were verified against Overpass as
+// genuinely straight (long fen/embankment straights, in matching up/down
+// pairs). Real rail geometry is straight often enough that shape carries no
+// signal, and there is no threshold that separates the two cases.
+//
+// WHAT THIS DOES INSTEAD: re-request a deterministic sample of already-fetched
+// ways in a second, independent Overpass call and assert the geometry comes
+// back identical. That tests the actual failure mode (a response delivering
+// less than was asked for) rather than guessing from the shape of the result.
+// It has no false-positive rate and needs no threshold. Sampling every Nth way
+// by sorted ID spreads the sample across every fetch batch and keeps it
+// reproducible between runs. This THROWS: a mismatch means the fetch layer is
+// dropping data, and every downstream length in the graph is then suspect.
+async function verifyGeometrySample(wayGeom) {
+  const all = [...wayGeom.keys()].sort((a, b) => a - b);
+  const stride = Math.max(1, Math.floor(all.length / GEOM_VERIFY_SAMPLE));
+  const sample = all.filter((_, i) => i % stride === 0).slice(0, GEOM_VERIFY_SAMPLE);
+  const q = `[out:json][timeout:180];way(id:${sample.join(',')});out geom;`;
+  const res = await fetch(OVERPASS_URL, { method: 'POST', body: 'data=' + encodeURIComponent(q) });
+  const data = await res.json();
+  const fresh = new Map(data.elements.filter((e) => e.type === 'way' && e.geometry).map((e) => [e.id, e.geometry]));
+  const bad = [];
+  for (const id of sample) {
+    const have = wayGeom.get(id).coords;
+    const want = fresh.get(id);
+    if (!want) { bad.push(`way/${id}: absent on refetch`); continue; }
+    if (want.length !== have.length) { bad.push(`way/${id}: graph has ${have.length} points, refetch has ${want.length}`); continue; }
+    const [a] = have, b = have[have.length - 1];
+    if (a[0] !== want[0].lon || a[1] !== want[0].lat || b[0] !== want[want.length - 1].lon || b[1] !== want[want.length - 1].lat)
+      bad.push(`way/${id}: endpoints differ from refetch`);
+  }
+  if (bad.length) {
+    console.error(`\n  GEOMETRY INTEGRITY FAILURE — ${bad.length}/${sample.length} sampled ways did not survive a refetch:`);
+    for (const b of bad.slice(0, 20)) console.error('    ' + b);
+    throw new Error('Way geometry is being truncated at fetch; graph lengths cannot be trusted. Re-run the build.');
+  }
+  console.log(`  geometry integrity: ${sample.length} sampled ways refetched, all identical`);
+}
+
+function heritageFieldsFor(ways, wayHeritage) {
+  const set = new Set();
+  for (const w of ways) for (const r of (wayHeritage.get(w) || [])) set.add(r);
+  if (!set.size) return {};
+  const railways = [...set].sort();
+  const meta = HERITAGE_META[railways[0]] || {};
+  return {
+    heritage_railways: railways,
+    heritage_slug: meta.slug || null,
+    heritage_type: meta.type || null,
+    heritage_type_secondary: meta.secondary || null,
+    heritage_band: meta.band || null,
+  };
+}
 
 function operatorKeyFor(rel) {
   if (rel.bucket === 'toc') return rel.code;
@@ -360,6 +430,8 @@ async function main() {
   if (droppedWays > 0) {
     console.log(`  ${droppedWays} referenced ways had no geometry in scope (expected for a bbox-bounded checkpoint — relations extend beyond the corridor)`);
   }
+  await verifyGeometrySample(wayGeom);
+
   // PER-RELATION REJECT REPORT. A relation losing a handful of ways is normal
   // (closed spurs off a live line); a relation losing MOST of its ways means it
   // traces a historic alignment and should probably not be in scope at all.
@@ -391,6 +463,10 @@ async function main() {
   // ─── Step 4: way -> operator-key set, then fine-grained edge graph ────
   console.log('\n[4/5] Building node graph…');
   const wayOperators = new Map(); // wayId -> Set<operatorKey>
+  // Parallel map carrying WHICH heritage railway a way belongs to. `operators`
+  // stays the literal "Heritage" for every one of them (deliberate — see the
+  // tile build), so per-railway identity has to travel separately.
+  const wayHeritage = new Map(); // wayId -> Set<canonical railway>
   for (const [relId, ways] of relationWays) {
     const rel = relById.get(relId);
     const opKey = operatorKeyFor(rel);
@@ -398,6 +474,10 @@ async function main() {
       if (!wayGeom.has(w)) continue;
       if (!wayOperators.has(w)) wayOperators.set(w, new Set());
       wayOperators.get(w).add(opKey);
+      if (rel.bucket === 'heritage' && rel.heritageRailway) {
+        if (!wayHeritage.has(w)) wayHeritage.set(w, new Set());
+        wayHeritage.get(w).add(rel.heritageRailway);
+      }
     }
   }
 
@@ -472,7 +552,7 @@ async function main() {
       const coords = nodes.map((n) => nodeCoord.get(n));
       let length_m = 0;
       for (let i = 0; i < coords.length - 1; i++) length_m += haversineMeters(coords[i], coords[i + 1]);
-      segments.push({ id: segments.length, nodes, coords, operators, way_ids: [...ways], length_m: Math.round(length_m) });
+      segments.push({ id: segments.length, nodes, coords, operators, way_ids: [...ways], length_m: Math.round(length_m), ...heritageFieldsFor(ways, wayHeritage) });
     }
   }
 

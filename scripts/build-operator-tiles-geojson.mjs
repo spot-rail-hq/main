@@ -616,6 +616,19 @@ for (const s of graph.segments) {
         operators: op,
         lane_offset: lanes.get(op) - mean,
         length_m: s.length_m,
+        // Per-railway heritage identity, attached ONLY to the Heritage lane of
+        // the segment. A shared segment like ["GW", "Heritage"] emits two
+        // features; the GW one is main-line track and must not inherit the
+        // heritage railway's name. Fields are omitted entirely rather than
+        // emitted null so tippecanoe doesn't carry dead keys network-wide.
+        ...(op === 'Heritage' && s.heritage_slug
+          ? {
+              heritage_slug: s.heritage_slug,
+              heritage_type: s.heritage_type,
+              ...(s.heritage_type_secondary ? { heritage_type_secondary: s.heritage_type_secondary } : {}),
+              band: s.heritage_band,
+            }
+          : {}),
       },
       geometry: { type: 'LineString', coordinates: s.coords },
     });
