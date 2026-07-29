@@ -634,7 +634,11 @@
      .spot-headline display size, which is sized for full landing-page
      cards, not this compact panel. */
   .db-headline { padding: 10px 16px 4px; font-size: 13px; font-weight: 600; color: var(--ink-primary); line-height: 1.4; }
-  .db-franchise-list { padding: 2px 16px 10px; list-style: none; }
+  /* No horizontal padding: this <ul> sits INSIDE .db-field, which already
+     supplies the 16px gutter. Carrying its own 16px too pushed franchise names
+     to 32px while every other field value sat at 16px, so the Franchises block
+     read as indented relative to Parent company / Stations operated etc. */
+  .db-franchise-list { padding: 2px 0 10px; margin: 0; list-style: none; }
   .db-franchise-list li { padding: 6px 0; }
   .db-franchise-list li:first-child { padding-top: 0; }
   .db-franchise-name { display: block; font-size: 13px; color: var(--ink-primary); font-weight: 500; }
@@ -2455,15 +2459,18 @@
   // basemap before the glow is left alone. Below it, the glow colour is pushed
   // away from the basemap's luminance until it clears.
   //
-  // 1.45 was picked as the tightest value that sits above the whole failing
-  // set — every operator whose halo currently renders below it (NT 1.09,
-  // XC 1.30, Blackpool Tramway 1.30, GC 1.31, CS 1.33, WR 1.35, SW 1.37,
-  // HX 1.40, Sheffield Supertram 1.40) gets lifted, and the next operator up
-  // (SR at 1.52) does not. It is NOT a perceptually validated threshold —
-  // there is no browser in this environment, so it was derived arithmetically
-  // and is expected to be tuned by eye. Raising it to 1.55 additionally pulls
-  // in EM, SR and West Midlands Metro, whose halos sit at 1.52-1.54.
-  var GLOW_MIN_HALO_CONTRAST = 1.45;
+  // Raised 1.45 -> 1.55 on 2026-07-29 after a look at the real map: 1.45 was
+  // measurably better but still read as "not very obvious". 1.55 additionally
+  // lifts EM, SR and West Midlands Metro (halos at 1.52-1.54), so the whole
+  // lower band moves rather than just the worst offenders. Still NOT a
+  // perceptually validated number — derived arithmetically, tuned by eye once.
+  //
+  // GC is deliberately NOT solved by this knob. Its line was near-black
+  // (a real all-black livery) and no halo can rescue a line that is itself
+  // invisible, so GC got a hand-set lighter dark-theme LINE colour instead —
+  // see the _note on toc.GC in data/operator-colors.json. It now clears this
+  // threshold on its own and is no longer in the lifted set.
+  var GLOW_MIN_HALO_CONTRAST = 1.55;
   // Why this exists at all: the glow rings used to be painted in EXACTLY the
   // operator's own colour, so a dark operator produced a dark halo on a dark
   // basemap — i.e. the one case that most needs a glow is the one case where
@@ -4414,9 +4421,9 @@
       var parentName = (operatorsContent[parent] && operatorsContent[parent].name) || parent;
       // Not an error — the services are on the map, just drawn under the parent
       // brand because that is how OSM tags them.
-      return '<div class="db-hint" data-anim-row>These services run on the map under <strong>' +
-        escapeAttr(parentName) + '</strong>, which is how they are recorded in the underlying map data. ' +
-        'Search for ' + escapeAttr(parentName) + ' to highlight the network.</div>';
+      return '<div class="db-hint" data-anim-row>These services are recorded in the underlying map data under <strong>' +
+        escapeAttr(parentName) + '</strong>, so the highlighted route shown is ' + escapeAttr(parentName) +
+        '’s full network — it includes these services but is not limited to them.</div>';
     }
     return '<div class="db-hint" data-anim-row>Route data for this operator isn’t available yet, so there’s nothing to highlight on the map. ' +
       'The details below still apply.</div>';
@@ -4752,7 +4759,18 @@
       if (routeId && routesContent[routeId]) {
         selectRoute(routeId);
       } else if (operatorCode) {
+        // 2026-07-29: this used to call selectOperator() alone, which rebuilds
+        // the SIDEBAR and nothing else — so going back/forward through operator
+        // selections restored the panel while the map kept whatever highlight
+        // and camera position it happened to have. Reported as "can the map
+        // also go back/forward and re-fly?".
+        //
+        // Routed through the same helper the search pick uses, so a restored
+        // operator gets the identical treatment: the tileset pre-check (no
+        // camera movement for an operator with no track), the folded-operator
+        // parent substitution, the highlight paint and the fly-to-network.
         selectOperator(operatorCode);
+        highlightAndFlyToOperator(operatorCode, selectionSeq);
       } else if (fromCrs && toCrs) {
         var list = getStationList();
         var from = list.filter(function (s) { return s.crs === fromCrs; })[0];
@@ -7702,44 +7720,59 @@
   // could search an operator from the Live tab and see the Database-style
   // detail card render there (2026-07-21 bugfix). This is the actual root
   // fix; hiding the tab in Live is the visible half of it.
-  function submitOperatorPick(picked) {
-    if (mode !== 'database') return;
-    selectOperator(picked.code);
-    // Highlight + fly to the network, search-specific (not folded into
-    // selectOperator() itself, which is also called from clicking a route
-    // directly on the map — that already shows the operator's line right
-    // where the user clicked, so flying away and back would be a
-    // disorienting, unrequested camera move there; a region-chip click
-    // inside the detail panel already has its own curated flyTo too).
-    // Only a from-search pick needs this: the user has no idea where the
-    // network even is yet. jumpTo (instant, no animation) to the standard
-    // "All UK" view first forces broad tile loading regardless of the
-    // camera's current position, so flyToOperatorNetwork's tile query has
-    // something to find — the user only ever sees ONE animated camera
-    // move (the flyTo inside flyToOperatorNetwork), not a visible jump-to-
-    // wrong-place-then-fly-to-right-place.
-    if (!picked.code) return;
-    var mySeq = selectionSeq;
+  // Highlight + fly to an operator's network. Shared by the search pick and by
+  // back/forward restore, so both behave identically — this used to be inline
+  // in submitOperatorPick(), which is why a restored operator got its panel but
+  // no map highlight and no camera move.
+  //
+  // Deliberately NOT folded into selectOperator() itself: that is also called
+  // from clicking a route directly on the map, where the line is already under
+  // the cursor and flying away and back would be a disorienting, unrequested
+  // camera move; a region-chip click inside the detail panel has its own
+  // curated flyTo too. Only "arrived here without knowing where the network is"
+  // needs this.
+  //
+  // jumpTo (instant, no animation) to the standard "All UK" view first forces
+  // broad tile loading regardless of where the camera was, so
+  // flyToOperatorNetwork's tile query has something to find — the user sees ONE
+  // animated move, not a jump-to-wrong-place-then-fly-to-right-place.
+  function highlightAndFlyToOperator(code, mySeq) {
+    if (!code || !map) return;
     // ASKED BEFORE THE JUMP, not after. If this operator has no track in the
     // tileset there is nothing to fly to, so the whole camera sequence is
     // skipped — no jump, no fly, no restore. The camera does not move at all;
     // the panel explains why instead. See operatorTilesetKeys().
     operatorTilesetKeys().then(function (keys) {
       if (mySeq !== selectionSeq) return; // superseded by a newer selection
-      if (keys && !keys[picked.code]) {
-        operatorNoTrackCode = picked.code;
+      var highlightCode = code;
+      if (keys && !keys[code]) {
+        operatorNoTrackCode = code;
         rebuildSidebarContent();
-        return;
+        // A FOLDED operator (GN/GX/TL/SN -> GTR, LN -> WMR) has no track of its
+        // own because OSM tags those services under the parent brand — but the
+        // trains do run, and the user asking for Great Northern is entitled to
+        // see where. Highlight the PARENT's network instead of leaving the map
+        // blank; the notice in the panel names the parent so the substitution
+        // is never silent. Only a genuine absence (HT) still shows nothing,
+        // which is honest — there is no geometry anywhere to point at.
+        highlightCode = OPERATOR_FOLDED_INTO[code];
+        if (!highlightCode || !keys[highlightCode]) return; // nothing to show — camera stays put
+      } else {
+        operatorNoTrackCode = null;
       }
-      operatorNoTrackCode = null;
-      lockedOperatorHighlight = picked.code;
+      lockedOperatorHighlight = highlightCode;
       applyOperatorHighlightPaint();
       map.jumpTo({ center: mapInitCenter, zoom: mapInitZoom, padding: regionJumpFlyToPadding() });
       // Captured AFTER the jumpTo above, which is programmatic and so does not
       // itself count as a gesture — this is the baseline the retry loop
       // compares against.
-      flyToOperatorNetwork(picked.code, mySeq, 1, userCameraGestureSeq);
+      flyToOperatorNetwork(highlightCode, mySeq, 1, userCameraGestureSeq);
     });
+  }
+  function submitOperatorPick(picked) {
+    if (mode !== 'database') return;
+    selectOperator(picked.code);
+    highlightAndFlyToOperator(picked.code, selectionSeq);
   }
   wireAutocomplete(operatorInput, document.getElementById('sb-ac-operator'), function (picked) {
     operatorPick = picked;

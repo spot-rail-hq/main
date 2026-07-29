@@ -27,8 +27,9 @@
       "light": "#B7007C"
     },
     "GC": {
-      "dark": "#525245",
-      "light": "#1D1D1B"
+      "dark": "#B8AB7A",
+      "light": "#1D1D1B",
+      "_note": "dark-theme value HAND-SET 2026-07-29, bypassing toDarkThemeFromLight(). Grand Central's real corporate colour is #1D1D1B — an all-black livery (assignment_report: confidence high) — and the derivation only lifted it to #525245, a dark olive that measured 2.20:1 against the dark basemap and ΔE76 19.6 from the un-highlighted resting grey (#6D747D): the closest of all 63 palette colours to a plain grey line. That is why selecting Grand Central appeared to highlight nothing at all. A black livery cannot be lifted into a dark basemap by lightness alone, so this follows the precedent ALREADY set in this file for the same problem: tfl_lines 'Northern' is #000000 in light and #FFFFFF in dark. New value measures 7.58:1 vs basemap and ΔE 39.3 vs resting grey; closest gated operator is SN at ΔE 39.1 (floor 15); worst KNOWN_ADJACENT CVD separation 15.3 (floor 15). LIGHT theme is unchanged and still carries the true corporate colour. Alternative considered: #BDBDA8 (preserves hue 60 exactly, contrast 9.12, ΔE 32.2 vs grey) — rejected as too close to a neutral grey. Like the Blackpool Tramway and Heritage entries, this is NOT reproduced by build-operator-palette.mjs; a regeneration will overwrite it."
     },
     "LD": {
       "dark": "#6295FC",
