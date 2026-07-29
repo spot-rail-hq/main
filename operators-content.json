@@ -3340,5 +3340,249 @@
         "Glasgow"
       ]
     }
+  },
+  "Windrush": {
+    "name": "Windrush line",
+    "headline": "Named for the Windrush generation, running through areas with long-established Caribbean communities",
+    "parent_company": "Transport for London",
+    "wikipedia_title": "Windrush line",
+    "_wikipedia": {
+      "fetched_at": "2026-07-29T00:00:00.000Z",
+      "title": "Windrush line",
+      "url": "https://en.wikipedia.org/wiki/Windrush_line",
+      "license": "CC BY-SA 4.0"
+    },
+    "stations_operated": 31,
+    "stations_operated_manual": true,
+    "notable_features": [
+      "Runs from Highbury & Islington south to New Cross, Clapham Junction, Crystal Palace and West Croydon",
+      "Named in honour of the Windrush generation, who arrived from the Caribbean from 1948 onwards",
+      "Chosen because the route passes through Dalston, Peckham and West Croydon — areas with long-established Caribbean communities",
+      "Serves the East London Line core through the Thames Tunnel, the oldest underwater tunnel in the world",
+      "One of six London Overground routes given individual names and colours — announced February 2024, rolled out across signage and maps from November 2024, replacing a single orange network shown as one line",
+      "Operated under concession for Transport for London by First Rail London (FirstGroup), which took over from Arriva Rail London when its contract ended on 3 May 2026"
+    ],
+    "regions_served": {
+      "main": [
+        "London"
+      ]
+    },
+    "single_region": true,
+    "website": "https://tfl.gov.uk/modes/london-overground/",
+    "schema_jsonld": {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Windrush line",
+      "parentOrganization": {
+        "@type": "Organization",
+        "name": "Transport for London"
+      },
+      "areaServed": [
+        "London"
+      ]
+    }
+  },
+  "Mildmay": {
+    "name": "Mildmay line",
+    "headline": "Named after the Shoreditch hospital that led the UK's response to the HIV/AIDS crisis",
+    "parent_company": "Transport for London",
+    "wikipedia_title": "Mildmay line",
+    "_wikipedia": {
+      "fetched_at": "2026-07-29T00:00:00.000Z",
+      "title": "Mildmay line",
+      "url": "https://en.wikipedia.org/wiki/Mildmay_line",
+      "license": "CC BY-SA 4.0"
+    },
+    "stations_operated": 23,
+    "stations_operated_manual": true,
+    "notable_features": [
+      "Runs from Stratford west to Richmond and Clapham Junction, across north London",
+      "Named after Mildmay Mission Hospital in Shoreditch, which opened the UK's first dedicated HIV/AIDS ward in 1988",
+      "The hospital remains closely associated with London's LGBTQ+ community",
+      "Follows the North London Line, one of the oldest surviving cross-London passenger routes",
+      "One of six London Overground routes given individual names and colours — announced February 2024, rolled out across signage and maps from November 2024, replacing a single orange network shown as one line",
+      "Operated under concession for Transport for London by First Rail London (FirstGroup), which took over from Arriva Rail London when its contract ended on 3 May 2026"
+    ],
+    "regions_served": {
+      "main": [
+        "London"
+      ]
+    },
+    "single_region": true,
+    "website": "https://tfl.gov.uk/modes/london-overground/",
+    "schema_jsonld": {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Mildmay line",
+      "parentOrganization": {
+        "@type": "Organization",
+        "name": "Transport for London"
+      },
+      "areaServed": [
+        "London"
+      ]
+    }
+  },
+  "Weaver": {
+    "name": "Weaver line",
+    "headline": "Named for the textile trades of Spitalfields, Bethnal Green and Hackney",
+    "parent_company": "Transport for London",
+    "wikipedia_title": "Weaver line",
+    "_wikipedia": {
+      "fetched_at": "2026-07-29T00:00:00.000Z",
+      "title": "Weaver line",
+      "url": "https://en.wikipedia.org/wiki/Weaver_line",
+      "license": "CC BY-SA 4.0"
+    },
+    "stations_operated": 25,
+    "stations_operated_manual": true,
+    "notable_features": [
+      "Runs from Liverpool Street north to Cheshunt, Enfield Town and Chingford",
+      "Named for the weaving and textile trades historically centred on Spitalfields, Bethnal Green and Hackney",
+      "Recalls the Huguenot, Jewish and Bengali communities who worked in those trades after settling in the East End",
+      "One of six London Overground routes given individual names and colours — announced February 2024, rolled out across signage and maps from November 2024, replacing a single orange network shown as one line",
+      "Operated under concession for Transport for London by First Rail London (FirstGroup), which took over from Arriva Rail London when its contract ended on 3 May 2026"
+    ],
+    "regions_served": {
+      "main": [
+        "London"
+      ]
+    },
+    "single_region": true,
+    "website": "https://tfl.gov.uk/modes/london-overground/",
+    "schema_jsonld": {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Weaver line",
+      "parentOrganization": {
+        "@type": "Organization",
+        "name": "Transport for London"
+      },
+      "areaServed": [
+        "London"
+      ]
+    }
+  },
+  "Lioness": {
+    "name": "Lioness line",
+    "headline": "Named after the England women's football team, running via Wembley to Watford Junction",
+    "parent_company": "Transport for London",
+    "wikipedia_title": "Lioness line",
+    "_wikipedia": {
+      "fetched_at": "2026-07-29T00:00:00.000Z",
+      "title": "Lioness line",
+      "url": "https://en.wikipedia.org/wiki/Lioness_line",
+      "license": "CC BY-SA 4.0"
+    },
+    "stations_operated": 19,
+    "stations_operated_manual": true,
+    "notable_features": [
+      "Runs from Euston north-west to Watford Junction, calling at Wembley Central",
+      "Named after the Lionesses, the England women's football team, marking their UEFA Women's Euro 2022 win at Wembley",
+      "The only one of the six named after a living group of people rather than a place or historical movement",
+      "Shares the southern end of the West Coast Main Line corridor out of Euston",
+      "One of six London Overground routes given individual names and colours — announced February 2024, rolled out across signage and maps from November 2024, replacing a single orange network shown as one line",
+      "Operated under concession for Transport for London by First Rail London (FirstGroup), which took over from Arriva Rail London when its contract ended on 3 May 2026"
+    ],
+    "regions_served": {
+      "main": [
+        "London"
+      ]
+    },
+    "single_region": true,
+    "website": "https://tfl.gov.uk/modes/london-overground/",
+    "schema_jsonld": {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Lioness line",
+      "parentOrganization": {
+        "@type": "Organization",
+        "name": "Transport for London"
+      },
+      "areaServed": [
+        "London"
+      ]
+    }
+  },
+  "Suffragette": {
+    "name": "Suffragette line",
+    "headline": "Named for the East End working-class women who campaigned for the vote",
+    "parent_company": "Transport for London",
+    "wikipedia_title": "Suffragette line",
+    "_wikipedia": {
+      "fetched_at": "2026-07-29T00:00:00.000Z",
+      "title": "Suffragette line",
+      "url": "https://en.wikipedia.org/wiki/Suffragette_line",
+      "license": "CC BY-SA 4.0"
+    },
+    "stations_operated": 13,
+    "stations_operated_manual": true,
+    "notable_features": [
+      "Runs from Gospel Oak east to Barking Riverside",
+      "Named for the East End working-class community's part in the campaign for women's suffrage",
+      "Barking was home to Annie Huggett, the longest-surviving suffragette, who died aged 103",
+      "Extended to Barking Riverside in 2022, the newest section of the Overground network",
+      "One of six London Overground routes given individual names and colours — announced February 2024, rolled out across signage and maps from November 2024, replacing a single orange network shown as one line",
+      "Operated under concession for Transport for London by First Rail London (FirstGroup), which took over from Arriva Rail London when its contract ended on 3 May 2026"
+    ],
+    "regions_served": {
+      "main": [
+        "London"
+      ]
+    },
+    "single_region": true,
+    "website": "https://tfl.gov.uk/modes/london-overground/",
+    "schema_jsonld": {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Suffragette line",
+      "parentOrganization": {
+        "@type": "Organization",
+        "name": "Transport for London"
+      },
+      "areaServed": [
+        "London"
+      ]
+    }
+  },
+  "Liberty": {
+    "name": "Liberty line",
+    "headline": "Named for the Royal Liberty of Havering, a 1465 grant of self-governance",
+    "parent_company": "Transport for London",
+    "wikipedia_title": "Liberty line",
+    "_wikipedia": {
+      "fetched_at": "2026-07-29T00:00:00.000Z",
+      "title": "Liberty line",
+      "url": "https://en.wikipedia.org/wiki/Liberty_line",
+      "license": "CC BY-SA 4.0"
+    },
+    "stations_operated": 3,
+    "stations_operated_manual": true,
+    "notable_features": [
+      "Runs from Romford to Upminster via Emerson Park, its only intermediate station",
+      "Named for the Royal Liberty of Havering, granted by Edward IV in 1465, which gave the area its own courts and more than 400 years of self-governance",
+      "The shortest line on the network at about 5.4 km, and the only one entirely within a single London borough",
+      "One of six London Overground routes given individual names and colours — announced February 2024, rolled out across signage and maps from November 2024, replacing a single orange network shown as one line",
+      "Operated under concession for Transport for London by First Rail London (FirstGroup), which took over from Arriva Rail London when its contract ended on 3 May 2026"
+    ],
+    "regions_served": {
+      "main": [
+        "London"
+      ]
+    },
+    "single_region": true,
+    "website": "https://tfl.gov.uk/modes/london-overground/",
+    "schema_jsonld": {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Liberty line",
+      "parentOrganization": {
+        "@type": "Organization",
+        "name": "Transport for London"
+      },
+      "areaServed": [
+        "London"
+      ]
+    }
   }
 }
