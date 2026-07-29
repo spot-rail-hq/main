@@ -28,22 +28,28 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-# ⚠ STEP 1 IS NOT SAFE TO RUN BLIND RIGHT NOW (found 2026-07-27) ⚠
-# operators.geojson as committed was generated on 21 Jul from a line-segments.json
-# that has since been replaced (22 Jul). Re-running this step against the current
-# scripts/output/line-segments.json produces a MATERIALLY DIFFERENT layer:
-#   shipped operators.geojson : 9,268 features / 6,126 distinct segment_id
-#   regenerated today         : 8,244 features / 5,371 distinct segment_id
-# i.e. 1,024 fewer features and 755 fewer segments. That is not a formatting
-# difference — it would silently change the z5-z14 map that has already been
-# reviewed and signed off, on top of whatever the intended change was.
+# ─── RESOLVED 2026-07-29: the 2026-07-27 warning that used to sit here ────
+# That warning said this step was unsafe to run blind, because regenerating
+# operators.geojson produced 8,244 features / 5,371 distinct segment_id against
+# the shipped 9,268 features / 6,126 segment_id — "1,024 fewer features and 755
+# fewer segments" — and told the reader to work out why before proceeding.
 #
-# The 2026-07-27 -Z0 rebuild therefore deliberately SKIPPED this step and tiled
-# the committed operators.geojson unchanged, which is what makes that rebuild's
-# "z5+ is byte-identical" guarantee true.
+# The answer is the DEDUPE STAGE. 6,126 is a PRE-dedupe segment count and 5,371
+# is the POST-dedupe count of the same graph; dedupe-line-segments.mjs merges
+# parallel duplicate corridors and drops ~9-12% of segments. Nothing was lost or
+# broken — the two numbers were never the same pipeline stage. The shipped
+# geojson had simply been generated before dedupe was part of the sequence.
 #
-# Before running this step again, work out which line-segments.json is correct
-# and why the segment count fell — do not just accept the new output.
+# ⚠ THE STANDING HAZARD, WHICH IS REAL: this script does NOT run dedupe. It
+# goes straight from scripts/output/line-segments.json to the GeoJSON. If you
+# run build-line-segments.mjs and then come here, you tile the PRE-dedupe graph
+# — a complete, shippable, wrong tileset that nothing downstream complains
+# about, and whose lane offset span reads 6.000 instead of the 7.000 that
+# map.html's LANE_FAN_ZOOM_STOPS is scaled for.
+#
+# Always: build-line-segments.mjs -> dedupe-line-segments.mjs -> this script.
+# See CLAUDE.md's pipeline-stage table for the full sequence and which figures
+# are valid to quote from each stage.
 echo "[1/2] Converting scripts/output/line-segments.json -> tile-generation/operators.geojson"
 node scripts/build-operator-tiles-geojson.mjs
 

@@ -2440,7 +2440,7 @@
   // Cost: negligible. Every ring below is filtered to just the 1-2 currently
   // active operators (a handful of segments), same as the old single glow
   // layer — stacking 3 more copies of an already-tiny filtered set is not a
-  // meaningful render burden, nothing like the ~9,268-feature base network.
+  // meaningful render burden, nothing like the ~10,628-feature base network.
   //
   // Draw order AMONG the rings themselves barely matters — they're all the
   // same translucent color at different opacities, so overlapping them in
@@ -2578,7 +2578,7 @@
 
   // ── Route reveal tiers (2026-07-22) ─────────────────────────────────────
   // Same "reduce network clutter at low zoom" goal as STATION_TIERS above,
-  // but for operator-lines — that layer used to render its full ~9,268
+  // but for operator-lines — that layer used to render its full ~10,628
   // segments from the very first "All UK" frame, every category at once.
   // Reuses operator-colors.json's EXISTING toc/metro/tfl_lines/heritage
   // category buckets (already fetched for coloring) rather than inventing
@@ -2998,7 +2998,7 @@
     // feature-state; both long since replaced by applyOperatorHighlightPaint(),
     // see its own comment; the single-layer version was replaced by this
     // multi-ring one on 2026-07-22, see GLOW_RINGS' comment for why). Each
-    // ring's own line-blur is untested at real ~9,268-feature-SOURCE scale
+    // ring's own line-blur is untested at real ~10,628-feature-SOURCE scale
     // in an actual browser (no browser in this environment) — though since
     // every ring is filtered down to a couple of features at a time, not
     // the full source, this isn't expected to cost meaningful frame rate.
@@ -3009,7 +3009,7 @@
         // Filtered down to (usually) zero features until applyOperatorHighlightPaint()
         // sets a real filter below — see that function's comment for why
         // this is filtered rather than just left at opacity 0 like before:
-        // it also keeps this off the render path entirely for the ~9,268
+        // it also keeps this off the render path entirely for the ~10,628
         // un-highlighted features rather than paying for a blurred line on
         // all of them at zero opacity.
         filter: NO_OPERATOR_FILTER,

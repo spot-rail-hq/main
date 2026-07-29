@@ -428,8 +428,10 @@ the join back to `stations-content.json` for stations that are still open.
 
 ### Reuse ours. Do not source the modern band from OHM.
 
-`scripts/output/line-segments.json` (generated 2026-07-15, national scope) holds **5,371 segments
-over 21,710 km**, derived from **61,905 OSM ways** across 1,145 route relations, with operator
+`scripts/output/line-segments.json` (generated 2026-07-15, national scope,
+**POST-dedupe** — see CLAUDE.md's pipeline-stage table; the pre-dedupe count of
+the same graph is ~6,126, and quoting the two against each other is a known
+trap) holds **5,371 segments over 21,710 km**, derived from **61,905 OSM ways** across 1,145 route relations, with operator
 attribution already solved per segment (histogram: 4,259 segments single-operator, 1,089 with
 two, and a tail to six).
 

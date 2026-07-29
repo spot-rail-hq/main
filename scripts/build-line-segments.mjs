@@ -235,6 +235,11 @@ async function main() {
     // Why: a 40-probe test against four operators' published networks (Southern,
     // Merseyrail, c2c, Island Line) found the new path changed main-line
     // coverage at ZERO locations, while the graph grew 5,371 -> 8,522 segments.
+    // STAGE WARNING: those two numbers are NOT the same stage — 5,371 is the
+    // old graph POST-dedupe, 8,522 is this one PRE-dedupe. Post-dedupe this
+    // build is 7,744. The zero-probe coverage result is unaffected (it is a
+    // per-location test, not a count), but do not quote the growth figure as
+    // like-for-like. See CLAUDE.md's pipeline-stage table.
     // Growth with no demonstrated benefit does not ride along with heritage.
     // Southern's apparent gaps are the deferred GTR sub-brand split, not
     // extraction — 14 of 18 of its locations resolve to GTR in BOTH graphs.
@@ -266,7 +271,16 @@ async function main() {
   // admitted only if it classifies as heritage.
   //
   // Measured cost of NOT containing it: non-heritage track 21,485 -> 28,401 km
-  // (+6,916 km) and the graph 5,371 -> 8,836 segments. Declined because the base
+  // (+6,916 km) and the graph 5,371 -> 8,836 segments.
+  // STAGE WARNING: cross-stage, and therefore INFLATED — 21,485 km / 5,371
+  // segments are POST-dedupe, 28,401 km / 8,836 segments are PRE-dedupe. Dedupe
+  // alone accounts for roughly a 9-12% drop, so the true uncontained cost is
+  // materially smaller than +6,916 km. It was never re-measured like-for-like
+  // (that needs another national Overpass run for the uncontained variant). The
+  // decision below does NOT rest on the magnitude — it rests on the base rail
+  // tileset already drawing that track as grey context — so the conclusion
+  // stands, but re-measure before citing the number. See CLAUDE.md.
+  // Declined because the base
   // rail tileset already draws that track as grey context, so admitting it to the
   // OPERATOR graph mainly adds unattributable, unclickable segments — a heavier
   // hover expression, more clutter, and empty panels on click, since most of it

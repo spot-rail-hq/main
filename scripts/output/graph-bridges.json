@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-26T12:01:40.253Z",
+  "generated_at": "2026-07-29T18:58:41.675Z",
   "threshold_m": 150,
   "bridges": [
     {
@@ -65,8 +65,23 @@
       ]
     },
     {
-      "anchor": "HFE,RYH,RYN,SMT,WAR",
-      "crs": "HFE",
+      "anchor": "BUE,CWC,SUY",
+      "crs": "BUE",
+      "from": "7151086637",
+      "to": "S:MKT",
+      "distM": 42,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "LE"
+      ],
+      "toOperators": [
+        "LE"
+      ]
+    },
+    {
+      "anchor": "BXB,HFE,RYH,RYN,SMT,WAR",
+      "crs": "BXB",
       "from": "1637962120",
       "to": "1236166333",
       "distM": 4.1,
@@ -128,19 +143,37 @@
       ]
     },
     {
-      "anchor": "BRE,CTH,GDP,GMY,HRO,IFD,SVK",
-      "crs": "BRE",
+      "anchor": "CTH,GDP,GMY,HRO,IFD,SRA,SVK",
+      "crs": "CTH",
       "from": "32861739",
       "to": "1597005716",
       "distM": 36.18,
       "confidence": "mode-matched",
       "waiver": null,
       "fromOperators": [
-        "LD",
+        "XR",
         "LE"
       ],
       "toOperators": [
         "LE"
+      ]
+    },
+    {
+      "anchor": "ASP,DLS,FLM,HRR,MRY,PRN,WGT,WKG,WTH",
+      "crs": "ASP",
+      "from": "2464424116",
+      "to": "S:CAR",
+      "distM": 41.05,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "NT"
+      ],
+      "toOperators": [
+        "CS",
+        "LD",
+        "TP",
+        "VT"
       ]
     },
     {
@@ -171,7 +204,7 @@
       ],
       "toOperators": [
         "GW",
-        "LD"
+        "XR"
       ]
     },
     {
@@ -247,22 +280,7 @@
       ],
       "toOperators": [
         "GW",
-        "LD"
-      ]
-    },
-    {
-      "anchor": "BUE,CWC,SUY",
-      "crs": "BUE",
-      "from": "7151086637",
-      "to": "S:MKT",
-      "distM": 42,
-      "confidence": "mode-matched",
-      "waiver": null,
-      "fromOperators": [
-        "LE"
-      ],
-      "toOperators": [
-        "LE"
+        "XR"
       ]
     },
     {
@@ -370,26 +388,11 @@
       "toOperators": [
         "LE"
       ]
-    },
-    {
-      "anchor": "BXB",
-      "crs": "BXB",
-      "from": "1637962126",
-      "to": "1236166333",
-      "distM": 119.46,
-      "confidence": "mode-matched",
-      "waiver": null,
-      "fromOperators": [
-        "LE"
-      ],
-      "toOperators": [
-        "LE"
-      ]
     }
   ],
   "unbridged": [
     {
-      "compIdx": 9,
+      "compIdx": 29,
       "islandSize": 23,
       "stations": [
         "BUY",
@@ -405,7 +408,7 @@
       "detail": null
     },
     {
-      "compIdx": 11,
+      "compIdx": 54,
       "islandSize": 16,
       "stations": [
         "BDN",
@@ -422,7 +425,7 @@
       "detail": null
     },
     {
-      "compIdx": 21,
+      "compIdx": 83,
       "islandSize": 10,
       "stations": [
         "CMR",
@@ -438,7 +441,7 @@
       "detail": null
     },
     {
-      "compIdx": 22,
+      "compIdx": 84,
       "islandSize": 9,
       "stations": [
         "BNE",
@@ -452,7 +455,17 @@
       "detail": null
     },
     {
-      "compIdx": 41,
+      "compIdx": 86,
+      "islandSize": 9,
+      "stations": [
+        "ZZT"
+      ],
+      "closestM": null,
+      "result": "gap-too-large",
+      "detail": null
+    },
+    {
+      "compIdx": 148,
       "islandSize": 4,
       "stations": [
         "SHM",
@@ -463,7 +476,7 @@
       "detail": null
     },
     {
-      "compIdx": 50,
+      "compIdx": 160,
       "islandSize": 3,
       "stations": [
         "CNE"
@@ -473,30 +486,10 @@
       "detail": null
     },
     {
-      "compIdx": 51,
+      "compIdx": 161,
       "islandSize": 3,
       "stations": [
         "DBD"
-      ],
-      "closestM": null,
-      "result": "gap-too-large",
-      "detail": null
-    },
-    {
-      "compIdx": 76,
-      "islandSize": 2,
-      "stations": [
-        "CMF"
-      ],
-      "closestM": null,
-      "result": "gap-too-large",
-      "detail": null
-    },
-    {
-      "compIdx": 87,
-      "islandSize": 2,
-      "stations": [
-        "DFI"
       ],
       "closestM": null,
       "result": "gap-too-large",

@@ -220,11 +220,32 @@ The 83 unsnapped break into two categories — read
 ## Task 4b — Phase 6: routing graph (From/To pathfinding)
 
 ```bash
-node scripts/build-graph-bridges.mjs    # then
-node scripts/build-routing-graph.mjs
+node scripts/build-routing-graph.mjs    # seed the node space
+node scripts/build-graph-bridges.mjs    # scores candidates AGAINST that node space
+node scripts/build-routing-graph.mjs    # apply the bridges
 ```
 
-Run in that order, and re-run **both** after any Phase 2/3 rebuild. Neither
+**Three commands, not two — these two scripts are a CYCLE.** Corrected
+2026-07-29; the previous instruction here was bridges → routing, which is wrong
+whenever the segment graph has changed. `build-graph-bridges.mjs` reads
+`data/routing-graph.json` (for `node_coord` and component structure), which
+`build-routing-graph.mjs` writes. Run bridges first against a stale routing
+graph and it scores candidates in the OLD node space, emitting bridges whose
+endpoints no longer exist. The next routing build then logs:
+
+```
+SKIP bridge for BXB: endpoint not present in this graph build (1637962126 / 1236166333)
+```
+
+…and drops them silently — the bridge list still says 25 while only 24 became
+edges. Seeding routing first fixes it. It converges on the second pass (a third
+changed nothing, verified 2026-07-29).
+
+**Always check:** `bridge_edges` in the final routing log must equal
+`bridges.length` in `graph-bridges.json`. If they differ, the cycle was run in
+the wrong order.
+
+Re-run all three after any Phase 2/3 rebuild. Neither script
 needs Overpass any more (the bridge script's mode check used to; it now uses
 the segment graph's own operator data, which is better evidence and offline).
 
@@ -328,7 +349,12 @@ format, same R2/CORS/MapLibre pattern as `gb-railways.pmtiles`, just a
 different generator for this one layer. `brew install tippecanoe` (v2.79.0
 verified working).
 
-**Verified, not just built (2026-07-21 rebuild):**
+**Verified, not just built (2026-07-21 rebuild).** STALE FIGURES — kept as the
+record of what that rebuild verified, not as current values. Everything below
+predates the dedupe stage entering the sequence, so its counts are PRE-dedupe.
+Current post-dedupe values: **10,628 features**, tileset **9,579,487 bytes**,
+54 distinct operators, plus the four `heritage_*`/`band` fields added
+2026-07-29. Re-verify against a fresh run rather than trusting these:
 - Output: `tile-generation/operators.pmtiles`, **9.33MB**.
 - tippecanoe's own summary confirms all 9,268 fan-out features made it into
   the tiles (no silent drops): `9268 features, 3012721 bytes of geometry...`.
@@ -374,7 +400,10 @@ against the PRE-refresh graph and **must be re-measured afterwards**; none of it
 carries over.
 
 **1. Re-measure the lane optimiser.** `build-operator-tiles-geojson.mjs` reports
-all three on every run — compare against the values it was accepted on:
+all three on every run — compare against the values it was accepted on. **All
+three are POST-dedupe figures**; run `dedupe-line-segments.mjs` first or they
+will not match (the span in particular reads 6.000 pre-dedupe and 7.000 post,
+and acting on the pre-dedupe value visibly breaks fan-out width):
 
 | figure | pre-refresh value |
 |---|---|
@@ -406,8 +435,9 @@ that past 100, the list silently truncates; the client already detects this
 should be replaced rather than left degraded.
 
 **4. Re-run the downstream graph.** `build-station-graph-links.mjs` →
-`build-graph-bridges.mjs` → `build-routing-graph.mjs`, in that order, as Task 4/4b
-already require after any segment-graph change.
+`build-routing-graph.mjs` → `build-graph-bridges.mjs` → `build-routing-graph.mjs`.
+Routing appears twice because Task 4b's last two scripts are a cycle — see there
+for why, and check `bridge_edges` equals the bridge count afterwards.
 
 **5. Re-check the heritage canonicalisation map — it is load-bearing.**
 `scripts/lib/heritage-canonical.mjs` maps 247 raw OSM name/operator variants

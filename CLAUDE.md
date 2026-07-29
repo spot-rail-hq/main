@@ -199,18 +199,76 @@ consistently without duplicating the table.
   outputs, documented end to end in **`LINE-COLORING-RUNBOOK.md`**
   (mirrors `PROMPT3-TILES-RUNBOOK.md`'s structure — read that file for the
   full rebuild sequence, current stats, and the open hosting/format
-  decision for the segment graph's output, not repeated here). Short
-  version: `node scripts/build-operator-inventory.mjs` →
-  `node scripts/build-operator-palette.mjs` (this section's table) →
-  `node scripts/build-line-segments.mjs` (checkpoint a bbox first, see
-  runbook) → `LINE_SEGMENTS_NATIONAL=1 node scripts/build-line-segments.mjs`
-  → `node scripts/build-station-graph-links.mjs` →
-  `node scripts/build-graph-bridges.mjs` →
-  `node scripts/build-routing-graph.mjs` (the last three feed From/To
-  pathfinding — rerun all three together, in that order, after any segment
-  graph change). Needs a local Overpass instance (see the OSM runbook) for
-  every step except the last three. Folds into the same refresh cadence as
-  the station/operator content.
+  decision for the segment graph's output, not repeated here). The stage
+  table below is the short version.
+
+## Line-data pipeline stages — and which figures each one may be quoted for
+
+Every stage rewrites or derives from `scripts/output/line-segments.json`, and
+several of them produce *different values for the same statistic*. Both values
+look plausible. Only one is right for a given question.
+
+**RULE: any segment count, track-kilometre figure or lane statistic must name
+the stage it came from.** A bare "5,371 segments" or "span 7.0" is not a
+finding, it is half a finding, and the missing half has already cost this
+project one investigation into a bug that did not exist.
+
+| # | Command | Reads | Writes | Figures VALID to quote from this stage |
+|---|---|---|---|---|
+| 1 | `node scripts/build-operator-inventory.mjs` | Overpass | `operator-inventory.json` | raw OSM operator/brand strings, relation counts |
+| 2 | `node scripts/build-operator-palette.mjs` | inventory | `data/operator-colors.json` | per-operator colours, CVD separation figures |
+| 3 | `node scripts/build-line-segments.mjs` (bbox checkpoint first, then `LINE_SEGMENTS_NATIONAL=1`) | Overpass | `line-segments.json` **(pre-dedupe)** | way counts, relation counts, rejected-way and UNMAPPED-HERITAGE reports, geometry-integrity result |
+| 4 | `node scripts/dedupe-line-segments.mjs` | `line-segments.json` | `line-segments.json` **(post-dedupe, IN PLACE)** | **all segment counts, all km totals, all lane statistics** |
+| 5 | `bash tile-generation/build-operator-tiles.sh` | `line-segments.json` | `operators.geojson`, `operators.pmtiles` | feature counts, lane span/collisions/jogs, tileset size, tilestats |
+| 6 | `node scripts/build-station-graph-links.mjs` | `line-segments.json` | `station-graph-links.json` | station snap counts |
+| 7 | `node scripts/build-routing-graph.mjs` | segments + links + bridges | `data/routing-graph.json` | node/edge counts, component counts |
+| 8 | `node scripts/build-graph-bridges.mjs` | **`routing-graph.json`** + segments + links | `graph-bridges.json` | bridge and island counts |
+| 9 | `node scripts/build-routing-graph.mjs` again | as above | `data/routing-graph.json` | final `bridge_edges`, final reachability |
+
+Stages 1–5 need a local Overpass instance (see the OSM runbook) only at
+stage 3. Stages 6–9 rerun together after ANY segment-graph change.
+
+**Stage 4 is not optional and is easy to skip.** `build-operator-tiles.sh`
+does NOT run it — it goes straight from `line-segments.json` to the GeoJSON.
+Run the tile script directly after stage 3 and you tile the pre-dedupe graph,
+which is a real, shippable, wrong tileset that nothing downstream complains
+about.
+
+**Stages 6–9 are a CYCLE, not a line.** `build-graph-bridges.mjs` reads
+`routing-graph.json`, which `build-routing-graph.mjs` writes — so the bridges
+script scores candidates against whatever node space the *last* routing build
+left behind. Run it once against a stale routing graph and it emits bridges
+whose endpoint nodes no longer exist; the next routing build then logs
+`SKIP bridge for <CRS>: endpoint not present` and silently drops them. Run
+routing → bridges → routing, and confirm `bridge_edges` in the final log
+equals the bridge count in `graph-bridges.json`. It converges on the second
+pass (verified 2026-07-29 — a third pass changed nothing).
+
+### The two traps this table exists to prevent
+
+**1. Cross-stage segment/km comparison.** Committed copies of
+`line-segments.json` are POST-dedupe (stage 4). A freshly built one, before
+you run dedupe, is PRE-dedupe (stage 3). Comparing the two measures the dedupe
+step, not your change:
+
+> Comparing the new pre-dedupe graph against the committed post-dedupe
+> `old-graph.json` showed non-heritage track jumping 21,485 → 28,285 km on an
+> identical way set. That +6,800 km was read as mass geometry truncation in the
+> old file and triggered a full investigation. It was dedupe. Like-for-like
+> (post vs post) the real change was 21,485 → 21,499 km, **+0.07%**.
+
+So: **28,285 km is the pre-dedupe national total and never ships. 21,499 km is
+what reaches the tileset.** Same graph, both correct, different stages.
+
+**2. Lane span read at the wrong stage.** The lane offset span is **6.000
+pre-dedupe and 7.000 post-dedupe** — dedupe removes the parallel duplicate
+corridors that were compressing the fan. `LANE_FAN_ZOOM_STOPS` in `map.html`
+is derived as `5/7 ×` a 5.0-unit baseline and is paired to the post-dedupe
+7.000. Reading 6.000 off a stage-3 run implies a 5/6 rescale that is simply
+wrong, and unlike a silent data error this one is *visible*: it changes
+fan-out width at every zoom.
+
+Quote the span only from stage 5, after stage 4 has run.
 
 ## Local dev environment notes
 - Terse/auto-looking commits you may see in `git log` ("map", "route", "05",
