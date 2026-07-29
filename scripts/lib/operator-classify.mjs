@@ -288,10 +288,43 @@ export function applyRelationOverride(relationId, cls) {
 // the relation's own `name`, then `ref`. First non-empty wins.
 import { HERITAGE_CANONICAL, HERITAGE_META } from './heritage-canonical.mjs';
 
+// ── Narrow {name, operator} overrides, consulted BEFORE the normal chain ──
+// Operator-first is correct in general — an operator tag is a stronger identity
+// claim than a route name. This table exists only for known-bad upstream pairs
+// where that general rule produces a demonstrably wrong merge.
+//
+// Butterley: 26 ways named "Midland Railway Centre" carry
+// operator="Ecclesbourne Valley Railway". They are different railways ~10 km
+// apart (Butterley vs Wirksworth). Without this override the operator wins and
+// Butterley's 6.9 km is silently absorbed into Ecclesbourne's row.
+//
+// INTERACTION WITH THE GUARD: this override and heritageOverrideStatus() below
+// are one mechanism, not two. The override only fires when the exact bad pair
+// is present. If OSM corrects the operator upstream, the override stops
+// matching, the name falls through to the normal chain and resolves Butterley
+// correctly on its own — and the guard reports that the override is now dead
+// so it can be removed. A corrected upstream therefore produces a WARNING and
+// a correct result, never a silent re-merge.
+export const HERITAGE_PAIR_OVERRIDES = [
+  { name: 'Midland Railway Centre', operator: 'Ecclesbourne Valley Railway', canonical: 'Midland Railway–Butterley' },
+];
+
 export function classifyTags(tags = {}) {
   const operator = tags.operator || tags.brand || '';
   const name = tags.name || '';
   const ref = tags.ref || '';
+
+  for (const o of HERITAGE_PAIR_OVERRIDES) {
+    if (name === o.name && operator === o.operator) {
+      const meta = HERITAGE_META[o.canonical] || {};
+      return {
+        bucket: 'heritage', canonical: 'Heritage', code: null,
+        heritageRailway: o.canonical, heritageSlug: meta.slug || null,
+        heritageType: meta.type || null, heritageTypeSecondary: meta.secondary || null,
+        heritageBand: meta.band || null, matchedOn: 'pair-override',
+      };
+    }
+  }
 
   // Heritage is checked FIRST and against every candidate string, because a
   // heritage way often carries a main-line-looking operator (Butterley's track
@@ -324,4 +357,26 @@ export function classifyTags(tags = {}) {
 // every build and every quarterly refresh must run this and report the result.
 export function unmappedHeritageNames(seen) {
   return [...seen].filter((s) => s && !HERITAGE_CANONICAL[s]).sort();
+}
+
+// Reports whether each HERITAGE_PAIR_OVERRIDES entry still describes reality.
+// Called once per build; returns human-readable lines for the caller to print.
+// Warning, never throw — a corrected upstream must not break the build, it must
+// be visible so the override can be retired.
+export function heritageOverrideStatus(waysWithTags) {
+  const out = [];
+  for (const o of HERITAGE_PAIR_OVERRIDES) {
+    const named = waysWithTags.filter((t) => (t.name || '') === o.name);
+    const stillBad = named.filter((t) => (t.operator || '') === o.operator);
+    if (named.length === 0) {
+      out.push(`WARNING: no ways named "${o.name}" found — the ${o.canonical} pair-override is dead code. Remove it or re-derive the join.`);
+    } else if (stillBad.length === 0) {
+      out.push(`WARNING: OSM appears to have CORRECTED the "${o.name}" / operator="${o.operator}" mistag (${named.length} ways named, 0 still mistagged). The pair-override no longer fires; ${o.canonical} now resolves via the normal chain. REMOVE the override entry.`);
+    } else if (stillBad.length < named.length) {
+      out.push(`WARNING: "${o.name}" mistag PARTIALLY corrected — ${stillBad.length}/${named.length} ways still carry operator="${o.operator}". The override fires for some ways and not others; ${o.canonical} will be split. Re-check.`);
+    } else {
+      out.push(`  pair-override OK: "${o.name}" — ${stillBad.length}/${named.length} ways still mistagged as ${o.operator}, override active for ${o.canonical}.`);
+    }
+  }
+  return out;
 }

@@ -4,6 +4,8 @@
 // no error. See the quarterly-refresh checklist in LINE-COLORING-RUNBOOK.md
 // for the unmapped-name check that must be run after every refresh.
 export const HERITAGE_CANONICAL = {
+  "The Middleton Railway": "Middleton Railway",
+  "Midland Railway Centre": "Midland Railway–Butterley",
   "Aberystwyth Cliff Railway": "Aberystwyth Cliff Railway",
   "Alford Valley Railway": "Alford Valley Railway",
   "Almond Valley Heritage Centre": "Almond Valley Heritage Centre",

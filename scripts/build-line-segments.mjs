@@ -58,7 +58,8 @@
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import { classify, splitTflLine, applyRelationOverride, RELATION_ID_OVERRIDES } from './lib/operator-classify.mjs';
+import { classify, classifyTags, splitTflLine, applyRelationOverride, RELATION_ID_OVERRIDES, heritageOverrideStatus, unmappedHeritageNames } from './lib/operator-classify.mjs';
+import { HERITAGE_CANONICAL, HERITAGE_META } from './lib/heritage-canonical.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OUT_DIR = path.join(__dirname, 'output');
@@ -142,7 +143,7 @@ async function main() {
 
   // ─── Step 1: relations in scope ─────────────────────────────────────
   console.log('\n[1/5] Querying route relations…');
-  const relQ = `[out:json][timeout:180]${bboxClause};rel["type"="route"]["route"~"^(train|light_rail|tram|subway)$"];out tags;`;
+  const relQ = `[out:json][timeout:180]${bboxClause};rel["type"="route"]["route"~"^(train|light_rail|tram|subway|railway)$"];out tags;`;
   const relData = await overpassQuery(relQ);
   const relById = new Map();
   // Phase 3: "Transport for London" is a single bare operator tag covering
@@ -156,7 +157,9 @@ async function main() {
   let overrideCount = 0;
   for (const r of relData.elements) {
     const rawOp = r.tags.operator || r.tags.brand || '(none)';
-    let cls = classify(rawOp);
+    // classifyTags, not classify: heritage relations overwhelmingly have NO
+    // operator tag (5 of 72 carry one), so the join must fall back to `name`.
+    let cls = classifyTags(r.tags);
     if (cls.bucket === 'metro' && cls.canonical === 'Transport for London') {
       const line = splitTflLine(r.tags.name);
       if (line) { cls.canonical = line; tflSplitCount++; }
@@ -195,6 +198,75 @@ async function main() {
       relationWays.set(el.id, wayIds);
     }
     console.log(`  ${Math.min(i + RCHUNK, relations.length)}/${relations.length} relations`);
+  }
+
+  // ─── Step 2b: WAY-LEVEL heritage path (2026-07-29) ────────────────────
+  // Most heritage railways have no route relation at all — there is no
+  // scheduled service to model, so the track is mapped as plain ways. An
+  // operator-only, relation-only net found 10 railways; the real population is
+  // ~180. This pass pulls heritage track directly and synthesises ONE
+  // PSEUDO-RELATION per canonicalised railway, so everything from Step 3
+  // onward (geometry, edge graph, segment contraction) is completely unchanged
+  // — it cannot tell a pseudo-relation from a real one.
+  //
+  // Deduplicated by way ID against the relation path: ~922 ways are reachable
+  // both ways and must not be counted twice.
+  console.log('\n[2b/5] Way-level heritage extraction…');
+  const heritageWayIds = new Map(); // wayId -> canonical railway
+  const seenHeritageStrings = new Set();
+  const heritageWayTags = [];       // for the pair-override guard
+  {
+    const q = `[out:json][timeout:250]${bboxClause};way${LIVE_RAILWAY_CLAUSE}["name"];out ids tags;`;
+    const data = await overpassQuery(q, { timeoutMs: 300000 });
+    for (const w of data.elements) {
+      if (w.type !== 'way') continue;
+      const t = w.tags || {};
+      const cls = classifyTags(t);
+      if (cls.bucket !== 'heritage' || !cls.heritageRailway) continue;
+      heritageWayIds.set(w.id, cls.heritageRailway);
+      if (t.name) seenHeritageStrings.add(t.name);
+      if (t.operator) seenHeritageStrings.add(t.operator);
+      heritageWayTags.push({ name: t.name, operator: t.operator });
+    }
+    console.log(`  ${data.elements.length} named live-track ways scanned, ${heritageWayIds.size} matched the heritage map`);
+  }
+  // Pair-override guard — warning only, never throws. See
+  // heritageOverrideStatus() for why a corrected upstream must be visible.
+  for (const line of heritageOverrideStatus(heritageWayTags)) console.log(`  ${line}`);
+
+  // Synthesise pseudo-relations, one per canonical railway. Negative IDs so
+  // they can never collide with a real OSM relation ID.
+  const byRailway = new Map();
+  for (const [wid, railway] of heritageWayIds) {
+    if (!byRailway.has(railway)) byRailway.set(railway, []);
+    byRailway.get(railway).push(wid);
+  }
+  let pseudoId = -1, pseudoAdded = 0, pseudoWaysNew = 0;
+  const alreadyReferenced = new Set();
+  for (const ways of relationWays.values()) for (const w of ways) alreadyReferenced.add(w);
+  for (const [railway, ways] of byRailway) {
+    const fresh = ways.filter((w) => !alreadyReferenced.has(w));
+    pseudoWaysNew += fresh.length;
+    const meta = HERITAGE_META[railway] || {};
+    const rel = {
+      id: pseudoId, raw: railway, bucket: 'heritage', canonical: 'Heritage', code: null,
+      name: railway, heritageRailway: railway, heritageSlug: meta.slug || null,
+      heritageType: meta.type || null, heritageTypeSecondary: meta.secondary || null,
+      heritageBand: meta.band || null, pseudo: true,
+    };
+    relById.set(pseudoId, rel);
+    relations.push(rel);
+    relationWays.set(pseudoId, ways);
+    pseudoId -= 1; pseudoAdded += 1;
+  }
+  console.log(`  ${pseudoAdded} pseudo-relations synthesised covering ${byRailway.size} railways (${pseudoWaysNew} ways not already reachable via a real relation)`);
+  const unmapped = unmappedHeritageNames(seenHeritageStrings);
+  if (unmapped.length) {
+    console.log(`  UNMAPPED HERITAGE: ${unmapped.length} strings seen on heritage-adjacent track but absent from HERITAGE_CANONICAL — these railways are DROPPED SILENTLY. Add them to scripts/lib/heritage-canonical.mjs:`);
+    for (const u of unmapped.slice(0, 40)) console.log(`    ${u}`);
+    if (unmapped.length > 40) console.log(`    … and ${unmapped.length - 40} more`);
+  } else {
+    console.log('  UNMAPPED HERITAGE: none — every heritage string seen is in the map');
   }
 
   // ─── Step 3: geometry for the union of referenced ways ────────────────
@@ -240,7 +312,12 @@ async function main() {
       if (w.type !== 'way' || !w.geometry) continue;
       wayGeom.set(w.id, { nodeIds: w.nodes, coords: w.geometry.map((g) => [g.lon, g.lat]) });
     }
-    for (const id of batch) if (!wayGeom.has(id)) rejectedWayIds.add(id);
+    // ONLY meaningful on a national run. In a bbox-bounded checkpoint a way can
+    // be missing because it is outside the corridor, which has nothing to do
+    // with its railway value — attributing that to the filter produced a log
+    // claiming the Midland Main Line was 95% closed track. A national run has
+    // no bbox, so there a missing way IS a filter rejection.
+    if (NATIONAL) { for (const id of batch) if (!wayGeom.has(id)) rejectedWayIds.add(id); }
     console.log(`  ${Math.min(i + WCHUNK, wayIdsArr.length)}/${wayIdsArr.length} ways queried, ${wayGeom.size} resolved so far`);
   }
   const droppedWays = allWayIds.size - wayGeom.size;
@@ -251,6 +328,9 @@ async function main() {
   // (closed spurs off a live line); a relation losing MOST of its ways means it
   // traces a historic alignment and should probably not be in scope at all.
   // Both cases are printed so neither is invisible.
+  if (!NATIONAL) {
+    console.log('  (reject-by-railway-value accounting is suppressed on a bbox checkpoint — a missing way here is usually just outside the corridor, not filtered. Run nationally for a meaningful reject report.)');
+  }
   if (rejectedWayIds.size) {
     const perRel = [];
     for (const [relId, ways] of relationWays) {
@@ -260,7 +340,13 @@ async function main() {
     perRel.sort((a, b) => b.pct - a.pct || b.rejected - a.rejected);
     console.log(`  REJECTED ${rejectedWayIds.size} ways as non-live track (railway not in ${LIVE_RAILWAY_VALUES.join('/')}) across ${perRel.length} relations:`);
     for (const p of perRel.slice(0, 25)) {
-      const flag = p.pct >= 50 ? '  <-- MOSTLY CLOSED: relation likely traces a historic alignment' : '';
+      // A HIGH RATIO MEANS "INSPECT", NOT "DROP". Lynton & Barnstaple is the
+      // counter-example that matters: ~30 km of its 1935 alignment is abandoned
+      // and only ~1.5 km at Woody Bay is live, so it scores ~95% rejected while
+      // being a real operating railway. The ratio tells you a relation is mostly
+      // closed track; it tells you nothing about whether the live remainder is a
+      // going concern. Check each one against the heritage table before acting.
+      const flag = p.pct >= 50 ? '  <-- MOSTLY CLOSED TRACK — INSPECT, do not drop on this alone (cf. Lynton & Barnstaple: 95% closed, still a live railway)' : '';
       console.log(`    rel/${p.relId} ${String(p.name || '').slice(0, 40).padEnd(40)} ${p.rejected}/${p.total} (${p.pct.toFixed(0)}%)${flag}`);
     }
     if (perRel.length > 25) console.log(`    … and ${perRel.length - 25} more relations with rejects`);
