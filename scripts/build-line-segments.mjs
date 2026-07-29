@@ -173,10 +173,32 @@ async function main() {
       cls = applyRelationOverride(r.id, cls);
       overrideCount++;
     }
-    relById.set(r.id, { id: r.id, raw: rawOp, ...cls, name: r.tags.name, from: r.tags.from, to: r.tags.to });
+    relById.set(r.id, { id: r.id, raw: rawOp, ...cls, route: r.tags.route, name: r.tags.name, from: r.tags.from, to: r.tags.to });
   }
-  const relations = [...relById.values()].filter((r) => r.bucket === 'toc' || r.bucket === 'metro' || r.bucket === 'heritage');
+  // CONTAINMENT (2026-07-29, decision — not provisional). The relation query was
+  // widened to route=railway because that is how heritage relations are tagged
+  // (Bluebell, Swanage, Llangollen). Main-line route=railway relations arriving
+  // alongside is a SIDE EFFECT and is excluded here: a route=railway relation is
+  // admitted only if it classifies as heritage.
+  //
+  // Measured cost of NOT containing it: non-heritage track 21,485 -> 28,401 km
+  // (+6,916 km) and the graph 5,371 -> 8,836 segments. Declined because the base
+  // rail tileset already draws that track as grey context, so admitting it to the
+  // OPERATOR graph mainly adds unattributable, unclickable segments — a heavier
+  // hover expression, more clutter, and empty panels on click, since most of it
+  // has no passenger operator to colour it with.
+  //
+  // Worth revisiting in a narrower form: admit only route=railway track that
+  // resolves to a real passenger operator, with service=* (yard/siding/spur/
+  // crossover) and usage=industrial excluded. See LINE-COLORING-RUNBOOK.md.
+  const relations = [...relById.values()].filter((r) => {
+    if (r.bucket !== 'toc' && r.bucket !== 'metro' && r.bucket !== 'heritage') return false;
+    if (r.route === 'railway' && r.bucket !== 'heritage') return false;
+    return true;
+  });
+  const railwayExcluded = [...relById.values()].filter((r) => r.route === 'railway' && r.bucket !== 'heritage' && (r.bucket === 'toc' || r.bucket === 'metro')).length;
   console.log(`  ${relData.elements.length} relations in scope, ${relations.length} colorable (toc/metro/heritage — excluded/unrecognized dropped)`);
+  console.log(`  ${railwayExcluded} route=railway relations classified toc/metro were EXCLUDED by containment (heritage-only admission — see the comment above)`);
   if (tflSplitCount || tflUnsplitCount) {
     console.log(`  TfL line split: ${tflSplitCount} relations split to their real specific line, ${tflUnsplitCount} fell back to generic 'Transport for London'`);
   }
