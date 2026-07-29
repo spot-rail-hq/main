@@ -2450,6 +2450,125 @@
     { widthMultiplier: 7.0, opacity: 0.10, blurPx: 1.75 }, // blurPx was 2.25
   ];
 
+  // ── Glow brightness floor (2026-07-29) ───────────────────────────────────
+  // THE KNOB. Minimum contrast the RENDERED halo must reach against the
+  // basemap before the glow is left alone. Below it, the glow colour is pushed
+  // away from the basemap's luminance until it clears.
+  //
+  // 1.45 was picked as the tightest value that sits above the whole failing
+  // set — every operator whose halo currently renders below it (NT 1.09,
+  // XC 1.30, Blackpool Tramway 1.30, GC 1.31, CS 1.33, WR 1.35, SW 1.37,
+  // HX 1.40, Sheffield Supertram 1.40) gets lifted, and the next operator up
+  // (SR at 1.52) does not. It is NOT a perceptually validated threshold —
+  // there is no browser in this environment, so it was derived arithmetically
+  // and is expected to be tuned by eye. Raising it to 1.55 additionally pulls
+  // in EM, SR and West Midlands Metro, whose halos sit at 1.52-1.54.
+  var GLOW_MIN_HALO_CONTRAST = 1.45;
+  // Why this exists at all: the glow rings used to be painted in EXACTLY the
+  // operator's own colour, so a dark operator produced a dark halo on a dark
+  // basemap — i.e. the one case that most needs a glow is the one case where
+  // the glow does nothing. Northern's halo rendered at 1.09:1 against the map,
+  // which is indistinguishable from no halo. Reported as "selecting Grand
+  // Central highlights nothing".
+  //
+  // This is a RENDERING fix on purpose. data/operator-colors.json is not
+  // touched: the palette's ~60 colours are mutually separated by ΔE and
+  // CVD-checked, and the blue/violet band (15 of 42 gated entries) has no room
+  // left to lift the dark ones without breaking that separation — measured,
+  // see the investigation. Line colour, width and dash are unchanged for all
+  // 63 operators; only the halo behind the line moves.
+  function glowHexToRgb(hex) {
+    var h = String(hex).replace('#', '');
+    return [0, 2, 4].map(function (i) { return parseInt(h.substr(i, 2), 16); });
+  }
+  function glowRgbToHex(r, g, b) {
+    return '#' + [r, g, b].map(function (v) {
+      return Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, '0');
+    }).join('').toUpperCase();
+  }
+  function glowRelLuminance(hex) {
+    var c = glowHexToRgb(hex).map(function (v) {
+      v /= 255;
+      return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126729 * c[0] + 0.7151522 * c[1] + 0.0721750 * c[2];
+  }
+  function glowContrast(a, b) {
+    var x = glowRelLuminance(a), y = glowRelLuminance(b);
+    return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+  }
+  function glowHexToHsl(hex) {
+    var c = glowHexToRgb(hex).map(function (v) { return v / 255; });
+    var r = c[0], g = c[1], b = c[2];
+    var mx = Math.max(r, g, b), mn = Math.min(r, g, b), h = 0, s = 0, l = (mx + mn) / 2;
+    if (mx !== mn) {
+      var d = mx - mn;
+      s = l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn);
+      if (mx === r) h = (g - b) / d + (g < b ? 6 : 0);
+      else if (mx === g) h = (b - r) / d + 2;
+      else h = (r - g) / d + 4;
+      h *= 60;
+    }
+    return { h: h, s: s * 100, l: l * 100 };
+  }
+  function glowHslToHex(h, s, l) {
+    h = ((h % 360) + 360) % 360;
+    s = Math.max(0, Math.min(100, s)) / 100;
+    l = Math.max(0, Math.min(100, l)) / 100;
+    var c = (1 - Math.abs(2 * l - 1)) * s, x = c * (1 - Math.abs(((h / 60) % 2) - 1)), m = l - c / 2, rgb;
+    if (h < 60) rgb = [c, x, 0]; else if (h < 120) rgb = [x, c, 0]; else if (h < 180) rgb = [0, c, x];
+    else if (h < 240) rgb = [0, x, c]; else if (h < 300) rgb = [x, 0, c]; else rgb = [c, 0, x];
+    return glowRgbToHex((rgb[0] + m) * 255, (rgb[1] + m) * 255, (rgb[2] + m) * 255);
+  }
+  // Approximate rendered canvas colour per theme. The halo is semi-transparent,
+  // so what the eye actually judges is the ring COMPOSITED over the map, not
+  // the raw colour — hence the alpha blend below. These are the Stadia
+  // alidade_smooth_dark / alidade_smooth canvases; #07090C (the CLAUDE.md UI
+  // background token) is the panel colour, NOT the map, and using it here would
+  // understate the problem by roughly half a contrast point.
+  var GLOW_BASEMAP = { dark: '#1A1A1A', light: '#F2F3F0' };
+  function glowCompositeOver(hex, alpha, bg) {
+    var F = glowHexToRgb(hex), B = glowHexToRgb(bg);
+    return glowRgbToHex(
+      alpha * F[0] + (1 - alpha) * B[0],
+      alpha * F[1] + (1 - alpha) * B[1],
+      alpha * F[2] + (1 - alpha) * B[2]
+    );
+  }
+  // Contrast of the INNERMOST ring as actually drawn (widest opacity, so the
+  // one carrying most of the visible halo) against the basemap.
+  function glowRenderedHaloContrast(hex, theme) {
+    var bg = GLOW_BASEMAP[theme];
+    return glowContrast(glowCompositeOver(hex, GLOW_RINGS[0].opacity, bg), bg);
+  }
+  // THE RULE. Uniform over every operator — no per-operator table, so a newly
+  // added operator is handled without anyone revisiting this.
+  //
+  // LIGHT THEME IS AN EXPLICIT NO-OP (2026-07-29 decision): the reported
+  // problem is dark-theme only, and skipping light avoids touching the halos
+  // behind TfL's official line colours (Circle, Waterloo & City,
+  // Hammersmith & City, Jubilee), which must not be altered. The
+  // direction-aware branch below is kept deliberately: an earlier draft
+  // lightened unconditionally, which on a LIGHT basemap drives the colour
+  // toward white and makes the halo LESS visible — it pushed 21 operators to
+  // pure white before the bug was caught. Whoever enables light theme later
+  // gets the correct direction for free by flipping GLOW_LIFT_THEMES.
+  var GLOW_LIFT_THEMES = { dark: true, light: false };
+  function glowColorFor(hex, theme) {
+    if (!hex || typeof hex !== 'string' || hex.charAt(0) !== '#') return hex; // expression or unknown — leave alone
+    if (!GLOW_LIFT_THEMES[theme]) return hex;
+    if (glowRenderedHaloContrast(hex, theme) >= GLOW_MIN_HALO_CONTRAST) return hex; // already reads — untouched
+    var hsl = glowHexToHsl(hex);
+    var lighten = glowRelLuminance(GLOW_BASEMAP[theme]) < 0.5; // move AWAY from the basemap
+    for (var step = 0.5; step <= 100; step += 0.5) {
+      var l = lighten ? Math.min(100, hsl.l + step) : Math.max(0, hsl.l - step);
+      var cand = glowHslToHex(hsl.h, hsl.s, l);
+      if (glowRenderedHaloContrast(cand, theme) >= GLOW_MIN_HALO_CONTRAST) return cand;
+      if (lighten ? l >= 100 : l <= 0) break;
+    }
+    return hex; // unreachable in practice — fail safe to the unmodified colour
+  }
+
   // ── Route reveal tiers (2026-07-22) ─────────────────────────────────────
   // Same "reduce network clutter at low zoom" goal as STATION_TIERS above,
   // but for operator-lines — that layer used to render its full ~9,268
@@ -2597,9 +2716,25 @@
     // fixed white/dark neutral halo — opacity is NOT touched here, each
     // ring's own opacity is fixed for its lifetime (set once at creation,
     // see GLOW_RINGS).
+    // The glow is painted from its OWN expression, not `colorExpr`. Same hue and
+    // saturation as the line, lightness floored so the halo actually reads
+    // against the basemap — see glowColorFor()/GLOW_MIN_HALO_CONTRAST. A no-op
+    // for 54 of the 63 operators, and for every operator in light theme, so
+    // anything already legible looks exactly as it did.
+    //
+    // This is the ONLY place the modern operator glow is painted, so hover,
+    // click-lock, region-chip lock and search-pick all inherit it — they all
+    // route through this function. (The HIST_GLOW_PREFIX rings are a separate
+    // layer set for History's own lines, painted from eraHighlightExpression();
+    // deliberately untouched.)
+    var lockedGlow = lockedColor ? glowColorFor(lockedColor, theme) : null;
+    var hoveredGlow = hoveredColor ? glowColorFor(hoveredColor, theme) : null;
+    var glowColorExpr = (locked && hovered)
+      ? ['case', ['==', ['get', 'operators'], locked], lockedGlow, hoveredGlow]
+      : (lockedGlow || hoveredGlow);
     GLOW_RINGS.forEach(function (ring, i) {
       map.setFilter('operator-lines-hover-glow-' + i, filter);
-      map.setPaintProperty('operator-lines-hover-glow-' + i, 'line-color', colorExpr);
+      map.setPaintProperty('operator-lines-hover-glow-' + i, 'line-color', glowColorExpr);
     });
   }
   // 2026-07-22: selecting a station or a From/To pair (or a different
