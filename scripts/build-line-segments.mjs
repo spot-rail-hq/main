@@ -157,9 +157,23 @@ async function main() {
   let overrideCount = 0;
   for (const r of relData.elements) {
     const rawOp = r.tags.operator || r.tags.brand || '(none)';
-    // classifyTags, not classify: heritage relations overwhelmingly have NO
-    // operator tag (5 of 72 carry one), so the join must fall back to `name`.
-    let cls = classifyTags(r.tags);
+    // HERITAGE IS PURELY ADDITIVE (2026-07-29). The old single-string
+    // classify(operator) is authoritative for everything it already recognised;
+    // the new tag-object path may only ADD heritage, never reclassify a
+    // relation the old path already resolved to a TOC or metro.
+    //
+    // Why: a 40-probe test against four operators' published networks (Southern,
+    // Merseyrail, c2c, Island Line) found the new path changed main-line
+    // coverage at ZERO locations, while the graph grew 5,371 -> 8,522 segments.
+    // Growth with no demonstrated benefit does not ride along with heritage.
+    // Southern's apparent gaps are the deferred GTR sub-brand split, not
+    // extraction — 14 of 18 of its locations resolve to GTR in BOTH graphs.
+    const oldCls = classify(rawOp);
+    let cls = oldCls;
+    if (oldCls.bucket !== 'toc' && oldCls.bucket !== 'metro') {
+      const h = classifyTags(r.tags);
+      if (h.bucket === 'heritage') cls = h;
+    }
     if (cls.bucket === 'metro' && cls.canonical === 'Transport for London') {
       const line = splitTflLine(r.tags.name);
       if (line) { cls.canonical = line; tflSplitCount++; }
