@@ -122,6 +122,14 @@ function haversineMeters([lon1, lat1], [lon2, lat2]) {
 
 function edgeKey(a, b) { return a < b ? `${a}_${b}` : `${b}_${a}`; }
 
+// Live track only. Anything outside this set is closed/planned and must never
+// enter the segment graph — see the reject-logging block in Step 3 for the
+// measured damage this prevents. Kept as one shared constant so the heritage
+// way-level path and the relation path cannot drift apart.
+const LIVE_RAILWAY_VALUES = ['rail', 'narrow_gauge', 'preserved', 'light_rail', 'tram', 'subway', 'funicular', 'monorail'];
+const LIVE_RAILWAY_CLAUSE = `["railway"~"^(${LIVE_RAILWAY_VALUES.join('|')})$"]`;
+const rejectedWayIds = new Set();
+
 function operatorKeyFor(rel) {
   if (rel.bucket === 'toc') return rel.code;
   if (rel.bucket === 'metro') return rel.canonical;
@@ -206,17 +214,56 @@ async function main() {
   const wayBboxSuffix = NATIONAL ? '' : `(${CHECKPOINT_BBOX.join(',')})`;
   for (let i = 0; i < wayIdsArr.length; i += WCHUNK) {
     const batch = wayIdsArr.slice(i, i + WCHUNK);
-    const q = `[out:json][timeout:180];way(id:${batch.join(',')})${wayBboxSuffix};out geom;`;
+    // 2026-07-29 BUGFIX — THE RELATION NET HAD NO RAILWAY FILTER.
+    // `way(id:...)` returned every member of every in-scope relation regardless
+    // of its `railway` value, so route relations that trace a historic
+    // alignment dragged abandoned/razed/disused track into the segment graph.
+    // Measured against the live extract: 849 closed-tagged ways reached the
+    // heritage extraction (774 of them through this net), and 30 reached
+    // line-segments.json itself — producing six main-line segments that are
+    // 100% demolished track rendering as live operator lines (2999 TP,
+    // 1969/1984 GW, 4778/4790/4797 SR) plus segment 5730, a 31 km "Heritage"
+    // line on the Lynton & Barnstaple alignment that is 78% abandoned.
+    //
+    // The filter belongs HERE and nowhere else: this is the single choke point
+    // every way passes through, whichever relation referenced it, so one rule
+    // covers the main-line and heritage paths together. Filtering at the
+    // RELATION query instead would drop whole relations rather than the closed
+    // ways inside otherwise-live ones, which is not the failure.
+    //
+    // Rejects are COUNTED AND LOGGED, never dropped silently — a way removed
+    // here shortens or splits a segment, and that must be visible in build
+    // output rather than showing up later as an unexplained geometry change.
+    const q = `[out:json][timeout:180];way(id:${batch.join(',')})${wayBboxSuffix}${LIVE_RAILWAY_CLAUSE};out geom;`;
     const data = await overpassQuery(q);
     for (const w of data.elements) {
       if (w.type !== 'way' || !w.geometry) continue;
       wayGeom.set(w.id, { nodeIds: w.nodes, coords: w.geometry.map((g) => [g.lon, g.lat]) });
     }
+    for (const id of batch) if (!wayGeom.has(id)) rejectedWayIds.add(id);
     console.log(`  ${Math.min(i + WCHUNK, wayIdsArr.length)}/${wayIdsArr.length} ways queried, ${wayGeom.size} resolved so far`);
   }
   const droppedWays = allWayIds.size - wayGeom.size;
   if (droppedWays > 0) {
     console.log(`  ${droppedWays} referenced ways had no geometry in scope (expected for a bbox-bounded checkpoint — relations extend beyond the corridor)`);
+  }
+  // PER-RELATION REJECT REPORT. A relation losing a handful of ways is normal
+  // (closed spurs off a live line); a relation losing MOST of its ways means it
+  // traces a historic alignment and should probably not be in scope at all.
+  // Both cases are printed so neither is invisible.
+  if (rejectedWayIds.size) {
+    const perRel = [];
+    for (const [relId, ways] of relationWays) {
+      const rejected = ways.filter((w) => rejectedWayIds.has(w)).length;
+      if (rejected) perRel.push({ relId, rejected, total: ways.length, pct: (100 * rejected) / ways.length, name: relById.get(relId)?.name });
+    }
+    perRel.sort((a, b) => b.pct - a.pct || b.rejected - a.rejected);
+    console.log(`  REJECTED ${rejectedWayIds.size} ways as non-live track (railway not in ${LIVE_RAILWAY_VALUES.join('/')}) across ${perRel.length} relations:`);
+    for (const p of perRel.slice(0, 25)) {
+      const flag = p.pct >= 50 ? '  <-- MOSTLY CLOSED: relation likely traces a historic alignment' : '';
+      console.log(`    rel/${p.relId} ${String(p.name || '').slice(0, 40).padEnd(40)} ${p.rejected}/${p.total} (${p.pct.toFixed(0)}%)${flag}`);
+    }
+    if (perRel.length > 25) console.log(`    … and ${perRel.length - 25} more relations with rejects`);
   }
 
   // ─── Step 4: way -> operator-key set, then fine-grained edge graph ────

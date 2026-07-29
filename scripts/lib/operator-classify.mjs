@@ -77,6 +77,13 @@ export const CANONICAL_METRO = {
   'Glasgow Subway': 'Glasgow Subway',
 };
 
+// 2026-07-29: CANONICAL_HERITAGE is now a fallback only. The real heritage
+// join is HERITAGE_CANONICAL in ./heritage-canonical.mjs — a variant->canonical
+// MAP covering both operator and name strings, because 93% of heritage route
+// relations carry no operator tag at all and an operator-only match found 10
+// railways out of ~180. classifyTags() below applies the name fallback; this
+// array is retained so the legacy single-string classify() keeps working for
+// the inventory script's raw-string census.
 export const CANONICAL_HERITAGE = [
   'Festiniog Railway Company', 'West Somerset Railway Plc',
   'Mid-Norfolk Railway', 'Gwili Railway Co. Ltd',
@@ -267,4 +274,54 @@ export const RELATION_ID_OVERRIDES = {
 export function applyRelationOverride(relationId, cls) {
   const override = RELATION_ID_OVERRIDES[relationId];
   return override ? { ...override } : cls;
+}
+
+// ── Tag-object classification with name fallback (2026-07-29) ──────────────
+// classify() takes a single operator STRING and is kept unchanged so
+// build-operator-inventory.mjs's raw-string census still works. This wrapper is
+// what build-line-segments.mjs uses instead.
+//
+// Why a fallback chain rather than a wider operator list: of the 72 heritage
+// route relations in the extract, only 5 carry an operator tag. Bluebell,
+// Swanage, Llangollen and Severn Valley all have `operator` absent, so no
+// pattern match or widened array can reach them — the join has to fall back to
+// the relation's own `name`, then `ref`. First non-empty wins.
+import { HERITAGE_CANONICAL, HERITAGE_META } from './heritage-canonical.mjs';
+
+export function classifyTags(tags = {}) {
+  const operator = tags.operator || tags.brand || '';
+  const name = tags.name || '';
+  const ref = tags.ref || '';
+
+  // Heritage is checked FIRST and against every candidate string, because a
+  // heritage way often carries a main-line-looking operator (Butterley's track
+  // is tagged operator=Ecclesbourne Valley Railway — see the guard in
+  // build-line-segments.mjs) while its NAME is the true identity.
+  for (const candidate of [operator, name, ref]) {
+    if (!candidate) continue;
+    const canonical = HERITAGE_CANONICAL[candidate];
+    if (canonical) {
+      const meta = HERITAGE_META[canonical] || {};
+      return {
+        bucket: 'heritage',
+        canonical: 'Heritage',          // operators stays the literal "Heritage"
+        code: null,
+        heritageRailway: canonical,
+        heritageSlug: meta.slug || null,
+        heritageType: meta.type || null,
+        heritageTypeSecondary: meta.secondary || null,
+        heritageBand: meta.band || null,
+        matchedOn: candidate === operator ? 'operator' : candidate === name ? 'name' : 'ref',
+      };
+    }
+  }
+  // Non-heritage keeps the original single-string behaviour exactly.
+  return classify(operator || '(none)');
+}
+
+// Returns the heritage strings present in `seen` that the map does not cover.
+// The map is LOAD-BEARING — an unmapped railway is dropped with no error — so
+// every build and every quarterly refresh must run this and report the result.
+export function unmappedHeritageNames(seen) {
+  return [...seen].filter((s) => s && !HERITAGE_CANONICAL[s]).sort();
 }
