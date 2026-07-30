@@ -6,7 +6,7 @@
  * and Wikipedia/Wikidata provenance, keyed by heritage_slug.
  *
  * Reads:
- *   scripts/lib/heritage-canonical.mjs          HERITAGE_META (the 183 rows)
+ *   scripts/lib/heritage-canonical.mjs          HERITAGE_META (the 175 rows)
  *   scripts/output/heritage-wikidata-report.json  from fetch-heritage-wikidata.mjs
  * Writes:
  *   heritage-content.json                       (only with --write)
@@ -44,7 +44,8 @@
  * OMITTED 3 — any count of railways or operating companies ("one of N
  * heritage railways/companies"). Two separate reasons, either sufficient:
  *   a) HERITAGE_META has no operating-company field — only slug/type/
- *      secondary/band/km — so the "no two railways share a company" check
+ *      secondary/band/km/prose_name — so the "no two railways share a company"
+ *      check
  *      that such phrasing depends on cannot be run against the curated table.
  *   b) The check would fail anyway. Railways and companies are not 1:1 here:
  *      Ffestiniog Railway and Welsh Highland Railway are two separate
@@ -170,11 +171,17 @@ function buildEntry(name, meta, row) {
 
   const location = usable ? extractLocation(row.wikidata_description || row.rest_description) : null;
 
+  // Display name is prose_name when the curated key is a legal entity — the
+  // SAME field data/heritage-railways.json uses for the dot tooltip and search
+  // result, so the map and the panel cannot show different names for one
+  // railway. The legal name is retained rather than discarded.
+  const displayName = meta.prose_name || name;
   const entry = {
-    name,
+    name: displayName,
     type: meta.type,
-    intro: buildIntro(name, meta, location),
+    intro: buildIntro(displayName, meta, location),
   };
+  if (meta.prose_name && meta.prose_name !== name) entry.legal_name = name;
   if (meta.secondary) entry.type_secondary = meta.secondary;
   entry.length_km = meta.km;
 

@@ -38,19 +38,10 @@
     "center": [
       -3.548112,
       55.885366
+    ],
+    "aliases": [
+      "Almond Valley Light Railway"
     ]
-  },
-  "almond-valley-light-railway": {
-    "name": "Almond Valley Light Railway",
-    "type": "museum",
-    "band": "micro",
-    "km": 0,
-    "zoom": 15,
-    "placement_source": "none",
-    "placement_confirmed": false,
-    "no_line": true,
-    "not_in_graph": true,
-    "needs_coordinates": true
   },
   "aln-valley-railway": {
     "name": "Aln Valley Railway",
@@ -152,8 +143,8 @@
       "Rheilffordd Llyn Tegid"
     ]
   },
-  "barrow-hill-engine-shed-society": {
-    "name": "Barrow Hill Engine Shed Society",
+  "barrow-hill-roundhouse": {
+    "name": "Barrow Hill Roundhouse",
     "type": "museum",
     "band": "micro",
     "km": 0.94,
@@ -163,22 +154,9 @@
     "center": [
       -1.380834,
       53.27451
-    ]
-  },
-  "barrow-hill-roundhouse": {
-    "name": "Barrow Hill Roundhouse",
-    "type": "museum",
-    "band": "micro",
-    "km": 0,
-    "zoom": 15,
-    "placement_source": "terminus",
-    "placement_confirmed": false,
-    "center": [
-      -1.380834,
-      53.27451
     ],
-    "no_line": true,
     "aliases": [
+      "Barrow Hill Engine Shed Society",
       "Barrow Hill Roundhouse Railway Museum"
     ]
   },
@@ -730,20 +708,6 @@
       52.452975
     ]
   },
-  "ebbw-vale-mechanical-link": {
-    "name": "Ebbw Vale Mechanical Link",
-    "type": "operating",
-    "band": "micro",
-    "km": 0.06,
-    "zoom": 16,
-    "placement_source": "naptan-1km",
-    "placement_confirmed": false,
-    "center": [
-      -3.202577,
-      51.776688
-    ],
-    "principal_station": "Ebbw Vale Town Rail Station"
-  },
   "ecclesbourne-valley-railway": {
     "name": "Ecclesbourne Valley Railway",
     "type": "operating",
@@ -831,7 +795,7 @@
     "principal_station": "Fairbourne Rail Station"
   },
   "fawley-museum-society-limited": {
-    "name": "Fawley Museum Society Limited",
+    "name": "Fawley Hill Railway",
     "type": "museum",
     "band": "local",
     "km": 1.11,
@@ -841,6 +805,9 @@
     "center": [
       -0.90559,
       51.562809
+    ],
+    "aliases": [
+      "Fawley Museum Society Limited"
     ]
   },
   "fen-railway": {
@@ -913,33 +880,6 @@
     "principal_station": "Blythe Bridge Rail Station",
     "aliases": [
       "Foxfield Stream Railway"
-    ]
-  },
-  "gbrf": {
-    "name": "GBRf",
-    "type": "operating",
-    "band": "local",
-    "km": 2.56,
-    "zoom": 14,
-    "placement_source": "naptan-1km",
-    "placement_confirmed": false,
-    "center": [
-      -1.492233,
-      51.211547
-    ],
-    "principal_station": "Andover Rail Station"
-  },
-  "gwr-worcester-to-leominster": {
-    "name": "GWR Worcester to Leominster",
-    "type": "operating",
-    "band": "micro",
-    "km": 0.5,
-    "zoom": 16,
-    "placement_source": "terminus",
-    "placement_confirmed": false,
-    "center": [
-      -2.548645,
-      52.207631
     ]
   },
   "gartell-light-railway": {
@@ -1030,7 +970,7 @@
     ]
   },
   "halesworth-to-southwold-narrow-gauge-railway-cio": {
-    "name": "Halesworth to Southwold Narrow Gauge Railway CIO",
+    "name": "Halesworth to Southwold Narrow Gauge Railway",
     "type": "operating",
     "band": "micro",
     "km": 0.08,
@@ -1038,7 +978,10 @@
     "placement_source": "none",
     "placement_confirmed": false,
     "not_in_graph": true,
-    "needs_coordinates": true
+    "needs_coordinates": true,
+    "aliases": [
+      "Halesworth to Southwold Narrow Gauge Railway CIO"
+    ]
   },
   "hayling-seaside-railway": {
     "name": "Hayling Seaside Railway",
@@ -1177,7 +1120,7 @@
     ]
   },
   "kingdom-of-fife-railway-preservation-society": {
-    "name": "Kingdom of Fife Railway Preservation Society",
+    "name": "Fife Heritage Railway",
     "type": "museum",
     "band": "micro",
     "km": 0.93,
@@ -1188,7 +1131,10 @@
       -3.001894,
       56.192386
     ],
-    "principal_station": "Leven Rail Station"
+    "principal_station": "Leven Rail Station",
+    "aliases": [
+      "Kingdom of Fife Railway Preservation Society"
+    ]
   },
   "kingsbridge-and-district-light-railway": {
     "name": "Kingsbridge and District Light Railway",
@@ -1241,20 +1187,6 @@
       -3.464939,
       56.108528
     ]
-  },
-  "launceston-branch": {
-    "name": "Launceston Branch",
-    "type": "operating",
-    "band": "micro",
-    "km": 0,
-    "zoom": 15,
-    "placement_source": "terminus",
-    "placement_confirmed": false,
-    "center": [
-      -4.080762,
-      50.390341
-    ],
-    "no_line": true
   },
   "launceston-steam-railway": {
     "name": "Launceston Steam Railway",
@@ -1398,20 +1330,6 @@
       -3.170082,
       52.971296
     ]
-  },
-  "ludgershall-branch": {
-    "name": "Ludgershall Branch",
-    "type": "operating",
-    "band": "regional",
-    "km": 7.8,
-    "zoom": 12.5,
-    "placement_source": "naptan-1km",
-    "placement_confirmed": false,
-    "center": [
-      -1.492233,
-      51.211547
-    ],
-    "principal_station": "Andover Rail Station"
   },
   "lynton-and-barnstaple-railway": {
     "name": "Lynton & Barnstaple Railway",
@@ -1882,7 +1800,7 @@
     "no_line": true
   },
   "shipley-glen-tramway-preservation-co-ltd": {
-    "name": "Shipley Glen Tramway Preservation Co Ltd.",
+    "name": "Shipley Glen Tramway",
     "type": "tramway",
     "band": "micro",
     "km": 0.35,
@@ -1893,21 +1811,10 @@
       -1.79048,
       53.838493
     ],
-    "principal_station": "Saltaire Rail Station"
-  },
-  "siding-10": {
-    "name": "Siding 10",
-    "type": "operating",
-    "band": "micro",
-    "km": 0,
-    "zoom": 15,
-    "placement_source": "terminus",
-    "placement_confirmed": false,
-    "center": [
-      -1.955084,
-      52.663922
-    ],
-    "no_line": true
+    "principal_station": "Saltaire Rail Station",
+    "aliases": [
+      "Shipley Glen Tramway Preservation Co Ltd."
+    ]
   },
   "sittingbourne-and-kemsley-light-railway": {
     "name": "Sittingbourne and Kemsley Light Railway",
@@ -2186,7 +2093,7 @@
     ]
   },
   "the-crossness-engines-trust": {
-    "name": "The Crossness Engines Trust",
+    "name": "Crossness Pumping Station",
     "type": "museum",
     "band": "micro",
     "km": 0.49,
@@ -2196,6 +2103,9 @@
     "center": [
       0.136402,
       51.50931
+    ],
+    "aliases": [
+      "The Crossness Engines Trust"
     ]
   },
   "the-great-whipsnade-railway": {
@@ -2212,7 +2122,7 @@
     ]
   },
   "the-kidderminster-railway-museum-trust-limited": {
-    "name": "The Kidderminster Railway Museum Trust Limited",
+    "name": "Kidderminster Railway Museum",
     "type": "museum",
     "band": "micro",
     "km": 0,
@@ -2221,7 +2131,10 @@
     "placement_confirmed": false,
     "no_line": true,
     "not_in_graph": true,
-    "needs_coordinates": true
+    "needs_coordinates": true,
+    "aliases": [
+      "The Kidderminster Railway Museum Trust Limited"
+    ]
   },
   "the-leas-lift": {
     "name": "The Leas Lift",

@@ -11,12 +11,72 @@
 //
 // LOAD-BEARING: an unmapped heritage string is dropped with no error. The
 // quarterly-refresh checklist in LINE-COLORING-RUNBOOK.md has the check.
+//
+// ─── REV 3, 2026-07-30: 183 rows -> 175 ───────────────────────────────────
+// Six rows were NOT heritage railways at all and are removed, not renamed.
+// Each was verified against the segment graph and against Wikidata/sources
+// before deletion; none had a Wikipedia article for a heritage operation of
+// that name:
+//   GBRf + Ludgershall Branch  — the SAME single 11.71km segment, co-tagged
+//     with each other, sharing one center coordinate (Andover). It is the MoD
+//     Ludgershall military branch: closed to passengers 1961, still open as a
+//     freight-only spur for Army traffic, which GB Railfreight hauls. A
+//     freight operator and a military branch, not a heritage railway.
+//   Ebbw Vale Mechanical Link — the Ebbw Vale Cableway, a 57m inclined
+//     elevator opened 2015 (ABS Transportbahnen), free automated public
+//     transport. Modern street furniture, not preserved railway.
+//   GWR Worcester to Leominster — a historic 24.5-mile closed GWR line name
+//     attached to a 0.83km stub at Rowden Mill, a privately restored station
+//     (Ian Allan award for Best Renovated NON-WORKING station, now holiday
+//     accommodation). Static preserved track, no operation, and the row name
+//     described the Victorian line rather than the site. The judgement call of
+//     the six — renaming it to "Rowden Mill Station" (type museum) would be
+//     the alternative if it should be kept.
+//   Siding 10 — co-tagged with Chasewater Railway; a siding ON Chasewater,
+//     not a separate railway. Chasewater keeps 4 solo segments.
+//   Launceston Branch — co-tagged with Plym Valley Railway; the historic
+//     branch name of the line Plym Valley runs on. Plym Valley keeps the
+//     segment.
+//
+// Two DUPLICATE PAIRS collapsed to one row each. Both retired names are kept
+// as variants above, so the OSM join and the client search still resolve them:
+//   Barrow Hill Engine Shed Society -> Barrow Hill Roundhouse. One shared
+//     0.85km segment, co-tagged with each other; the Society runs the
+//     Roundhouse. The survivor inherits km 0.94 from the Society row, which
+//     was the one carrying the track — without that it would have stayed a
+//     km-0 dot-only row despite owning real geometry.
+//   Almond Valley Light Railway -> Almond Valley Heritage Centre. Same site
+//     (Livingston, West Lothian). The Light Railway row had ZERO segments, no
+//     coordinates and needs_coordinates set; the Heritage Centre row holds the
+//     0.52km. Nothing is lost by retiring the empty one.
+//
+// TILE IMPACT: three of the removed rows were the ONLY operator on their
+// segment (GBRf/Ludgershall 11.71km, GWR Worcester to Leominster 0.83km, Ebbw
+// Vale 0.06km = 12.60km). build-operator-tiles-geojson.mjs emits one feature
+// per operator per segment, so those segments now emit none and that 12.60km
+// leaves the tileset. Siding 10 and Launceston Branch lose nothing — their
+// segments keep their co-tagged railway. This only takes effect once stages
+// 3->4->5 are re-run (needs a local Overpass instance).
+//
+// prose_name (added rev 3): the recognisable public name, for rows whose
+// curated key is a legal entity ("The Kidderminster Railway Museum Trust
+// Limited"). The KEY stays the OSM-join identity and must not change; only
+// display text uses prose_name. It is the display name in BOTH
+// data/heritage-railways.json and heritage-content.json — deliberately not
+// content-only, so the map and the panel never show different names for the
+// same railway. Where Wikidata resolved a real public title that title was
+// used verbatim (Fawley Hill Railway, Fife Heritage Railway, Shipley Glen
+// Tramway); the rest are mechanical legal-suffix removals, except Crossness,
+// taken from the operator's own site (crossness.org.uk brands it Crossness
+// Pumping Station). Somerset & Dorset Railway Heritage Trust deliberately has
+// NO prose_name: Wikidata matched that exact title with title+geo confidence
+// and describes it as a heritage railway, so it is the real public name.
 export const HERITAGE_CANONICAL = {
   "Aberystwyth Cliff Railway": "Aberystwyth Cliff Railway",
   "Alford Valley Railway": "Alford Valley Railway",
   "Allerford Spur (WSR)": "West Somerset Railway",
   "Almond Valley Heritage Centre": "Almond Valley Heritage Centre",
-  "Almond Valley Light Railway": "Almond Valley Light Railway",
+  "Almond Valley Light Railway": "Almond Valley Heritage Centre",
   "Aln Valley Railway": "Aln Valley Railway",
   "Alton Itchen Abbas and Winchester Line": "Watercress Line",
   "Alton, Itchen Abbas and Winchester Line": "Watercress Line",
@@ -31,7 +91,7 @@ export const HERITAGE_CANONICAL = {
   "Babbacombe Cliff Railway": "Babbacombe Cliff Railway",
   "Bala Lake Railway": "Bala Lake Railway",
   "Barnstaple Branch (WSR)": "West Somerset Railway",
-  "Barrow Hill Engine Shed Society": "Barrow Hill Engine Shed Society",
+  "Barrow Hill Engine Shed Society": "Barrow Hill Roundhouse",
   "Barrow Hill Roundhouse": "Barrow Hill Roundhouse",
   "Barrow Hill Roundhouse Railway Museum": "Barrow Hill Roundhouse",
   "Beamish Museum": "Beamish Museum",
@@ -86,7 +146,6 @@ export const HERITAGE_CANONICAL = {
   "East Lancashire heritage railway": "East Lancashire Railway",
   "East Somerset Railway": "East Somerset Railway",
   "East Suffolk Light Railway": "East Suffolk Light Railway",
-  "Ebbw Vale Mechanical Link": "Ebbw Vale Mechanical Link",
   "Ecclesbourne Valley Railway": "Ecclesbourne Valley Railway",
   "Eden Valley Railway": "Eden Valley Railway",
   "Embsay & Bolton Abbey Steam Railway": "Embsay & Bolton Abbey Steam Railway",
@@ -102,8 +161,6 @@ export const HERITAGE_CANONICAL = {
   "Fisherman's Walk Cliff Lift": "Fisherman's Walk Cliff Lift",
   "Foxfield Light Railway": "Foxfield Light Railway",
   "Foxfield Stream Railway": "Foxfield Light Railway",
-  "GBRf": "GBRf",
-  "GWR Worcester to Leominster": "GWR Worcester to Leominster",
   "Gartell Light Railway": "Gartell Light Railway",
   "Great Bush Railway": "Great Bush Railway",
   "Great Central Railway": "Great Central Railway",
@@ -129,7 +186,6 @@ export const HERITAGE_CANONICAL = {
   "Lakeside and Haverthwaite Railway": "Lakeside and Haverthwaite Railway",
   "Lappa Valley Steam Railway": "Lappa Valley Steam Railway",
   "Lathalmond Railway": "Lathalmond Railway",
-  "Launceston Branch": "Launceston Branch",
   "Launceston Steam Railway": "Launceston Steam Railway",
   "Lavender Line": "Lavender Line",
   "Lea Bailey Light Railway": "Lea Bailey Light Railway",
@@ -141,7 +197,6 @@ export const HERITAGE_CANONICAL = {
   "Llanberis Lake Railway": "Llanberis Lake Railway",
   "Llanelli & Mynydd Mawr Railway": "Llanelli & Mynydd Mawr Railway",
   "Llangollen Railway": "Llangollen Railway",
-  "Ludgershall Branch": "Ludgershall Branch",
   "Lynton & Barnstaple Railway": "Lynton & Barnstaple Railway",
   "Lynton and Barnstaple Railway": "Lynton & Barnstaple Railway",
   "Lynton and Lynmouth Cliff Railway": "Lynton and Lynmouth Cliff Railway",
@@ -193,7 +248,6 @@ export const HERITAGE_CANONICAL = {
   "Severn Valley Railway": "Severn Valley Railway",
   "Severn and Wye Line": "Severn and Wye Line",
   "Shipley Glen Tramway Preservation Co Ltd.": "Shipley Glen Tramway Preservation Co Ltd.",
-  "Siding 10": "Siding 10",
   "Sittingbourne and Kemsley Light Railway": "Sittingbourne and Kemsley Light Railway",
   "Snowdon Mountain Railway": "Snowdon Mountain Railway",
   "Somerset & Dorset Joint Railway": "North Dorset Railway",
@@ -268,7 +322,6 @@ export const HERITAGE_META = {
   "Aberystwyth Cliff Railway": { slug: "aberystwyth-cliff-railway", type: "funicular", secondary: null, band: "micro", km: 0.44 },
   "Alford Valley Railway": { slug: "alford-valley-railway", type: "operating", secondary: null, band: "local", km: 1.47 },
   "Almond Valley Heritage Centre": { slug: "almond-valley-heritage-centre", type: "museum", secondary: null, band: "micro", km: 0.52 },
-  "Almond Valley Light Railway": { slug: "almond-valley-light-railway", type: "museum", secondary: null, band: "micro", km: 0.0 },
   "Aln Valley Railway": { slug: "aln-valley-railway", type: "operating", secondary: null, band: "local", km: 2.32 },
   "Amberley Museum Railway": { slug: "amberley-museum-railway", type: "museum", secondary: null, band: "micro", km: 0.0 },
   "Amerton Railway": { slug: "amerton-railway", type: "operating", secondary: null, band: "micro", km: 0.0 },
@@ -276,8 +329,7 @@ export const HERITAGE_META = {
   "Avon Valley Railway": { slug: "avon-valley-railway", type: "operating", secondary: null, band: "regional", km: 4.69 },
   "Babbacombe Cliff Railway": { slug: "babbacombe-cliff-railway", type: "funicular", secondary: null, band: "micro", km: 0.2 },
   "Bala Lake Railway": { slug: "bala-lake-railway", type: "operating", secondary: null, band: "regional", km: 7.38 },
-  "Barrow Hill Engine Shed Society": { slug: "barrow-hill-engine-shed-society", type: "museum", secondary: null, band: "micro", km: 0.94 },
-  "Barrow Hill Roundhouse": { slug: "barrow-hill-roundhouse", type: "museum", secondary: null, band: "micro", km: 0.0 },
+  "Barrow Hill Roundhouse": { slug: "barrow-hill-roundhouse", type: "museum", secondary: null, band: "micro", km: 0.94 },
   "Beamish Museum": { slug: "beamish-museum", type: "museum", secondary: "tramway", band: "local", km: 2.88 },
   "Black Country Living Museum": { slug: "black-country-living-museum", type: "museum", secondary: null, band: "micro", km: 0.49 },
   "Blists Hill Victorian Town": { slug: "blists-hill-victorian-town", type: "museum", secondary: "tramway", band: "micro", km: 0.23 },
@@ -316,28 +368,25 @@ export const HERITAGE_META = {
   "East Lancashire Railway": { slug: "east-lancashire-railway", type: "operating", secondary: null, band: "trunk", km: 20.84 },
   "East Somerset Railway": { slug: "east-somerset-railway", type: "operating", secondary: null, band: "regional", km: 3.75 },
   "East Suffolk Light Railway": { slug: "east-suffolk-light-railway", type: "operating", secondary: null, band: "micro", km: 0.44 },
-  "Ebbw Vale Mechanical Link": { slug: "ebbw-vale-mechanical-link", type: "operating", secondary: null, band: "micro", km: 0.06 },
   "Ecclesbourne Valley Railway": { slug: "ecclesbourne-valley-railway", type: "operating", secondary: null, band: "trunk", km: 17.21 },
   "Eden Valley Railway": { slug: "eden-valley-railway", type: "operating", secondary: null, band: "regional", km: 6.46 },
   "Embsay & Bolton Abbey Steam Railway": { slug: "embsay-and-bolton-abbey-steam-railway", type: "operating", secondary: null, band: "regional", km: 6.99 },
   "Epping Ongar Railway": { slug: "epping-ongar-railway", type: "operating", secondary: null, band: "regional", km: 9.94 },
   "Evesham Vale Light Railway": { slug: "evesham-vale-light-railway", type: "operating", secondary: null, band: "local", km: 1.34 },
   "Fairbourne Railway": { slug: "fairbourne-railway", type: "operating", secondary: null, band: "micro", km: 0.31 },
-  "Fawley Museum Society Limited": { slug: "fawley-museum-society-limited", type: "museum", secondary: null, band: "local", km: 1.11 },
+  "Fawley Museum Society Limited": { slug: "fawley-museum-society-limited", type: "museum", secondary: null, band: "local", km: 1.11, prose_name: "Fawley Hill Railway" },
   "Fen Railway": { slug: "fen-railway", type: "operating", secondary: null, band: "local", km: 2.18 },
   "Fenland Light Railway": { slug: "fenland-light-railway", type: "operating", secondary: null, band: "micro", km: 0.14 },
   "Ffestiniog Railway": { slug: "ffestiniog-railway", type: "operating", secondary: null, band: "trunk", km: 23.52 },
   "Fisherman's Walk Cliff Lift": { slug: "fishermans-walk-cliff-lift", type: "funicular", secondary: null, band: "micro", km: 0.03 },
   "Foxfield Light Railway": { slug: "foxfield-light-railway", type: "operating", secondary: null, band: "regional", km: 5.68 },
-  "GBRf": { slug: "gbrf", type: "operating", secondary: null, band: "local", km: 2.56 },
-  "GWR Worcester to Leominster": { slug: "gwr-worcester-to-leominster", type: "operating", secondary: null, band: "micro", km: 0.5 },
   "Gartell Light Railway": { slug: "gartell-light-railway", type: "operating", secondary: null, band: "local", km: 1.46 },
   "Great Bush Railway": { slug: "great-bush-railway", type: "operating", secondary: null, band: "micro", km: 0.57 },
   "Great Central Railway": { slug: "great-central-railway", type: "operating", secondary: null, band: "trunk", km: 24.24 },
   "Great Central Railway (Nottingham)": { slug: "great-central-railway-nottingham", type: "operating", secondary: null, band: "trunk", km: 15.94 },
   "Great Orme Tramway": { slug: "great-orme-tramway", type: "tramway", secondary: null, band: "local", km: 1.97 },
   "Gwili Railway": { slug: "gwili-railway", type: "operating", secondary: null, band: "regional", km: 6.4 },
-  "Halesworth to Southwold Narrow Gauge Railway CIO": { slug: "halesworth-to-southwold-narrow-gauge-railway-cio", type: "operating", secondary: null, band: "micro", km: 0.08 },
+  "Halesworth to Southwold Narrow Gauge Railway CIO": { slug: "halesworth-to-southwold-narrow-gauge-railway-cio", type: "operating", secondary: null, band: "micro", km: 0.08, prose_name: "Halesworth to Southwold Narrow Gauge Railway" },
   "Hayling Seaside Railway": { slug: "hayling-seaside-railway", type: "operating", secondary: null, band: "local", km: 1.66 },
   "Heatherslaw Light Railway": { slug: "heatherslaw-light-railway", type: "operating", secondary: null, band: "regional", km: 3.02 },
   "Heaton Park Tramway": { slug: "heaton-park-tramway", type: "tramway", secondary: null, band: "local", km: 1.12 },
@@ -348,12 +397,11 @@ export const HERITAGE_META = {
   "Keighley & Worth Valley Railway": { slug: "keighley-and-worth-valley-railway", type: "operating", secondary: null, band: "regional", km: 9.06 },
   "Keith and Dufftown Railway": { slug: "keith-and-dufftown-railway", type: "operating", secondary: null, band: "trunk", km: 17.34 },
   "Kent and East Sussex Railway": { slug: "kent-and-east-sussex-railway", type: "operating", secondary: null, band: "trunk", km: 17.87 },
-  "Kingdom of Fife Railway Preservation Society": { slug: "kingdom-of-fife-railway-preservation-society", type: "museum", secondary: null, band: "micro", km: 0.93 },
+  "Kingdom of Fife Railway Preservation Society": { slug: "kingdom-of-fife-railway-preservation-society", type: "museum", secondary: null, band: "micro", km: 0.93, prose_name: "Fife Heritage Railway" },
   "Kingsbridge and District Light Railway": { slug: "kingsbridge-and-district-light-railway", type: "operating", secondary: null, band: "micro", km: 0.29 },
   "Lakeside and Haverthwaite Railway": { slug: "lakeside-and-haverthwaite-railway", type: "operating", secondary: null, band: "regional", km: 6.41 },
   "Lappa Valley Steam Railway": { slug: "lappa-valley-steam-railway", type: "operating", secondary: null, band: "local", km: 2.3 },
   "Lathalmond Railway": { slug: "lathalmond-railway", type: "operating", secondary: null, band: "micro", km: 0.34 },
-  "Launceston Branch": { slug: "launceston-branch", type: "operating", secondary: null, band: "micro", km: 0.0 },
   "Launceston Steam Railway": { slug: "launceston-steam-railway", type: "operating", secondary: null, band: "regional", km: 3.13 },
   "Lavender Line": { slug: "lavender-line", type: "operating", secondary: null, band: "local", km: 1.45 },
   "Lea Bailey Light Railway": { slug: "lea-bailey-light-railway", type: "operating", secondary: null, band: "micro", km: 0.1 },
@@ -365,7 +413,6 @@ export const HERITAGE_META = {
   "Llanberis Lake Railway": { slug: "llanberis-lake-railway", type: "operating", secondary: null, band: "regional", km: 4.01 },
   "Llanelli & Mynydd Mawr Railway": { slug: "llanelli-and-mynydd-mawr-railway", type: "operating", secondary: null, band: "local", km: 1.02 },
   "Llangollen Railway": { slug: "llangollen-railway", type: "operating", secondary: null, band: "trunk", km: 16.42 },
-  "Ludgershall Branch": { slug: "ludgershall-branch", type: "operating", secondary: null, band: "regional", km: 7.8 },
   "Lynton & Barnstaple Railway": { slug: "lynton-and-barnstaple-railway", type: "operating", secondary: null, band: "local", km: 1.56 },
   "Lynton and Lynmouth Cliff Railway": { slug: "lynton-and-lynmouth-cliff-railway", type: "funicular", secondary: null, band: "micro", km: 0.22 },
   "Mail Rail": { slug: "mail-rail", type: "museum", secondary: "operating", band: "micro", km: 0.83 },
@@ -399,8 +446,7 @@ export const HERITAGE_META = {
   "Seaton Tramway": { slug: "seaton-tramway", type: "tramway", secondary: null, band: "regional", km: 4.97 },
   "Severn Valley Railway": { slug: "severn-valley-railway", type: "operating", secondary: null, band: "trunk", km: 29.02 },
   "Severn and Wye Line": { slug: "severn-and-wye-line", type: "operating", secondary: null, band: "micro", km: 0.0 },
-  "Shipley Glen Tramway Preservation Co Ltd.": { slug: "shipley-glen-tramway-preservation-co-ltd", type: "tramway", secondary: null, band: "micro", km: 0.35 },
-  "Siding 10": { slug: "siding-10", type: "operating", secondary: null, band: "micro", km: 0.0 },
+  "Shipley Glen Tramway Preservation Co Ltd.": { slug: "shipley-glen-tramway-preservation-co-ltd", type: "tramway", secondary: null, band: "micro", km: 0.35, prose_name: "Shipley Glen Tramway" },
   "Sittingbourne and Kemsley Light Railway": { slug: "sittingbourne-and-kemsley-light-railway", type: "operating", secondary: null, band: "local", km: 2.91 },
   "Snowdon Mountain Railway": { slug: "snowdon-mountain-railway", type: "operating", secondary: null, band: "regional", km: 7.76 },
   "Somerset & Dorset Railway Heritage Trust": { slug: "somerset-and-dorset-railway-heritage-trust", type: "operating", secondary: null, band: "local", km: 2.09 },
@@ -420,9 +466,9 @@ export const HERITAGE_META = {
   "Tanfield Railway": { slug: "tanfield-railway", type: "operating", secondary: null, band: "regional", km: 4.72 },
   "Tarka Valley Railway": { slug: "tarka-valley-railway", type: "operating", secondary: null, band: "micro", km: 0.36 },
   "Telford Steam Railway": { slug: "telford-steam-railway", type: "operating", secondary: null, band: "local", km: 2.54 },
-  "The Crossness Engines Trust": { slug: "the-crossness-engines-trust", type: "museum", secondary: null, band: "micro", km: 0.49 },
+  "The Crossness Engines Trust": { slug: "the-crossness-engines-trust", type: "museum", secondary: null, band: "micro", km: 0.49, prose_name: "Crossness Pumping Station" },
   "The Great Whipsnade Railway": { slug: "the-great-whipsnade-railway", type: "operating", secondary: null, band: "local", km: 1.99 },
-  "The Kidderminster Railway Museum Trust Limited": { slug: "the-kidderminster-railway-museum-trust-limited", type: "museum", secondary: null, band: "micro", km: 0.0 },
+  "The Kidderminster Railway Museum Trust Limited": { slug: "the-kidderminster-railway-museum-trust-limited", type: "museum", secondary: null, band: "micro", km: 0.0, prose_name: "Kidderminster Railway Museum" },
   "The Leas Lift": { slug: "the-leas-lift", type: "funicular", secondary: null, band: "micro", km: 0.07 },
   "Toddington Narrow Gauge Railway": { slug: "toddington-narrow-gauge-railway", type: "operating", secondary: null, band: "micro", km: 0.8 },
   "Tufts Bridge": { slug: "tufts-bridge", type: "operating", secondary: null, band: "micro", km: 0.03 },

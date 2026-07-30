@@ -161,7 +161,14 @@ for (const [name, meta] of Object.entries(HERITAGE_META)) {
   }
 
   const entry = {
-    name,
+    // prose_name (heritage-canonical.mjs rev 3) is the recognisable public name
+    // for rows whose curated KEY is a legal entity ("The Kidderminster Railway
+    // Museum Trust Limited"). The key remains the OSM-join identity; this is
+    // display text only. heritage-content.json uses the same field for the same
+    // purpose, so the dot tooltip, the search result and the panel heading can
+    // never disagree about what a railway is called. The retired key is added to
+    // `aliases` below so searching the legal name still finds it.
+    name: meta.prose_name || name,
     type: meta.type,
     band: meta.band,
     km: meta.km,
@@ -198,8 +205,13 @@ for (const [variant, canonical] of Object.entries(HERITAGE_CANONICAL)) {
   variantsByCanonical.get(canonical).add(variant);
 }
 for (const [name, meta] of Object.entries(HERITAGE_META)) {
-  const v = variantsByCanonical.get(name);
-  if (v && v.size) out[meta.slug].aliases = [...v].sort();
+  const v = new Set(variantsByCanonical.get(name) || []);
+  // When prose_name replaces the key as the display name, the KEY becomes a
+  // searchable variant — otherwise the legal name that OSM actually carries
+  // ("The Kidderminster Railway Museum Trust Limited") would stop matching in
+  // search, which is a regression the display-name change must not cause.
+  if (meta.prose_name && meta.prose_name !== name) v.add(name);
+  if (v.size) out[meta.slug].aliases = [...v].sort();
 }
 
 // Flat, slug-keyed, _notes at top level — the same shape as data/regions.json,

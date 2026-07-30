@@ -1,31 +1,32 @@
 {
   "summary": {
-    "generated_at": "2026-07-30T06:39:01.315Z",
-    "total": 183,
-    "resolved_website": 114,
-    "resolved_wikipedia": 168,
-    "wikipedia_but_no_website": 54,
-    "resolved_neither": 15,
+    "generated_at": "2026-07-30T07:45:02.004Z",
+    "total": 175,
+    "resolved_website": 111,
+    "resolved_wikipedia": 164,
+    "wikipedia_but_no_website": 53,
+    "resolved_neither": 11,
     "by_confidence": {
-      "title+geo": 101,
-      "geo": 47,
-      "title": 11,
+      "title+geo": 105,
+      "geo": 40,
+      "title": 10,
       "title+geo(P625)": 9
     },
     "by_flag": {
-      "geo-only-title-differs": 47,
-      "no-center": 9,
-      "wrong-entity-class": 11,
+      "geo-only-title-differs": 40,
+      "wrong-entity-class": 7,
+      "no-center": 8,
       "geo-unconfirmed": 8,
-      "historic-company": 6
+      "historic-company": 5
     },
-    "flagged_total": 65
+    "flagged_total": 57
   },
   "rows": [
     {
       "slug": "aberystwyth-cliff-railway",
       "name": "Aberystwyth Cliff Railway",
-      "fetched_at": "2026-07-30T06:31:10.682Z",
+      "display_name": "Aberystwyth Cliff Railway",
+      "fetched_at": "2026-07-30T07:40:06.601Z",
       "type": "funicular",
       "secondary": null,
       "band": "micro",
@@ -61,7 +62,8 @@
     {
       "slug": "alford-valley-railway",
       "name": "Alford Valley Railway",
-      "fetched_at": "2026-07-30T06:31:11.952Z",
+      "display_name": "Alford Valley Railway",
+      "fetched_at": "2026-07-30T07:40:07.798Z",
       "type": "operating",
       "secondary": null,
       "band": "local",
@@ -99,13 +101,16 @@
     {
       "slug": "almond-valley-heritage-centre",
       "name": "Almond Valley Heritage Centre",
-      "fetched_at": "2026-07-30T06:31:12.950Z",
+      "display_name": "Almond Valley Heritage Centre",
+      "fetched_at": "2026-07-30T07:40:08.843Z",
       "type": "museum",
       "secondary": null,
       "band": "micro",
       "km": 0.52,
       "hasCenter": true,
-      "aliasesTried": [],
+      "aliasesTried": [
+        "Almond Valley Light Railway"
+      ],
       "flags": [
         "geo-only-title-differs"
       ],
@@ -141,49 +146,10 @@
       ]
     },
     {
-      "slug": "almond-valley-light-railway",
-      "name": "Almond Valley Light Railway",
-      "fetched_at": "2026-07-30T06:31:15.157Z",
-      "type": "museum",
-      "secondary": null,
-      "band": "micro",
-      "km": 0,
-      "hasCenter": false,
-      "aliasesTried": [],
-      "flags": [
-        "no-center"
-      ],
-      "notes": [],
-      "status": "matched",
-      "wikipedia_title": "Almond Valley Light Railway",
-      "wikipedia_url": "https://en.wikipedia.org/wiki/Almond_Valley_Light_Railway",
-      "confidence": "title",
-      "distanceKm": null,
-      "rest_description": "Heritage railway line in Scotland",
-      "extract": "The Almond Valley Light Railway is a 2 ft 6 in narrow gauge heritage railway running at the Almond Valley Heritage Trust site at Livingston, Scotland. The railway operates at weekends between Easter and the end of September and daily during some school holiday periods. There are two stations, both with waiting shelters and run round loops. A small two-road loco shed is provided at the heritage centre end of the line. There is a storage siding here also.",
-      "matched_candidate": "Almond Valley Light Railway",
-      "qid": "Q4733895",
-      "website": "https://www.almondvalley.co.uk/attractions/stay-and-play/",
-      "wikidata_description": "narrow gauge heritage railway in West Lothian, Scotland, UK",
-      "wikidata_label": "Almond Valley Light Railway",
-      "sitelink": "Almond Valley Light Railway",
-      "instance_of_qids": [
-        "Q1112477",
-        "Q420962"
-      ],
-      "wikidata_coordinates": {
-        "lat": 55.8853,
-        "lon": -3.5485
-      },
-      "instance_of": [
-        "narrow-gauge railway",
-        "heritage railway"
-      ]
-    },
-    {
       "slug": "aln-valley-railway",
       "name": "Aln Valley Railway",
-      "fetched_at": "2026-07-30T06:31:16.133Z",
+      "display_name": "Aln Valley Railway",
+      "fetched_at": "2026-07-30T07:40:12.504Z",
       "type": "operating",
       "secondary": null,
       "band": "local",
@@ -220,7 +186,8 @@
     {
       "slug": "amberley-museum-railway",
       "name": "Amberley Museum Railway",
-      "fetched_at": "2026-07-30T06:31:17.242Z",
+      "display_name": "Amberley Museum Railway",
+      "fetched_at": "2026-07-30T07:40:13.725Z",
       "type": "museum",
       "secondary": null,
       "band": "micro",
@@ -260,7 +227,8 @@
     {
       "slug": "amerton-railway",
       "name": "Amerton Railway",
-      "fetched_at": "2026-07-30T06:31:18.322Z",
+      "display_name": "Amerton Railway",
+      "fetched_at": "2026-07-30T07:40:14.673Z",
       "type": "operating",
       "secondary": null,
       "band": "micro",
@@ -296,7 +264,8 @@
     {
       "slug": "apedale-valley-light-railway",
       "name": "Apedale Valley Light Railway",
-      "fetched_at": "2026-07-30T06:31:19.368Z",
+      "display_name": "Apedale Valley Light Railway",
+      "fetched_at": "2026-07-30T07:40:15.753Z",
       "type": "operating",
       "secondary": null,
       "band": "micro",
@@ -323,7 +292,8 @@
     {
       "slug": "avon-valley-railway",
       "name": "Avon Valley Railway",
-      "fetched_at": "2026-07-30T06:31:21.850Z",
+      "display_name": "Avon Valley Railway",
+      "fetched_at": "2026-07-30T07:40:20.289Z",
       "type": "operating",
       "secondary": null,
       "band": "regional",
@@ -359,7 +329,8 @@
     {
       "slug": "babbacombe-cliff-railway",
       "name": "Babbacombe Cliff Railway",
-      "fetched_at": "2026-07-30T06:31:22.948Z",
+      "display_name": "Babbacombe Cliff Railway",
+      "fetched_at": "2026-07-30T07:40:21.335Z",
       "type": "funicular",
       "secondary": null,
       "band": "micro",
@@ -395,7 +366,8 @@
     {
       "slug": "bala-lake-railway",
       "name": "Bala Lake Railway",
-      "fetched_at": "2026-07-30T06:31:23.980Z",
+      "display_name": "Bala Lake Railway",
+      "fetched_at": "2026-07-30T07:40:22.310Z",
       "type": "operating",
       "secondary": null,
       "band": "regional",
@@ -433,59 +405,17 @@
       ]
     },
     {
-      "slug": "barrow-hill-engine-shed-society",
-      "name": "Barrow Hill Engine Shed Society",
-      "fetched_at": "2026-07-30T06:31:24.941Z",
+      "slug": "barrow-hill-roundhouse",
+      "name": "Barrow Hill Roundhouse",
+      "display_name": "Barrow Hill Roundhouse",
+      "fetched_at": "2026-07-30T07:40:23.351Z",
       "type": "museum",
       "secondary": null,
       "band": "micro",
       "km": 0.94,
       "hasCenter": true,
-      "aliasesTried": [],
-      "flags": [
-        "geo-only-title-differs",
-        "wrong-entity-class"
-      ],
-      "notes": [
-        "\"Barrow Hill Engine Shed Society\": no page",
-        "\"Barrow Hill Engine Shed Society (heritage railway)\": no page",
-        "\"Barrow Hill Engine Shed Society (railway)\": no page"
-      ],
-      "status": "matched",
-      "wikipedia_title": "Barrow Hill Roundhouse",
-      "wikipedia_url": "https://en.wikipedia.org/wiki/Barrow_Hill_Roundhouse",
-      "confidence": "geo",
-      "distanceKm": 0.06501155667307057,
-      "rest_description": "Former Midland Railway roundhouse in Derbyshire, England",
-      "extract": "Barrow Hill Roundhouse, known as Staveley Engine Shed until 1948, is a former Midland Railway roundhouse in Barrow Hill, near Staveley and Chesterfield, in Derbyshire, England. It now serves as a railway heritage centre.",
-      "matched_candidate": "search:\"Barrow Hill Engine Shed Society heritage railway\"→\"Barrow Hill Roundhouse\"",
-      "qid": "Q4863884",
-      "website": null,
-      "wikidata_description": "grade II listed motive power depot in Barrow Hill, Derbyshire, England, UK",
-      "wikidata_label": "Barrow Hill Engine Shed",
-      "sitelink": "Barrow Hill Roundhouse",
-      "instance_of_qids": [
-        "Q10283556"
-      ],
-      "wikidata_coordinates": {
-        "lat": 53.274497,
-        "lon": -1.381821
-      },
-      "instance_of": [
-        "motive power depot"
-      ],
-      "wrong_entity_class": "building/structure"
-    },
-    {
-      "slug": "barrow-hill-roundhouse",
-      "name": "Barrow Hill Roundhouse",
-      "fetched_at": "2026-07-30T06:31:27.089Z",
-      "type": "museum",
-      "secondary": null,
-      "band": "micro",
-      "km": 0,
-      "hasCenter": true,
       "aliasesTried": [
+        "Barrow Hill Engine Shed Society",
         "Barrow Hill Roundhouse Railway Museum"
       ],
       "flags": [],
@@ -517,7 +447,8 @@
     {
       "slug": "beamish-museum",
       "name": "Beamish Museum",
-      "fetched_at": "2026-07-30T06:31:28.145Z",
+      "display_name": "Beamish Museum",
+      "fetched_at": "2026-07-30T07:40:24.301Z",
       "type": "museum",
       "secondary": "tramway",
       "band": "local",
@@ -557,7 +488,8 @@
     {
       "slug": "black-country-living-museum",
       "name": "Black Country Living Museum",
-      "fetched_at": "2026-07-30T06:31:29.273Z",
+      "display_name": "Black Country Living Museum",
+      "fetched_at": "2026-07-30T07:40:25.498Z",
       "type": "museum",
       "secondary": null,
       "band": "micro",
@@ -600,7 +532,8 @@
     {
       "slug": "blists-hill-victorian-town",
       "name": "Blists Hill Victorian Town",
-      "fetched_at": "2026-07-30T06:31:30.327Z",
+      "display_name": "Blists Hill Victorian Town",
+      "fetched_at": "2026-07-30T07:40:26.650Z",
       "type": "museum",
       "secondary": "tramway",
       "band": "micro",
@@ -638,7 +571,8 @@
     {
       "slug": "bluebell-railway",
       "name": "Bluebell Railway",
-      "fetched_at": "2026-07-30T06:31:31.334Z",
+      "display_name": "Bluebell Railway",
+      "fetched_at": "2026-07-30T07:40:27.711Z",
       "type": "operating",
       "secondary": null,
       "band": "trunk",
@@ -679,7 +613,8 @@
     {
       "slug": "boness-and-kinneil-railway",
       "name": "Bo'ness & Kinneil Railway",
-      "fetched_at": "2026-07-30T06:31:32.380Z",
+      "display_name": "Bo'ness & Kinneil Railway",
+      "fetched_at": "2026-07-30T07:40:28.774Z",
       "type": "operating",
       "secondary": null,
       "band": "regional",
@@ -728,7 +663,8 @@
     {
       "slug": "bodmin-and-wenford-railway",
       "name": "Bodmin & Wenford Railway",
-      "fetched_at": "2026-07-30T06:31:34.718Z",
+      "display_name": "Bodmin & Wenford Railway",
+      "fetched_at": "2026-07-30T07:40:32.145Z",
       "type": "operating",
       "secondary": null,
       "band": "trunk",
@@ -775,7 +711,8 @@
     {
       "slug": "bowes-railway",
       "name": "Bowes Railway",
-      "fetched_at": "2026-07-30T06:31:37.347Z",
+      "display_name": "Bowes Railway",
+      "fetched_at": "2026-07-30T07:40:35.035Z",
       "type": "museum",
       "secondary": null,
       "band": "local",
@@ -815,7 +752,8 @@
     {
       "slug": "brecon-mountain-railway",
       "name": "Brecon Mountain Railway",
-      "fetched_at": "2026-07-30T06:31:38.473Z",
+      "display_name": "Brecon Mountain Railway",
+      "fetched_at": "2026-07-30T07:40:36.017Z",
       "type": "operating",
       "secondary": null,
       "band": "regional",
@@ -853,7 +791,8 @@
     {
       "slug": "bridgnorth-cliff-railway",
       "name": "Bridgnorth Cliff Railway",
-      "fetched_at": "2026-07-30T06:31:39.451Z",
+      "display_name": "Bridgnorth Cliff Railway",
+      "fetched_at": "2026-07-30T07:40:37.014Z",
       "type": "funicular",
       "secondary": null,
       "band": "micro",
@@ -889,7 +828,8 @@
     {
       "slug": "bristol-harbour-railway",
       "name": "Bristol Harbour Railway",
-      "fetched_at": "2026-07-30T06:31:40.596Z",
+      "display_name": "Bristol Harbour Railway",
+      "fetched_at": "2026-07-30T07:40:38.146Z",
       "type": "operating",
       "secondary": null,
       "band": "local",
@@ -925,7 +865,8 @@
     {
       "slug": "bromyard-and-linton-light-railway",
       "name": "Bromyard & Linton Light Railway",
-      "fetched_at": "2026-07-30T06:31:41.593Z",
+      "display_name": "Bromyard & Linton Light Railway",
+      "fetched_at": "2026-07-30T07:40:39.107Z",
       "type": "operating",
       "secondary": null,
       "band": "micro",
@@ -974,7 +915,8 @@
     {
       "slug": "bure-valley-railway",
       "name": "Bure Valley Railway",
-      "fetched_at": "2026-07-30T06:31:44.163Z",
+      "display_name": "Bure Valley Railway",
+      "fetched_at": "2026-07-30T07:40:43.790Z",
       "type": "operating",
       "secondary": null,
       "band": "trunk",
@@ -1012,7 +954,8 @@
     {
       "slug": "cairngorm-funicular",
       "name": "Cairngorm Funicular",
-      "fetched_at": "2026-07-30T06:31:45.206Z",
+      "display_name": "Cairngorm Funicular",
+      "fetched_at": "2026-07-30T07:40:44.846Z",
       "type": "funicular",
       "secondary": null,
       "band": "local",
@@ -1058,7 +1001,8 @@
     {
       "slug": "caledonian-railway-brechin",
       "name": "Caledonian Railway (Brechin)",
-      "fetched_at": "2026-07-30T06:31:47.311Z",
+      "display_name": "Caledonian Railway (Brechin)",
+      "fetched_at": "2026-07-30T07:40:50.420Z",
       "type": "operating",
       "secondary": null,
       "band": "regional",
@@ -1099,7 +1043,8 @@
     {
       "slug": "cambrian-heritage-railway",
       "name": "Cambrian Heritage Railway",
-      "fetched_at": "2026-07-30T06:31:48.443Z",
+      "display_name": "Cambrian Heritage Railway",
+      "fetched_at": "2026-07-30T07:40:51.537Z",
       "type": "operating",
       "secondary": null,
       "band": "local",
@@ -1137,7 +1082,8 @@
     {
       "slug": "central-tramway-scarborough",
       "name": "Central Tramway (Scarborough)",
-      "fetched_at": "2026-07-30T06:31:49.434Z",
+      "display_name": "Central Tramway (Scarborough)",
+      "fetched_at": "2026-07-30T07:40:52.539Z",
       "type": "tramway",
       "secondary": null,
       "band": "micro",
@@ -1178,7 +1124,8 @@
     {
       "slug": "chasewater-railway",
       "name": "Chasewater Railway",
-      "fetched_at": "2026-07-30T06:31:51.500Z",
+      "display_name": "Chasewater Railway",
+      "fetched_at": "2026-07-30T07:40:58.377Z",
       "type": "operating",
       "secondary": null,
       "band": "micro",
@@ -1214,7 +1161,8 @@
     {
       "slug": "chinnor-and-princes-risborough-railway",
       "name": "Chinnor and Princes Risborough Railway",
-      "fetched_at": "2026-07-30T06:31:52.451Z",
+      "display_name": "Chinnor and Princes Risborough Railway",
+      "fetched_at": "2026-07-30T07:40:59.375Z",
       "type": "operating",
       "secondary": null,
       "band": "regional",
@@ -1252,7 +1200,8 @@
     {
       "slug": "cholsey-and-wallingford-railway",
       "name": "Cholsey & Wallingford Railway",
-      "fetched_at": "2026-07-30T06:31:53.591Z",
+      "display_name": "Cholsey & Wallingford Railway",
+      "fetched_at": "2026-07-30T07:41:00.417Z",
       "type": "operating",
       "secondary": null,
       "band": "regional",
@@ -1295,7 +1244,8 @@
     {
       "slug": "churnet-valley-railway",
       "name": "Churnet Valley Railway",
-      "fetched_at": "2026-07-30T06:31:54.534Z",
+      "display_name": "Churnet Valley Railway",
+      "fetched_at": "2026-07-30T07:41:01.360Z",
       "type": "operating",
       "secondary": null,
       "band": "trunk",
@@ -1331,7 +1281,8 @@
     {
       "slug": "cleethorpes-coast-light-railway",
       "name": "Cleethorpes Coast Light Railway",
-      "fetched_at": "2026-07-30T06:31:55.542Z",
+      "display_name": "Cleethorpes Coast Light Railway",
+      "fetched_at": "2026-07-30T07:41:02.387Z",
       "type": "operating",
       "secondary": null,
       "band": "local",
@@ -1367,7 +1318,8 @@
     {
       "slug": "colne-valley-railway",
       "name": "Colne Valley Railway",
-      "fetched_at": "2026-07-30T06:31:56.457Z",
+      "display_name": "Colne Valley Railway",
+      "fetched_at": "2026-07-30T07:41:03.440Z",
       "type": "operating",
       "secondary": null,
       "band": "local",
@@ -1403,7 +1355,8 @@
     {
       "slug": "corris-railway",
       "name": "Corris Railway",
-      "fetched_at": "2026-07-30T06:31:57.591Z",
+      "display_name": "Corris Railway",
+      "fetched_at": "2026-07-30T07:41:04.565Z",
       "type": "operating",
       "secondary": null,
       "band": "local",
@@ -1441,7 +1394,8 @@
     {
       "slug": "crich-tramway",
       "name": "Crich Tramway",
-      "fetched_at": "2026-07-30T06:31:58.552Z",
+      "display_name": "Crich Tramway",
+      "fetched_at": "2026-07-30T07:41:05.532Z",
       "type": "tramway",
       "secondary": "tramway",
       "band": "local",
@@ -1483,7 +1437,8 @@
     {
       "slug": "crowle-peatland-railway",
       "name": "Crowle Peatland Railway",
-      "fetched_at": "2026-07-30T06:31:59.664Z",
+      "display_name": "Crowle Peatland Railway",
+      "fetched_at": "2026-07-30T07:41:06.866Z",
       "type": "operating",
       "secondary": null,
       "band": "micro",
@@ -1521,7 +1476,8 @@
     {
       "slug": "dartmouth-steam-railway",
       "name": "Dartmouth Steam Railway",
-      "fetched_at": "2026-07-30T06:32:00.771Z",
+      "display_name": "Dartmouth Steam Railway",
+      "fetched_at": "2026-07-30T07:41:07.796Z",
       "type": "operating",
       "secondary": null,
       "band": "trunk",
@@ -1557,7 +1513,8 @@
     {
       "slug": "dean-forest-railway",
       "name": "Dean Forest Railway",
-      "fetched_at": "2026-07-30T06:32:01.818Z",
+      "display_name": "Dean Forest Railway",
+      "fetched_at": "2026-07-30T07:41:08.785Z",
       "type": "operating",
       "secondary": null,
       "band": "regional",
@@ -1593,7 +1550,8 @@
     {
       "slug": "derwent-valley-light-railway",
       "name": "Derwent Valley Light Railway",
-      "fetched_at": "2026-07-30T06:32:02.745Z",
+      "display_name": "Derwent Valley Light Railway",
+      "fetched_at": "2026-07-30T07:41:09.708Z",
       "type": "operating",
       "secondary": null,
       "band": "micro",
@@ -1629,7 +1587,8 @@
     {
       "slug": "devon-railway-centre",
       "name": "Devon Railway Centre",
-      "fetched_at": "2026-07-30T06:32:03.789Z",
+      "display_name": "Devon Railway Centre",
+      "fetched_at": "2026-07-30T07:41:10.725Z",
       "type": "museum",
       "secondary": null,
       "band": "micro",
@@ -1665,7 +1624,8 @@
     {
       "slug": "didcot-railway-centre",
       "name": "Didcot Railway Centre",
-      "fetched_at": "2026-07-30T06:32:04.888Z",
+      "display_name": "Didcot Railway Centre",
+      "fetched_at": "2026-07-30T07:41:11.749Z",
       "type": "museum",
       "secondary": "operating",
       "band": "local",
@@ -1703,7 +1663,8 @@
     {
       "slug": "doon-valley-railway",
       "name": "Doon Valley Railway",
-      "fetched_at": "2026-07-30T06:32:06.232Z",
+      "display_name": "Doon Valley Railway",
+      "fetched_at": "2026-07-30T07:41:12.768Z",
       "type": "operating",
       "secondary": "museum",
       "band": "local",
@@ -1730,7 +1691,8 @@
     {
       "slug": "east-anglian-railway-museum",
       "name": "East Anglian Railway Museum",
-      "fetched_at": "2026-07-30T06:32:09.031Z",
+      "display_name": "East Anglian Railway Museum",
+      "fetched_at": "2026-07-30T07:41:17.885Z",
       "type": "museum",
       "secondary": null,
       "band": "micro",
@@ -1770,7 +1732,8 @@
     {
       "slug": "east-anglian-transport-museum-tramway",
       "name": "East Anglian Transport Museum Tramway",
-      "fetched_at": "2026-07-30T06:32:10.188Z",
+      "display_name": "East Anglian Transport Museum Tramway",
+      "fetched_at": "2026-07-30T07:41:19.079Z",
       "type": "tramway",
       "secondary": null,
       "band": "micro",
@@ -1813,7 +1776,8 @@
     {
       "slug": "east-hill-cliff-railway",
       "name": "East Hill Cliff Railway",
-      "fetched_at": "2026-07-30T06:32:12.572Z",
+      "display_name": "East Hill Cliff Railway",
+      "fetched_at": "2026-07-30T07:41:24.022Z",
       "type": "funicular",
       "secondary": null,
       "band": "micro",
@@ -1849,7 +1813,8 @@
     {
       "slug": "east-kent-railway",
       "name": "East Kent Railway",
-      "fetched_at": "2026-07-30T06:32:13.552Z",
+      "display_name": "East Kent Railway",
+      "fetched_at": "2026-07-30T07:41:25.081Z",
       "type": "operating",
       "secondary": null,
       "band": "regional",
@@ -1885,7 +1850,8 @@
     {
       "slug": "east-lancashire-railway",
       "name": "East Lancashire Railway",
-      "fetched_at": "2026-07-30T06:32:14.580Z",
+      "display_name": "East Lancashire Railway",
+      "fetched_at": "2026-07-30T07:41:26.097Z",
       "type": "operating",
       "secondary": null,
       "band": "trunk",
@@ -1925,7 +1891,8 @@
     {
       "slug": "east-somerset-railway",
       "name": "East Somerset Railway",
-      "fetched_at": "2026-07-30T06:32:15.688Z",
+      "display_name": "East Somerset Railway",
+      "fetched_at": "2026-07-30T07:41:27.149Z",
       "type": "operating",
       "secondary": null,
       "band": "regional",
@@ -1960,7 +1927,8 @@
     {
       "slug": "east-suffolk-light-railway",
       "name": "East Suffolk Light Railway",
-      "fetched_at": "2026-07-30T06:32:16.669Z",
+      "display_name": "East Suffolk Light Railway",
+      "fetched_at": "2026-07-30T07:41:28.095Z",
       "type": "operating",
       "secondary": null,
       "band": "micro",
@@ -1996,33 +1964,10 @@
       ]
     },
     {
-      "slug": "ebbw-vale-mechanical-link",
-      "name": "Ebbw Vale Mechanical Link",
-      "fetched_at": "2026-07-30T06:32:17.919Z",
-      "type": "operating",
-      "secondary": null,
-      "band": "micro",
-      "km": 0.06,
-      "hasCenter": true,
-      "aliasesTried": [],
-      "flags": [],
-      "notes": [
-        "\"Ebbw Vale Mechanical Link\": no page",
-        "\"Ebbw Vale Mechanical Link (heritage railway)\": no page",
-        "\"Ebbw Vale Mechanical Link (railway)\": no page",
-        "search hit \"Swindon Works\": rejected, 100.0km from the railway",
-        "search hit \"Great Western Railway\": unverified (no title/geo match)",
-        "search hit \"British Rail Class 150\": unverified (no title/geo match)",
-        "search hit \"South Wales Railway\": unverified (no title/geo match)",
-        "search hit \"Locomotives of the Great Western Railway\": unverified (no title/geo match)"
-      ],
-      "status": "unresolved",
-      "instance_of": []
-    },
-    {
       "slug": "ecclesbourne-valley-railway",
       "name": "Ecclesbourne Valley Railway",
-      "fetched_at": "2026-07-30T06:32:21.105Z",
+      "display_name": "Ecclesbourne Valley Railway",
+      "fetched_at": "2026-07-30T07:41:29.240Z",
       "type": "operating",
       "secondary": null,
       "band": "trunk",
@@ -2060,7 +2005,8 @@
     {
       "slug": "eden-valley-railway",
       "name": "Eden Valley Railway",
-      "fetched_at": "2026-07-30T06:32:22.152Z",
+      "display_name": "Eden Valley Railway",
+      "fetched_at": "2026-07-30T07:41:30.306Z",
       "type": "operating",
       "secondary": null,
       "band": "regional",
@@ -2096,7 +2042,8 @@
     {
       "slug": "embsay-and-bolton-abbey-steam-railway",
       "name": "Embsay & Bolton Abbey Steam Railway",
-      "fetched_at": "2026-07-30T06:32:23.198Z",
+      "display_name": "Embsay & Bolton Abbey Steam Railway",
+      "fetched_at": "2026-07-30T07:41:31.231Z",
       "type": "operating",
       "secondary": null,
       "band": "regional",
@@ -2134,7 +2081,8 @@
     {
       "slug": "epping-ongar-railway",
       "name": "Epping Ongar Railway",
-      "fetched_at": "2026-07-30T06:32:24.238Z",
+      "display_name": "Epping Ongar Railway",
+      "fetched_at": "2026-07-30T07:41:32.218Z",
       "type": "operating",
       "secondary": null,
       "band": "regional",
@@ -2172,7 +2120,8 @@
     {
       "slug": "evesham-vale-light-railway",
       "name": "Evesham Vale Light Railway",
-      "fetched_at": "2026-07-30T06:32:25.260Z",
+      "display_name": "Evesham Vale Light Railway",
+      "fetched_at": "2026-07-30T07:41:33.271Z",
       "type": "operating",
       "secondary": null,
       "band": "local",
@@ -2212,7 +2161,8 @@
     {
       "slug": "fairbourne-railway",
       "name": "Fairbourne Railway",
-      "fetched_at": "2026-07-30T06:32:26.247Z",
+      "display_name": "Fairbourne Railway",
+      "fetched_at": "2026-07-30T07:41:34.359Z",
       "type": "operating",
       "secondary": null,
       "band": "micro",
@@ -2250,29 +2200,24 @@
     {
       "slug": "fawley-museum-society-limited",
       "name": "Fawley Museum Society Limited",
-      "fetched_at": "2026-07-30T06:32:27.230Z",
+      "display_name": "Fawley Hill Railway",
+      "fetched_at": "2026-07-30T07:41:35.698Z",
       "type": "museum",
       "secondary": null,
       "band": "local",
       "km": 1.11,
       "hasCenter": true,
       "aliasesTried": [],
-      "flags": [
-        "geo-only-title-differs"
-      ],
-      "notes": [
-        "\"Fawley Museum Society Limited\": no page",
-        "\"Fawley Museum Society Limited (heritage railway)\": no page",
-        "\"Fawley Museum Society Limited (railway)\": no page"
-      ],
+      "flags": [],
+      "notes": [],
       "status": "matched",
       "wikipedia_title": "Fawley Hill Railway",
       "wikipedia_url": "https://en.wikipedia.org/wiki/Fawley_Hill_Railway",
-      "confidence": "geo",
+      "confidence": "title+geo",
       "distanceKm": 0.6155609254079767,
       "rest_description": "Privately owned heritage railway in Buckinghamshire, England",
       "extract": "Fawley Hill Railway is a privately owned heritage railway on the Fawley Hill estate of the late Sir William McAlpine at Fawley in Buckinghamshire, England.",
-      "matched_candidate": "search:\"Fawley Museum Society Limited heritage railway\"→\"Fawley Hill Railway\"",
+      "matched_candidate": "Fawley Hill Railway",
       "qid": "Q57812673",
       "website": null,
       "wikidata_description": "privately owned heritage railway in Buckinghamshire, England",
@@ -2292,7 +2237,8 @@
     {
       "slug": "fen-railway",
       "name": "Fen Railway",
-      "fetched_at": "2026-07-30T06:32:29.480Z",
+      "display_name": "Fen Railway",
+      "fetched_at": "2026-07-30T07:41:36.651Z",
       "type": "operating",
       "secondary": null,
       "band": "local",
@@ -2307,8 +2253,8 @@
         "search hit \"King's Lynn railway station\": rejected, 60.8km from the railway",
         "search hit \"Downham Market railway station\": rejected, 53.2km from the railway",
         "search hit \"Cambridge railway station\": rejected, 66.3km from the railway",
-        "search hit \"North Yorkshire Moors Railway\": unverified (no title/geo match)",
-        "search hit \"Bluebell Railway\": rejected, 168.3km from the railway"
+        "search hit \"Bluebell Railway\": rejected, 168.3km from the railway",
+        "search hit \"North Yorkshire Moors Railway\": unverified (no title/geo match)"
       ],
       "status": "unresolved",
       "instance_of": []
@@ -2316,7 +2262,8 @@
     {
       "slug": "fenland-light-railway",
       "name": "Fenland Light Railway",
-      "fetched_at": "2026-07-30T06:32:31.883Z",
+      "display_name": "Fenland Light Railway",
+      "fetched_at": "2026-07-30T07:41:41.479Z",
       "type": "operating",
       "secondary": null,
       "band": "micro",
@@ -2342,7 +2289,8 @@
     {
       "slug": "ffestiniog-railway",
       "name": "Ffestiniog Railway",
-      "fetched_at": "2026-07-30T06:32:34.216Z",
+      "display_name": "Ffestiniog Railway",
+      "fetched_at": "2026-07-30T07:41:45.148Z",
       "type": "operating",
       "secondary": null,
       "band": "trunk",
@@ -2383,7 +2331,8 @@
     {
       "slug": "fishermans-walk-cliff-lift",
       "name": "Fisherman's Walk Cliff Lift",
-      "fetched_at": "2026-07-30T06:32:35.589Z",
+      "display_name": "Fisherman's Walk Cliff Lift",
+      "fetched_at": "2026-07-30T07:41:46.234Z",
       "type": "funicular",
       "secondary": null,
       "band": "micro",
@@ -2425,7 +2374,8 @@
     {
       "slug": "foxfield-light-railway",
       "name": "Foxfield Light Railway",
-      "fetched_at": "2026-07-30T06:32:37.793Z",
+      "display_name": "Foxfield Light Railway",
+      "fetched_at": "2026-07-30T07:41:49.755Z",
       "type": "operating",
       "secondary": null,
       "band": "regional",
@@ -2463,82 +2413,10 @@
       ]
     },
     {
-      "slug": "gbrf",
-      "name": "GBRf",
-      "fetched_at": "2026-07-30T06:32:38.872Z",
-      "type": "operating",
-      "secondary": null,
-      "band": "local",
-      "km": 2.56,
-      "hasCenter": true,
-      "aliasesTried": [],
-      "flags": [],
-      "notes": [
-        "\"GBRf\" → \"GB Railfreight\": unverified (no title/geo match)",
-        "\"GBRf (heritage railway)\": no page",
-        "\"GBRf (railway)\": no page",
-        "search hit \"GB Railfreight\": unverified (no title/geo match)",
-        "search hit \"Severn Valley Railway\": rejected, 140.2km from the railway",
-        "search hit \"British Rail Class 66\": unverified (no title/geo match)",
-        "search hit \"British Rail Class 73\": unverified (no title/geo match)",
-        "search hit \"British Rail Class 57\": unverified (no title/geo match)"
-      ],
-      "status": "unresolved",
-      "instance_of": []
-    },
-    {
-      "slug": "gwr-worcester-to-leominster",
-      "name": "GWR Worcester to Leominster",
-      "fetched_at": "2026-07-30T06:32:41.316Z",
-      "type": "operating",
-      "secondary": null,
-      "band": "micro",
-      "km": 0.5,
-      "hasCenter": true,
-      "aliasesTried": [],
-      "flags": [
-        "geo-only-title-differs",
-        "historic-company",
-        "wrong-entity-class"
-      ],
-      "notes": [
-        "\"GWR Worcester to Leominster\": no page",
-        "\"GWR Worcester to Leominster (heritage railway)\": no page",
-        "\"GWR Worcester to Leominster (railway)\": no page",
-        "search hit \"Severn Valley Railway\": rejected, 28.8km from the railway",
-        "search hit \"Worcester Shrub Hill railway station\": rejected, 23.2km from the railway",
-        "search hit \"Worcestershire Parkway railway station\": rejected, 27.1km from the railway",
-        "search hit \"Birmingham to Worcester via Kidderminster line\": unverified (no title/geo match)"
-      ],
-      "status": "matched",
-      "wikipedia_title": "Rowden Mill railway station",
-      "wikipedia_url": "https://en.wikipedia.org/wiki/Rowden_Mill_railway_station",
-      "confidence": "geo",
-      "distanceKm": 0.24544367591127336,
-      "rest_description": "Disused railway station in Herefordshire, England",
-      "extract": "Rowden Mill railway station was a stop on the Worcester, Bromyard and Leominster Railway; it served an area to the north-west of Bromyard, in Herefordshire, England.",
-      "matched_candidate": "search:\"GWR Worcester to Leominster heritage railway\"→\"Rowden Mill railway station\"",
-      "qid": "Q7371849",
-      "website": null,
-      "wikidata_description": "railway station in Herefordshire, England, UK, now closed",
-      "wikidata_label": "Rowden Mill railway station",
-      "sitelink": "Rowden Mill railway station",
-      "instance_of_qids": [
-        "Q55488"
-      ],
-      "wikidata_coordinates": {
-        "lat": 52.2057,
-        "lon": -2.5469
-      },
-      "instance_of": [
-        "railway station"
-      ],
-      "wrong_entity_class": "railway station"
-    },
-    {
       "slug": "gartell-light-railway",
       "name": "Gartell Light Railway",
-      "fetched_at": "2026-07-30T06:32:44.491Z",
+      "display_name": "Gartell Light Railway",
+      "fetched_at": "2026-07-30T07:41:50.721Z",
       "type": "operating",
       "secondary": null,
       "band": "local",
@@ -2574,7 +2452,8 @@
     {
       "slug": "great-bush-railway",
       "name": "Great Bush Railway",
-      "fetched_at": "2026-07-30T06:32:45.512Z",
+      "display_name": "Great Bush Railway",
+      "fetched_at": "2026-07-30T07:41:51.659Z",
       "type": "operating",
       "secondary": null,
       "band": "micro",
@@ -2607,7 +2486,8 @@
     {
       "slug": "great-central-railway",
       "name": "Great Central Railway",
-      "fetched_at": "2026-07-30T06:32:46.549Z",
+      "display_name": "Great Central Railway",
+      "fetched_at": "2026-07-30T07:41:52.694Z",
       "type": "operating",
       "secondary": null,
       "band": "trunk",
@@ -2643,7 +2523,8 @@
     {
       "slug": "great-central-railway-nottingham",
       "name": "Great Central Railway (Nottingham)",
-      "fetched_at": "2026-07-30T06:32:47.495Z",
+      "display_name": "Great Central Railway (Nottingham)",
+      "fetched_at": "2026-07-30T07:41:53.739Z",
       "type": "operating",
       "secondary": null,
       "band": "trunk",
@@ -2679,7 +2560,8 @@
     {
       "slug": "great-orme-tramway",
       "name": "Great Orme Tramway",
-      "fetched_at": "2026-07-30T06:32:48.478Z",
+      "display_name": "Great Orme Tramway",
+      "fetched_at": "2026-07-30T07:41:54.829Z",
       "type": "tramway",
       "secondary": null,
       "band": "local",
@@ -2717,7 +2599,8 @@
     {
       "slug": "gwili-railway",
       "name": "Gwili Railway",
-      "fetched_at": "2026-07-30T06:32:49.693Z",
+      "display_name": "Gwili Railway",
+      "fetched_at": "2026-07-30T07:41:56.027Z",
       "type": "operating",
       "secondary": null,
       "band": "regional",
@@ -2757,7 +2640,8 @@
     {
       "slug": "halesworth-to-southwold-narrow-gauge-railway-cio",
       "name": "Halesworth to Southwold Narrow Gauge Railway CIO",
-      "fetched_at": "2026-07-30T06:32:50.742Z",
+      "display_name": "Halesworth to Southwold Narrow Gauge Railway",
+      "fetched_at": "2026-07-30T07:41:57.052Z",
       "type": "operating",
       "secondary": null,
       "band": "micro",
@@ -2768,9 +2652,17 @@
         "no-center"
       ],
       "notes": [
+        "\"Halesworth to Southwold Narrow Gauge Railway\": no page",
+        "\"Halesworth to Southwold Narrow Gauge Railway (heritage railway)\": no page",
+        "\"Halesworth to Southwold Narrow Gauge Railway (railway)\": no page",
         "\"Halesworth to Southwold Narrow Gauge Railway CIO\": no page",
         "\"Halesworth to Southwold Narrow Gauge Railway CIO (heritage railway)\": no page",
-        "\"Halesworth to Southwold Narrow Gauge Railway CIO (railway)\": no page"
+        "\"Halesworth to Southwold Narrow Gauge Railway CIO (railway)\": no page",
+        "search hit \"British narrow-gauge railways\": unverified (no title/geo match)",
+        "search hit \"Southwold Railway\": unverified (no title/geo match)",
+        "search hit \"Southwold\": unverified (no title/geo match)",
+        "search hit \"Mid-Suffolk Light Railway\": unverified (no title/geo match)",
+        "search hit \"List of closed railway lines in the United Kingdom\": unverified (no title/geo match)"
       ],
       "status": "unresolved",
       "instance_of": []
@@ -2778,7 +2670,8 @@
     {
       "slug": "hayling-seaside-railway",
       "name": "Hayling Seaside Railway",
-      "fetched_at": "2026-07-30T06:32:51.785Z",
+      "display_name": "Hayling Seaside Railway",
+      "fetched_at": "2026-07-30T07:42:04.627Z",
       "type": "operating",
       "secondary": null,
       "band": "local",
@@ -2816,7 +2709,8 @@
     {
       "slug": "heatherslaw-light-railway",
       "name": "Heatherslaw Light Railway",
-      "fetched_at": "2026-07-30T06:32:52.745Z",
+      "display_name": "Heatherslaw Light Railway",
+      "fetched_at": "2026-07-30T07:42:05.672Z",
       "type": "operating",
       "secondary": null,
       "band": "regional",
@@ -2855,7 +2749,8 @@
     {
       "slug": "heaton-park-tramway",
       "name": "Heaton Park Tramway",
-      "fetched_at": "2026-07-30T06:32:53.721Z",
+      "display_name": "Heaton Park Tramway",
+      "fetched_at": "2026-07-30T07:42:06.633Z",
       "type": "tramway",
       "secondary": null,
       "band": "local",
@@ -2893,7 +2788,8 @@
     {
       "slug": "helston-railway",
       "name": "Helston Railway",
-      "fetched_at": "2026-07-30T06:32:54.691Z",
+      "display_name": "Helston Railway",
+      "fetched_at": "2026-07-30T07:42:07.583Z",
       "type": "operating",
       "secondary": null,
       "band": "local",
@@ -2931,7 +2827,8 @@
     {
       "slug": "hollycombe-quarry-railway",
       "name": "Hollycombe Quarry Railway",
-      "fetched_at": "2026-07-30T06:32:55.809Z",
+      "display_name": "Hollycombe Quarry Railway",
+      "fetched_at": "2026-07-30T07:42:08.767Z",
       "type": "operating",
       "secondary": null,
       "band": "local",
@@ -2955,7 +2852,8 @@
     {
       "slug": "hythe-pier-railway",
       "name": "Hythe Pier Railway",
-      "fetched_at": "2026-07-30T06:32:58.093Z",
+      "display_name": "Hythe Pier Railway",
+      "fetched_at": "2026-07-30T07:42:14.510Z",
       "type": "operating",
       "secondary": null,
       "band": "micro",
@@ -2997,7 +2895,8 @@
     {
       "slug": "isle-of-wight-steam-railway",
       "name": "Isle of Wight Steam Railway",
-      "fetched_at": "2026-07-30T06:32:59.697Z",
+      "display_name": "Isle of Wight Steam Railway",
+      "fetched_at": "2026-07-30T07:42:15.627Z",
       "type": "operating",
       "secondary": null,
       "band": "regional",
@@ -3034,7 +2933,8 @@
     {
       "slug": "keighley-and-worth-valley-railway",
       "name": "Keighley & Worth Valley Railway",
-      "fetched_at": "2026-07-30T06:33:00.720Z",
+      "display_name": "Keighley & Worth Valley Railway",
+      "fetched_at": "2026-07-30T07:42:16.677Z",
       "type": "operating",
       "secondary": null,
       "band": "regional",
@@ -3075,7 +2975,8 @@
     {
       "slug": "keith-and-dufftown-railway",
       "name": "Keith and Dufftown Railway",
-      "fetched_at": "2026-07-30T06:33:01.802Z",
+      "display_name": "Keith and Dufftown Railway",
+      "fetched_at": "2026-07-30T07:42:17.712Z",
       "type": "operating",
       "secondary": null,
       "band": "trunk",
@@ -3116,7 +3017,8 @@
     {
       "slug": "kent-and-east-sussex-railway",
       "name": "Kent and East Sussex Railway",
-      "fetched_at": "2026-07-30T06:33:03.053Z",
+      "display_name": "Kent and East Sussex Railway",
+      "fetched_at": "2026-07-30T07:42:18.794Z",
       "type": "operating",
       "secondary": null,
       "band": "trunk",
@@ -3157,25 +3059,24 @@
     {
       "slug": "kingdom-of-fife-railway-preservation-society",
       "name": "Kingdom of Fife Railway Preservation Society",
-      "fetched_at": "2026-07-30T06:33:04.189Z",
+      "display_name": "Fife Heritage Railway",
+      "fetched_at": "2026-07-30T07:42:19.916Z",
       "type": "museum",
       "secondary": null,
       "band": "micro",
       "km": 0.93,
       "hasCenter": true,
       "aliasesTried": [],
-      "flags": [
-        "geo-only-title-differs"
-      ],
+      "flags": [],
       "notes": [],
       "status": "matched",
       "wikipedia_title": "Fife Heritage Railway",
       "wikipedia_url": "https://en.wikipedia.org/wiki/Fife_Heritage_Railway",
-      "confidence": "geo",
+      "confidence": "title+geo",
       "distanceKm": 0.9530366943727883,
       "rest_description": "Heritage railway line in Scotland",
       "extract": "Fife Heritage Railway is a heritage railway run by The Kingdom of Fife Railway Preservation Society, formed in 1992, which aims to showcase the heritage of the railways of Fife and restore locomotives and rolling stock that once worked in Fife. They are based in Levenmouth, Scotland which has been their base since 2003.",
-      "matched_candidate": "Kingdom of Fife Railway Preservation Society",
+      "matched_candidate": "Fife Heritage Railway",
       "qid": "Q21997511",
       "website": "http://www.fifeheritagerailway.co.uk/",
       "wikidata_description": "railway in Fife, Scotland, UK",
@@ -3195,7 +3096,8 @@
     {
       "slug": "kingsbridge-and-district-light-railway",
       "name": "Kingsbridge and District Light Railway",
-      "fetched_at": "2026-07-30T06:33:05.260Z",
+      "display_name": "Kingsbridge and District Light Railway",
+      "fetched_at": "2026-07-30T07:42:20.969Z",
       "type": "operating",
       "secondary": null,
       "band": "micro",
@@ -3245,7 +3147,8 @@
     {
       "slug": "lakeside-and-haverthwaite-railway",
       "name": "Lakeside and Haverthwaite Railway",
-      "fetched_at": "2026-07-30T06:33:08.440Z",
+      "display_name": "Lakeside and Haverthwaite Railway",
+      "fetched_at": "2026-07-30T07:42:24.984Z",
       "type": "operating",
       "secondary": null,
       "band": "regional",
@@ -3281,7 +3184,8 @@
     {
       "slug": "lappa-valley-steam-railway",
       "name": "Lappa Valley Steam Railway",
-      "fetched_at": "2026-07-30T06:33:09.446Z",
+      "display_name": "Lappa Valley Steam Railway",
+      "fetched_at": "2026-07-30T07:42:26.028Z",
       "type": "operating",
       "secondary": null,
       "band": "local",
@@ -3319,7 +3223,8 @@
     {
       "slug": "lathalmond-railway",
       "name": "Lathalmond Railway",
-      "fetched_at": "2026-07-30T06:33:10.400Z",
+      "display_name": "Lathalmond Railway",
+      "fetched_at": "2026-07-30T07:42:26.986Z",
       "type": "operating",
       "secondary": null,
       "band": "micro",
@@ -3338,33 +3243,10 @@
       "instance_of": []
     },
     {
-      "slug": "launceston-branch",
-      "name": "Launceston Branch",
-      "fetched_at": "2026-07-30T06:33:11.955Z",
-      "type": "operating",
-      "secondary": null,
-      "band": "micro",
-      "km": 0,
-      "hasCenter": true,
-      "aliasesTried": [],
-      "flags": [],
-      "notes": [
-        "\"Launceston Branch\": no page",
-        "\"Launceston Branch (heritage railway)\": no page",
-        "\"Launceston Branch (railway)\": no page",
-        "search hit \"List of British heritage and private railways\": unverified (no title/geo match)",
-        "search hit \"South Devon Railway Company\": unverified (no title/geo match)",
-        "search hit \"Launceston, Cornwall\": rejected, 33.8km from the railway",
-        "search hit \"Launceston railway station\": rejected, 34.3km from the railway",
-        "search hit \"List of railway stations in Cornwall\": unverified (no title/geo match)"
-      ],
-      "status": "unresolved",
-      "instance_of": []
-    },
-    {
       "slug": "launceston-steam-railway",
       "name": "Launceston Steam Railway",
-      "fetched_at": "2026-07-30T06:33:14.344Z",
+      "display_name": "Launceston Steam Railway",
+      "fetched_at": "2026-07-30T07:42:30.131Z",
       "type": "operating",
       "secondary": null,
       "band": "regional",
@@ -3402,7 +3284,8 @@
     {
       "slug": "lavender-line",
       "name": "Lavender Line",
-      "fetched_at": "2026-07-30T06:33:15.407Z",
+      "display_name": "Lavender Line",
+      "fetched_at": "2026-07-30T07:42:31.318Z",
       "type": "operating",
       "secondary": null,
       "band": "local",
@@ -3438,7 +3321,8 @@
     {
       "slug": "lea-bailey-light-railway",
       "name": "Lea Bailey Light Railway",
-      "fetched_at": "2026-07-30T06:33:16.431Z",
+      "display_name": "Lea Bailey Light Railway",
+      "fetched_at": "2026-07-30T07:42:32.320Z",
       "type": "operating",
       "secondary": null,
       "band": "micro",
@@ -3474,7 +3358,8 @@
     {
       "slug": "leadhills-and-wanlockhead-railway",
       "name": "Leadhills and Wanlockhead Railway",
-      "fetched_at": "2026-07-30T06:33:17.487Z",
+      "display_name": "Leadhills and Wanlockhead Railway",
+      "fetched_at": "2026-07-30T07:42:33.370Z",
       "type": "operating",
       "secondary": null,
       "band": "local",
@@ -3514,7 +3399,8 @@
     {
       "slug": "leighton-buzzard-light-railway",
       "name": "Leighton Buzzard Light Railway",
-      "fetched_at": "2026-07-30T06:33:18.530Z",
+      "display_name": "Leighton Buzzard Light Railway",
+      "fetched_at": "2026-07-30T07:42:34.417Z",
       "type": "operating",
       "secondary": null,
       "band": "regional",
@@ -3552,7 +3438,8 @@
     {
       "slug": "lincolnshire-coast-light-railway",
       "name": "Lincolnshire Coast Light Railway",
-      "fetched_at": "2026-07-30T06:33:19.622Z",
+      "display_name": "Lincolnshire Coast Light Railway",
+      "fetched_at": "2026-07-30T07:42:35.478Z",
       "type": "operating",
       "secondary": null,
       "band": "micro",
@@ -3588,7 +3475,8 @@
     {
       "slug": "lincolnshire-wolds-railway",
       "name": "Lincolnshire Wolds Railway",
-      "fetched_at": "2026-07-30T06:33:20.632Z",
+      "display_name": "Lincolnshire Wolds Railway",
+      "fetched_at": "2026-07-30T07:42:36.526Z",
       "type": "operating",
       "secondary": null,
       "band": "local",
@@ -3624,7 +3512,8 @@
     {
       "slug": "littledale-light-railway",
       "name": "Littledale Light Railway",
-      "fetched_at": "2026-07-30T06:33:21.672Z",
+      "display_name": "Littledale Light Railway",
+      "fetched_at": "2026-07-30T07:42:37.564Z",
       "type": "operating",
       "secondary": null,
       "band": "micro",
@@ -3668,7 +3557,8 @@
     {
       "slug": "llanberis-lake-railway",
       "name": "Llanberis Lake Railway",
-      "fetched_at": "2026-07-30T06:33:24.011Z",
+      "display_name": "Llanberis Lake Railway",
+      "fetched_at": "2026-07-30T07:42:40.734Z",
       "type": "operating",
       "secondary": null,
       "band": "regional",
@@ -3707,7 +3597,8 @@
     {
       "slug": "llanelli-and-mynydd-mawr-railway",
       "name": "Llanelli & Mynydd Mawr Railway",
-      "fetched_at": "2026-07-30T06:33:25.058Z",
+      "display_name": "Llanelli & Mynydd Mawr Railway",
+      "fetched_at": "2026-07-30T07:42:41.758Z",
       "type": "operating",
       "secondary": null,
       "band": "local",
@@ -3745,7 +3636,8 @@
     {
       "slug": "llangollen-railway",
       "name": "Llangollen Railway",
-      "fetched_at": "2026-07-30T06:33:26.087Z",
+      "display_name": "Llangollen Railway",
+      "fetched_at": "2026-07-30T07:42:42.705Z",
       "type": "operating",
       "secondary": null,
       "band": "trunk",
@@ -3779,55 +3671,10 @@
       ]
     },
     {
-      "slug": "ludgershall-branch",
-      "name": "Ludgershall Branch",
-      "fetched_at": "2026-07-30T06:33:27.129Z",
-      "type": "operating",
-      "secondary": null,
-      "band": "regional",
-      "km": 7.8,
-      "hasCenter": true,
-      "aliasesTried": [],
-      "flags": [
-        "geo-only-title-differs",
-        "wrong-entity-class"
-      ],
-      "notes": [
-        "\"Ludgershall Branch\": no page",
-        "\"Ludgershall Branch (heritage railway)\": no page",
-        "\"Ludgershall Branch (railway)\": no page"
-      ],
-      "status": "matched",
-      "wikipedia_title": "Ludgershall, Wiltshire",
-      "wikipedia_url": "https://en.wikipedia.org/wiki/Ludgershall%2C_Wiltshire",
-      "confidence": "geo",
-      "distanceKm": 10.298651997803576,
-      "rest_description": "Town in Wiltshire, England",
-      "extract": "Ludgershall is a town and civil parish 16 miles (26 km) north east of Salisbury, Wiltshire, England. It is on the A342 road between Devizes and Andover. The parish includes Faberstown which is contiguous with Ludgershall, and the hamlet of Biddesden which lies 2 miles (3.2 km) to the east, on the border with Hampshire.",
-      "matched_candidate": "search:\"Ludgershall Branch heritage railway\"→\"Ludgershall, Wiltshire\"",
-      "qid": "Q643318",
-      "website": "https://www.ludgershall-tc.gov.uk/",
-      "wikidata_description": "village and civil parish in Wiltshire, UK",
-      "wikidata_label": "Ludgershall",
-      "sitelink": "Ludgershall, Wiltshire",
-      "instance_of_qids": [
-        "Q532",
-        "Q1115575"
-      ],
-      "wikidata_coordinates": {
-        "lat": 51.2566,
-        "lon": -1.6209
-      },
-      "instance_of": [
-        "village",
-        "civil parish"
-      ],
-      "wrong_entity_class": "settlement"
-    },
-    {
       "slug": "lynton-and-barnstaple-railway",
       "name": "Lynton & Barnstaple Railway",
-      "fetched_at": "2026-07-30T06:33:29.262Z",
+      "display_name": "Lynton & Barnstaple Railway",
+      "fetched_at": "2026-07-30T07:42:43.712Z",
       "type": "operating",
       "secondary": null,
       "band": "local",
@@ -3871,7 +3718,8 @@
     {
       "slug": "lynton-and-lynmouth-cliff-railway",
       "name": "Lynton and Lynmouth Cliff Railway",
-      "fetched_at": "2026-07-30T06:33:30.315Z",
+      "display_name": "Lynton and Lynmouth Cliff Railway",
+      "fetched_at": "2026-07-30T07:42:44.730Z",
       "type": "funicular",
       "secondary": null,
       "band": "micro",
@@ -3909,7 +3757,8 @@
     {
       "slug": "mail-rail",
       "name": "Mail Rail",
-      "fetched_at": "2026-07-30T06:33:31.346Z",
+      "display_name": "Mail Rail",
+      "fetched_at": "2026-07-30T07:42:45.679Z",
       "type": "museum",
       "secondary": "operating",
       "band": "micro",
@@ -3954,7 +3803,8 @@
     {
       "slug": "mangapps-railway-museum",
       "name": "Mangapps Railway Museum",
-      "fetched_at": "2026-07-30T06:33:32.475Z",
+      "display_name": "Mangapps Railway Museum",
+      "fetched_at": "2026-07-30T07:42:46.779Z",
       "type": "museum",
       "secondary": null,
       "band": "local",
@@ -3990,7 +3840,8 @@
     {
       "slug": "mid-norfolk-railway",
       "name": "Mid-Norfolk Railway",
-      "fetched_at": "2026-07-30T06:33:33.437Z",
+      "display_name": "Mid-Norfolk Railway",
+      "fetched_at": "2026-07-30T07:42:47.749Z",
       "type": "operating",
       "secondary": null,
       "band": "trunk",
@@ -4028,7 +3879,8 @@
     {
       "slug": "mid-suffolk-light-railway",
       "name": "Mid-Suffolk Light Railway",
-      "fetched_at": "2026-07-30T06:33:34.489Z",
+      "display_name": "Mid-Suffolk Light Railway",
+      "fetched_at": "2026-07-30T07:42:48.762Z",
       "type": "operating",
       "secondary": null,
       "band": "local",
@@ -4066,7 +3918,8 @@
     {
       "slug": "middleton-railway",
       "name": "Middleton Railway",
-      "fetched_at": "2026-07-30T06:33:35.528Z",
+      "display_name": "Middleton Railway",
+      "fetched_at": "2026-07-30T07:42:49.786Z",
       "type": "operating",
       "secondary": null,
       "band": "local",
@@ -4104,7 +3957,8 @@
     {
       "slug": "midland-railway-butterley",
       "name": "Midland Railway–Butterley",
-      "fetched_at": "2026-07-30T06:33:36.568Z",
+      "display_name": "Midland Railway–Butterley",
+      "fetched_at": "2026-07-30T07:42:51.033Z",
       "type": "operating",
       "secondary": null,
       "band": "regional",
@@ -4146,7 +4000,8 @@
     {
       "slug": "mountsorrel-and-rothley-community-heritage-centre",
       "name": "Mountsorrel and Rothley Community Heritage Centre",
-      "fetched_at": "2026-07-30T06:33:38.716Z",
+      "display_name": "Mountsorrel and Rothley Community Heritage Centre",
+      "fetched_at": "2026-07-30T07:42:55.012Z",
       "type": "museum",
       "secondary": null,
       "band": "micro",
@@ -4172,7 +4027,8 @@
     {
       "slug": "national-coal-mining-museum",
       "name": "National Coal Mining Museum",
-      "fetched_at": "2026-07-30T06:33:41.089Z",
+      "display_name": "National Coal Mining Museum",
+      "fetched_at": "2026-07-30T07:43:00.632Z",
       "type": "museum",
       "secondary": null,
       "band": "micro",
@@ -4214,7 +4070,8 @@
     {
       "slug": "nene-valley-railway",
       "name": "Nene Valley Railway",
-      "fetched_at": "2026-07-30T06:33:42.261Z",
+      "display_name": "Nene Valley Railway",
+      "fetched_at": "2026-07-30T07:43:01.809Z",
       "type": "operating",
       "secondary": null,
       "band": "trunk",
@@ -4254,7 +4111,8 @@
     {
       "slug": "north-bay-railway",
       "name": "North Bay Railway",
-      "fetched_at": "2026-07-30T06:33:43.367Z",
+      "display_name": "North Bay Railway",
+      "fetched_at": "2026-07-30T07:43:02.904Z",
       "type": "operating",
       "secondary": null,
       "band": "local",
@@ -4292,7 +4150,8 @@
     {
       "slug": "north-dorset-railway",
       "name": "North Dorset Railway",
-      "fetched_at": "2026-07-30T06:33:44.379Z",
+      "display_name": "North Dorset Railway",
+      "fetched_at": "2026-07-30T07:43:03.944Z",
       "type": "operating",
       "secondary": null,
       "band": "local",
@@ -4331,7 +4190,8 @@
     {
       "slug": "north-ings-farm-railway",
       "name": "North Ings Farm Railway",
-      "fetched_at": "2026-07-30T06:33:45.411Z",
+      "display_name": "North Ings Farm Railway",
+      "fetched_at": "2026-07-30T07:43:04.965Z",
       "type": "operating",
       "secondary": null,
       "band": "micro",
@@ -4357,7 +4217,8 @@
     {
       "slug": "north-norfolk-railway",
       "name": "North Norfolk Railway",
-      "fetched_at": "2026-07-30T06:33:48.038Z",
+      "display_name": "North Norfolk Railway",
+      "fetched_at": "2026-07-30T07:43:08.727Z",
       "type": "operating",
       "secondary": null,
       "band": "trunk",
@@ -4393,7 +4254,8 @@
     {
       "slug": "north-tyneside-steam-railway",
       "name": "North Tyneside Steam Railway",
-      "fetched_at": "2026-07-30T06:33:49.112Z",
+      "display_name": "North Tyneside Steam Railway",
+      "fetched_at": "2026-07-30T07:43:09.839Z",
       "type": "operating",
       "secondary": null,
       "band": "local",
@@ -4429,7 +4291,8 @@
     {
       "slug": "north-yorkshire-moors-railway",
       "name": "North Yorkshire Moors Railway",
-      "fetched_at": "2026-07-30T06:33:50.121Z",
+      "display_name": "North Yorkshire Moors Railway",
+      "fetched_at": "2026-07-30T07:43:10.818Z",
       "type": "operating",
       "secondary": null,
       "band": "trunk",
@@ -4470,7 +4333,8 @@
     {
       "slug": "old-kiln-light-railway",
       "name": "Old Kiln Light Railway",
-      "fetched_at": "2026-07-30T06:33:51.093Z",
+      "display_name": "Old Kiln Light Railway",
+      "fetched_at": "2026-07-30T07:43:11.924Z",
       "type": "operating",
       "secondary": null,
       "band": "micro",
@@ -4506,7 +4370,8 @@
     {
       "slug": "peak-rail",
       "name": "Peak Rail",
-      "fetched_at": "2026-07-30T06:33:52.101Z",
+      "display_name": "Peak Rail",
+      "fetched_at": "2026-07-30T07:43:12.924Z",
       "type": "operating",
       "secondary": null,
       "band": "regional",
@@ -4542,7 +4407,8 @@
     {
       "slug": "perrygrove-railway",
       "name": "Perrygrove Railway",
-      "fetched_at": "2026-07-30T06:33:53.131Z",
+      "display_name": "Perrygrove Railway",
+      "fetched_at": "2026-07-30T07:43:14.071Z",
       "type": "operating",
       "secondary": null,
       "band": "local",
@@ -4578,7 +4444,8 @@
     {
       "slug": "plym-valley-railway",
       "name": "Plym Valley Railway",
-      "fetched_at": "2026-07-30T06:33:54.082Z",
+      "display_name": "Plym Valley Railway",
+      "fetched_at": "2026-07-30T07:43:15.010Z",
       "type": "operating",
       "secondary": null,
       "band": "local",
@@ -4614,7 +4481,8 @@
     {
       "slug": "pontypool-and-blaenavon-railway",
       "name": "Pontypool and Blaenavon Railway",
-      "fetched_at": "2026-07-30T06:33:55.068Z",
+      "display_name": "Pontypool and Blaenavon Railway",
+      "fetched_at": "2026-07-30T07:43:16.081Z",
       "type": "operating",
       "secondary": null,
       "band": "regional",
@@ -4649,7 +4517,8 @@
     {
       "slug": "ravenglass-and-eskdale-railway",
       "name": "Ravenglass & Eskdale Railway",
-      "fetched_at": "2026-07-30T06:33:56.049Z",
+      "display_name": "Ravenglass & Eskdale Railway",
+      "fetched_at": "2026-07-30T07:43:17.119Z",
       "type": "operating",
       "secondary": null,
       "band": "trunk",
@@ -4691,7 +4560,8 @@
     {
       "slug": "rheilffordd-dyffryn-teifi-teifi-valley-railway",
       "name": "Rheilffordd Dyffryn Teifi (Teifi Valley Railway)",
-      "fetched_at": "2026-07-30T06:33:57.139Z",
+      "display_name": "Rheilffordd Dyffryn Teifi (Teifi Valley Railway)",
+      "fetched_at": "2026-07-30T07:43:18.244Z",
       "type": "operating",
       "secondary": null,
       "band": "local",
@@ -4735,7 +4605,8 @@
     {
       "slug": "rhiw-valley-light-railway",
       "name": "Rhiw Valley Light Railway",
-      "fetched_at": "2026-07-30T06:33:59.296Z",
+      "display_name": "Rhiw Valley Light Railway",
+      "fetched_at": "2026-07-30T07:43:23.854Z",
       "type": "operating",
       "secondary": null,
       "band": "local",
@@ -4773,7 +4644,8 @@
     {
       "slug": "ribble-steam-railway",
       "name": "Ribble Steam Railway",
-      "fetched_at": "2026-07-30T06:34:00.315Z",
+      "display_name": "Ribble Steam Railway",
+      "fetched_at": "2026-07-30T07:43:24.837Z",
       "type": "operating",
       "secondary": null,
       "band": "regional",
@@ -4811,7 +4683,8 @@
     {
       "slug": "romney-hythe-and-dymchurch-railway",
       "name": "Romney, Hythe & Dymchurch Railway",
-      "fetched_at": "2026-07-30T06:34:01.272Z",
+      "display_name": "Romney, Hythe & Dymchurch Railway",
+      "fetched_at": "2026-07-30T07:43:25.802Z",
       "type": "operating",
       "secondary": null,
       "band": "trunk",
@@ -4856,7 +4729,8 @@
     {
       "slug": "rother-valley-railway",
       "name": "Rother Valley Railway",
-      "fetched_at": "2026-07-30T06:34:02.348Z",
+      "display_name": "Rother Valley Railway",
+      "fetched_at": "2026-07-30T07:43:26.847Z",
       "type": "operating",
       "secondary": null,
       "band": "local",
@@ -4893,7 +4767,8 @@
     {
       "slug": "royal-deeside-railway",
       "name": "Royal Deeside Railway",
-      "fetched_at": "2026-07-30T06:34:03.294Z",
+      "display_name": "Royal Deeside Railway",
+      "fetched_at": "2026-07-30T07:43:27.894Z",
       "type": "operating",
       "secondary": null,
       "band": "local",
@@ -4929,7 +4804,8 @@
     {
       "slug": "saltburn-cliff-lift",
       "name": "Saltburn Cliff Lift",
-      "fetched_at": "2026-07-30T06:34:04.321Z",
+      "display_name": "Saltburn Cliff Lift",
+      "fetched_at": "2026-07-30T07:43:28.940Z",
       "type": "funicular",
       "secondary": null,
       "band": "micro",
@@ -4967,7 +4843,8 @@
     {
       "slug": "seaton-tramway",
       "name": "Seaton Tramway",
-      "fetched_at": "2026-07-30T06:34:05.329Z",
+      "display_name": "Seaton Tramway",
+      "fetched_at": "2026-07-30T07:43:29.874Z",
       "type": "tramway",
       "secondary": null,
       "band": "regional",
@@ -5005,7 +4882,8 @@
     {
       "slug": "severn-valley-railway",
       "name": "Severn Valley Railway",
-      "fetched_at": "2026-07-30T06:34:06.306Z",
+      "display_name": "Severn Valley Railway",
+      "fetched_at": "2026-07-30T07:43:30.885Z",
       "type": "operating",
       "secondary": null,
       "band": "trunk",
@@ -5043,7 +4921,8 @@
     {
       "slug": "severn-and-wye-line",
       "name": "Severn and Wye Line",
-      "fetched_at": "2026-07-30T06:34:07.374Z",
+      "display_name": "Severn and Wye Line",
+      "fetched_at": "2026-07-30T07:43:31.990Z",
       "type": "operating",
       "secondary": null,
       "band": "micro",
@@ -5095,29 +4974,24 @@
     {
       "slug": "shipley-glen-tramway-preservation-co-ltd",
       "name": "Shipley Glen Tramway Preservation Co Ltd.",
-      "fetched_at": "2026-07-30T06:34:10.458Z",
+      "display_name": "Shipley Glen Tramway",
+      "fetched_at": "2026-07-30T07:43:38.752Z",
       "type": "tramway",
       "secondary": null,
       "band": "micro",
       "km": 0.35,
       "hasCenter": true,
       "aliasesTried": [],
-      "flags": [
-        "geo-only-title-differs"
-      ],
-      "notes": [
-        "\"Shipley Glen Tramway Preservation Co Ltd.\": no page",
-        "\"Shipley Glen Tramway Preservation Co Ltd. (heritage railway)\": no page",
-        "\"Shipley Glen Tramway Preservation Co Ltd. (railway)\": no page"
-      ],
+      "flags": [],
+      "notes": [],
       "status": "matched",
       "wikipedia_title": "Shipley Glen Tramway",
       "wikipedia_url": "https://en.wikipedia.org/wiki/Shipley_Glen_Tramway",
-      "confidence": "geo",
+      "confidence": "title+geo",
       "distanceKm": 0.45252712028294845,
       "rest_description": "Tramway in West Yorkshire, England",
       "extract": "The Shipley Glen Tramway is a preserved cable funicular tramway located in the wooded area of Shipley Glen near the town of Baildon and the village of Saltaire, West Yorkshire, England.",
-      "matched_candidate": "search:\"Shipley Glen Tramway Preservation Co Ltd. heritage railway\"→\"Shipley Glen Tramway\"",
+      "matched_candidate": "Shipley Glen Tramway",
       "qid": "Q7498020",
       "website": null,
       "wikidata_description": "tramway in West Yorkshire, England",
@@ -5135,33 +5009,10 @@
       ]
     },
     {
-      "slug": "siding-10",
-      "name": "Siding 10",
-      "fetched_at": "2026-07-30T06:34:12.595Z",
-      "type": "operating",
-      "secondary": null,
-      "band": "micro",
-      "km": 0,
-      "hasCenter": true,
-      "aliasesTried": [],
-      "flags": [],
-      "notes": [
-        "\"Siding 10\": no page",
-        "\"Siding 10 (heritage railway)\": no page",
-        "\"Siding 10 (railway)\": no page",
-        "search hit \"Great Central Railway (heritage railway)\": unverified (no title/geo match)",
-        "search hit \"Talyllyn Railway\": rejected, 144.3km from the railway",
-        "search hit \"Swanage Railway\": rejected, 228.0km from the railway",
-        "search hit \"Dartmouth Steam Railway\": rejected, 278.3km from the railway",
-        "search hit \"Bomaderry railway station\": rejected, 17085.1km from the railway"
-      ],
-      "status": "unresolved",
-      "instance_of": []
-    },
-    {
       "slug": "sittingbourne-and-kemsley-light-railway",
       "name": "Sittingbourne and Kemsley Light Railway",
-      "fetched_at": "2026-07-30T06:34:14.970Z",
+      "display_name": "Sittingbourne and Kemsley Light Railway",
+      "fetched_at": "2026-07-30T07:43:39.679Z",
       "type": "operating",
       "secondary": null,
       "band": "local",
@@ -5199,7 +5050,8 @@
     {
       "slug": "snowdon-mountain-railway",
       "name": "Snowdon Mountain Railway",
-      "fetched_at": "2026-07-30T06:34:15.944Z",
+      "display_name": "Snowdon Mountain Railway",
+      "fetched_at": "2026-07-30T07:43:40.860Z",
       "type": "operating",
       "secondary": null,
       "band": "regional",
@@ -5237,7 +5089,8 @@
     {
       "slug": "somerset-and-dorset-railway-heritage-trust",
       "name": "Somerset & Dorset Railway Heritage Trust",
-      "fetched_at": "2026-07-30T06:34:17.052Z",
+      "display_name": "Somerset & Dorset Railway Heritage Trust",
+      "fetched_at": "2026-07-30T07:43:42.135Z",
       "type": "operating",
       "secondary": null,
       "band": "local",
@@ -5269,7 +5122,8 @@
     {
       "slug": "south-cliff-lift",
       "name": "South Cliff Lift",
-      "fetched_at": "2026-07-30T06:34:18.032Z",
+      "display_name": "South Cliff Lift",
+      "fetched_at": "2026-07-30T07:43:43.114Z",
       "type": "funicular",
       "secondary": null,
       "band": "micro",
@@ -5309,7 +5163,8 @@
     {
       "slug": "south-devon-railway",
       "name": "South Devon Railway",
-      "fetched_at": "2026-07-30T06:34:19.182Z",
+      "display_name": "South Devon Railway",
+      "fetched_at": "2026-07-30T07:43:44.159Z",
       "type": "operating",
       "secondary": null,
       "band": "trunk",
@@ -5349,7 +5204,8 @@
     {
       "slug": "south-tynedale-railway",
       "name": "South Tynedale Railway",
-      "fetched_at": "2026-07-30T06:34:20.392Z",
+      "display_name": "South Tynedale Railway",
+      "fetched_at": "2026-07-30T07:43:45.448Z",
       "type": "operating",
       "secondary": null,
       "band": "regional",
@@ -5387,7 +5243,8 @@
     {
       "slug": "southend-cliff-lift",
       "name": "Southend Cliff Lift",
-      "fetched_at": "2026-07-30T06:34:21.321Z",
+      "display_name": "Southend Cliff Lift",
+      "fetched_at": "2026-07-30T07:43:46.606Z",
       "type": "funicular",
       "secondary": null,
       "band": "micro",
@@ -5431,7 +5288,8 @@
     {
       "slug": "southend-pier-railway",
       "name": "Southend Pier Railway",
-      "fetched_at": "2026-07-30T06:34:23.531Z",
+      "display_name": "Southend Pier Railway",
+      "fetched_at": "2026-07-30T07:43:51.392Z",
       "type": "operating",
       "secondary": null,
       "band": "local",
@@ -5467,7 +5325,8 @@
     {
       "slug": "spa-valley-railway",
       "name": "Spa Valley Railway",
-      "fetched_at": "2026-07-30T06:34:24.578Z",
+      "display_name": "Spa Valley Railway",
+      "fetched_at": "2026-07-30T07:43:52.365Z",
       "type": "operating",
       "secondary": null,
       "band": "regional",
@@ -5503,7 +5362,8 @@
     {
       "slug": "stainmore-railway",
       "name": "Stainmore Railway",
-      "fetched_at": "2026-07-30T06:34:25.639Z",
+      "display_name": "Stainmore Railway",
+      "fetched_at": "2026-07-30T07:43:53.318Z",
       "type": "operating",
       "secondary": null,
       "band": "micro",
@@ -5542,7 +5402,8 @@
     {
       "slug": "steeple-grange-light-railway",
       "name": "Steeple Grange Light Railway",
-      "fetched_at": "2026-07-30T06:34:27.897Z",
+      "display_name": "Steeple Grange Light Railway",
+      "fetched_at": "2026-07-30T07:43:57.277Z",
       "type": "operating",
       "secondary": null,
       "band": "micro",
@@ -5580,7 +5441,8 @@
     {
       "slug": "strathspey-railway",
       "name": "Strathspey Railway",
-      "fetched_at": "2026-07-30T06:34:28.950Z",
+      "display_name": "Strathspey Railway",
+      "fetched_at": "2026-07-30T07:43:58.302Z",
       "type": "operating",
       "secondary": null,
       "band": "trunk",
@@ -5620,7 +5482,8 @@
     {
       "slug": "swanage-railway",
       "name": "Swanage Railway",
-      "fetched_at": "2026-07-30T06:34:31.029Z",
+      "display_name": "Swanage Railway",
+      "fetched_at": "2026-07-30T07:44:01.291Z",
       "type": "operating",
       "secondary": null,
       "band": "trunk",
@@ -5660,7 +5523,8 @@
     {
       "slug": "swindon-and-cricklade-railway",
       "name": "Swindon and Cricklade Railway",
-      "fetched_at": "2026-07-30T06:34:32.083Z",
+      "display_name": "Swindon and Cricklade Railway",
+      "fetched_at": "2026-07-30T07:44:02.382Z",
       "type": "operating",
       "secondary": null,
       "band": "regional",
@@ -5698,7 +5562,8 @@
     {
       "slug": "talyllyn-railway",
       "name": "Talyllyn Railway",
-      "fetched_at": "2026-07-30T06:34:33.103Z",
+      "display_name": "Talyllyn Railway",
+      "fetched_at": "2026-07-30T07:44:03.545Z",
       "type": "operating",
       "secondary": null,
       "band": "trunk",
@@ -5741,7 +5606,8 @@
     {
       "slug": "tanat-valley-light-railway",
       "name": "Tanat Valley Light Railway",
-      "fetched_at": "2026-07-30T06:34:34.174Z",
+      "display_name": "Tanat Valley Light Railway",
+      "fetched_at": "2026-07-30T07:44:04.594Z",
       "type": "operating",
       "secondary": null,
       "band": "local",
@@ -5778,7 +5644,8 @@
     {
       "slug": "tanfield-railway",
       "name": "Tanfield Railway",
-      "fetched_at": "2026-07-30T06:34:35.142Z",
+      "display_name": "Tanfield Railway",
+      "fetched_at": "2026-07-30T07:44:05.523Z",
       "type": "operating",
       "secondary": null,
       "band": "regional",
@@ -5816,7 +5683,8 @@
     {
       "slug": "tarka-valley-railway",
       "name": "Tarka Valley Railway",
-      "fetched_at": "2026-07-30T06:34:36.147Z",
+      "display_name": "Tarka Valley Railway",
+      "fetched_at": "2026-07-30T07:44:06.692Z",
       "type": "operating",
       "secondary": null,
       "band": "micro",
@@ -5852,7 +5720,8 @@
     {
       "slug": "telford-steam-railway",
       "name": "Telford Steam Railway",
-      "fetched_at": "2026-07-30T06:34:37.169Z",
+      "display_name": "Telford Steam Railway",
+      "fetched_at": "2026-07-30T07:44:07.736Z",
       "type": "operating",
       "secondary": null,
       "band": "local",
@@ -5888,56 +5757,45 @@
     {
       "slug": "the-crossness-engines-trust",
       "name": "The Crossness Engines Trust",
-      "fetched_at": "2026-07-30T06:34:38.217Z",
+      "display_name": "Crossness Pumping Station",
+      "fetched_at": "2026-07-30T07:44:08.988Z",
       "type": "museum",
       "secondary": null,
       "band": "micro",
       "km": 0.49,
       "hasCenter": true,
       "aliasesTried": [],
-      "flags": [
-        "geo-only-title-differs",
-        "wrong-entity-class"
-      ],
-      "notes": [
-        "\"The Crossness Engines Trust\": no page",
-        "\"The Crossness Engines Trust (heritage railway)\": no page",
-        "\"The Crossness Engines Trust (railway)\": no page",
-        "search hit \"Rimutaka Incline Railway Heritage Trust\": rejected, 18797.1km from the railway"
-      ],
+      "flags": [],
+      "notes": [],
       "status": "matched",
-      "wikipedia_title": "London King's Cross railway station",
-      "wikipedia_url": "https://en.wikipedia.org/wiki/London_King's_Cross_railway_station",
-      "confidence": "geo",
-      "distanceKm": 18.129871466697026,
-      "rest_description": "Railway station in London",
-      "extract": "King's Cross railway station, also known as London King's Cross, is a passenger railway terminus in the London Borough of Camden, on the edge of Central London. It is one of the busiest stations in the United Kingdom and the southern terminus of the East Coast Main Line to Yorkshire and the Humber, North East England and Scotland. Adjacent to King's Cross station is St Pancras International, the London terminus for Eurostar services to continental Europe as well as other national lines. Beneath both main line stations is King's Cross St Pancras tube station on the London Underground; combined, they form one of the country's largest and busiest transport hubs.",
-      "matched_candidate": "search:\"The Crossness Engines Trust heritage railway\"→\"London King's Cross railway station\"",
-      "qid": "Q219867",
-      "website": "http://www.nationalrail.co.uk/stations_destinations/KGX.aspx",
-      "wikidata_description": "railway station in the London Borough of Camden, England, UK",
-      "wikidata_label": "London King's Cross railway station",
-      "sitelink": "London King's Cross railway station",
+      "wikipedia_title": "Crossness Pumping Station",
+      "wikipedia_url": "https://en.wikipedia.org/wiki/Crossness_Pumping_Station",
+      "confidence": "title+geo",
+      "distanceKm": 0.14076526809964404,
+      "rest_description": "Sewage pumping station in London",
+      "extract": "Crossness Pumping Station is a former sewage pumping station designed by the architect Charles Henry Driver for the Metropolitan Board of Works's chief engineer Sir Joseph Bazalgette. It is located at Crossness Sewage Treatment Works, at the eastern end of the Southern Outfall Sewer and the Ridgeway path in the London Borough of Bexley. Constructed between 1859 and 1865 by William Webster, as part of Bazalgette's redevelopment of the London sewerage system, it features spectacular ornamental cast ironwork, described by architectural historian Nikolaus Pevsner as \"a masterpiece of engineering – a Victorian cathedral of ironwork\". It was decommissioned in 1956. Subsequently the building has been extensively restored and was opened to the public in 2016.",
+      "matched_candidate": "Crossness Pumping Station",
+      "qid": "Q5188737",
+      "website": null,
+      "wikidata_description": "19th century pumping station in London",
+      "wikidata_label": "Crossness Pumping Station",
+      "sitelink": "Crossness Pumping Station",
       "instance_of_qids": [
-        "Q55488",
-        "Q55485",
-        "Q22808404"
+        "Q336164"
       ],
       "wikidata_coordinates": {
-        "lat": 51.530972222222225,
-        "lon": -0.12333333333333334
+        "lat": 51.5091,
+        "lon": 0.138333
       },
       "instance_of": [
-        "railway station",
-        "dead-end railway station",
-        "station located on surface"
-      ],
-      "wrong_entity_class": "railway station"
+        "sewerage pumping station"
+      ]
     },
     {
       "slug": "the-great-whipsnade-railway",
       "name": "The Great Whipsnade Railway",
-      "fetched_at": "2026-07-30T06:34:40.844Z",
+      "display_name": "The Great Whipsnade Railway",
+      "fetched_at": "2026-07-30T07:44:10.077Z",
       "type": "operating",
       "secondary": null,
       "band": "local",
@@ -5979,7 +5837,8 @@
     {
       "slug": "the-kidderminster-railway-museum-trust-limited",
       "name": "The Kidderminster Railway Museum Trust Limited",
-      "fetched_at": "2026-07-30T06:34:43.325Z",
+      "display_name": "Kidderminster Railway Museum",
+      "fetched_at": "2026-07-30T07:44:15.134Z",
       "type": "museum",
       "secondary": null,
       "band": "micro",
@@ -5990,14 +5849,17 @@
         "no-center"
       ],
       "notes": [
+        "\"Kidderminster Railway Museum\": no page",
+        "\"Kidderminster Railway Museum (heritage railway)\": no page",
+        "\"Kidderminster Railway Museum (railway)\": no page",
         "\"The Kidderminster Railway Museum Trust Limited\": no page",
         "\"The Kidderminster Railway Museum Trust Limited (heritage railway)\": no page",
         "\"The Kidderminster Railway Museum Trust Limited (railway)\": no page",
         "search hit \"Severn Valley Railway\": unverified (no title/geo match)",
-        "search hit \"List of railway museums in the United Kingdom\": unverified (no title/geo match)",
-        "search hit \"Tyseley Locomotive Works\": unverified (no title/geo match)",
-        "search hit \"Telford Steam Railway\": unverified (no title/geo match)",
-        "search hit \"Railway turntable\": unverified (no title/geo match)"
+        "search hit \"Kidderminster Town railway station\": unverified (no title/geo match)",
+        "search hit \"Kidderminster\": unverified (no title/geo match)",
+        "search hit \"List of British heritage and private railways\": unverified (no title/geo match)",
+        "search hit \"List of railway museums in the United Kingdom\": unverified (no title/geo match)"
       ],
       "status": "unresolved",
       "instance_of": []
@@ -6005,7 +5867,8 @@
     {
       "slug": "the-leas-lift",
       "name": "The Leas Lift",
-      "fetched_at": "2026-07-30T06:34:45.563Z",
+      "display_name": "The Leas Lift",
+      "fetched_at": "2026-07-30T07:44:21.081Z",
       "type": "funicular",
       "secondary": null,
       "band": "micro",
@@ -6043,7 +5906,8 @@
     {
       "slug": "toddington-narrow-gauge-railway",
       "name": "Toddington Narrow Gauge Railway",
-      "fetched_at": "2026-07-30T06:34:46.841Z",
+      "display_name": "Toddington Narrow Gauge Railway",
+      "fetched_at": "2026-07-30T07:44:22.158Z",
       "type": "operating",
       "secondary": null,
       "band": "micro",
@@ -6083,7 +5947,8 @@
     {
       "slug": "tufts-bridge",
       "name": "Tufts Bridge",
-      "fetched_at": "2026-07-30T06:34:47.887Z",
+      "display_name": "Tufts Bridge",
+      "fetched_at": "2026-07-30T07:44:23.191Z",
       "type": "operating",
       "secondary": null,
       "band": "micro",
@@ -6125,7 +5990,8 @@
     {
       "slug": "vale-of-rheidol-railway",
       "name": "Vale of Rheidol Railway",
-      "fetched_at": "2026-07-30T06:34:50.012Z",
+      "display_name": "Vale of Rheidol Railway",
+      "fetched_at": "2026-07-30T07:44:26.611Z",
       "type": "operating",
       "secondary": null,
       "band": "trunk",
@@ -6167,7 +6033,8 @@
     {
       "slug": "vale-of-rheidol-railway-driver-experience-track",
       "name": "Vale of Rheidol Railway Driver Experience track",
-      "fetched_at": "2026-07-30T06:34:51.154Z",
+      "display_name": "Vale of Rheidol Railway Driver Experience track",
+      "fetched_at": "2026-07-30T07:44:28.061Z",
       "type": "operating",
       "secondary": null,
       "band": "micro",
@@ -6213,7 +6080,8 @@
     {
       "slug": "vivian-incline",
       "name": "Vivian Incline",
-      "fetched_at": "2026-07-30T06:34:53.292Z",
+      "display_name": "Vivian Incline",
+      "fetched_at": "2026-07-30T07:44:32.905Z",
       "type": "funicular",
       "secondary": null,
       "band": "micro",
@@ -6258,7 +6126,8 @@
     {
       "slug": "volks-electric-railway",
       "name": "Volk's Electric Railway",
-      "fetched_at": "2026-07-30T06:34:55.615Z",
+      "display_name": "Volk's Electric Railway",
+      "fetched_at": "2026-07-30T07:44:36.655Z",
       "type": "operating",
       "secondary": null,
       "band": "local",
@@ -6296,7 +6165,8 @@
     {
       "slug": "watercress-line",
       "name": "Watercress Line",
-      "fetched_at": "2026-07-30T06:34:56.687Z",
+      "display_name": "Watercress Line",
+      "fetched_at": "2026-07-30T07:44:37.636Z",
       "type": "operating",
       "secondary": null,
       "band": "trunk",
@@ -6337,7 +6207,8 @@
     {
       "slug": "waveney-valley-railway",
       "name": "Waveney Valley Railway",
-      "fetched_at": "2026-07-30T06:34:57.770Z",
+      "display_name": "Waveney Valley Railway",
+      "fetched_at": "2026-07-30T07:44:38.753Z",
       "type": "operating",
       "secondary": null,
       "band": "local",
@@ -6381,7 +6252,8 @@
     {
       "slug": "waverley-route-heritage-association",
       "name": "Waverley Route Heritage Association",
-      "fetched_at": "2026-07-30T06:35:00.274Z",
+      "display_name": "Waverley Route Heritage Association",
+      "fetched_at": "2026-07-30T07:44:41.533Z",
       "type": "museum",
       "secondary": null,
       "band": "local",
@@ -6415,7 +6287,8 @@
     {
       "slug": "weardale-railway",
       "name": "Weardale Railway",
-      "fetched_at": "2026-07-30T06:35:01.277Z",
+      "display_name": "Weardale Railway",
+      "fetched_at": "2026-07-30T07:44:42.588Z",
       "type": "operating",
       "secondary": null,
       "band": "trunk",
@@ -6452,7 +6325,8 @@
     {
       "slug": "wells-and-walsingham-light-railway",
       "name": "Wells & Walsingham Light Railway",
-      "fetched_at": "2026-07-30T06:35:02.199Z",
+      "display_name": "Wells & Walsingham Light Railway",
+      "fetched_at": "2026-07-30T07:44:43.644Z",
       "type": "operating",
       "secondary": null,
       "band": "regional",
@@ -6492,7 +6366,8 @@
     {
       "slug": "welsh-highland-railway",
       "name": "Welsh Highland Railway",
-      "fetched_at": "2026-07-30T06:35:03.223Z",
+      "display_name": "Welsh Highland Railway",
+      "fetched_at": "2026-07-30T07:44:44.688Z",
       "type": "operating",
       "secondary": null,
       "band": "trunk",
@@ -6532,7 +6407,8 @@
     {
       "slug": "welshpool-and-llanfair-light-railway",
       "name": "Welshpool & Llanfair Light Railway",
-      "fetched_at": "2026-07-30T06:35:04.428Z",
+      "display_name": "Welshpool & Llanfair Light Railway",
+      "fetched_at": "2026-07-30T07:44:45.697Z",
       "type": "operating",
       "secondary": null,
       "band": "trunk",
@@ -6574,7 +6450,8 @@
     {
       "slug": "wensleydale-railway",
       "name": "Wensleydale Railway",
-      "fetched_at": "2026-07-30T06:35:05.509Z",
+      "display_name": "Wensleydale Railway",
+      "fetched_at": "2026-07-30T07:44:46.814Z",
       "type": "operating",
       "secondary": null,
       "band": "trunk",
@@ -6612,7 +6489,8 @@
     {
       "slug": "west-cliff-lift",
       "name": "West Cliff Lift",
-      "fetched_at": "2026-07-30T06:35:06.558Z",
+      "display_name": "West Cliff Lift",
+      "fetched_at": "2026-07-30T07:44:47.783Z",
       "type": "funicular",
       "secondary": null,
       "band": "micro",
@@ -6650,7 +6528,8 @@
     {
       "slug": "west-hill-cliff-railway",
       "name": "West Hill Cliff Railway",
-      "fetched_at": "2026-07-30T06:35:07.602Z",
+      "display_name": "West Hill Cliff Railway",
+      "fetched_at": "2026-07-30T07:44:48.789Z",
       "type": "funicular",
       "secondary": null,
       "band": "micro",
@@ -6688,7 +6567,8 @@
     {
       "slug": "west-lancashire-light-railway",
       "name": "West Lancashire Light Railway",
-      "fetched_at": "2026-07-30T06:35:08.655Z",
+      "display_name": "West Lancashire Light Railway",
+      "fetched_at": "2026-07-30T07:44:49.830Z",
       "type": "operating",
       "secondary": null,
       "band": "micro",
@@ -6724,7 +6604,8 @@
     {
       "slug": "west-somerset-railway",
       "name": "West Somerset Railway",
-      "fetched_at": "2026-07-30T06:35:09.699Z",
+      "display_name": "West Somerset Railway",
+      "fetched_at": "2026-07-30T07:44:51.416Z",
       "type": "operating",
       "secondary": null,
       "band": "trunk",
@@ -6772,7 +6653,8 @@
     {
       "slug": "westonzoyland-light-railway",
       "name": "Westonzoyland Light Railway",
-      "fetched_at": "2026-07-30T06:35:10.827Z",
+      "display_name": "Westonzoyland Light Railway",
+      "fetched_at": "2026-07-30T07:44:52.494Z",
       "type": "operating",
       "secondary": null,
       "band": "micro",
@@ -6814,7 +6696,8 @@
     {
       "slug": "whistlestop-valley",
       "name": "Whistlestop Valley",
-      "fetched_at": "2026-07-30T06:35:11.877Z",
+      "display_name": "Whistlestop Valley",
+      "fetched_at": "2026-07-30T07:44:53.609Z",
       "type": "operating",
       "secondary": null,
       "band": "regional",
@@ -6852,7 +6735,8 @@
     {
       "slug": "whitwell-and-reepham-railway",
       "name": "Whitwell and Reepham Railway",
-      "fetched_at": "2026-07-30T06:35:12.838Z",
+      "display_name": "Whitwell and Reepham Railway",
+      "fetched_at": "2026-07-30T07:44:54.628Z",
       "type": "operating",
       "secondary": null,
       "band": "micro",
@@ -6878,7 +6762,8 @@
     {
       "slug": "wirral-tramway",
       "name": "Wirral Tramway",
-      "fetched_at": "2026-07-30T06:35:15.179Z",
+      "display_name": "Wirral Tramway",
+      "fetched_at": "2026-07-30T07:44:58.079Z",
       "type": "tramway",
       "secondary": null,
       "band": "micro",
@@ -6916,7 +6801,8 @@
     {
       "slug": "yeovil-railway-centre",
       "name": "Yeovil Railway Centre",
-      "fetched_at": "2026-07-30T06:35:16.201Z",
+      "display_name": "Yeovil Railway Centre",
+      "fetched_at": "2026-07-30T07:44:59.156Z",
       "type": "museum",
       "secondary": null,
       "band": "micro",
@@ -6954,7 +6840,8 @@
     {
       "slug": "yorkshire-wolds-railway",
       "name": "Yorkshire Wolds Railway",
-      "fetched_at": "2026-07-30T06:35:17.279Z",
+      "display_name": "Yorkshire Wolds Railway",
+      "fetched_at": "2026-07-30T07:45:00.164Z",
       "type": "operating",
       "secondary": null,
       "band": "micro",

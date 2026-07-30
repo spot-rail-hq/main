@@ -2,7 +2,7 @@
 /**
  * scripts/fetch-heritage-wikidata.mjs
  * ─────────────────────────────────────────────────────────────────────────
- * Resolves each of the 183 curated heritage railways (HERITAGE_META) to an
+ * Resolves each of the 175 curated heritage railways (HERITAGE_META) to an
  * English Wikipedia article and its connected Wikidata item, then reads:
  *   - official website          (Wikidata P856)
  *   - enwiki sitelink           (Wikidata sitelinks.enwiki)
@@ -27,7 +27,8 @@
  *    a `preferred`-rank claim) is reused verbatim below. But it only ever
  *    reads an entry that ALREADY has wikipedia_title and explicitly "never
  *    guesses one" — and no heritage railway has a wikipedia_title anywhere:
- *    HERITAGE_META carries only slug/type/secondary/band/km. So the title
+ *    HERITAGE_META carries only slug/type/secondary/band/km/prose_name. So
+ *    the title
  *    still has to be resolved first, which that script deliberately won't do.
  *
  *  - scope-wikipedia-coverage.mjs's matchStation() resolves titles, but is
@@ -47,9 +48,10 @@
  *    the same spirit as its existing stations/routes/operators patterns.
  *
  * ─── Candidate tiers, most-specific first ────────────────────────────────
- *   1. CANONICAL name candidates — the curated name bare (correct for most
- *      heritage articles: "Bluebell Railway", "Corris Railway"), then
- *      "(heritage railway)" and "(railway)" qualifiers.
+ *   1. NAME candidates — prose_name first when the row has one, then the
+ *      curated key, each bare (correct for most heritage articles: "Bluebell
+ *      Railway", "Corris Railway") then with "(heritage railway)" and
+ *      "(railway)" qualifiers. A title hit on EITHER name is a real match.
  *   2. Full-text search fallback — accepted on exact normalized-title match
  *      or on geo confirmation.
  *   3. Curated ALIASES from HERITAGE_CANONICAL, GEO REQUIRED — never accepted
@@ -74,7 +76,7 @@
  *   geo-unconfirmed       accepted on title text alone; we hold coordinates
  *                         for the railway but neither the article nor P625
  *                         offers any to check against
- *   no-center             the 9 railways with no `center` in
+ *   no-center             the 8 railways with no `center` in
  *                         heritage-railways.json — no geo gate available at
  *                         all, so a title match cannot be corroborated
  *   historic-company      the Wikidata description describes a FORMER railway
@@ -144,8 +146,14 @@ function saveJson(p, data) {
 // ─── candidate construction ────────────────────────────────────────────────
 // Mirrors fetch-wikipedia-facts.mjs's TITLE_CANDIDATE_PATTERNS, adding the
 // `heritage` kind it has no entry for.
-function buildHeritageCandidates(name) {
-  return [...new Set([name, `${name} (heritage railway)`, `${name} (railway)`])];
+// prose_name goes FIRST when present. It is the recognisable public name, so it
+// is far likelier to be the actual article title than the legal entity in the
+// curated key — "Kidderminster Railway Museum" resolves where "The Kidderminster
+// Railway Museum Trust Limited" cannot.
+function buildHeritageCandidates(names) {
+  const out = [];
+  for (const n of names) out.push(n, `${n} (heritage railway)`, `${n} (railway)`);
+  return [...new Set(out)];
 }
 
 // normalizeForCompare() STRIPS parentheticals — correct for its own job
@@ -298,16 +306,23 @@ async function fetchLabels(qids) {
 // normalizeForCompare title equality, same imported haversine/GEO_REJECT_KM
 // gate with the same "coords present but too far REJECTS outright" rule, and
 // the same requireGeo tier for the collision-prone candidate forms.
-function evaluateSummary(summary, name, center, requireGeo, rejectKm) {
+// `names` is every name this railway may legitimately be titled under — the
+// curated key and, when set, its prose_name. A hit on either is a real title
+// match; the row is the same railway under both.
+function evaluateSummary(summary, names, center, requireGeo, rejectKm) {
   if (summary.type === 'disambiguation') {
     return { accepted: false, reason: 'disambiguation page, skipped', disambiguation: true };
   }
-  const looseMatch = normalizeForCompare(summary.title) === normalizeForCompare(name);
-  // See strictNormalize()'s comment: a parenthetical-qualified curated name
-  // only counts as a text match when the qualifier survives normalization.
-  const titleMatch = hasQualifier(name)
-    ? looseMatch && strictNormalize(summary.title) === strictNormalize(name)
-    : looseMatch;
+  const matchesName = (n) => {
+    const loose = normalizeForCompare(summary.title) === normalizeForCompare(n);
+    // See strictNormalize()'s comment: a parenthetical-qualified name only
+    // counts as a text match when the qualifier survives normalization.
+    return hasQualifier(n)
+      ? loose && strictNormalize(summary.title) === strictNormalize(n)
+      : loose;
+  };
+  const looseMatch = names.some((n) => normalizeForCompare(summary.title) === normalizeForCompare(n));
+  const titleMatch = names.some(matchesName);
   let geoOk = null;
   let distanceKm = null;
   if (summary.coordinates && center) {
@@ -354,7 +369,8 @@ function toMatch(summary, candidate, confidence, distanceKm) {
   };
 }
 
-async function searchFallback(name, center, rejectKm) {
+async function searchFallback(names, center, rejectKm) {
+  const name = names[0];
   const query = `${name} heritage railway`;
   const url = `${WIKI_API}?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json&srlimit=5`;
   const data = await fetchJson(url);
@@ -368,7 +384,7 @@ async function searchFallback(name, center, rejectKm) {
       notes.push(`search hit "${hit.title}": no page`);
       continue;
     }
-    const result = evaluateSummary(summary, name, center, false, rejectKm);
+    const result = evaluateSummary(summary, names, center, false, rejectKm);
     if (result.accepted) {
       return {
         match: toMatch(summary, `search:"${query}"→"${hit.title}"`, result.confidence, result.distanceKm),
@@ -380,24 +396,24 @@ async function searchFallback(name, center, rejectKm) {
   return { match: null, notes };
 }
 
-async function resolveRailway(name, center, aliases, rejectKm) {
+async function resolveRailway(names, center, aliases, rejectKm) {
   const notes = [];
   let sawDisambiguation = false;
   let geoRejected = null;
 
-  for (const candidate of buildHeritageCandidates(name)) {
+  for (const candidate of buildHeritageCandidates(names)) {
     const summary = await fetchSummary(candidate);
     await sleep(REQUEST_DELAY_MS);
     if (!summary) { notes.push(`"${candidate}": no page`); continue; }
     if (summary.__error) { notes.push(`"${candidate}": ${summary.__error}`); continue; }
-    const result = evaluateSummary(summary, name, center, false, rejectKm);
+    const result = evaluateSummary(summary, names, center, false, rejectKm);
     if (result.accepted) return { match: toMatch(summary, candidate, result.confidence, result.distanceKm), notes };
     if (result.disambiguation) sawDisambiguation = true;
     if (result.geoRejected && !geoRejected) geoRejected = { ...result.geoRejected, candidate };
     notes.push(`"${candidate}" → "${summary.title || '?'}": ${result.reason}`);
   }
 
-  const searched = await searchFallback(name, center, rejectKm);
+  const searched = await searchFallback(names, center, rejectKm);
   notes.push(...searched.notes);
   if (searched.match) return { match: searched.match, notes };
 
@@ -406,7 +422,7 @@ async function resolveRailway(name, center, aliases, rejectKm) {
     await sleep(REQUEST_DELAY_MS);
     if (!summary) { notes.push(`"${alias}" (alias): no page`); continue; }
     if (summary.__error) { notes.push(`"${alias}" (alias): ${summary.__error}`); continue; }
-    const result = evaluateSummary(summary, name, center, true, rejectKm);
+    const result = evaluateSummary(summary, names, center, true, rejectKm);
     if (result.accepted) return { match: toMatch(summary, `alias:"${alias}"`, result.confidence, result.distanceKm), notes };
     if (result.disambiguation) sawDisambiguation = true;
     if (result.geoRejected && !geoRejected) geoRejected = { ...result.geoRejected, candidate: alias };
@@ -526,7 +542,9 @@ function detectWrongEntityClass(row) {
   if (!desc) return null;
   const exactTitleAndGeo =
     (row.confidence === 'title+geo' || row.confidence === 'title+geo(P625)') &&
-    strictNormalize(row.wikipedia_title || '') === strictNormalize(row.name || '');
+    [row.name, row.display_name].filter(Boolean).some(
+      (n) => strictNormalize(row.wikipedia_title || '') === strictNormalize(n)
+    );
   if (exactTitleAndGeo) return null;
   if (HERITAGE_DESCRIPTION_PATTERN.test(desc)) return null;
   // A description that already names a railway/tramway as the SUBJECT is fine
@@ -579,6 +597,10 @@ async function main() {
     const slug = meta.slug;
     if (checkpoint[slug]) { processed++; continue; }
 
+    // prose_name first — see buildHeritageCandidates().
+    const acceptableNames = meta.prose_name && meta.prose_name !== name
+      ? [meta.prose_name, name]
+      : [name];
     const client = heritageClient[slug] || {};
     const center = client.center ? { lon: client.center[0], lat: client.center[1] } : null;
     const aliases = aliasMap[name] || [];
@@ -586,6 +608,7 @@ async function main() {
     const row = {
       slug,
       name,
+      display_name: meta.prose_name || name,
       fetched_at: new Date().toISOString(),
       type: meta.type,
       secondary: meta.secondary,
@@ -597,7 +620,7 @@ async function main() {
     };
 
     try {
-      const { match, notes, sawDisambiguation, geoRejected } = await resolveRailway(name, center, aliases, geoRejectKmFor(meta.km));
+      const { match, notes, sawDisambiguation, geoRejected } = await resolveRailway(acceptableNames, center, aliases, geoRejectKmFor(meta.km));
       row.notes = notes;
 
       if (!match) {
