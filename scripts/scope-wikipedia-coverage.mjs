@@ -253,7 +253,10 @@ async function searchFallback(base, qualifier, normalizedBase, station) {
 }
 
 // ─── geo sanity check ──────────────────────────────────────────────────────
-function haversineKm(lat1, lon1, lat2, lon2) {
+// Exported (2026-07-30) so scripts/fetch-heritage-wikidata.mjs can reuse this
+// exact geo gate — same function, same GEO_REJECT_KM — rather than keeping a
+// second copy that could drift. Export only; no behaviour change here.
+export function haversineKm(lat1, lon1, lat2, lon2) {
   const toRad = (d) => (d * Math.PI) / 180;
   const R = 6371;
   const dLat = toRad(lat2 - lat1);
