@@ -1479,18 +1479,18 @@
   }
   var stationsContentPromise = loadJsonContent('/stations-content.json', function (d) {
     stationsContent = d;
-    if (mode === 'database' && selectedStationCrs) rebuildSidebarContent();
+    if (mode === 'database' && selectedStationId) rebuildSidebarContent();
   });
   var routesContentPromise = loadJsonContent('/routes-content.json', function (d) {
     routesContent = d;
     if (selection.type === 'route') rebuildSidebarContent();
-    else if (mode === 'database' && !selectedStationCrs && selection.type === 'none') rebuildSidebarContent();
+    else if (mode === 'database' && !selectedStationId && selection.type === 'none') rebuildSidebarContent();
   });
   var operatorsContentPromise = loadJsonContent('/operators-content.json', function (d) {
     operatorsContent = d;
     rebuildOperatorNameIndex();
     if (selection.type === 'operator') rebuildSidebarContent();
-    else if (mode === 'database' && !selectedStationCrs && selection.type === 'none') rebuildSidebarContent();
+    else if (mode === 'database' && !selectedStationId && selection.type === 'none') rebuildSidebarContent();
   });
   // Main/Other Regions chips (operator panel) — region display name -> flyTo
   // target, see data/regions.json's own _notes for why keys are literal
@@ -1693,6 +1693,13 @@
   // fromCrs/toCrs -> { found, reason?, totalLength_m?, edges? }. reason is
   // only set when found=false, for the sidebar's no-route messaging.
   function computeFromToPath(fromCrs, toCrs) {
+    // data/routing-graph.json's nodes come from the CRS-keyed station-graph
+    // links, so a tram/metro/Underground stop has no node in it and never can
+    // have one. Reported as its own reason rather than being left to fail as
+    // 'unsnapped', which means "should be on the network but isn't mapped yet"
+    // — a different and fixable problem, and the wrong thing to tell someone
+    // who has picked a tram stop.
+    if (!fromCrs || !toCrs) return { found: false, reason: 'not-national-rail' };
     if (!routingGraph) return { found: false, reason: 'loading' };
     var fromNode = routingGraph.station_node[fromCrs];
     var toNode = routingGraph.station_node[toCrs];
@@ -2102,7 +2109,21 @@
   // are Database-only for now per this task's scope) — once it does, it'll
   // need to join the shared-state treatment selectedStationCrs already gets,
   // instead of living only in `selection`.
+  // selectedStationId is the IDENTITY (ATCO where the row has one, else CRS);
+  // selectedStationCrs is the Darwin key and is NULL for the 632 non-CRS
+  // tram/metro/underground rows station-list.json now carries. Splitting them
+  // is the whole of Phase 2: `crs` used to be both, and every "is a station
+  // selected?" test read it — so a null CRS made a selected station look
+  // unselected (effectiveSelectionType returned 'none' and the panel never
+  // opened), while every crs-keyed lookup silently matched the FIRST null row
+  // in the list rather than the station actually clicked.
+  //
+  // Everything that asks "is something selected" now reads selectedStationId.
+  // Everything that talks to Darwin or to stations-content.json (which is
+  // CRS-keyed) still reads selectedStationCrs, and is therefore guarded by its
+  // nullness for free.
   var selectedStationCrs = null;
+  var selectedStationId = null;
   var selectedStationName = null;
   var selection = { type: 'none' };
 
@@ -2121,6 +2142,19 @@
   // Prompt 3 explicitly didn't ask for — left as a follow-up if wanted.
   var THEME_COLORS = {
     dark: {
+      // Phase 3 — the one CLASS colour for every non-CRS station marker (not
+      // per-network: eleven network hues on dots would compete with the same
+      // eleven hues already used for their lines at the zoom where both show).
+      // Chosen by measurement, not by eye: the metro-purple family recommended
+      // at scoping FAILS this project's own CVD gate on a dot stroke — #A78BFA,
+      // #B57BFF and #B04AE8 come out at 9.7/12.2/10.4 simulated ΔE against the
+      // turquoise CRS stroke in dark theme, against a >=15 standard, because
+      // protanopia/deuteranopia collapse purple and turquoise toward the same
+      // blue. A dot ring carries colour and nothing else, so that is not
+      // recoverable the way it is on a line. This lighter lavender clears it at
+      // 22.6, sits 46.0 from the nearest metro line colour, and 61.6 from
+      // heritage coral.
+      nonCrsAccent: '#DBA8E6',
       accent: '#40E0D0', stationFill: 'rgba(7,9,12,0.9)', stationHoverFill: 'rgba(64,224,208,0.15)', labelColor: '#9AA4B2', labelHalo: 'rgba(7,9,12,0.8)',
       railwayMain: 'rgba(154,164,178,0.65)', railwaySecondary: 'rgba(154,164,178,0.4)', railwayClosed: 'rgba(154,164,178,0.28)',
     },
@@ -2128,6 +2162,11 @@
       // accent/stationHoverFill matched to --t's fix above (#1A9E8F, the
       // site-wide light-theme turquoise) — was a slightly different, one-off
       // shade (#0AABA0) before.
+      // Light-theme counterpart. A lavender that reads on white is too pale to
+      // hold a 1.5px stroke, so this goes the other way into indigo — the same
+      // dark/light divergence the operator palette already has (TfL is #BC54E9
+      // dark, #3B23D6 light). CVD vs turquoise 49.9, vs heritage 142.0.
+      nonCrsAccent: '#5D00FF',
       accent: '#1A9E8F', stationFill: '#FFFFFF', stationHoverFill: 'rgba(26,158,143,0.15)', labelColor: '#444444', labelHalo: 'rgba(255,255,255,0.85)',
       // 2026-07-22: rgb was (68,68,68) — read as "very dark" for the default
       // (unhighlighted) network in light mode, since railwayMain doubles as
@@ -3342,10 +3381,25 @@
       // visible ring — same fill/stroke color, just no longer a hollow
       // center underneath it. Resting (non-hover) state is untouched: dark
       // fill + turquoise stroke, per CLAUDE.md's marker spec.
-      'circle-color': ['case', hoverExpr, c.accent, c.stationFill],
+      // Same shape, same size, same hover behaviour as a CRS station — only the
+      // colour differs, because these stations cannot offer departures and a
+      // marker identical to its neighbours would promise that they can.
+      //
+      // coalesce(..., 'rail') matters: this same paint function is reused by the
+      // History layers, whose source has no `mode` property at all. Without the
+      // default they would evaluate to no match and lose their stroke entirely.
+      'circle-color': ['case', hoverExpr, stationAccentExpr(c), c.stationFill],
       'circle-stroke-width': ['case', hoverExpr, 2.2, 1.5],
-      'circle-stroke-color': c.accent,
+      'circle-stroke-color': stationAccentExpr(c),
     };
+  }
+  // Non-CRS modes, as written into station-list.json by
+  // scripts/migrate-station-list.mjs. 'rail' is deliberately absent.
+  var NON_CRS_MODES = ['underground', 'dlr', 'tram', 'metro', 'subway'];
+  function stationAccentExpr(c) {
+    return ['case',
+      ['in', ['coalesce', ['get', 'mode'], 'rail'], ['literal', NON_CRS_MODES]], c.nonCrsAccent,
+      c.accent];
   }
   // Phase 7 — the selected-station marker (SELECTED_STATIONS_LAYER_ID, a
   // separate GeoJSON layer drawn on top of the regular tiered markers,
@@ -3440,7 +3494,30 @@
     // HISTORY_STATION_TIERS from it by concat — so this one number moves the
     // dot layer, the hit layer AND the label layer in all three tabs at once.
     { id: 'dense', minzoom: 10 },
+    // Phase 3 — non-CRS stations are tiered by MODE, not by the platform/density
+    // ranking below, and each mode is pinned to the zoom its own network's LINES
+    // already appear at (ROUTE_TIERS: regional 7.5, hyperlocal 10) so a line and
+    // its stops reveal together instead of the line arriving first and running
+    // empty.
+    //
+    // Measured before choosing: of the 632 appended stations, 226 are
+    // Underground/Subway — whose lines are hyperlocal (z10), so the old 'dense'
+    // tier already had them at the right zoom — and 406 are DLR/tram/metro,
+    // whose lines are regional (z7.5) but whose stops sat at z10, i.e. 2.5 zoom
+    // levels late. That 406 is the real defect here, not all 632.
+    { id: 'mode-regional', minzoom: 7.5 },
+    { id: 'mode-hyperlocal', minzoom: 10 },
   ];
+  // mode -> station tier, mirroring how computeRouteTierFilters() buckets the
+  // same networks' lines. Glasgow Subway rides with the Underground because
+  // HYPERLOCAL_METRO_EXTRA puts its LINES in the hyperlocal tier too.
+  var MODE_STATION_TIER = {
+    underground: 'mode-hyperlocal',
+    subway: 'mode-hyperlocal',
+    dlr: 'mode-regional',
+    tram: 'mode-regional',
+    metro: 'mode-regional',
+  };
   function stationTierFilter(tierId) { return ['==', ['get', 'tier'], tierId]; }
   // Shared by both the station tiers and the route category tiers below —
   // conditionally includes minzoom only when defined (MapLibre treats an
@@ -3810,9 +3887,14 @@
   // isolated vs. dense for tiering purposes — one reference latitude's
   // cos() is enough. O(n²) but pure arithmetic: ~2,637² ≈ 7M iterations,
   // runs once when the station list first loads, not per frame/pan/zoom.
+  // KEYED ON stationIdOf(), not on crs. With 632 non-CRS rows every one of the
+  // three dictionaries below would otherwise collapse onto the single key
+  // "null": nearby[] would hold one shared neighbour count, and tierByCrs[]
+  // would be written 632 times and keep only the last, giving every tram and
+  // Underground station in Britain one arbitrary tier.
   function computeStationTiers(list, majorCrs, content) {
     var COS = Math.cos(54.5 * Math.PI / 180), KM_PER_DEG_LAT = 111;
-    var pts = list.map(function (s) { return { crs: s.crs, x: s.lon * COS * KM_PER_DEG_LAT, y: s.lat * KM_PER_DEG_LAT }; });
+    var pts = list.map(function (s) { return { sid: stationIdOf(s), x: s.lon * COS * KM_PER_DEG_LAT, y: s.lat * KM_PER_DEG_LAT }; });
     var n = pts.length;
     var r2 = STATION_DENSITY_RADIUS_KM * STATION_DENSITY_RADIUS_KM;
     var nearby = {};
@@ -3823,24 +3905,32 @@
         var dx = pts[i].x - pts[j].x, dy = pts[i].y - pts[j].y;
         if (dx * dx + dy * dy <= r2) cnt++;
       }
-      nearby[pts[i].crs] = cnt;
+      nearby[pts[i].sid] = cnt;
     }
     var ranked = [];
     list.forEach(function (s) {
-      if (majorCrs.has(s.crs)) return; // major stays its own always-visible tier, not part of this ranking
+      if (s.crs && majorCrs.has(s.crs)) return; // major stays its own always-visible tier, not part of this ranking
+      // Non-CRS stations are tiered by MODE (see MODE_STATION_TIER) and take no
+      // part in this ranking. Excluding them is not just tidiness: the ranking
+      // scores on platform count, stations-content.json is CRS-keyed so all 632
+      // would take the neutral stand-in of 2, and they sit in the densest parts
+      // of Britain — so they ranked near the bottom and still consumed slots in
+      // STATION_TIER_TARGET_COUNTS, pushing real CRS stations down a tier.
+      if (!s.crs) return;
       var entry = content[s.crs];
       var platforms = (entry && entry.platforms != null) ? entry.platforms : STATION_DEFAULT_PLATFORMS;
-      ranked.push({ crs: s.crs, score: platforms - nearby[s.crs] * STATION_DENSITY_WEIGHT });
+      var sid = stationIdOf(s);
+      ranked.push({ sid: sid, score: platforms - nearby[sid] * STATION_DENSITY_WEIGHT });
     });
     ranked.sort(function (a, b) { return b.score - a.score; });
     var largeEnd = STATION_TIER_TARGET_COUNTS.large;
     var mediumEnd = largeEnd + STATION_TIER_TARGET_COUNTS.medium;
     var smallEnd = mediumEnd + STATION_TIER_TARGET_COUNTS.small;
-    var tierByCrs = {};
+    var tierBySid = {};
     ranked.forEach(function (r, i) {
-      tierByCrs[r.crs] = i < largeEnd ? 'large' : i < mediumEnd ? 'medium' : i < smallEnd ? 'small' : 'dense';
+      tierBySid[r.sid] = i < largeEnd ? 'large' : i < mediumEnd ? 'medium' : i < smallEnd ? 'small' : 'dense';
     });
-    return tierByCrs;
+    return tierBySid;
   }
   // station-list.json's names carry generic NaPTAN suffixes ("Alexandra
   // Palace Rail Station", "Kintore Railway Station", "Newcastle Airport
@@ -3871,9 +3961,11 @@
   Promise.all([stationListPromise, majorCrsPromise, stationsContentPromise]).then(function (results) {
     var list = results[0], majorCrs = results[1], content = results[2] || {};
     if (!list.length) return;
-    var rankedTierByCrs = computeStationTiers(list, majorCrs, content);
-    function tierFor(crs) {
-      return majorCrs.has(crs) ? 'major' : rankedTierByCrs[crs];
+    var rankedTierBySid = computeStationTiers(list, majorCrs, content);
+    function tierFor(s) {
+      if (s.crs && majorCrs.has(s.crs)) return 'major';
+      if (!s.crs) return MODE_STATION_TIER[s.mode] || 'mode-regional';
+      return rankedTierBySid[stationIdOf(s)];
     }
     stationsData = {
       type: 'FeatureCollection',
@@ -3882,7 +3974,24 @@
           type: 'Feature',
           id: i, // unique per-feature id across the whole source — required for feature-state hover to work correctly regardless of which tier/layer rendered a given marker
           geometry: { type: 'Point', coordinates: [s.lon, s.lat] },
-          properties: { name: stripStationNameSuffix(s.name), crs: s.crs, tier: tierFor(s.crs) },
+          properties: {
+            // `sid` not `id` — MapLibre already owns the numeric feature `id`
+            // above for feature-state hover, and shadowing it would break that.
+            sid: stationIdOf(s),
+            // stripStationNameSuffix is applied ONLY to CRS rows. The non-CRS
+            // names were already cleaned at the data stage by
+            // scripts/fetch-naptan-stops.mjs, using explicit per-network rules,
+            // and running the blunt display-time stripper over them would UNDO
+            // that work: it turns "Battersea Power Station" into "Battersea
+            // Power" and "Nottingham Station" into "Nottingham", both of which
+            // the data stage deliberately kept whole.
+            name: s.crs ? stripStationNameSuffix(s.name) : s.name,
+            crs: s.crs,
+            atco: s.atco || null,
+            mode: s.mode || null,
+            network: s.network || null,
+            tier: tierFor(s),
+          },
         };
       }),
     };
@@ -4056,7 +4165,7 @@
       map.on('click', layerId, function (e) {
         if (!e.features.length) return;
         var props = e.features[0].properties;
-        selectStation(props.name, props.crs);
+        selectStation(props.name, props.sid);
       });
     });
     map.on('zoomstart', hideHoverTooltip);
@@ -4260,7 +4369,7 @@
   // `selection` object at all.
   function effectiveSelectionType() {
     if (selection.type !== 'none') return selection.type;
-    return selectedStationCrs ? 'station' : 'none';
+    return selectedStationId ? 'station' : 'none';
   }
 
   function renderSelectionChrome() {
@@ -4280,7 +4389,7 @@
     if (type === 'station') {
       selTitleEl.textContent = selectedStationName;
       starBtn.style.display = '';
-      starBtn.classList.toggle('starred', isStarred(selectedStationCrs));
+      starBtn.classList.toggle('starred', isStarred(selectedStationId));
     } else if (type === 'fromto') {
       selTitleEl.textContent = selection.fromName + ' → ' + selection.toName;
       // Saved routes are single-station records — a from/to pair doesn't map
@@ -4363,7 +4472,31 @@
     return '<div class="sb-dep-pane" id="sb-dep-pane">' + depHtml + '</div>' +
       '<div class="sb-news-pane" id="sb-news-pane">' + newsHtml + '</div>';
   }
+  // The currently-selected station's row when it has NO CRS, else null. The
+  // single test both panel modes branch on.
+  function selectedNonCrsRow() {
+    if (selectedStationCrs || !selectedStationId) return null;
+    var row = stationRowById(selectedStationId);
+    return (row && !row.crs) ? row : null;
+  }
+  var MODE_LABELS = {
+    underground: 'Underground', dlr: 'Light rail', tram: 'Tram',
+    metro: 'Metro', subway: 'Subway', rail: 'National Rail',
+  };
+  // Phrased as a fixed property of the data, not a pending feature: no amount of
+  // waiting will produce a Darwin feed for a tram stop, and "coming soon" would
+  // be a promise this map cannot keep.
+  function nonCrsLiveNoticeHtml(row) {
+    return '<div class="db-hint" data-anim-row>Live departures aren\'t available for ' +
+      escapeAttr(row.network) + ' — this map covers National Rail departures only.</div>';
+  }
   function stationLiveSkeletonHtml() {
+    var nonCrs = selectedNonCrsRow();
+    // The departure board is OMITTED entirely rather than rendered empty.
+    // loadDepartureBoard() is (correctly) never called for these stations, so a
+    // rendered board would sit in its resting state permanently and read as
+    // broken rather than as out of scope.
+    if (nonCrs) return liveSplitPanesHtml(nonCrsLiveNoticeHtml(nonCrs), liveNewsBlockHtml());
     return liveSplitPanesHtml(depBoardHtml('Departures'), liveNewsBlockHtml());
   }
   // Phase 6: this used to check selection.directRouteId (a CURATED named-
@@ -4377,6 +4510,7 @@
     var p = selection.fromToPath;
     if (!p || p.found) return '';
     if (p.reason === 'loading') return '<div class="dep-empty" data-anim-row>Finding route…</div>';
+    if (p.reason === 'not-national-rail') return '<div class="dep-empty" data-anim-row>Journey planning covers National Rail stations only — one of these is a tram, metro or Underground stop.</div>';
     if (p.reason === 'unsnapped') return '<div class="dep-empty" data-anim-row>No direct route found — one of these stations isn\'t on the mapped rail network yet.</div>';
     return '<div class="dep-empty" data-anim-row>No direct route found between these stations.</div>'; // 'disconnected' (e.g. an isolated metro system vs. the mainline) or any other reason
   }
@@ -4612,8 +4746,23 @@
   //                           lat/lon Google Map link, not a Place ID — closed
   //                           stations have no Place ID and the panel should
   //                           not switch link styles depending on the station)
+  // Network / Mode / coordinates only. CRS, platforms and managed-by are OMITTED
+  // rather than printed as "Not available" three times over — none of them can
+  // ever be populated for a station that has no CRS to key stations-content.json
+  // by, so a placeholder would advertise a permanent gap as a temporary one.
+  function nonCrsDatabaseHtml(row) {
+    return dbFieldHtml('Network', escapeAttr(row.network)) +
+      dbFieldHtml('Mode', escapeAttr(MODE_LABELS[row.mode] || row.mode)) +
+      dbFieldHtml('Coordinates', escapeAttr(row.lat.toFixed(5) + ', ' + row.lon.toFixed(5)));
+  }
   function stationDatabaseSkeletonHtml(opts) {
     opts = opts || {};
+    // opts.crs is set by History mode to render a specific closed station; only
+    // the LIVE selection can be a non-CRS stop.
+    if (!opts.crs) {
+      var nonCrs = selectedNonCrsRow();
+      if (nonCrs) return nonCrsDatabaseHtml(nonCrs);
+    }
     var crs = (opts.crs || selectedStationCrs || '').toUpperCase();
     var s = stationsContent[crs];
     if (!s) return dbComingSoonHtml(opts.name || selectedStationName || crs);
@@ -4911,7 +5060,7 @@
     if (selection.type === 'route') return routeDetailSkeletonHtml();
     if (selection.type === 'operator') return operatorDetailSkeletonHtml();
     if (selection.type === 'fromto') return mode === 'database' ? fromToDatabaseSkeletonHtml() : fromToSkeletonHtml();
-    if (selectedStationCrs) return mode === 'database' ? stationDatabaseSkeletonHtml() : stationLiveSkeletonHtml();
+    if (selectedStationId) return mode === 'database' ? stationDatabaseSkeletonHtml() : stationLiveSkeletonHtml();
     if (mode === 'history') return historyDefaultSkeletonHtml();
     return mode === 'database' ? databaseDefaultSkeletonHtml() : liveDefaultSkeletonHtml();
   }
@@ -4957,11 +5106,11 @@
     } else if (mode === 'database' && selection.type === 'fromto') {
       wireFromToDatabaseDetail();
       injectSchemaJsonLd(null); // a From/To path isn't a single catalogued entity
-    } else if (mode === 'database' && selectedStationCrs) {
+    } else if (mode === 'database' && selectedStationId) {
       wireStationDatabaseDetail();
-      var stationEntry = stationsContent[selectedStationCrs.toUpperCase()];
+      var stationEntry = selectedStationCrs ? stationsContent[selectedStationCrs.toUpperCase()] : null;
       injectSchemaJsonLd(stationEntry && stationEntry.schema_jsonld);
-    } else if (mode === 'database' && !selectedStationCrs) {
+    } else if (mode === 'database' && !selectedStationId) {
       wireDatabaseDefault();
       injectSchemaJsonLd(null);
     } else {
@@ -5091,10 +5240,19 @@
     } else if (selection.type === 'operator' && selection.code) {
       params.set('operator', selection.code);
     } else if (selection.type === 'fromto') {
-      params.set('from', selection.fromCrs);
-      params.set('to', selection.toCrs);
-    } else if (selection.type === 'none' && selectedStationCrs) {
-      params.set('station', selectedStationCrs);
+      // Only linkable when BOTH ends have a CRS — restoreStateFromUrl resolves
+      // ?from/?to by CRS, and writing the string "null" into the URL would
+      // produce a link that restores to a broken pair.
+      if (selection.fromCrs && selection.toCrs) {
+        params.set('from', selection.fromCrs);
+        params.set('to', selection.toCrs);
+      }
+    } else if (selection.type === 'none' && selectedStationId) {
+      // ?station= keeps its existing CRS meaning so every link already out in
+      // the world still resolves; ?stop= is the new ATCO-carrying parameter for
+      // the stations that have no CRS to put in ?station=.
+      if (selectedStationCrs) params.set('station', selectedStationCrs);
+      else params.set('stop', selectedStationId);
     }
     var qs = params.toString();
     return location.pathname + (qs ? '?' + qs : '');
@@ -5140,6 +5298,7 @@
       var operatorCode = params.get('operator');
       var fromCrs = params.get('from'), toCrs = params.get('to');
       var stationCrs = params.get('station');
+      var stopId = params.get('stop');
       if (routeId && routesContent[routeId]) {
         selectRoute(routeId);
       } else if (operatorCode) {
@@ -5160,8 +5319,14 @@
         var from = list.filter(function (s) { return s.crs === fromCrs; })[0];
         var to = list.filter(function (s) { return s.crs === toCrs; })[0];
         if (from && to) selectFromTo(from, to); else clearSelection();
+      } else if (stopId) {
+        selectStation(stationNameForId(stopId), stopId);
       } else if (stationCrs) {
-        selectStation(stationNameForCrs(stationCrs), stationCrs);
+        // Resolve the CRS to the row's identity before selecting, so a legacy
+        // ?station= link lands in exactly the same state a click would.
+        var stationRow = getStationList().filter(function (s) { return s.crs === stationCrs; })[0];
+        var stationId = stationRow ? stationIdOf(stationRow) : stationCrs;
+        selectStation(stationNameForId(stationId), stationId);
       } else {
         clearSelection();
       }
@@ -5212,16 +5377,30 @@
   // Sets the ONE shared "selected station" (Task 4) — both Live and Database
   // rendering read selectedStationCrs/Name directly, so this single call is
   // enough for either tab to show it, now or after a later tab switch.
-  function selectStation(name, crs) {
+  // Takes an IDENTITY (see stationIdOf), not a CRS. The CRS is derived from the
+  // matched row and is null for a tram/metro/underground stop — which is what
+  // makes the Darwin guard below correct rather than merely careful.
+  function selectStation(name, id) {
     var mySeq = ++selectionSeq;
-    selectedStationCrs = crs;
+    var row = stationRowById(id);
+    // Normalised to the row's canonical id so a CRS-keyed caller (a route
+    // stopping-station row, an old ?station= link) ends up in exactly the same
+    // state as a marker click, and matches the `sid` on the map features.
+    selectedStationId = row ? stationIdOf(row) : (id || null);
+    // Fallback for an id that resolves to no row: a 3-character id can only be
+    // a CRS (ATCO codes are far longer), so an old ?station=BHM link still
+    // works even if station-list.json has not resolved yet.
+    selectedStationCrs = row ? (row.crs || null) : (id && id.length === 3 ? id : null);
     selectedStationName = name;
     selection = { type: 'none' };
     renderSelectionChrome();
     expandSidebarIfCollapsed();
     animateSidebarTransition();
-    if (mode === 'live') loadDepartureBoard(crs, mySeq);
-    var coords = coordsForCrs(crs);
+    // GUARDED on the CRS, not on the mode alone. Without this a non-CRS
+    // station fires GET /api/departures?crs=null on every click — a request
+    // that can never succeed, for a station that can never have departures.
+    if (mode === 'live' && selectedStationCrs) loadDepartureBoard(selectedStationCrs, mySeq);
+    var coords = coordsForId(id);
     setSelectedStationPoints(coords ? [{ lon: coords[0], lat: coords[1] }] : []);
     clearOperatorHighlight();
     pushHistoryForCurrentState();
@@ -5275,7 +5454,10 @@
     clearOperatorHighlight(); // a locked operator-lines highlight from a previous Database selection doesn't belong to this fromto search either — see clearOperatorHighlight()'s comment
     expandSidebarIfCollapsed();
     animateSidebarTransition();
-    if (mode === 'live') loadDepartureBoard(from.crs, mySeq, to.crs); // Database mode's From/To panel has no departure board to fill — same guard selectStation() already uses
+    // Guarded on from.crs as well as the mode: a non-CRS origin would otherwise
+    // fire GET /api/departures?crs=null, the same request selectStation() is now
+    // guarded against.
+    if (mode === 'live' && from.crs) loadDepartureBoard(from.crs, mySeq, to.crs); // Database mode's From/To panel has no departure board to fill — same guard selectStation() already uses
 
     var fromCoord = (from.lat != null && from.lon != null) ? [from.lon, from.lat] : null;
     var toCoord = (to.lat != null && to.lon != null) ? [to.lon, to.lat] : null;
@@ -5358,6 +5540,7 @@
   function clearSelection() {
     ++selectionSeq;
     selectedStationCrs = null;
+    selectedStationId = null;
     selectedStationName = null;
     selection = { type: 'none' };
     renderSelectionChrome();
@@ -5407,12 +5590,54 @@
   // schema's own _notes point at isn't a file in this repo; station-list.json
   // is the closest equivalent already loaded client-side), NOT map-data.jsx's
   // orphaned hand-traced geometry, which is intentionally left untouched.
+  // A station's stable identity: its ATCO code where NaPTAN gave it one, else
+  // its CRS. 3,253 of 3,260 rows have an ATCO; the 7 that don't are the
+  // Elizabeth-line/Overground rows NaPTAN files under an Underground/DLR
+  // identity instead, which keep CRS as their id (see
+  // scripts/migrate-station-list.mjs).
+  function stationIdOf(s) {
+    return (s && (s.atco || s.crs)) || null;
+  }
+  // Resolves an ATCO **or** a CRS. Accepting both is deliberate: CRS-keyed
+  // lists are still everywhere — routes-content.json's stopping_stations, the
+  // saved records written before this change, ?station= links — and they all
+  // reach selection through here. A 3-character CRS can never collide with a
+  // 9-to-12-character ATCO, so one lookup can serve both without ambiguity.
+  function stationRowById(id) {
+    if (!id) return null;
+    var list = getStationList();
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].atco === id || (list[i].crs && list[i].crs === id)) return list[i];
+    }
+    return null;
+  }
+  function coordsForId(id) {
+    var e = stationRowById(id);
+    if (e && e.lat != null && e.lon != null) return [e.lon, e.lat];
+    return null;
+  }
+  function stationNameForId(id) {
+    var e = stationRowById(id);
+    if (e) {
+      if (e.crs && stationsContent[e.crs] && stationsContent[e.crs].name) return stationsContent[e.crs].name;
+      return e.name;
+    }
+    return id;
+  }
+  // CRS-keyed lookups are kept for the things that are genuinely CRS lists —
+  // routes-content.json's stopping_stations, saved records written before this
+  // change. The `if (!crs) return` guards are load-bearing, NOT defensive
+  // tidying: without them `s.crs === crs` with crs == null matches all 632
+  // non-CRS rows and [0] silently returns whichever happens to be first in the
+  // file, so the selected-station marker landed on an unrelated tram stop.
   function coordsForCrs(crs) {
+    if (!crs) return null;
     var entry = getStationList().filter(function (s) { return s.crs === crs; })[0];
     if (entry && entry.lat != null && entry.lon != null) return [entry.lon, entry.lat];
     return null;
   }
   function stationNameForCrs(crs) {
+    if (!crs) return null;
     var known = stationsContent[crs];
     if (known && known.name) return known.name;
     var entry = getStationList().filter(function (s) { return s.crs === crs; })[0];
@@ -5627,10 +5852,10 @@
     }
   }
 
-  function flyToAndSelectStation(crs) {
-    var coords = coordsForCrs(crs);
+  function flyToAndSelectStation(id) {
+    var coords = coordsForId(id);
     if (coords) map.flyTo({ center: coords, zoom: 11, duration: 800 });
-    selectStation(stationNameForCrs(crs), crs);
+    selectStation(stationNameForId(id), id);
   }
   var ROUTE_LAYER_ID = 'route-highlight-layer', ROUTE_SOURCE_ID = 'route-highlight';
   var ROUTE_HIT_LAYER_ID = 'route-highlight-hit-layer'; // invisible wide hit layer, see drawMagentaHighlightGeometry
@@ -8079,7 +8304,7 @@
   var stationPick = null;
   function submitStationPick(picked) {
     if (picked.lat != null && picked.lon != null) map.flyTo({ center: [picked.lon, picked.lat], zoom: 11, duration: 800 });
-    selectStation(picked.name, picked.crs);
+    selectStation(picked.name, stationIdOf(picked));
   }
   wireAutocomplete(searchInput, document.getElementById('sb-ac-station'), function (picked) {
     stationPick = picked;
@@ -8106,19 +8331,36 @@
   });
 
   var fromPick = null, toPick = null;
+  // From/To runs over data/routing-graph.json, whose nodes come from the
+  // CRS-keyed station-graph links — a tram, DLR or Underground stop has no node
+  // in it and never will. They are therefore kept OUT OF THE PICKER entirely
+  // rather than offered and then refused: computeFromToPath()'s
+  // 'not-national-rail' reason still exists as the backstop for a deep link or a
+  // saved pair, but it should never be how someone first learns this, and a
+  // dropdown that lists a station you cannot choose is worse than one that
+  // doesn't. The plain station search is UNCHANGED — non-CRS stations remain
+  // fully searchable there, this narrowing applies only to the two journey
+  // fields.
+  function searchNationalRailStations(query, limit) {
+    var want = limit || 7;
+    // Over-fetch before filtering: searchStations() truncates to `limit` first,
+    // so filtering afterwards would return short lists in dense areas where the
+    // top matches are tram stops.
+    return searchStations(query, want * 4).filter(function (s) { return !!s.crs; }).slice(0, want);
+  }
   function trySubmitFromTo() {
-    var f = fromPick || searchStations(fromInput.value, 1)[0];
-    var t = toPick || searchStations(toInput.value, 1)[0];
+    var f = fromPick || searchNationalRailStations(fromInput.value, 1)[0];
+    var t = toPick || searchNationalRailStations(toInput.value, 1)[0];
     if (f && t) selectFromTo(f, t);
   }
   wireAutocomplete(fromInput, document.getElementById('sb-ac-from'), function (picked) {
     fromPick = picked;
     if (picked && toPick) trySubmitFromTo();
-  });
+  }, searchNationalRailStations);
   wireAutocomplete(toInput, document.getElementById('sb-ac-to'), function (picked) {
     toPick = picked;
     if (picked && fromPick) trySubmitFromTo();
-  });
+  }, searchNationalRailStations);
   fromInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') toInput.focus(); });
   toInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') trySubmitFromTo(); });
 
@@ -8285,8 +8527,8 @@
         routeKeywords: [selection.fromName, selection.toName].filter(Boolean),
       };
     }
-    if (selectedStationCrs) {
-      var st = stationsContent[selectedStationCrs.toUpperCase()];
+    if (selectedStationId) {
+      var st = selectedStationCrs ? stationsContent[selectedStationCrs.toUpperCase()] : null;
       return {
         label: selectedStationName || selectedStationCrs,
         operators: (st && st.operators) || [],
@@ -8440,15 +8682,23 @@
   function setSavedRoutes(list) {
     try { localStorage.setItem(SAVED_KEY, JSON.stringify(list)); } catch (e) {}
   }
-  function isStarred(crs) {
-    return getSavedRoutes().some(function (r) { return r.crs === crs; });
+  // Saved records were written as {name, crs, toc, addedAt} before non-CRS
+  // stations existed. They are matched on `id` now, falling back to `crs` so a
+  // user's existing localStorage keeps working untouched — a saved record
+  // written last week must not silently stop matching. New records carry both.
+  function savedIdOf(r) {
+    return (r && (r.id || r.crs)) || null;
+  }
+  function isStarred(id) {
+    if (!id) return false;
+    return getSavedRoutes().some(function (r) { return savedIdOf(r) === id; });
   }
 
   function savedListRowsHtml() {
     var list = getSavedRoutes();
     if (!list.length) return '<div class="sv-empty" data-anim-row>No saved stations yet — tap the star on a station to save it.</div>';
     return list.map(function (r, i) {
-      return '<div class="sv-item" data-anim-row data-idx="' + i + '" data-crs="' + escapeAttr(r.crs) + '">' +
+      return '<div class="sv-item" data-anim-row data-idx="' + i + '" data-sid="' + escapeAttr(savedIdOf(r) || '') + '">' +
         '<span class="sv-name">' + r.name + '</span>' +
         '<span class="sv-sub">' + (r.toc || '') + '</span>' +
         '</div>';
@@ -8459,11 +8709,11 @@
     if (!listEl) return;
     Array.prototype.forEach.call(listEl.querySelectorAll('.sv-item'), function (row) {
       row.addEventListener('click', function () {
-        var crs = row.dataset.crs;
-        var feature = stationsData && stationsData.features.find(function (f) { return f.properties.crs === crs; });
+        var sid = row.dataset.sid;
+        var feature = stationsData && stationsData.features.find(function (f) { return f.properties.sid === sid; });
         if (!feature) return;
         map.flyTo({ center: feature.geometry.coordinates, zoom: 11, duration: 800 });
-        selectStation(feature.properties.name, feature.properties.crs);
+        selectStation(feature.properties.name, feature.properties.sid);
       });
     });
   }
@@ -8481,9 +8731,9 @@
   });
 
   starBtn.addEventListener('click', function () {
-    if (!selectedStationCrs) return;
+    if (!selectedStationId) return;
     var list = getSavedRoutes();
-    var idx = list.findIndex(function (r) { return r.crs === selectedStationCrs; });
+    var idx = list.findIndex(function (r) { return savedIdOf(r) === selectedStationId; });
     if (idx !== -1) {
       list.splice(idx, 1);
     } else {
@@ -8493,11 +8743,21 @@
       // operators array is a strictly better source than the old marker
       // geojson's toc field ever was anyway (that only covered the curated
       // ~50; this covers ~2,600).
-      var stationOperators = stationsContent[selectedStationCrs] && stationsContent[selectedStationCrs].operators;
-      list.push({ name: selectedStationName, crs: selectedStationCrs, toc: (stationOperators && stationOperators[0]) || '', addedAt: new Date().toISOString() });
+      var stationOperators = selectedStationCrs && stationsContent[selectedStationCrs] && stationsContent[selectedStationCrs].operators;
+      var savedRow = stationRowById(selectedStationId);
+      list.push({
+        name: selectedStationName,
+        id: selectedStationId,
+        crs: selectedStationCrs,
+        // A non-CRS stop has no stations-content.json entry and so no operators
+        // array; its network is the meaningful equivalent for the saved-list
+        // subtitle, and station-list.json now carries it.
+        toc: (stationOperators && stationOperators[0]) || (savedRow && !savedRow.crs ? savedRow.network : '') || '',
+        addedAt: new Date().toISOString(),
+      });
     }
     setSavedRoutes(list);
-    starBtn.classList.toggle('starred', isStarred(selectedStationCrs));
+    starBtn.classList.toggle('starred', isStarred(selectedStationId));
   });
 
   // ── Cookie consent (compact vanilla banner) ──────────────────────────────
