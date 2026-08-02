@@ -134,8 +134,9 @@
       "light": "#3B23D6"
     },
     "Manchester Metrolink": {
-      "dark": "#E745E4",
-      "light": "#C620C3"
+      "dark": "#FFDC44",
+      "light": "#FFDC44",
+      "_note": "HAND-SET 2026-08-02, bypassing build-operator-palette.mjs entirely — like the Grand Central, Blackpool Tramway and Heritage entries, a regeneration WILL overwrite this. Was #E745E4/#C620C3, a generated magenta from METRO_BASE's '#A0459E'; replaced with the real Bee Network yellow. DELIBERATELY THE SAME VALUE IN BOTH THEMES, which no other entry in this file does: the Bee Network brand uses one yellow across bus and tram and it is designed to read on white, so the usual toVividLightTheme()/toDarkThemeFromLight() light/dark split would misrepresent it in both directions. SOURCE: tfgm.com's own live site — <meta name=\"theme-color\"> and msapplication-TileColor are both #ffdc44, and it is the most-used non-black colour in the site's design-system CSS (18 occurrences: brand fills, focus rings, borders). That is first-party but it is NOT the published brand-guideline document, which was not reachable; Wikipedia's Metrolink system colour (Module:Adjacent stations/Manchester Metrolink, corroborated by the Airport/Bury/Eccles/Trafford Park line infoboxes) is #FFDB4E, ΔE76 4.0 away — visually the same colour, so the choice between them does not affect anything below. KNOWN COLLISION, UNRESOLVED — see scripts/check-color-separation.mjs: this FAILS passesGates() in both themes. vs Merseyrail (ME) ΔE76 4.4 dark / 11.8 light, CVD-simulated 1.5-7.1 — floor is 15. Merseyrail's real brand colour is also a yellow (#FFCE0F 'Candlelight', confidence high) at hue 47.8 against this one's 48.8, so the two are the same colour and no small nudge separates them; clearing 15 would need ME pushed to roughly #D9A400. Also below floor: tfl_lines Circle at ΔE76 12.5 in light (#FFD300) — geographically irrelevant, a Manchester tram and a London Underground line never share a meaningful viewport. Both flagged for a decision; neither is blocking at the file level because passesGates() only ever gated the GENERATED palette and this entry never goes through it."
     },
     "Docklands Light Railway": {
       "dark": "#25FFE5",

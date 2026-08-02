@@ -294,6 +294,13 @@ for (const key of tocOrder) {
 // TOC placements (and each other) so nothing newly collides.
 const METRO_BASE = {
   'Transport for London': '#8B7FD6',
+  // STALE ON PURPOSE — the shipped value is NOT what this seed produces.
+  // data/operator-colors.json carries a hand-set #FFDC44 in BOTH themes (the
+  // real Bee Network yellow, first-party-sourced), overriding the magenta this
+  // seed derives. Same escape hatch as Grand Central's dark value: hand-set in
+  // the JSON, not reproduced here, and a regeneration silently reverts it.
+  // Read that entry's `_note` before regenerating — it records an UNRESOLVED
+  // collision with Merseyrail, whose real brand colour is the same yellow.
   'Manchester Metrolink': '#A0459E',
   'Docklands Light Railway': '#00A4A7',
   'West Midlands Metro': '#7B4FA0',
