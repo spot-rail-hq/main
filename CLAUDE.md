@@ -126,6 +126,12 @@ Include top 50 UK stations to start. Markers: 8px circle, turquoise stroke, dark
 - Era snap-points: 1845, 1880, 1923, 1965, 1994, 2025
 
 ## Legend bar (Database mode only, bottom of screen)
+> **⚠️ PARTLY OUT OF DATE — do not read the colours below as current fact.**
+> "Metro/LRT (purple)" no longer describes what renders: the non-CRS marker
+> purple was reverted to the turquoise CRS accent (2026-08-02), and "Heritage
+> (amber)" became coral in 2026-07-27. Flagged rather than rewritten — a full
+> CLAUDE.md accuracy pass is its own task. The authoritative colour table is
+> `data/operator-colors.json`.
 - National Rail (turquoise) · Metro/LRT (purple) · Heritage (amber) · Closed (dashed)
 - History button right-aligned → expands year slider above legend
 
@@ -180,6 +186,39 @@ consistently without duplicating the table.
     value was accepted on are recorded in that file's `heritage._note`;
     compare against those rather than against the bare 15 ΔE threshold, since
     this palette is dense enough that plenty of pairs sit below it.
+
+### Heritage railways with no map presence — 14 of 175
+
+Not every heritage railway can be drawn. **14 have no map presence**, and it is
+**two disjoint causes**, not one — which is why a single "missing" count is the
+wrong shape for it:
+
+| flag | count | what it means |
+|---|---|---|
+| `no_line` | 8 | `km` is 0. The extraction found a name but no measurable track, so **no line is ever drawn** — but the entry HAS a `center`, so it can still be located. |
+| `needs_coordinates` / `not_in_graph` | 8 | Not in the segment graph at all. **No `center`**, so there is nowhere even to fly to. |
+
+Only **2 railways carry both** flags, so the union is 14, not 16.
+
+**Counted from `data/heritage-railways.json` (175 entries) on 2026-08-03 — go
+back to that file rather than quoting these numbers as fixed trivia.** They move
+whenever the heritage extraction is re-run, and older comments in `map.html`
+claimed 12 and 9 for these same two sets, both wrong by the time they were read.
+Re-derive with:
+
+```
+node -e "const d=Object.entries(require('./data/heritage-railways.json')).filter(([k])=>k!=='_notes');
+console.log('no_line', d.filter(([,v])=>v.no_line).length,
+            'no center', d.filter(([,v])=>!v.center).length,
+            'union', d.filter(([,v])=>v.no_line||!v.center).length)"
+```
+
+`map.html`'s `heritageHasNoMapPresence()` folds both causes into one user-facing
+state (the panel and the search dropdown both say so in words), because the
+user-visible consequence is identical: nothing to look at. The two are still
+worded differently in the panel — "can't be shown or located" vs "no mapped
+track" — since only one of them has a known location.
+
 - Canonicalization (which raw OSM operator/brand tag maps to which
   category/color) is a *separate, broader* mapping than
   operators-content.json's own `aliases` — that field is scoped to station-

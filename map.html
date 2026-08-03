@@ -2871,7 +2871,28 @@
     var theme = currentTheme();
     var rc = themeColors();
     var grey = rc.railwayMain;
-    ROUTE_TIERS.forEach(function (t) { map.setPaintProperty('operator-lines-' + t.id, 'line-color', grey); });
+    // ── GLOW-ONLY MODE IN HISTORY (2026-08-03) ───────────────────────────────
+    // History's modern band (1994+) renders every operator line in FULL COLOUR
+    // via applyHistoryModernPaint(), which is the sole owner of those layers'
+    // line-color while History is active. The Live/Database highlight is a
+    // reverse colour-REVEAL — grey everything, then re-colour the selection —
+    // which is meaningless against an already-coloured network, and writing the
+    // grey would visibly wipe out History's own paint (that is exactly the bug
+    // the blanket `mode === 'history'` handler guards were added to stop, back
+    // when they also killed selection entirely).
+    //
+    // So in History the highlight is expressed by the GLOW RINGS alone: no grey
+    // pass, no crisp 'operator-lines-active' overlay, just the halo. Same rings,
+    // same colours, same colorExprFrom() composition as everywhere else — this
+    // is a narrowing of the existing path, not a second glow implementation.
+    //
+    // 'operator-lines-active' is still explicitly BLANKED below rather than left
+    // alone: a highlight locked in Live and carried into History would otherwise
+    // leave its crisp coloured overlay sitting on top of History's own paint.
+    var glowOnly = mode === 'history';
+    if (!glowOnly) {
+      ROUTE_TIERS.forEach(function (t) { map.setPaintProperty('operator-lines-' + t.id, 'line-color', grey); });
+    }
 
     var locked = lockedOperatorHighlight;
     var hovered = (hoveredOperatorHighlight && hoveredOperatorHighlight !== locked) ? hoveredOperatorHighlight : null;
@@ -2937,29 +2958,39 @@
     }
     var colorExpr = colorExprFrom(function (g) { return g.color; });
 
-    map.setFilter('operator-lines-active', filter);
-    map.setPaintProperty('operator-lines-active', 'line-color', colorExpr);
-    // Carry the heritage dash onto the crisp highlighted line, so a
-    // highlighted heritage route does not silently turn solid — this layer is
-    // shared by every operator, and line-dasharray cannot be data-driven, so
-    // it has to be set imperatively from whatever is active. Only applied when
-    // EVERY active operator is heritage: with a heritage route locked and a
-    // National Rail route hovered, one layer cannot draw both patterns, and
-    // solid is the safer of the two (a solid heritage line is a missing hint;
-    // a dotted National Rail line would be a false one). The GLOW rings stay
-    // solid regardless — dash units scale with line width, so the same [0, 2]
-    // on rings 3.6-7x wider would produce gaps several times longer than the
-    // line's own, reading as a broken halo rather than a matching one.
-    //
-    // SOLID_DASH, not null/undefined, to turn the dash back off. Verified
-    // against the MapLibre style spec: `line-dasharray: null` and `: undefined`
-    // are BOTH rejected ("array expected"), and a rejected setPaintProperty()
-    // returns false and applies nothing — so clearing it the obvious way would
-    // silently leave the previous route's dash on the layer for every operator
-    // highlighted afterwards. [1, 0] is a 1-unit dash with a zero-length gap,
-    // i.e. continuous.
-    var heritageOnly = groups.every(function (g) { return g.heritage; });
-    map.setPaintProperty('operator-lines-active', 'line-dasharray', heritageOnly ? HERITAGE_DASH : SOLID_DASH);
+    if (glowOnly) {
+      // See the glowOnly note at the top: the crisp overlay is suppressed in
+      // History, and blanked rather than skipped so nothing carried in from Live
+      // survives on top of applyHistoryModernPaint()'s colours. line-color and
+      // line-dasharray are deliberately NOT written here — with the filter
+      // matching nothing they cannot render, and leaving them untouched keeps
+      // this branch strictly subtractive.
+      map.setFilter('operator-lines-active', NO_OPERATOR_FILTER);
+    } else {
+      map.setFilter('operator-lines-active', filter);
+      map.setPaintProperty('operator-lines-active', 'line-color', colorExpr);
+      // Carry the heritage dash onto the crisp highlighted line, so a
+      // highlighted heritage route does not silently turn solid — this layer is
+      // shared by every operator, and line-dasharray cannot be data-driven, so
+      // it has to be set imperatively from whatever is active. Only applied when
+      // EVERY active operator is heritage: with a heritage route locked and a
+      // National Rail route hovered, one layer cannot draw both patterns, and
+      // solid is the safer of the two (a solid heritage line is a missing hint;
+      // a dotted National Rail line would be a false one). The GLOW rings stay
+      // solid regardless — dash units scale with line width, so the same [0, 2]
+      // on rings 3.6-7x wider would produce gaps several times longer than the
+      // line's own, reading as a broken halo rather than a matching one.
+      //
+      // SOLID_DASH, not null/undefined, to turn the dash back off. Verified
+      // against the MapLibre style spec: `line-dasharray: null` and `: undefined`
+      // are BOTH rejected ("array expected"), and a rejected setPaintProperty()
+      // returns false and applies nothing — so clearing it the obvious way would
+      // silently leave the previous route's dash on the layer for every operator
+      // highlighted afterwards. [1, 0] is a 1-unit dash with a zero-length gap,
+      // i.e. continuous.
+      var heritageOnly = groups.every(function (g) { return g.heritage; });
+      map.setPaintProperty('operator-lines-active', 'line-dasharray', heritageOnly ? HERITAGE_DASH : SOLID_DASH);
+    }
     // Glow rings are "same color" as the highlighted line per spec, not a
     // fixed white/dark neutral halo — opacity is NOT touched here, each
     // ring's own opacity is fixed for its lifetime (set once at creation,
@@ -4185,19 +4216,30 @@
   // 2026-07-27: EVERY handler in here now no-ops in History mode, matching the
   // guard History's own handlers already carry.
   //
-  // The bug this fixes: in History mode at 1994+ the modern operator layers
-  // ARE on screen (that is the whole point of the 1994 source-switch) and
-  // their hit layers are interactive, so these handlers still fired — and
-  // applyOperatorHighlightPaint() repaints every operator-lines-<tier> layer
+  // The bug that guard fixed: in History mode at 1994+ the modern operator
+  // layers ARE on screen (that is the whole point of the 1994 source-switch) and
+  // their hit layers are interactive, so these handlers fired — and
+  // applyOperatorHighlightPaint() repainted every operator-lines-<tier> layer
   // flat grey, because grey-until-hovered is the LIVE-mode reverse-colour-
   // reveal. So hovering any line greyed out the entire network, and only
-  // dragging the slider brought the colour back (that re-runs
-  // applyHistoryModernPaint()). While History mode is active,
-  // applyHistoryModernPaint() is the sole owner of those layers' paint;
-  // nothing else may write to them.
+  // dragging the slider brought the colour back.
+  //
+  // 2026-08-03 — THE GUARD IS GONE, THE RULE IT PROTECTED IS NOT. Blanket
+  // early-returns fixed the repaint by disabling selection outright, which left
+  // the whole 1994+ band with NO interaction owner at all: History's own
+  // HIST_LINE_HIT_LAYER is hidden above 1994 (see setHistoryLayerVisibility),
+  // and these handlers refused to run, so clicking a line did nothing at the
+  // default landing year. applyHistoryModernPaint() is still the sole owner of
+  // those layers' line-color in History — that is now enforced inside
+  // applyOperatorHighlightPaint() by its `glowOnly` branch, which skips the grey
+  // pass and the crisp overlay entirely, rather than by refusing to run here.
+  //
+  // PRE-1994 IS UNAFFECTED, STRUCTURALLY, not by a guard: every
+  // 'operator-lines-hit-*' layer is set to visibility:'none' below 1994, and
+  // MapLibre does not hit-test hidden layers, so these handlers cannot fire
+  // there no matter what they contain.
   function wireOperatorLineInteractions() {
     map.on('mousemove', OPERATOR_HIT_LAYERS, function (e) {
-      if (mode === 'history') return;
       map.getCanvas().style.cursor = 'pointer';
       if (!e.features.length) return;
       var props = e.features[0].properties;
@@ -4208,7 +4250,14 @@
       // for the 13 heritage segments that carry no heritage_slug (ways that
       // resolved to no canonical railway) — those still read as heritage, just
       // without an individual identity, which is exactly what they are.
-      if (op === HERITAGE_OPERATOR_KEY && props.heritage_slug) {
+      //
+      // SKIPPED IN HISTORY, deliberately. Heritage's per-railway selection is a
+      // Live/Database feature built around a Database-only panel and a camera
+      // fly; History has its own year-driven camera and drops dbOnly selections.
+      // Treating heritage as a plain operator here keeps History's modern band
+      // uniform (every line glows and opens the same card) and leaves the
+      // heritage feature itself literally untouched outside History.
+      if (mode !== 'history' && op === HERITAGE_OPERATOR_KEY && props.heritage_slug) {
         if (hoveredHeritageSlug !== props.heritage_slug || hoveredOperatorHighlight !== null) {
           hoveredHeritageSlug = props.heritage_slug;
           hoveredOperatorHighlight = null;
@@ -4225,7 +4274,6 @@
       showHoverTooltip(e.lngLat, resolveOperatorDisplayName(op));
     });
     map.on('mouseleave', OPERATOR_HIT_LAYERS, function () {
-      if (mode === 'history') return;
       map.getCanvas().style.cursor = '';
       if (hoveredOperatorHighlight !== null || hoveredHeritageSlug !== null) {
         hoveredOperatorHighlight = null;
@@ -4267,8 +4315,13 @@
     // on the map) was never mode-gated — operator-lines renders in both
     // modes identically, only the panel navigation + mode switch happen
     // here.
+    //
+    // 2026-08-03: also runs in History's modern band. History's own per-segment
+    // click-lock (wireHistoryMapInteraction) owns everything BELOW 1994, where
+    // its HIST_LINE_HIT_LAYER is the visible one and these hit layers are
+    // hidden; above 1994 that layer is hidden and these are visible, so the two
+    // never compete for the same click.
     map.on('click', OPERATOR_HIT_LAYERS, function (e) {
-      if (mode === 'history') return; // History owns its own per-segment click-lock, see wireHistoryMapInteraction()
       if (!e.features.length) return;
       // Stations sit ON the rail line, and this hit layer is a generously
       // wide (18px) invisible strip specifically so a real click near a
@@ -4282,6 +4335,14 @@
       // here — if one is also under this exact point, let selectStation()
       // own the click and skip the route entirely.
       if (map.queryRenderedFeatures(e.point, { layers: STATION_MARKER_LAYERS }).length) return;
+      // The same guard again, for History's OWN station markers. Stations follow
+      // the MODE, lines follow the YEAR (see setHistoryLayerVisibility) — so at
+      // 1994+ the historical station dots are on screen while the live ones are
+      // hidden, and without this a click on one would lock the modern line
+      // running under it as well. existingLayers() because these layers only
+      // exist once History has been entered at least once.
+      if (mode === 'history' &&
+          map.queryRenderedFeatures(e.point, { layers: existingLayers(historyStationHitLayers()) }).length) return;
       // A second guard used to sit here for heritage DOTS — their 28px hit
       // circles overlapped this 18px strip, so one click fired both handlers and
       // the dot had to win. Removed 2026-08-02 with the dots themselves; heritage
@@ -4300,7 +4361,8 @@
       // The national lock is deliberately left alone here: the two states are
       // independent (see their declarations), so clicking a heritage railway
       // does not disturb a locked national operator and vice versa.
-      if (op === HERITAGE_OPERATOR_KEY && props.heritage_slug) {
+      // Skipped in History for the reason the hover handler documents.
+      if (mode !== 'history' && op === HERITAGE_OPERATOR_KEY && props.heritage_slug) {
         selectHeritageRailway(props.heritage_slug);
         return;
       }
@@ -4308,7 +4370,12 @@
       lockedOperatorHighlight = wasLocked ? null : op;
       applyOperatorHighlightPaint();
       if (!wasLocked) {
-        if (mode !== 'database') setMode('database');
+        // NO MODE SWITCH IN HISTORY. Outside History, selecting a route jumps
+        // into Database so the panel and the tab agree (see the long note
+        // above). Doing that here would eject the user from History mode on
+        // their first click — the opposite of the fix. History keeps its own
+        // tab and shows the same operator card in place.
+        if (mode !== 'database' && mode !== 'history') setMode('database');
         selectOperator(op);
       }
     });
@@ -4323,8 +4390,13 @@
     // lockedHeritageSlug. heritageHighlightAll is untouched: it is a button
     // state, not a selection, and a stray click into empty sea must not
     // silently un-press a control the user explicitly pressed.
+    // 2026-08-03: runs in History too, so a modern-band highlight locked there
+    // can be cleared the same way. History's own empty-space handler clears
+    // lockedHistoryFeature and is a separate listener on separate state — below
+    // 1994 this one has nothing to clear (the modern hit layers are hidden, so
+    // no lock can have been taken), and above 1994 History's has nothing to
+    // clear. They never fight over the same click.
     map.on('click', function (e) {
-      if (mode === 'history') return;
       if (!lockedOperatorHighlight && !lockedHeritageSlug) return;
       var hits = map.queryRenderedFeatures(e.point, { layers: OPERATOR_HIT_LAYERS });
       if (hits.length) return;
