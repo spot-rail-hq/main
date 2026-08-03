@@ -95,6 +95,28 @@ was already `'none'` and would report drops that never happened.
 **Breaks if:** the variable names change, or the block stops ending with
 `activeSpanRange = null;\n    }`.
 
+### `locomotive-data-harness.mjs`
+**Does NOT slice map.html.** `data/site-data.json` is a generated artefact, so
+this one runs against the built file plus its inputs (`rolling-stock.json`,
+`operators-content.json`).
+
+**Asserts** the invariants the 2026-08-04 schema migration introduced: global
+`totalClasses` counts each class once while per-section counts count every
+appearance (so `sum(section counts) = totalClasses + cross-listed extras`); every
+DOM id is unique; canonical ids stay bare `fleet-{slug}` and secondary ones carry
+a `--{category}` suffix; nothing was dropped (`canonical + merged = raw export
+rows`); and the schema really is unified (no positional `row` arrays, named
+columns everywhere).
+
+The load-bearing one is **"at least 83 Fleet chips still resolve"** — a
+cross-file contract between `operators-content.json`, `map.html`'s chip links and
+this data, which nothing else enforces. 83 is a floor measured pre-migration:
+adding classes may raise it, but a drop means a chip stopped landing on a row.
+
+**Breaks if:** `site-data.json` is hand-edited instead of rebuilt (run
+`node scripts/build-locomotive-data.mjs`), or `fleetClassSlug()` diverges between
+its four copies.
+
 ## When one of these fails
 
 A failure is usually real. But because they slice source text, a **restructure**

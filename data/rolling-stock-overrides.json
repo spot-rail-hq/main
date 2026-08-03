@@ -1,0 +1,384 @@
+{
+  "_notes": "Hand-curated overrides applied ON TOP of data/rolling-stock.json by scripts/build-locomotive-data.mjs. rolling-stock.json is a raw spreadsheet export and is overwritten wholesale whenever the sheet is re-exported, so anything curated by hand has to live here or it is lost on the next export. Keyed by section name -> class value (both exactly as they appear in rolling-stock.json). SEEDED 2026-08-04 from the 22 rows where the previous hand-maintained site-data.json had already diverged from the export: all 22 were Wikimedia 'File:' links replacing the export's less precise 'Category:' links. Those 22 were the ONLY divergence between the two files - every other field matched exactly. This file is also the intended home for the per-image attribution fields (photographer, license, sourceUrl) that Prompt B will add; the build script already passes unknown keys through to the class object, so adding them here needs no script change. 2026-08-04 additions: `corrections` (field-level data fixes) and `mergeDuplicates` (structural de-duplication of the same real-world class recorded twice under different key formats). Both are applied by the build script AFTER the raw export is read, so a re-export cannot silently undo them. 2026-08-04 (second pass): the remaining three known duplicate pairs (345/378/710) were merged on the same pattern as 777, and `additions` was added for classes that do not exist in the export at all — new rows have to live here rather than in rolling-stock.json, which is overwritten wholesale on re-export.",
+  "overrides": {
+    "Intercity & High Speed": {
+      "373": {
+        "image": "commons.wikimedia.org/wiki/File:Eurostar_d'hiver_quittant_Albertville_(2018).JPG"
+      }
+    },
+    "Commuter & Suburban": {
+      "334": {
+        "image": "commons.wikimedia.org/wiki/File:Class334019_at_dumbarton_central.jpg"
+      }
+    },
+    "Charter & Railtours": {
+      "44871": {
+        "image": "commons.wikimedia.org/wiki/File:LMS_Stanier_Class_\"5MT\"_4-6-0_No.44871_-_29372786862.jpg"
+      },
+      "45596": {
+        "image": "commons.wikimedia.org/wiki/File:45596_Bahamas_(46988770322).jpg"
+      },
+      "45690": {
+        "image": "commons.wikimedia.org/wiki/File:LMS_45690_Leander_at_Barrow_Hill_Roundhouse.JPG"
+      },
+      "45699": {
+        "image": "commons.wikimedia.org/wiki/File:45699_Galatea_Passing_Bates_Mill.jpg"
+      },
+      "46203": {
+        "image": "commons.wikimedia.org/wiki/File:LMS_8P_4-6-2_46203_PMR_Carlisle_22.09.94R_edited-2.jpg"
+      },
+      "46229": {
+        "image": "commons.wikimedia.org/wiki/File:6229_Duchess_of_Hamilton_at_the_National_Railway_Museum.jpg"
+      },
+      "46233": {
+        "image": "commons.wikimedia.org/wiki/File:6233_Duchess_of_Sutherland_at_Monk_Fryston.jpg"
+      },
+      "48151": {
+        "image": "commons.wikimedia.org/wiki/File:41851_The_Fellsman_Approaching_Ais_Gill.jpg"
+      },
+      "60163": {
+        "image": "commons.wikimedia.org/wiki/File:LNER_Class_A1_4-6-2_No60163_'Tornado'_(29903372180).jpg"
+      }
+    },
+    "Light Rail & Metro": {
+      "Class 555": {
+        "image": "commons.wikimedia.org/wiki/File:555032_at_Whitley_Bay_Metro_Station_-_geograph.org.uk_-_8285661_(cropped).jpg"
+      },
+      "DLR — B90 / B92 / B2K / B07 / B09 Stock": {
+        "image": "commons.wikimedia.org/wiki/File:Docklands_Light_Railway_trein_in_Shadwell_(12753975413).jpg"
+      },
+      "DLR — CAF B23": {
+        "image": "commons.wikimedia.org/wiki/File:DLR_B23_at_Pontoon_Dock.jpg"
+      },
+      "LU 2024 Stock": {
+        "image": "commons.wikimedia.org/wiki/File:London_Underground_2024_tube_stock_approaching_Turnham_Green_during_a_test_run_(March_2026)_(1).jpg"
+      },
+      "Manchester Metrolink — M5000": {
+        "image": "commons.wikimedia.org/wiki/File:Greater_Manchester_Metrolink_-_tram_3009A.jpg"
+      }
+    },
+    "Heritage & Preserved": {
+      "GWR Manor Class 4-6-0": {
+        "image": "commons.wikimedia.org/wiki/File:Gloucester_Central_Station,_with_a_stopping_train_to_Hereford_geograph-2510735-by-Ben-Brooksbank.jpg"
+      },
+      "GWR Modified Hall 4-6-0": {
+        "image": "commons.wikimedia.org/wiki/File:Ruscombe_Siding_geograph-2482312-by-Ben-Brooksbank.jpg"
+      },
+      "GWR Prairie Tank 4500/5500 Class": {
+        "image": "commons.wikimedia.org/wiki/File:Dawlish_Kennaway_Tunnel_geograph-2935623-by-Ben-Brooksbank.jpg"
+      },
+      "LMS Black Five — heritage examples": {
+        "image": "commons.wikimedia.org/wiki/File:44949_Manchester_Victoria.jpg"
+      },
+      "LMS Fairburn 2-6-4T": {
+        "image": "commons.wikimedia.org/wiki/File:Derby_LMS_Fairburn_2-6-4T_geograph-2811195-by-Ben-Brooksbank.jpg"
+      },
+      "LMS Stanier 8F — heritage examples": {
+        "image": "commons.wikimedia.org/wiki/File:Stanier_8F_2-8-0_No._48479.jpg"
+      }
+    }
+  },
+  "corrections": {
+    "Commuter & Suburban": {
+      "777": {
+        "name": "Stadler METRO — Merseyrail",
+        "yearIntro": "2023",
+        "_why": "name: the export said 'Nova 1 — Merseyrail'. 'Nova 1' is TransPennine Express's brand for the Class 802 (correctly recorded on the Intercity 802 row) and has nothing to do with Merseyrail — the 777 is a Stadler METRO unit. The same wrong name appeared on the duplicate Light Rail & Metro row merged away below. yearIntro: the two duplicate rows disagreed, 2020 vs 2023. This column means ENTERED SERVICE everywhere else in the dataset (e.g. Class 43 = 1976), and the 777 entered passenger service in January 2023; 2020 was first delivery/testing. FLAGGED for review."
+      },
+      "345": {
+        "notes": "70 nine-car trains as built. A June 2024 Alstom order added 10 more, taking the fleet to 80; those are being built at Derby Litchurch Lane and were in testing at the time of writing. Central section through London opened May 2022 (Crossrail). Capacity ~1,500 passengers per train.",
+        "numberBuilt": "70 (as built; fleet expanding to 80)",
+        "capacity": "~1,500 passengers per train",
+        "_why": "CORRECTS THIS FILE'S OWN EARLIER CORRECTION. The export's commuter Notes said '80 nine-car trains' and the 2026-08-04 first pass treated that as an error against the duplicate metro row's '70', because the two rows contradicted each other. Verification shows BOTH were right about different things: 70 were built for the opening fleet, and a June 2024 Alstom order for 10 more takes it to 80. So the original 80 was a forward-looking figure, not a mistake. numberBuilt now carries the as-built 70 with the expansion qualified in the same string, and the detail lives in Notes — the existing field that already fits. NO new schema field was added; see the report for the flag about whether fleet-in-flux deserves one."
+      }
+    },
+    "Light Rail & Metro": {
+      "Sheffield Supertram — Siemens-Duewag": {
+        "cityNetwork": "Sheffield Supertram",
+        "_why": "Normalised 2026-08-04. This row said 'Sheffield Supertram / South Yorkshire Supertram' while the Class 399 row said 'Sheffield Supertram', so one network appeared as two in any naming-based count. Checked the operator's own branding rather than guessing: Travel South Yorkshire brands the network simply 'Supertram', and 'South Yorkshire Supertram' is the form used in official documentation. 'Sheffield Supertram' is used here because bare 'Supertram' is ambiguous in a UK-wide database and 'Sheffield Supertram' is the common recognised name (and already the string on the 399 row), so this is a normalisation onto an existing value rather than a rename. NOTE also that ownership passed from Stagecoach to the South Yorkshire Mayoral Combined Authority on 22 March 2024 via South Yorkshire Future Trams Ltd — flagged, not changed, since no row currently names an operator for this fleet."
+      }
+    }
+  },
+  "mergeDuplicates": [
+    {
+      "keep": {
+        "section": "Commuter & Suburban",
+        "class": "777"
+      },
+      "remove": {
+        "section": "Light Rail & Metro",
+        "class": "Class 777 — Merseyrail"
+      },
+      "mergeFields": [
+        "fleetSize",
+        "cityNetwork"
+      ],
+      "_why": "Same real-world class recorded twice under different key formats. The Commuter row is kept as home because its bare class value '777' produces the canonical anchor fleet-777, which map.html's Fleet chips link to; the metro row's anchor (fleet-class-777-merseyrail) is targeted by nothing. The metro row's fleetSize and cityNetwork are merged in rather than dropped — the unified schema holds both those and the commuter row's operators/primaryService, so nothing is lost. The 777 is then cross-listed into `metro` via CROSS_LISTINGS, which is what the duplicate row was hand-approximating before categories[] existed."
+    },
+    {
+      "keep": {
+        "section": "Commuter & Suburban",
+        "class": "345"
+      },
+      "remove": {
+        "section": "Light Rail & Metro",
+        "class": "Class 345 — Elizabeth line"
+      },
+      "mergeFields": [
+        "fleetSize",
+        "cityNetwork"
+      ],
+      "_why": "Same class, two rows. Commuter row kept as home so the fleet-345 anchor survives. NOTE two real disagreements between the pair, both flagged in the report: (1) traction — commuter said 'Electric 25kV AC', metro said 'Dual-voltage (25kV AC / 750V DC)'. The Elizabeth line is 25kV AC throughout with no third-rail running, so the commuter value is correct and is the one kept (the merge only fills EMPTY fields, so the wrong metro value is discarded rather than picked). (2) fleet count — the commuter Notes said '80 nine-car trains' while the metro Fleet Size said '70'. 70 is correct; the notes are corrected below."
+    },
+    {
+      "keep": {
+        "section": "Commuter & Suburban",
+        "class": "378"
+      },
+      "remove": {
+        "section": "Light Rail & Metro",
+        "class": "Class 378 — London Overground"
+      },
+      "mergeFields": [
+        "fleetSize",
+        "cityNetwork"
+      ],
+      "_why": "Same class, two rows. No factual disagreement — traction, builder, year and speed matched exactly; the two Notes were complementary rather than contradictory. The metro row's note ('East London Line, North London Line, West London Line. Dual-voltage for AC and DC sections.') is discarded with the row; its content is already carried by the kept row's primaryService and traction fields."
+    },
+    {
+      "keep": {
+        "section": "Commuter & Suburban",
+        "class": "710"
+      },
+      "remove": {
+        "section": "Light Rail & Metro",
+        "class": "Class 710 — London Overground"
+      },
+      "mergeFields": [
+        "fleetSize",
+        "cityNetwork"
+      ],
+      "_why": "Same class, two rows. Traction differed only by a trailing space, which the build script's clean() already strips — not a real conflict. One editorial error found and DISCARDED WITH THE ROW rather than merged: the metro note said 'DC-only routes', which contradicts both its own dual-voltage traction field and the 25kV AC Gospel Oak-Barking route the same row lists. Flagged in the report; no correction needed because the note does not survive the merge."
+    }
+  ],
+  "additions": {
+    "Regional Passenger": [
+      {
+        "class": "139",
+        "name": "Parry People Mover",
+        "traction": "Flywheel (LPG engine)",
+        "builder": "Parry People Movers",
+        "yearIntro": "2009",
+        "maxSpeedMph": "20",
+        "operators": "West Midlands Railway (operated by Pre Metro Operations)",
+        "primaryService": "Stourbridge Junction – Stourbridge Town branch shuttle",
+        "numberBuilt": "3",
+        "notes": "Single-car flywheel railcar working the 0.8-mile Stourbridge Town branch, the shortest branch line service in Britain.",
+        "image": "commons.wikimedia.org/wiki/Category:British_Rail_Class_139",
+        "verifyFields": [],
+        "_source": "Wikipedia British Rail Class 139 — entered service June 2009, max speed 32 km/h (20 mph), 3 built. || VERIFICATION PASS 2026-08-04: Wikipedia British Rail Class 139 — capacity 20-25 seated plus 30-35 standing; in service June 2009 to present.",
+        "capacity": "20–25 seated + 30–35 standing",
+        "serviceYears": "2009–present"
+      },
+      {
+        "class": "168",
+        "name": "Clubman",
+        "traction": "Diesel-hydraulic (DMU)",
+        "builder": "Adtranz / Bombardier Derby",
+        "yearIntro": "1998",
+        "maxSpeedMph": "100",
+        "operators": "Chiltern Railways",
+        "primaryService": "London Marylebone – Birmingham / Oxford",
+        "numberBuilt": "19 (plus 9 converted from Class 170/3)",
+        "notes": "Chiltern's post-privatisation Turbostar-family DMU; the first new trains ordered by a privatised UK operator.",
+        "image": "commons.wikimedia.org/wiki/Category:British_Rail_Class_168",
+        "verifyFields": [],
+        "_source": "Wikipedia British Rail Class 168 / Chiltern Railways — debuted 1998, 100 mph, 19 built plus 9 converted. || VERIFICATION PASS 2026-08-04: Wikipedia British Rail Class 168 / Chiltern Railways — 204 seats 3-car, 272 seats 4-car, 2+2 layout; in service 1998 to present.",
+        "capacity": "204 seats (3-car) / 272 seats (4-car)",
+        "serviceYears": "1998–present"
+      },
+      {
+        "class": "197",
+        "name": "Civity",
+        "traction": "Diesel-mechanical (DMU)",
+        "builder": "CAF (Beasain / Llanwern, Newport)",
+        "yearIntro": "2022",
+        "maxSpeedMph": "100",
+        "operators": "Transport for Wales",
+        "primaryService": "Wales & Borders regional routes",
+        "numberBuilt": "77 (51 two-car + 26 three-car)",
+        "notes": "Replaced Pacers and older Sprinters across the Transport for Wales network. Final assembly at CAF's Llanwern plant in Newport.",
+        "image": "commons.wikimedia.org/wiki/Category:British_Rail_Class_197",
+        "verifyFields": [],
+        "_source": "Wikipedia British Rail Class 197 — 77 units (51x2-car + 26x3-car), in service from 14 November 2022, built 2020-2026. || VERIFICATION PASS 2026-08-04: Wikipedia British Rail Class 197 — 116 seats two-car; three-car 188 (all 2+2) or 174 (2+1 in one section); in service Nov 2022 to present.",
+        "capacity": "116 seats (2-car) / 174–188 seats (3-car)",
+        "serviceYears": "2022–present"
+      },
+      {
+        "class": "231",
+        "name": "FLIRT",
+        "traction": "Diesel-electric (DEMU)",
+        "builder": "Stadler Rail",
+        "yearIntro": "2023",
+        "maxSpeedMph": "87",
+        "operators": "Transport for Wales",
+        "primaryService": "Maesteg – Cardiff – Newport – Gloucester – Cheltenham",
+        "numberBuilt": "11 (four-car)",
+        "notes": "Four-car diesel-electric FLIRT units introduced as part of the Transport for Wales fleet replacement programme.",
+        "image": "commons.wikimedia.org/wiki/Category:British_Rail_Class_231",
+        "verifyFields": [],
+        "_source": "Wikipedia British Rail Class 231 — eleven four-car DEMUs, first entered service 18 January 2023. || VERIFICATION PASS 2026-08-04: Wikipedia British Rail Class 231 — 140 km/h (= 87 mph, converted from the metric figure the source gives); capacity 423 with 202 seated; in service Jan 2023 to present.",
+        "capacity": "423 total (202 seated)",
+        "serviceYears": "2023–present"
+      }
+    ],
+    "Commuter & Suburban": [
+      {
+        "class": "318",
+        "name": "",
+        "traction": "Electric (25kV AC overhead)",
+        "builder": "BREL York",
+        "yearIntro": "1986",
+        "maxSpeedMph": "90",
+        "operators": "ScotRail",
+        "primaryService": "Strathclyde suburban network",
+        "numberBuilt": "21",
+        "notes": "Three-car EMU built for Strathclyde suburban electrification; refurbished with end gangways removed.",
+        "image": "commons.wikimedia.org/wiki/Category:British_Rail_Class_318",
+        "verifyFields": [
+          "name"
+        ],
+        "_source": "Wikipedia British Rail Class 318 — 21 units built. Year of introduction NOT confirmed by the sources checked; left blank deliberately. || VERIFICATION PASS 2026-08-04: Wikipedia British Rail Class 318 — introduced 29 September 1986 with Ayrshire Coast electrification; 90 mph; 216 seats as built; 21 units built BREL York 1985-86. `name` left blank: the 318 has no established nickname, so this is a genuine absence rather than a gap.",
+        "needsVerification": true,
+        "capacity": "216 seats (as built)",
+        "serviceYears": "1986–present"
+      },
+      {
+        "class": "756",
+        "name": "FLIRT tri-mode",
+        "traction": "Tri-mode (25kV AC overhead / battery / diesel)",
+        "builder": "Stadler Rail",
+        "yearIntro": "2024",
+        "maxSpeedMph": "75",
+        "operators": "Transport for Wales",
+        "primaryService": "South Wales Metro — Core Valley Lines",
+        "numberBuilt": "24",
+        "notes": "Electric-battery-diesel tri-mode units for the South Wales Metro; battery operation covers non-electrified sections.",
+        "image": "commons.wikimedia.org/wiki/Category:British_Rail_Class_756",
+        "verifyFields": [],
+        "_source": "Wikipedia British Rail Class 756 — 24 tri-mode sets. Entered passenger service 18 November (year not confirmed by the source checked); left blank deliberately. || VERIFICATION PASS 2026-08-04: Wikipedia British Rail Class 756 / tothetrains fact file — first entered passenger service 15 November 2024; 75 mph; capacity 425.",
+        "capacity": "425",
+        "serviceYears": "2024–present"
+      }
+    ],
+    "Freight": [
+      {
+        "class": "59",
+        "name": "",
+        "traction": "Diesel-electric (Co-Co, EMD JT26CW-SS)",
+        "builder": "EMD / General Motors (La Grange, Illinois; London, Ontario)",
+        "yearIntro": "1986",
+        "maxSpeedMph": "60 (59/1 sub-class: 75)",
+        "operators": "DB Cargo UK; GB Railfreight",
+        "primaryService": "Mendip stone traffic and general heavy freight",
+        "numberBuilt": "15",
+        "notes": "First privately-owned US-built locomotives to work regularly on British metals, ordered by Foster Yeoman after dissatisfaction with the Class 56.",
+        "image": "commons.wikimedia.org/wiki/Category:British_Rail_Class_59",
+        "verifyFields": [],
+        "_source": "Wikipedia British Rail Class 59 — 15 built 1985-1995 for three operators; first four delivered to Foster Yeoman 1986. || VERIFICATION PASS 2026-08-04: Wikipedia British Rail Class 59 / Kent Rail — 60 mph, raised to 75 mph on the 59/1 sub-class via different dampers; in traffic 1986 to present. CAPACITY NOT APPLICABLE: a freight locomotive carries no passengers, so the blank is a genuine non-applicability, not a missing figure.",
+        "serviceYears": "1986–present"
+      },
+      {
+        "class": "93",
+        "name": "",
+        "traction": "Tri-mode (25kV AC overhead / diesel / battery)",
+        "builder": "Stadler Rail (Valencia)",
+        "yearIntro": "2023",
+        "maxSpeedMph": "110",
+        "operators": "Rail Operations Group",
+        "primaryService": "Mixed-traffic and logistics services",
+        "numberBuilt": "10",
+        "notes": "Tri-mode Co-Co ordered by Rail Operations Group, with an option for a further 20.",
+        "image": "commons.wikimedia.org/wiki/Category:British_Rail_Class_93",
+        "verifyFields": [],
+        "_source": "Wikipedia British Rail Class 93 / Rail Magazine — 10 ordered by ROG, built by Stadler in Valencia; first units expected available for service 2025. Entry-to-service year NOT confirmed; left blank. || VERIFICATION PASS 2026-08-04: Wikipedia British Rail Class 93 — 110 mph tri-mode; first entered service with Rail Operations Group 1 July 2023. CAPACITY NOT APPLICABLE (locomotive).",
+        "serviceYears": "2023–present"
+      },
+      {
+        "class": "99",
+        "name": "Eurodual",
+        "traction": "Bi-mode (25kV AC overhead / diesel, Co-Co)",
+        "builder": "Stadler Rail",
+        "yearIntro": "",
+        "maxSpeedMph": "75",
+        "operators": "GB Railfreight",
+        "primaryService": "Heavy freight — electric where wired, diesel elsewhere",
+        "numberBuilt": "30",
+        "notes": "Bi-mode Co-Co ordered by GB Railfreight, with an option for a further 20. First six delivered for testing following interim Network Rail approval.",
+        "image": "commons.wikimedia.org/wiki/Category:British_Rail_Class_99",
+        "verifyFields": [
+          "yearIntro",
+          "serviceYears"
+        ],
+        "_source": "Railnews / Modern Railways / Railway News — 30 ordered by GBRf, first six delivered and testing. Entry-to-service year NOT confirmed; left blank. || VERIFICATION PASS 2026-08-04: Modern Railways / Wikipedia British Rail Class 99 — 75 mph Co-Co. yearIntro and serviceYears DELIBERATELY BLANK: as of May 2026 seven of the thirty were delivered and commercial service was expected summer 2026, so the class has no confirmed entry-into-service date yet. CAPACITY NOT APPLICABLE (locomotive).",
+        "needsVerification": true
+      }
+    ],
+    "Light Rail & Metro": [
+      {
+        "class": "LU 1972 Stock",
+        "name": "Bakerloo line stock",
+        "traction": "630V DC fourth rail",
+        "builder": "Metro-Cammell (Washwood Heath)",
+        "yearIntro": "1972",
+        "maxSpeedMph": "45",
+        "fleetSize": "63 seven-car trains built; 36 in service",
+        "cityNetwork": "London Underground — Bakerloo line",
+        "numberBuilt": "441 cars (63 seven-car trains)",
+        "notes": "The oldest passenger stock in regular service on the UK network. Built 1972-1974; initially worked the Northern line before moving to the Bakerloo.",
+        "image": "commons.wikimedia.org/wiki/Category:London_Underground_1972_Stock",
+        "verifyFields": [],
+        "_source": "Wikipedia London Underground 1972 Stock — 441 cars by Metro-Cammell Washwood Heath, built 1972-1974, entered service 1972-1975, 63 trains built / 36 in service, now Bakerloo line. || VERIFICATION PASS 2026-08-04: Wikipedia London Underground 1972 Stock — 45 mph; 851 passengers per seven-car train, 264 seated; entered service 26 June 1972 and still in Bakerloo line service.",
+        "capacity": "851 passengers (264 seated)",
+        "serviceYears": "1972–present"
+      },
+      {
+        "class": "399",
+        "name": "Citylink tram-train",
+        "traction": "Dual-voltage (750V DC tram / 25kV AC overhead)",
+        "builder": "Vossloh / Stadler Rail",
+        "yearIntro": "2018",
+        "maxSpeedMph": "62",
+        "fleetSize": "7 units",
+        "cityNetwork": "Sheffield Supertram — Sheffield to Rotherham Parkgate",
+        "numberBuilt": "7",
+        "notes": "Britain's first tram-train, running from the Supertram network onto Network Rail metals to Rotherham Parkgate. Three-section articulated, 37 m long.",
+        "image": "commons.wikimedia.org/wiki/Category:British_Rail_Class_399",
+        "verifyFields": [],
+        "_source": "Wikipedia British Rail Class 399 / Stadler Citylink — seven units ordered by SYPTE, revenue service October 2018, 750V DC + 25kV AC, 37 m three-section. || VERIFICATION PASS 2026-08-04: Wikipedia British Rail Class 399 — 62 mph (100 km/h); 236 capacity, 96 seated + 140 standing; built 2014-15, revenue service from October 2018.",
+        "capacity": "236 total (96 seated, 140 standing)",
+        "serviceYears": "2018–present"
+      },
+      {
+        "class": "398",
+        "name": "Citylink tram-train",
+        "traction": "Tri-mode (25kV AC overhead / battery)",
+        "builder": "Stadler Rail",
+        "yearIntro": "",
+        "maxSpeedMph": "62 (train mode) / 45 (tram mode)",
+        "fleetSize": "36 units",
+        "cityNetwork": "South Wales Metro — Core Valley Lines (Cardiff)",
+        "numberBuilt": "36",
+        "notes": "Citylink tram-trains for the South Wales Metro, built in Spain for Transport for Wales.",
+        "image": "commons.wikimedia.org/wiki/Category:British_Rail_Class_398",
+        "verifyFields": [
+          "yearIntro",
+          "capacity",
+          "serviceYears"
+        ],
+        "_source": "Railway Gazette / Wikipedia British Rail Class 398 — 36 Citylink units being built for South Wales Metro. Entry-to-service year NOT confirmed; left blank. || VERIFICATION PASS 2026-08-04: TfW / Rail Magazine / Rail Technology Magazine — 100 km/h (62 mph) on rail, 45 mph in tram mode. yearIntro, serviceYears and capacity DELIBERATELY BLANK: the fleet entered testing in 2025 with launch planned for spring 2026 and no source checked confirms it has entered passenger service; no capacity figure found.",
+        "needsVerification": true
+      }
+    ]
+  }
+}

@@ -3750,8 +3750,22 @@
    * a heritage selection untouched and vice versa — see the state declarations
    * for why they are separate variables rather than one tagged slot.
    */
+  /* ── TEMPORARY DIAGNOSTIC (2026-08-04) — safe to delete ──────────────────
+     Added alongside the boundsFitPadding() freeze fix so the fix can be
+     CONFIRMED in a real browser, since there is none in the build environment.
+     OFF by default: enable with ?debugHeritage=1 in the URL, or by running
+     window.SRHQ_DEBUG_HERITAGE = true in DevTools before clicking.
+     Each stage logs "SRHQ heritage N/6 …". See the report for how to read it. */
+  var SRHQ_HERITAGE_DEBUG = (function () {
+    try { return new URLSearchParams(location.search).get('debugHeritage') === '1'; } catch (e) { return false; }
+  })();
+  function heritageDebug(step, detail) {
+    if (!SRHQ_HERITAGE_DEBUG && !window.SRHQ_DEBUG_HERITAGE) return;
+    console.log('SRHQ heritage ' + step, detail === undefined ? '' : detail);
+  }
   function selectHeritageRailway(slug) {
     if (!slug) return;
+    heritageDebug('1/6 selectHeritageRailway entered', { slug: slug, mode: mode });
     // RE-SELECTING THE SAME RAILWAY IS FOCUS-ONLY. The lock is already correct
     // and the panel is already showing it, so rebuilding the panel would bump
     // selectionSeq and push a duplicate history entry for every re-click —
@@ -3761,6 +3775,7 @@
     lockedHeritageSlug = slug;
     hoveredHeritageSlug = null;
     applyOperatorHighlightPaint();
+    heritageDebug('2/6 highlight paint applied');
     // IN HISTORY: no mode switch, no camera move (2026-08-03). Both would fight
     // History rather than serve it — switching mode would eject the user out of
     // the year they are looking at, and a flyTo would override a camera that
@@ -3773,18 +3788,44 @@
     // have thrown both away before the panel opened.
     var inHistory = mode === 'history';
     if (!inHistory && mode !== 'database') setMode('database');
+    heritageDebug('3/6 mode settled', mode);
     if (!alreadySelected) selectHeritagePanel(slug);
+    heritageDebug('4/6 panel populated', { alreadySelected: alreadySelected });
     if (!inHistory) focusHeritageRailway(slug);
+    heritageDebug('6/6 selectHeritageRailway complete');
   }
   // Camera half of the above, split out so a re-click can re-run the focus
   // without rebuilding the panel. Skipped entirely for a railway with no map
   // presence: flying to a no_line railway's centre lands on blank map with
   // nothing drawn, which reads as a broken jump rather than a result — the panel
   // says so in words instead (see heritageNoMapNoticeHtml).
+  //
+  // boundsFitPadding(0), NOT boundsFitPadding(). THE BARE CALL FROZE THE MAP.
+  // `flat` is a required numeric argument — the function computes
+  // `chrome[side] + flat - ambient[side]`, so omitting it made every side
+  // `NaN`, and NaN padding puts NaN into MapLibre's camera transform. The map
+  // then stops rendering and never recovers: no pan, no zoom, no hover, no
+  // click. JS keeps running (which is why the heritage toggle still visibly
+  // reacted while the map did nothing), so it presents as a frozen map rather
+  // than a crashed page. Every other caller in this file already passes a
+  // number — boundsFitPadding(60) for the curated-route fit, and the
+  // flyToBoundsZoomedOut() pass-through.
+  //
+  // 0 is the right value here, not 60: this is a POINT flyTo, not a bounds fit
+  // that needs breathing room around an extent. regionJumpFlyToPadding()
+  // already includes MAP_FIT_MARGIN on every side, so 0 means "clear the
+  // sidebar and the Jump-to bar, nothing more".
   function focusHeritageRailway(slug) {
     var r = heritageRailways[slug];
-    if (!map || !r || !r.center || heritageHasNoMapPresence(slug)) return;
-    map.flyTo({ center: r.center, zoom: r.zoom || 12, padding: boundsFitPadding() });
+    if (!map || !r || !r.center || heritageHasNoMapPresence(slug)) {
+      heritageDebug('5/6 flyTo SKIPPED (no map presence / no centre)', slug);
+      return;
+    }
+    var pad = boundsFitPadding(0);
+    // The exact values that used to be NaN. If 5/6 ever logs a NaN again, the
+    // camera is about to die and this is the line that killed it.
+    heritageDebug('5/6 flyTo', { center: r.center, zoom: r.zoom || 12, padding: pad });
+    map.flyTo({ center: r.center, zoom: r.zoom || 12, padding: pad });
   }
 
   function addStationsLayer(gj) {
@@ -8088,7 +8129,21 @@
   // chrome + breathing-room. That makes the fit correct on the very first call
   // regardless of what the ambient padding happens to be, rather than only
   // after some other camera move has refreshed it.
+  // `flat` is REQUIRED and must be a finite number. It is coerced rather than
+  // trusted because getting this wrong is not a small bug: `chrome + undefined`
+  // is NaN, Math.max(0, NaN) is NaN, and NaN padding handed to flyTo/fitBounds
+  // puts NaN into MapLibre's camera transform — after which the map stops
+  // rendering and never recovers (no pan, zoom, hover or click), while JS keeps
+  // running so it reads as a frozen map rather than an error. That is exactly
+  // what a bare boundsFitPadding() in the heritage flyTo did (2026-08-04); the
+  // clamp in regionJumpFlyToPadding() above cannot help, because the NaN is
+  // introduced after it. The warn is deliberately loud: a silent 0 would fix the
+  // freeze but hide the caller's mistake.
   function boundsFitPadding(flat) {
+    if (typeof flat !== 'number' || !isFinite(flat)) {
+      console.warn('boundsFitPadding() called with a non-finite `flat` (' + flat + ') — defaulting to 0. This would previously have produced NaN padding and frozen the map camera.');
+      flat = 0;
+    }
     var chrome = regionJumpFlyToPadding();
     var ambient = (typeof map.getPadding === 'function' && map.getPadding()) || { top: 0, bottom: 0, left: 0, right: 0 };
     var out = {};

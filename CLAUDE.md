@@ -28,6 +28,20 @@ Borders:      rgba(64,224,208,0.14) default · rgba(64,224,208,0.28) emphasis
 
 ## Stack — STRICT rules
 - Plain HTML + vanilla JS only. NO React, NO Vue, NO frameworks, NO Babel.
+  - **ONE PRE-EXISTING EXCEPTION: `database.html`** (noted 2026-08-04). It
+    loads React 18 + ReactDOM + `@babel/standalone` from unpkg (lines ~143–146)
+    and its whole page body is JSX in a `<script type="text/babel">` block,
+    including the shared `shared.jsx`. This predates the rule being written
+    down; it was NOT introduced under it.
+  - This is **recorded, not endorsed**. A vanilla-JS rewrite of `database.html`
+    is tracked as separate future scope. Until that happens: do not copy this
+    pattern to any other page, do not treat it as precedent for adding a
+    framework anywhere else, and do not silently rewrite it either — a rewrite
+    is its own reviewed task, not a side effect of editing the page.
+  - Practical consequence: edits to `database.html` are edits to JSX, and there
+    is no build step or JSX parser in this repo, so JSX syntax cannot be
+    verified locally — it only fails in the browser. Change it in small steps
+    and check it renders.
 - No external JS beyond MapLibre GL JS and its dependencies.
 - All API calls go through /api/ serverless functions (Vercel/Coolify), never expose keys client-side.
 - CSS: use CSS custom properties. No Tailwind, no CSS-in-JS.
@@ -319,6 +333,69 @@ Quote the span only from stage 5, after stage 4 has run.
   file changed. This is expected human behavior — don't re-investigate it;
   just note it in passing if relevant and move on.
 
+## Rolling stock database (database.html)
+
+`data/site-data.json` is **GENERATED — do not hand-edit it.**
+
+```
+data/rolling-stock.json            raw spreadsheet export (overwritten on re-export)
+data/rolling-stock-overrides.json  hand-curated: overrides, corrections, merges, additions
+        │
+        ├─ node scripts/build-locomotive-data.mjs          →  data/site-data.json
+        └─ node scripts/build-locomotive-data.mjs --check  →  verifies it is up to date
+```
+
+Everything curated by hand lives in the **overrides** file, never in the export —
+the export is replaced wholesale whenever the sheet is re-exported, so anything
+edited there is lost. That file holds four kinds of entry: `overrides` (field
+replacements, e.g. the 22 curated Wikimedia `File:` links), `corrections`
+(factual fixes, each with a `_why`), `mergeDuplicates` (the same real class
+recorded twice under different key formats), and `additions` (classes absent
+from the export entirely). `audit-locomotive-image-licenses.mjs` still reads the
+raw export directly and is unaffected by any of this.
+
+**Schema.** One unified named-field object per class. The export has three
+different header shapes and column index 6 means "Operator(s)" in five sections,
+"Fleet Size" in one and "Main Heritage Lines" in another — so **column position
+carries no meaning downstream**; each category declares `columns: [{field,label}]`.
+
+**Counts have two different meanings and both are correct:**
+- `totalClasses` — each class **once**, however many categories it appears in.
+- `category.count` — classes appearing **in that section**, so a cross-listed
+  class contributes to several. `sum(section counts) = totalClasses + cross-listed extras`.
+
+**DOM ids are a cross-file contract.** The canonical instance keeps the bare
+`fleet-{slug}`; secondary cross-listed instances get `fleet-{slug}--{category}`.
+`map.html`'s Fleet chips link to `#fleet-{slug}`, and `fleetClassSlug()` now
+exists in **four** places (map.html, database.html, the build script, the
+harness) which must stay byte-identical. `scripts/tests/locomotive-data-harness.mjs`
+enforces all of this plus a floor on how many chips resolve.
+
+### Deferred: industrial and narrow-gauge rolling stock
+
+Surveyed 2026-08-04 and **deliberately deferred — not rejected.**
+
+Both were scoped as part of the missing-class sweep and stopped before any rows
+were generated, for the same structural reason: **most of that population is
+individual, one-off locomotives rather than standardised classes.** Industrial
+shunters at ports, quarries, steelworks and MoD sites, and narrow-gauge locos on
+the Ffestiniog/Talyllyn/Vale of Rheidol/R&ER, largely do not have a "class" in
+the TOPS sense at all — they are individual machines with builder and works
+number.
+
+That makes this **a data-shape question, not a data-entry one**. The current
+schema assumes a row is a *class* (with a fleet size, a builder, a number built);
+representing this population honestly may need a per-*locomotive* shape instead,
+or a separate dataset. Rough size if it were attempted as-is: industrial 20–100+
+depending entirely on where the line is drawn, narrow gauge ~30–60. Both figures
+are low confidence, and much of it is not reliably sourceable to the standard the
+rest of the database is held to.
+
+**Needs its own scoping session before any of it is built.** Related: the
+`01/5`, `mark5`/`mark5a` and `pba`/`pbka` Fleet chips in `operators-content.json`
+resolve to nothing for related reasons — a sub-class shunter, hauled coaching
+stock (no traction of its own) and Thalys TGV sets (not UK stock).
+
 ## Parked future ideas (not in scope, don't build without being asked)
 - Full postal-address coverage for `location` across all 2,637 stations,
   regardless of Wikipedia tier — currently `location` only ever populates
@@ -334,5 +411,7 @@ Quote the span only from stage 5, after stage 4 has run.
 - Never hardcode hex colours — use the CSS vars defined in :root
 - Never use font-size below 9px
 - Never use position:fixed (breaks iframe rendering)
-- Never add React, Vue, or any framework
+- Never add React, Vue, or any framework — except that `database.html` already
+  has React + Babel and is a recorded pre-existing exception, not a precedent;
+  see the Stack section above
 - Never put API keys in client-side JS
