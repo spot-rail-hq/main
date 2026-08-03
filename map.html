@@ -178,54 +178,6 @@
     opacity: 0; pointer-events: none; transition: opacity 0.15s ease; z-index: 60;
   }
   .icon-btn:hover::after, .icon-btn:focus-visible::after { opacity: 1; }
-  /* First-visit heritage callout (2026-08-02). Replaces what the heritage DOTS
-     used to do on their own: the dots made heritage railways self-evident, and
-     with them gone the toggle is the only thing that says the feature exists, so
-     it gets pointed at once and then never again.
-
-     Positioned like .icon-btn::after (to the RIGHT, into the open canvas, for
-     the same reason — a leftward panel lands under the sidebar's higher z-index)
-     but as real DOM rather than a pseudo-element, because it holds a focusable
-     dismiss button and needs to be announced. z-index sits above the tooltip
-     layer so the two cannot overlap ambiguously if the pointer happens to rest
-     on the button while the callout is up. */
-  #heritage-hint {
-    position: absolute; left: calc(100% + 14px); width: 172px;
-    background: var(--sf); border: 0.5px solid var(--t); border-radius: 8px;
-    padding: 8px 9px; z-index: 61;
-    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-    box-shadow: 0 4px 16px rgba(0,0,0,0.28);
-  }
-  #heritage-hint[hidden] { display: none; }
-  #heritage-hint p {
-    margin: 0 0 7px; font-family: var(--font-body); font-size: 10px; line-height: 1.45;
-    color: var(--ink-primary);
-  }
-  /* Arrow pointing back at the button. Drawn as a rotated square with only the
-     two leading borders painted, so it inherits the panel's own surface colour
-     and turquoise edge rather than needing a second hardcoded pair. */
-  #heritage-hint::before {
-    content: ''; position: absolute; left: -5px; top: 13px;
-    width: 8px; height: 8px; transform: rotate(45deg);
-    background: var(--sf); border-left: 0.5px solid var(--t); border-bottom: 0.5px solid var(--t);
-  }
-  #heritage-hint button {
-    font-family: inherit; font-size: 10px; box-sizing: border-box;
-    display: inline-flex; align-items: center; justify-content: center;
-    padding: 3px 10px; border-radius: 99px; cursor: pointer;
-    color: var(--t); background: transparent; border: 0.5px solid var(--t);
-  }
-  #heritage-hint button:hover { background: rgba(64,224,208,0.12); }
-  /* Mobile: the control cluster shifts to the sidebar edge and the canvas to its
-     right is much narrower, so a 172px panel plus the 26px buttons can overflow.
-     Drops it below the cluster instead, arrow removed — there is no room for a
-     side-anchored panel to point at anything without leaving the viewport. */
-  @media (max-width: 768px) {
-    #heritage-hint {
-      left: 0; top: auto !important; margin-top: 8px; width: 192px; max-width: calc(100vw - 24px);
-    }
-    #heritage-hint::before { left: 9px; top: -5px; border-left: 0.5px solid var(--t); border-bottom: none; border-top: 0.5px solid var(--t); }
-  }
   /* Smooths the needle's rotate() updates driven by the map's 'rotate' event
      (wireBearingIcon()) instead of snapping instantly on every drag frame. */
   #reset-bearing-icon { display: inline-block; transition: transform 0.2s ease; }
@@ -541,6 +493,12 @@
      two input methods always agree on one shared highlight rather than
      drifting out of sync with separate visual states. */
   .sb-ac-item.active, .sb-ac-item:hover { background: rgba(64,224,208,0.08); color: var(--t); }
+  /* Muted second line inside a suggestion (heritage "No map location data").
+     Block so it wraps under the name rather than widening the dropdown, and
+     kept at var(--ink) so it reads as secondary even while the row is
+     highlighted — the .active rule above recolours the row's own text, and an
+     inheriting note would go turquoise with it and stop looking like a caveat. */
+  .sb-ac-note { display: block; margin-top: 2px; font-size: 10px; color: var(--ink); }
 
   /* Selected station/route/network row — star sits inline between the name
      and the close (×) icon, replacing the old separate "Saved routes" list.
@@ -1062,19 +1020,12 @@
     <button class="icon-btn" id="zoom-out" aria-label="Zoom out" data-tooltip="Zoom Out"><i class="ti ti-minus"></i></button>
     <button class="icon-btn" id="layers-btn" aria-label="Toggle base rail network overlay" aria-pressed="false" data-tooltip="Show Base Rail Network"><i class="ti ti-layers-intersect"></i></button>
     <button class="icon-btn" id="labels-btn" aria-label="Toggle base map labels" aria-pressed="true" data-tooltip="Hide Map Labels"><i class="ti ti-tag"></i></button>
-    <button class="icon-btn" id="heritage-btn" aria-label="Toggle heritage railway lines" aria-pressed="true" data-tooltip="Hide Heritage Railways"><i class="ti ti-steam"></i></button>
+    <!-- Resting state is OFF — setHeritageHighlightAll() re-asserts both
+         attributes from the flag on wiring, this markup just matches its
+         default so the control does not flash a pressed state before then. -->
+    <button class="icon-btn" id="heritage-btn" aria-label="Highlight all heritage railways" aria-pressed="false" data-tooltip="Highlight All Heritage Railways"><i class="ti ti-steam"></i></button>
     <button class="icon-btn" id="my-location" aria-label="Find my location" data-tooltip="My Location"><i class="ti ti-current-location"></i></button>
     <button class="icon-btn" id="reset-bearing" aria-label="Reset map orientation" data-tooltip="Reset North"><i class="ti ti-navigation" id="reset-bearing-icon"></i></button>
-  </div>
-  <!-- First-visit-only callout for the heritage toggle. Sits in #control-cluster
-       (not inside the button) because .icon-btn's ::after tooltip already owns
-       the space to the button's right on hover, and a persistent panel nested in
-       a <button> would put interactive content inside a control. Its vertical
-       position is set from #heritage-btn's offsetTop in JS so adding or
-       reordering buttons cannot leave it pointing at the wrong one. -->
-  <div id="heritage-hint" role="status" hidden>
-    <p>Heritage railways are on the map. Use this button to show or hide them.</p>
-    <button type="button" id="heritage-hint-dismiss">Got it</button>
   </div>
 </div>
 
@@ -1328,6 +1279,31 @@
   // too instead of doing nothing.
   var lockedOperatorHighlight = null;
   var hoveredOperatorHighlight = null;
+  // ── Heritage highlight state (2026-08-03) ────────────────────────────────
+  // DELIBERATELY SEPARATE VARIABLES, not a tag on lockedOperatorHighlight.
+  //
+  // The two cannot share one slot, because they are not the same kind of key.
+  // lockedOperatorHighlight holds an `operators` tag value and every filter
+  // built from it is ['in', ['get', 'operators'], …]. EVERY heritage segment in
+  // the tileset carries the identical operators value 'Heritage', so that key
+  // cannot name one railway — per-railway selection has to filter on
+  // `heritage_slug` instead (confirmed present in operators.pmtiles: 169
+  // distinct values alongside heritage_type/heritage_type_secondary). Two
+  // different property names means two different filter shapes, so one scalar
+  // could not express both even if the semantics allowed it.
+  //
+  // The semantics don't allow it either: the spec requires a national lock to
+  // be "completely unaffected by any heritage highlight state", i.e. the two
+  // coexist. A single tagged variable would make them mutually exclusive.
+  //
+  // So applyOperatorHighlightPaint() below was generalised from "at most two
+  // active operators" to "a list of active groups", each group carrying its own
+  // filter condition and colour. That is an extension of the existing paint
+  // path, not a second one — hover, click-lock, region chips, search picks and
+  // now heritage all still resolve through that one function.
+  var heritageHighlightAll = false;  // #heritage-btn — every heritage railway lit at once
+  var lockedHeritageSlug = null;     // a single railway, locked by clicking its line
+  var hoveredHeritageSlug = null;    // transient desktop hover, cleared on mouseleave
   var initialCameraVerified = false; // see verifyInitialCameraPosition() below
   // ── User-gesture counter (2026-07-27) ────────────────────────────────────
   // Bumped ONLY by camera moves the user started themselves. MapLibre attaches
@@ -1509,7 +1485,12 @@
       if (!r || !r.name) return;
       var haystacks = [r.name].concat(r.aliases || []);
       var hit = haystacks.some(function (h) { return h.toLowerCase().indexOf(query) !== -1; });
-      if (hit) matches.push({ name: r.name, code: null, heritageSlug: slug });
+      // `note` (2026-08-03) marks the 14 railways with no map presence right in
+      // the dropdown, so picking one is an informed choice rather than a result
+      // that appears to do nothing. Rendered as a muted second line by
+      // renderDropdown(); the panel repeats it in full — see
+      // heritageNoMapNoticeHtml().
+      if (hit) matches.push({ name: r.name, code: null, heritageSlug: slug, note: heritageHasNoMapPresence(slug) ? 'No map location data' : null });
     });
     matches.sort(function (a, b) {
       var aStarts = a.name.toLowerCase().indexOf(query) === 0 ? 0 : 1;
@@ -1562,20 +1543,33 @@
   // slug/band never drift from what operators.pmtiles carries per segment.
   //
   // 2026-08-02: this used to feed a heritage DOT layer (one point marker per
-  // railway, four zoom bands, cross-fading into the lines). The dots are gone —
-  // heritage is line-only again, toggled by #heritage-btn. What still reads this
-  // file is the SEARCH path (submitHeritagePick) and its flyTo target, which is
-  // why the fetch stays.
+  // railway, four zoom bands, cross-fading into the lines). The dots are gone.
+  // What reads this file now is SEARCH, the hover tooltip's display name, the
+  // camera target for a heritage selection, and the no-map-presence check.
   //
   // DEGRADES TO "NO HERITAGE SEARCH RESULTS", NOT AN ERROR: loadJsonContent()
   // swallows a 404 (and any parse failure) into {}, exactly as History mode's
   // optional content files rely on. The heritage LINES are unaffected either
-  // way — they come from the tileset, not this file — so a missing lookup now
-  // costs only the search entries.
+  // way — they come from the tileset, not this file — so a missing lookup costs
+  // the search entries and degrades tooltips to a slug-derived name.
   var heritageRailways = {};
-  var heritageLinesVisible = true; // default ON — see the #heritage-btn handler
   loadJsonContent('/data/heritage-railways.json', function (d) {
     heritageRailways = d;
+  });
+  // Editorial content for the heritage PANEL — slug -> {name, type, intro,
+  // length_km, website, wikipedia_title, _wikipedia}. Newly wired up 2026-08-03:
+  // the file has existed since the heritage pipeline work but nothing in map.html
+  // read it, so a heritage selection could only ever render the generic
+  // "no database entry yet" card. Same optional-degrade contract as every other
+  // content file here — an empty {} falls back to that card, which is exactly
+  // the pre-2026-08-03 behaviour.
+  var heritageContent = {};
+  loadJsonContent('/heritage-content.json', function (d) {
+    heritageContent = d;
+    // A panel already on screen when this lands would otherwise sit on the
+    // fallback card forever — same late-arrival re-render the other content
+    // loaders do.
+    if (selection.type === 'heritage') rebuildSidebarContent();
   });
 
   // ── History mode content (Phase 2B) ──────────────────────────────────────
@@ -2809,15 +2803,18 @@
     { id: 'regional', minzoom: 7.5 },
     { id: 'hyperlocal', minzoom: 10 },
   ].concat(HERITAGE_BANDS.map(function (b) {
-    // The LINE side of the cross-fade: each band's line fades IN across exactly
-    // the window its dot fades OUT over, so the two are complementary and the
-    // hand-off never shows a gap or a double-strength moment. Held at 1 above
-    // fadeTo, and at a low-but-present 0.35 below fadeFrom so a trunk line is
-    // still faintly there as context while its dot is the interaction target.
-    return {
-      id: 'heritage-' + b.id, minzoom: b.minzoom, dash: HERITAGE_DASH,
-      lineOpacity: ['interpolate', ['linear'], ['zoom'], b.fadeFrom, 0.35, b.fadeTo, 1],
-    };
+    // NO lineOpacity — heritage renders at full opacity like every other tier
+    // (2026-08-03). These bands used to carry an interpolate that held the line
+    // at 0.35 below the band's fadeFrom and only reached 1 at fadeTo: the LINE
+    // half of the dot->line cross-fade, faint on purpose because the DOT was the
+    // interaction target at those zooms. The dots went on 2026-08-02 and the
+    // floor outlived them, leaving heritage permanently dim at its lower zooms
+    // with nothing else representing it.
+    //
+    // The band split itself stays. fadeFrom/fadeTo are now unread, but minzoom
+    // is still per-band and still the reason four tiers exist — see
+    // HERITAGE_BANDS for the pixel measurements behind those values.
+    return { id: 'heritage-' + b.id, minzoom: b.minzoom, dash: HERITAGE_DASH };
   }));
   // Default: everything is 'trunk' (i.e. the old "show everything, always"
   // behavior) until operatorColorsData has loaded and computeRouteTierFilters()
@@ -2878,22 +2875,67 @@
 
     var locked = lockedOperatorHighlight;
     var hovered = (hoveredOperatorHighlight && hoveredOperatorHighlight !== locked) ? hoveredOperatorHighlight : null;
-    if (!locked && !hovered) {
+
+    var lookup = buildOperatorColorLookup(theme);
+    // ACTIVE GROUPS (2026-08-03 generalisation). Was two scalars — a locked and
+    // a hovered operator — collapsed into an ['in'] filter and a two-way
+    // ['case']. Heritage broke that shape: heritage selection filters on
+    // `heritage_slug`, not on `operators`, so the single ['in', ['get',
+    // 'operators'], …] could not express it. Each group now carries its own
+    // condition expression and its own colour, and the filter/colour are
+    // composed from the list, so any mix of national + heritage selections is
+    // representable without a second paint path.
+    //
+    // ORDER IS PRECEDENCE. The colour ['case'] returns the FIRST matching
+    // branch, so a segment matched by two groups takes the earlier one. Heritage
+    // groups go first: a heritage segment's `operators` is always the literal
+    // 'Heritage', so a national lock can never legitimately claim one, and
+    // putting heritage first means an individually-locked railway keeps its own
+    // branch even while highlight-all is on.
+    var groups = [];
+    var heritageColor = lookup[HERITAGE_OPERATOR_KEY] || MULTI_OPERATOR_NEUTRAL[theme];
+    var heritageOperatorCond = ['==', ['get', 'operators'], HERITAGE_OPERATOR_KEY];
+    if (heritageHighlightAll) {
+      // Highlight-all subsumes any individual lock — same colour, wider filter —
+      // so the individual group is skipped rather than drawn underneath it.
+      groups.push({ cond: heritageOperatorCond, color: heritageColor, heritage: true });
+    } else {
+      // Locked and hovered are separate groups even though they share a colour:
+      // they match different slugs, and the hover preview has to survive
+      // alongside a lock exactly as the national pair already does.
+      if (lockedHeritageSlug) {
+        groups.push({ cond: ['==', ['get', 'heritage_slug'], lockedHeritageSlug], color: heritageColor, heritage: true });
+      }
+      if (hoveredHeritageSlug && hoveredHeritageSlug !== lockedHeritageSlug) {
+        groups.push({ cond: ['==', ['get', 'heritage_slug'], hoveredHeritageSlug], color: heritageColor, heritage: true });
+      }
+    }
+    if (locked) {
+      groups.push({ cond: ['==', ['get', 'operators'], locked], color: lookup[locked] || MULTI_OPERATOR_NEUTRAL[theme] });
+    }
+    if (hovered) {
+      groups.push({ cond: ['==', ['get', 'operators'], hovered], color: lookup[hovered] || MULTI_OPERATOR_NEUTRAL[theme] });
+    }
+
+    if (!groups.length) {
       map.setFilter('operator-lines-active', NO_OPERATOR_FILTER);
       GLOW_RINGS.forEach(function (ring, i) { map.setFilter('operator-lines-hover-glow-' + i, NO_OPERATOR_FILTER); });
       return;
     }
 
-    var lookup = buildOperatorColorLookup(theme);
-    var lockedColor = locked ? (lookup[locked] || MULTI_OPERATOR_NEUTRAL[theme]) : null;
-    var hoveredColor = hovered ? (lookup[hovered] || MULTI_OPERATOR_NEUTRAL[theme]) : null;
-    var activeOps = locked && hovered ? [locked, hovered] : [locked || hovered];
-    var filter = ['in', ['get', 'operators'], ['literal', activeOps]];
-    // Only two possible active operators at once (locked + hover), so a
-    // plain two-way case is enough — no need for a lookup-driven match.
-    var colorExpr = (locked && hovered)
-      ? ['case', ['==', ['get', 'operators'], locked], lockedColor, hoveredColor]
-      : (lockedColor || hoveredColor);
+    var filter = groups.length === 1 ? groups[0].cond : ['any'].concat(groups.map(function (g) { return g.cond; }));
+    // A ['case'] needs a fallback branch even though the filter guarantees at
+    // least one condition matches every rendered feature; the last group's own
+    // colour is the natural one, so it is popped off the case pairs and used as
+    // the default rather than inventing a neutral that could never be seen.
+    function colorExprFrom(colorOf) {
+      if (groups.length === 1) return colorOf(groups[0]);
+      var expr = ['case'];
+      groups.slice(0, -1).forEach(function (g) { expr.push(g.cond, colorOf(g)); });
+      expr.push(colorOf(groups[groups.length - 1]));
+      return expr;
+    }
+    var colorExpr = colorExprFrom(function (g) { return g.color; });
 
     map.setFilter('operator-lines-active', filter);
     map.setPaintProperty('operator-lines-active', 'line-color', colorExpr);
@@ -2916,7 +2958,7 @@
     // silently leave the previous route's dash on the layer for every operator
     // highlighted afterwards. [1, 0] is a 1-unit dash with a zero-length gap,
     // i.e. continuous.
-    var heritageOnly = activeOps.every(function (op) { return op === HERITAGE_OPERATOR_KEY; });
+    var heritageOnly = groups.every(function (g) { return g.heritage; });
     map.setPaintProperty('operator-lines-active', 'line-dasharray', heritageOnly ? HERITAGE_DASH : SOLID_DASH);
     // Glow rings are "same color" as the highlighted line per spec, not a
     // fixed white/dark neutral halo — opacity is NOT touched here, each
@@ -2933,11 +2975,10 @@
     // route through this function. (The HIST_GLOW_PREFIX rings are a separate
     // layer set for History's own lines, painted from eraHighlightExpression();
     // deliberately untouched.)
-    var lockedGlow = lockedColor ? glowColorFor(lockedColor, theme) : null;
-    var hoveredGlow = hoveredColor ? glowColorFor(hoveredColor, theme) : null;
-    var glowColorExpr = (locked && hovered)
-      ? ['case', ['==', ['get', 'operators'], locked], lockedGlow, hoveredGlow]
-      : (lockedGlow || hoveredGlow);
+    // Same group list, same precedence order, glow-adjusted colour — so every
+    // group (heritage or national) gets a matching halo without a second
+    // composition path to keep in step with the line's.
+    var glowColorExpr = colorExprFrom(function (g) { return glowColorFor(g.color, theme); });
     GLOW_RINGS.forEach(function (ring, i) {
       map.setFilter('operator-lines-hover-glow-' + i, filter);
       map.setPaintProperty('operator-lines-hover-glow-' + i, 'line-color', glowColorExpr);
@@ -2954,10 +2995,19 @@
   // clearSelection() — everywhere the sidebar moves on to a DIFFERENT kind
   // of selection that isn't itself an operator pick. Cheap no-op guard so
   // it doesn't force a repaint when there was nothing to clear.
+  //
+  // 2026-08-03: also clears an individually locked/hovered heritage railway,
+  // for the same reason — moving on to a station or a From/To pair should not
+  // leave a heritage railway lit. heritageHighlightAll is deliberately NOT
+  // cleared here: it is an explicit user toggle with its own button and its own
+  // pressed state, closer to the base-rail/labels overlays than to a selection,
+  // so a selection changing underneath it must not silently turn it off.
   function clearOperatorHighlight() {
-    if (!lockedOperatorHighlight && !hoveredOperatorHighlight) return;
+    if (!lockedOperatorHighlight && !hoveredOperatorHighlight && !lockedHeritageSlug && !hoveredHeritageSlug) return;
     lockedOperatorHighlight = null;
     hoveredOperatorHighlight = null;
+    lockedHeritageSlug = null;
+    hoveredHeritageSlug = null;
     applyOperatorHighlightPaint();
   }
 
@@ -3354,16 +3404,12 @@
     if (stationsData) {
       addStationsLayer(stationsData);
     }
-    // Heritage dot layers were added here until 2026-08-02. Nothing replaces the
-    // ADD — the heritage line tiers are created by the ROUTE_TIERS loop further
-    // up this same function — but the user's toggle state still has to be
-    // re-applied, because setStyle() (theme switch) wipes runtime layers and the
-    // ROUTE_TIERS loop recreates them at their default visibility.
-    applyHeritageLineVisibility();
-    // First-visit callout for the heritage toggle — see triggerHeritageHint().
-    // Self-latching, so the theme-toggle re-entry into this function cannot
-    // re-show it.
-    triggerHeritageHint();
+    // Nothing heritage-specific is added or re-applied here any more. Dot layers
+    // were added at this point until 2026-08-02; a visibility re-apply replaced
+    // them until 2026-08-03, when heritage lines became permanently visible.
+    // The heritage line tiers are created by the ROUTE_TIERS loop further up this
+    // same function like any other tier, and applyOperatorHighlightPaint() at the
+    // end of that loop already restores highlight state after a style rebuild.
 
     // Same setStyle-wipes-runtime-layers issue as railway-vector/stations
     // above — redraw the route highlight (Task 2) if one is currently
@@ -3603,64 +3649,100 @@
     };
   }
 
-  // ── Heritage line visibility ─────────────────────────────────────────────
-  // 2026-08-02: heritage used to ALSO render as one point marker per railway —
-  // four zoom-banded circle layers plus their oversized hit circles, cross-fading
-  // into the lines (dot opaque at low zoom, line taking over as it became a real
-  // hover target). All of that is gone; heritage is line-only again and
-  // #heritage-btn now toggles the LINE tiers, which is the only thing left for it
-  // to toggle.
-  //
-  // The layers named here are the same ones ROUTE_TIERS already creates for the
-  // four heritage bands — this adds no layer of its own, it only flips
-  // `visibility` on them. Line paint, the dotted dash, the per-band minzoom and
-  // the fade curve are all untouched and still owned by ROUTE_TIERS.
-  function heritageLineLayerIds() {
-    var ids = [];
-    HERITAGE_TIER_IDS.forEach(function (id) {
-      ids.push('operator-lines-' + id, 'operator-lines-hit-' + id);
-    });
-    return ids;
-  }
-  // Hides the hit layer alongside the visible one, same rule the rest of this
-  // file follows: an invisible-but-still-clickable line is worse than an absent
-  // one, because hovering empty space would highlight the heritage network.
-  function applyHeritageLineVisibility() {
-    if (!map) return;
-    // History owns visibility on these layers while it is active (they are in
-    // setHistoryLayerVisibility()'s modernLineLayers list, driven by the year
-    // band) — writing here would fight it and could reveal modern heritage track
-    // over an 1880 map. The toggle state is re-applied on the way out of History
-    // by restoreLiveLayersAfterHistory().
-    if (mode === 'history') return;
-    heritageLineLayerIds().forEach(function (id) {
-      if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', heritageLinesVisible ? 'visible' : 'none');
-    });
-  }
+  // ── Heritage railway identity + selection ────────────────────────────────
+  // 2026-08-03: heritage lines are now ALWAYS visible — there is no
+  // show/hide state and no applyHeritageLineVisibility() any more. What used to
+  // live here (heritageLineLayerIds/applyHeritageLineVisibility, driven by a
+  // heritageLinesVisible flag off #heritage-btn) is gone; the button became a
+  // highlight-all toggle, see setHeritageHighlightAll(). History still hides the
+  // heritage tiers along with every other ROUTE_TIERS layer while it is active,
+  // and restoreLiveLayersAfterHistory()'s blanket restore is now simply correct
+  // for them, because there is no user preference left for it to trample.
 
+  // Display name for a slug. heritageRailways is the generated client lookup
+  // (data/heritage-railways.json); heritageContent is the richer editorial file.
+  // Falls back to the slug itself rather than to empty — an unrecognised slug in
+  // a tooltip should still say WHICH railway, and slugs are human-readable.
+  function heritageDisplayName(slug) {
+    if (!slug) return 'Heritage Railway';
+    var r = heritageRailways[slug];
+    if (r && r.name) return r.name;
+    var c = heritageContent[slug];
+    if (c && c.name) return c.name;
+    return slug.replace(/-/g, ' ').replace(/\b\w/g, function (ch) { return ch.toUpperCase(); });
+  }
+  // Tooltip subtitle — the category, so a hovered line says what KIND of railway
+  // it is without a click. Prefers the per-segment heritage_type carried in the
+  // tileset over the lookup, since a railway can span more than one type and the
+  // segment under the cursor is the more specific answer.
+  function heritageTooltipSubtitle(props) {
+    var type = (props && props.heritage_type) || null;
+    if (!type) {
+      var r = heritageRailways[props && props.heritage_slug];
+      type = r && r.type;
+    }
+    return type ? heritageTypeLabel(type) : 'Heritage Railway';
+  }
+  // Slugs/tags are lower-kebab ('narrow_gauge', 'miniature-railway'); the panel
+  // and tooltip both want them in prose.
+  function heritageTypeLabel(type) {
+    if (!type) return '';
+    return String(type).replace(/[_-]+/g, ' ').replace(/^\w/, function (ch) { return ch.toUpperCase(); });
+  }
   /**
-   * Selecting a heritage railway (from SEARCH — submitHeritagePick is the only
-   * caller now the dots are gone) highlights the WHOLE heritage network, exactly
-   * as clicking a heritage LINE does, because every heritage segment in the
-   * tileset carries the literal operators value 'Heritage' and the highlight
-   * machinery keys on that, not on the per-railway slug. So there is no second
-   * highlight mechanism and no way for the two to diverge.
-   *
-   * The PANEL, by contrast, titles itself with the individual railway. That is
-   * the intended decoupling: selectOperator() takes any identifier, finds no
-   * operators-content.json entry for e.g. 'Bluebell Railway', and falls through
-   * to selection.fallbackName — which renderSelectionChrome() uses for the title
-   * and dbComingSoonHtml() uses for the body. So the map says "here is the
-   * heritage network" while the panel says "you picked the Bluebell Railway",
-   * with no new selection type and no new render path.
+   * A heritage railway has NO MAP PRESENCE when it cannot be shown OR reached.
+   * Two distinct causes, deliberately folded into one user-facing state because
+   * the user-visible consequence is identical (nothing to look at):
+   *   - no_line: km is 0, the extraction found a name but no measurable track,
+   *     so no line is ever drawn. 8 railways.
+   *   - no center: not in the segment graph at all (not_in_graph /
+   *     needs_coordinates), so there is not even a coordinate to fly to. 8
+   *     railways, only 2 of which overlap the set above.
+   * Union is 14, NOT the 12 the brief assumed and not the 9/12 older comments in
+   * this file claimed — those figures were stale. Counted from
+   * data/heritage-railways.json (175 entries).
    */
-  function selectHeritageRailwayByName(name) {
-    var wasLocked = lockedOperatorHighlight === HERITAGE_OPERATOR_KEY;
-    lockedOperatorHighlight = HERITAGE_OPERATOR_KEY;
+  function heritageHasNoMapPresence(slug) {
+    var r = heritageRailways[slug];
+    if (!r) return false;
+    return !!r.no_line || !r.center;
+  }
+  /**
+   * THE heritage selection path. Every route in — clicking a line, picking from
+   * search, restoring from a URL — goes through here, so map state and panel
+   * state cannot diverge.
+   *
+   * Locks by slug and NEVER toggles off (spec): re-selecting an already-locked
+   * railway re-runs the focus instead. Clicking blank map is the only clear.
+   *
+   * Does NOT touch lockedOperatorHighlight. A locked national operator survives
+   * a heritage selection untouched and vice versa — see the state declarations
+   * for why they are separate variables rather than one tagged slot.
+   */
+  function selectHeritageRailway(slug) {
+    if (!slug) return;
+    // RE-SELECTING THE SAME RAILWAY IS FOCUS-ONLY. The lock is already correct
+    // and the panel is already showing it, so rebuilding the panel would bump
+    // selectionSeq and push a duplicate history entry for every re-click —
+    // filling back/forward with identical states. Spec asks for exactly this:
+    // a re-click re-runs the focus and nothing else.
+    var alreadySelected = lockedHeritageSlug === slug && selection.type === 'heritage' && selection.slug === slug;
+    lockedHeritageSlug = slug;
+    hoveredHeritageSlug = null;
     applyOperatorHighlightPaint();
     if (mode !== 'database') setMode('database');
-    selectOperator(name);
-    return wasLocked;
+    if (!alreadySelected) selectHeritagePanel(slug);
+    focusHeritageRailway(slug);
+  }
+  // Camera half of the above, split out so a re-click can re-run the focus
+  // without rebuilding the panel. Skipped entirely for a railway with no map
+  // presence: flying to a no_line railway's centre lands on blank map with
+  // nothing drawn, which reads as a broken jump rather than a result — the panel
+  // says so in words instead (see heritageNoMapNoticeHtml).
+  function focusHeritageRailway(slug) {
+    var r = heritageRailways[slug];
+    if (!map || !r || !r.center || heritageHasNoMapPresence(slug)) return;
+    map.flyTo({ center: r.center, zoom: r.zoom || 12, padding: boundsFitPadding() });
   }
 
   function addStationsLayer(gj) {
@@ -4118,9 +4200,26 @@
       if (mode === 'history') return;
       map.getCanvas().style.cursor = 'pointer';
       if (!e.features.length) return;
-      var op = e.features[0].properties.operators;
-      if (hoveredOperatorHighlight !== op) {
+      var props = e.features[0].properties;
+      var op = props.operators;
+      // Heritage hovers by SLUG, not by operator: every heritage segment shares
+      // the operators value 'Heritage', so hovering one railway would otherwise
+      // light up all 169 of them and name none. Falls back to the operator path
+      // for the 13 heritage segments that carry no heritage_slug (ways that
+      // resolved to no canonical railway) — those still read as heritage, just
+      // without an individual identity, which is exactly what they are.
+      if (op === HERITAGE_OPERATOR_KEY && props.heritage_slug) {
+        if (hoveredHeritageSlug !== props.heritage_slug || hoveredOperatorHighlight !== null) {
+          hoveredHeritageSlug = props.heritage_slug;
+          hoveredOperatorHighlight = null;
+          applyOperatorHighlightPaint();
+        }
+        showHoverTooltip(e.lngLat, heritageDisplayName(props.heritage_slug), heritageTooltipSubtitle(props));
+        return;
+      }
+      if (hoveredOperatorHighlight !== op || hoveredHeritageSlug !== null) {
         hoveredOperatorHighlight = op;
+        hoveredHeritageSlug = null;
         applyOperatorHighlightPaint();
       }
       showHoverTooltip(e.lngLat, resolveOperatorDisplayName(op));
@@ -4128,8 +4227,9 @@
     map.on('mouseleave', OPERATOR_HIT_LAYERS, function () {
       if (mode === 'history') return;
       map.getCanvas().style.cursor = '';
-      if (hoveredOperatorHighlight !== null) {
+      if (hoveredOperatorHighlight !== null || hoveredHeritageSlug !== null) {
         hoveredOperatorHighlight = null;
+        hoveredHeritageSlug = null;
         applyOperatorHighlightPaint();
       }
       hideHoverTooltip();
@@ -4186,7 +4286,24 @@
       // circles overlapped this 18px strip, so one click fired both handlers and
       // the dot had to win. Removed 2026-08-02 with the dots themselves; heritage
       // is now reachable only as a line, which is this handler's own target.
-      var op = e.features[0].properties.operators;
+      var props = e.features[0].properties;
+      var op = props.operators;
+      // HERITAGE BRANCH (2026-08-03). Three deliberate differences from the
+      // national path below, all from spec:
+      //   1. Locks by heritage_slug, so one railway lights up rather than all
+      //      of them (see the hover handler's note on why).
+      //   2. NO toggle-off. Re-clicking an already-locked heritage railway
+      //      re-runs the focus instead of unlocking — clicking blank map is the
+      //      only way to clear a heritage highlight.
+      //   3. Always re-focuses, lock-on or not, which is why the flyTo sits
+      //      outside the wasLocked check that gates the national selectOperator.
+      // The national lock is deliberately left alone here: the two states are
+      // independent (see their declarations), so clicking a heritage railway
+      // does not disturb a locked national operator and vice versa.
+      if (op === HERITAGE_OPERATOR_KEY && props.heritage_slug) {
+        selectHeritageRailway(props.heritage_slug);
+        return;
+      }
       var wasLocked = lockedOperatorHighlight === op;
       lockedOperatorHighlight = wasLocked ? null : op;
       applyOperatorHighlightPaint();
@@ -4201,12 +4318,18 @@
     // handler ordering is what actually makes this safe: if a route WAS
     // under the click, do nothing (leave whatever the handler above just
     // set), only clear when genuinely nothing was hit.
+    // 2026-08-03: this is now the ONLY way to clear a heritage lock — heritage
+    // lines deliberately do not toggle off on re-click — so it also clears
+    // lockedHeritageSlug. heritageHighlightAll is untouched: it is a button
+    // state, not a selection, and a stray click into empty sea must not
+    // silently un-press a control the user explicitly pressed.
     map.on('click', function (e) {
       if (mode === 'history') return;
-      if (!lockedOperatorHighlight) return;
+      if (!lockedOperatorHighlight && !lockedHeritageSlug) return;
       var hits = map.queryRenderedFeatures(e.point, { layers: OPERATOR_HIT_LAYERS });
       if (hits.length) return;
       lockedOperatorHighlight = null;
+      lockedHeritageSlug = null;
       applyOperatorHighlightPaint();
     });
     map.on('zoomstart', hideHoverTooltip);
@@ -4286,6 +4409,14 @@
     } else if (type === 'operator') {
       var o = selection.code && operatorsContent[selection.code];
       selTitleEl.textContent = (o && o.name) || selection.fallbackName || 'Operator';
+      starBtn.style.display = 'none';
+    } else if (type === 'heritage') {
+      // Title comes from heritageDisplayName() rather than the content file
+      // directly, so it still names the railway when heritage-content.json has
+      // no entry (or has not loaded) — the generated lookup and the slug itself
+      // are both better fallbacks than the word "Operator".
+      selTitleEl.textContent = heritageDisplayName(selection.slug);
+      // No star: favourites saves stations, and a heritage railway is not one.
       starBtn.style.display = 'none';
     } else if (type === 'histop') {
       var ho = historicalOperators[selection.slug];
@@ -4930,6 +5061,64 @@
   }
   function wireDatabaseDefault() {} // nothing to wire — see comment above
 
+  /**
+   * The no-map-presence notice. Same .db-hint degraded-state pattern as
+   * operatorNoTrackNoticeHtml() and the historical-tileset failure notice, so a
+   * heritage railway that cannot be shown reads like every other "we know about
+   * this, the map just can't show it" case on the site rather than a new kind of
+   * error.
+   *
+   * Two causes, two wordings, because the user-visible consequence differs: one
+   * has a known location but nothing drawn there, the other has no location at
+   * all. Both are explicit that the ENTRY is fine — it is the map data that is
+   * missing — which is the distinction a blank panel fails to make.
+   */
+  function heritageNoMapNoticeHtml(slug) {
+    var r = heritageRailways[slug];
+    if (!r || !heritageHasNoMapPresence(slug)) return '';
+    if (!r.center) {
+      return '<div class="db-hint" data-anim-row>No map location data is available for this railway yet, ' +
+        'so it can’t be shown or located on the map. The details below still apply.</div>';
+    }
+    return '<div class="db-hint" data-anim-row>No mapped track is available for this railway yet, ' +
+      'so there’s nothing to show on the map. The details below still apply.</div>';
+  }
+  /**
+   * Heritage railway panel. Reads heritage-content.json (editorial: intro,
+   * length, website, Wikipedia) with data/heritage-railways.json as the
+   * structural fallback — the generated lookup covers all 175 railways, the
+   * editorial file may not, so type/length still render for an entry that has no
+   * curated content.
+   *
+   * The no-map notice comes FIRST and renders even when there is no content
+   * entry at all, so the "why is nothing on the map" answer is never buried
+   * under (or replaced by) a "coming soon" card.
+   */
+  function heritageDetailSkeletonHtml() {
+    var slug = selection.slug;
+    var r = heritageRailways[slug] || {};
+    var c = heritageContent[slug] || {};
+    var notice = heritageNoMapNoticeHtml(slug);
+    var hasContent = !!(c.intro || c.website || c.length_km || c._wikipedia);
+    if (!hasContent && !r.type) return notice || dbComingSoonHtml(heritageDisplayName(slug));
+    var html = notice;
+    html += dbHeadlineHtml(c.intro);
+    // type_secondary exists on 6 railways that genuinely span two categories
+    // (e.g. a preserved line that also runs a miniature railway) — joined rather
+    // than dropped, since picking one would misdescribe them.
+    var types = [c.type || r.type, r.type_secondary].filter(Boolean).map(heritageTypeLabel);
+    html += dbFieldHtml('Type', types.join(' · '));
+    // length_km (editorial) and km (generated, measured off the segment graph)
+    // are the same quantity from two sources; prefer the editorial one. Suppress
+    // 0 entirely — a "0.0 km" row on a no_line railway would contradict the
+    // notice directly above it.
+    var km = c.length_km || r.km;
+    html += dbFieldHtml('Length', km ? (Math.round(km * 10) / 10) + ' km' : '');
+    html += dbFieldHtml('Principal station', r.principal_station);
+    html += dbBottomLinksHtml(c, null);
+    return html;
+  }
+
   function sidebarSkeletonHtml() {
     if (selection.type === 'saved') return '<div class="sv-list" id="sv-list" data-anim-row>' + savedListRowsHtml() + '</div>';
     if (selection.type === 'histop') return historicalOperatorSkeletonHtml();
@@ -4937,6 +5126,7 @@
     if (selection.type === 'histstation') return historicalStationSkeletonHtml(selection.station || {}, selection.stationCoords);
     if (selection.type === 'route') return routeDetailSkeletonHtml();
     if (selection.type === 'operator') return operatorDetailSkeletonHtml();
+    if (selection.type === 'heritage') return heritageDetailSkeletonHtml();
     if (selection.type === 'fromto') return mode === 'database' ? fromToDatabaseSkeletonHtml() : fromToSkeletonHtml();
     if (selectedStationId) return mode === 'database' ? stationDatabaseSkeletonHtml() : stationLiveSkeletonHtml();
     if (mode === 'history') return historyDefaultSkeletonHtml();
@@ -4981,6 +5171,13 @@
       wireOperatorDetail();
       var operatorEntry = selection.code && operatorsContent[selection.code];
       injectSchemaJsonLd(operatorEntry && operatorEntry.schema_jsonld);
+    } else if (selection.type === 'heritage') {
+      // Nothing to wire — the heritage panel is static content plus the shared
+      // .db-links anchors, no region chips or expandable rows. The explicit
+      // branch still matters: without it this falls through to a later one and
+      // leaves the PREVIOUS selection's JSON-LD in the document head.
+      // heritage-content.json carries no schema_jsonld today, hence null.
+      injectSchemaJsonLd(null);
     } else if (mode === 'database' && selection.type === 'fromto') {
       wireFromToDatabaseDetail();
       injectSchemaJsonLd(null); // a From/To path isn't a single catalogued entity
@@ -5117,6 +5314,8 @@
       params.set('route', selection.id);
     } else if (selection.type === 'operator' && selection.code) {
       params.set('operator', selection.code);
+    } else if (selection.type === 'heritage' && selection.slug) {
+      params.set('heritage', selection.slug);
     } else if (selection.type === 'fromto') {
       // Only linkable when BOTH ends have a CRS — restoreStateFromUrl resolves
       // ?from/?to by CRS, and writing the string "null" into the URL would
@@ -5174,11 +5373,21 @@
       if (histOp) { selectHistoricalOperator(histOp, histOp); return; }
       var routeId = params.get('route');
       var operatorCode = params.get('operator');
+      var heritageSlug = params.get('heritage');
       var fromCrs = params.get('from'), toCrs = params.get('to');
       var stationCrs = params.get('station');
       var stopId = params.get('stop');
       if (routeId && routesContent[routeId]) {
         selectRoute(routeId);
+      } else if (heritageSlug) {
+        // Same "restore the MAP too, not just the panel" rule the operator
+        // branch below documents: selectHeritageRailway() re-locks the
+        // highlight and re-runs the camera, so back/forward through heritage
+        // picks behaves like the original click. Not gated on the slug existing
+        // in heritageRailways — that file may not have loaded yet, and the panel
+        // degrades to a slug-derived name rather than silently dropping the
+        // selection.
+        selectHeritageRailway(heritageSlug);
       } else if (operatorCode) {
         // 2026-07-29: this used to call selectOperator() alone, which rebuilds
         // the SIDEBAR and nothing else — so going back/forward through operator
@@ -5455,6 +5664,26 @@
     operatorNoTrackCode = null;
     var code = operatorsContent[identifier] ? identifier : (operatorNameToCode[identifier] || null);
     selection = { type: 'operator', code: code, fallbackName: (code && operatorsContent[code].name) || identifier };
+    renderSelectionChrome();
+    expandSidebarIfCollapsed();
+    animateSidebarTransition();
+    setSelectedStationPoints([]);
+    pushHistoryForCurrentState();
+  }
+  // Panel half of a heritage selection — same shape as selectOperator() above,
+  // deliberately, so both kinds of pick move the sidebar in exactly the same way
+  // (chrome, expand, transition, clear station markers, push history). Keyed on
+  // slug rather than a code: heritage railways have no operators-content.json
+  // entry, which is precisely why they were falling through to the generic
+  // "coming soon" card before this had its own selection type.
+  //
+  // Split out from selectHeritageRailway() so the map side (lock + camera) and
+  // the panel side stay independently callable — a URL restore needs the panel
+  // without necessarily re-flying the camera.
+  function selectHeritagePanel(slug) {
+    ++selectionSeq;
+    operatorNoTrackCode = null;
+    selection = { type: 'heritage', slug: slug, fallbackName: heritageDisplayName(slug) };
     renderSelectionChrome();
     expandSidebarIfCollapsed();
     animateSidebarTransition();
@@ -6665,16 +6894,11 @@
     ids.forEach(function (id) {
       if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', 'visible');
     });
-    // Heritage lines are the second deliberate asymmetry, and the ORDER matters:
-    // the four heritage tiers ARE in `ids` (ROUTE_TIERS covers them), so the
-    // blanket restore above has just forced them visible regardless of the
-    // toggle. This runs AFTER it to put the user's own choice back — turning
-    // heritage off, visiting History and coming back must not silently turn it
-    // on again. Was applyHeritageDotVisibility() before 2026-08-02, doing the
-    // same job for the dot layers, which were excluded from `ids` instead;
-    // exclusion is not an option here because these layers are shared with the
-    // ordinary operator-line restore.
-    applyHeritageLineVisibility();
+    // A heritage re-apply used to run here (and, before that, a dot-visibility
+    // one), because the four heritage tiers ARE in `ids` via ROUTE_TIERS and the
+    // blanket restore would otherwise trample a user toggle. Gone 2026-08-03:
+    // heritage lines are permanently visible, so the blanket restore is simply
+    // correct for them and there is no preference left to put back.
   }
 
   // Full-colour operator paint for the modern band inside History mode.
@@ -7475,7 +7699,9 @@
     // unaffected: both show real present-day track, so the path means
     // something there.
     var liveOnly = selection.type === 'saved';
-    var dbOnly = selection.type === 'route' || selection.type === 'operator';
+    // 'heritage' joins route/operator as Database-only: it is the same class of
+    // entity card, and Live has no tab that could present one.
+    var dbOnly = selection.type === 'route' || selection.type === 'operator' || selection.type === 'heritage';
     // History-only selection types — the history-focused operator/station/line
     // panels. Same reasoning as liveOnly/dbOnly: carrying one into a mode that
     // cannot render it would leave the sidebar showing an inapplicable view.
@@ -7557,89 +7783,39 @@
     layersBtn.setAttribute('data-tooltip', ormVisible ? 'Hide Base Rail Network' : 'Show Base Rail Network');
   });
 
-  // Third layer toggle (2026-07-29), same interaction shape as the two above:
-  // flip the flag, re-apply, keep the tooltip describing what the NEXT click
-  // does. DEFAULT ON, unlike the base-rail overlay: heritage lines are grey until
-  // hovered and do not render below z7.5, so defaulting off would hide the whole
-  // feature from anyone not already looking for it.
+  // Third layer toggle. 2026-08-03: this control has changed meaning TWICE —
+  // it hid/showed the heritage DOTS, then (2026-08-02) the heritage LINE tiers,
+  // and now it toggles nothing's visibility at all. Heritage lines render
+  // permanently; the button turns on a "highlight every heritage railway at
+  // once" state instead.
   //
-  // 2026-08-02: this toggled the heritage DOT layers until the dots were removed;
-  // it now toggles the four heritage LINE tiers, which is all that is left to
-  // toggle. Because the dots were what made heritage self-evident on the map,
-  // the toggle is also the subject of the first-visit callout below — it is now
-  // the only thing that advertises heritage exists.
+  // DEFAULT OFF, unlike both previous meanings. Highlight-all is an emphasis
+  // state layered on top of the normal map, not the resting view — defaulting it
+  // on would light the whole heritage network on first load and leave the button
+  // as a way to turn something off that the user never asked for.
+  //
+  // The pressed state and the tooltip both track it, same shape as the two
+  // toggles above, so the control still reads as on/off rather than momentary.
   var heritageBtn = document.getElementById('heritage-btn');
   heritageBtn.addEventListener('click', function () {
-    setHeritageLinesVisible(!heritageLinesVisible);
-    // A deliberate click on the toggle means the callout has done its job, so
-    // retire it whether or not it is currently on screen.
-    dismissHeritageHint();
+    setHeritageHighlightAll(!heritageHighlightAll);
   });
-  function setHeritageLinesVisible(next) {
-    heritageLinesVisible = next;
-    applyHeritageLineVisibility();
-    heritageBtn.setAttribute('aria-pressed', String(heritageLinesVisible));
-    heritageBtn.setAttribute('data-tooltip', heritageLinesVisible ? 'Hide Heritage Railways' : 'Show Heritage Railways');
+  function setHeritageHighlightAll(next) {
+    heritageHighlightAll = next;
+    // Highlight-all and an individual heritage lock are the same colour and
+    // would be indistinguishable on screen, so turning it ON drops the
+    // individual lock rather than leaving invisible state behind that would
+    // reappear the moment the button was switched off again. The PANEL is left
+    // alone deliberately — the same rule the national lock already follows,
+    // where clearing a highlight never closes the card it opened.
+    if (next) lockedHeritageSlug = null;
+    applyOperatorHighlightPaint();
+    heritageBtn.setAttribute('aria-pressed', String(heritageHighlightAll));
+    heritageBtn.setAttribute('data-tooltip', heritageHighlightAll ? 'Unhighlight Heritage Railways' : 'Highlight All Heritage Railways');
   }
-
-  /* ── First-visit heritage callout ────────────────────────────────────────
-     Shown once, ever, then never again. The flag is written the moment it is
-     SHOWN, not when it is dismissed — a user who ignores it and reloads has
-     already had the pointer, and a hint that keeps coming back until you click
-     it is a nag. That does mean a hint shown to a user who never looked at the
-     map is spent; accepted deliberately, because the alternative (re-show until
-     acknowledged) is the worse failure.
-
-     Storage failures degrade to NOT showing it (see heritageHintSeen's catch):
-     if localStorage is unavailable — Safari private mode, storage disabled —
-     the dismissal could not be persisted either, so showing it would produce a
-     callout on every single page load. Silence is the safer of the two. */
-  var HERITAGE_HINT_KEY = 'srhq_heritage_hint_seen';
-  var heritageHintEl = document.getElementById('heritage-hint');
-  var heritageHintDismissBtn = document.getElementById('heritage-hint-dismiss');
-  function heritageHintSeen() {
-    try { return localStorage.getItem(HERITAGE_HINT_KEY) === '1'; } catch (e) { return true; }
-  }
-  function markHeritageHintSeen() {
-    try { localStorage.setItem(HERITAGE_HINT_KEY, '1'); } catch (e) {}
-  }
-  function dismissHeritageHint() {
-    if (!heritageHintEl) return;
-    heritageHintEl.hidden = true;
-    markHeritageHintSeen();
-  }
-  function showHeritageHintOnce() {
-    if (!heritageHintEl || !heritageBtn || heritageHintSeen()) return;
-    // Vertical alignment is read from the button rather than hardcoded, so the
-    // arrow keeps pointing at the heritage toggle if the control stack changes.
-    // offsetTop is relative to #control-cluster (the nearest positioned
-    // ancestor), which is what this panel is positioned against too. The mobile
-    // breakpoint overrides `top` back to auto — see the CSS.
-    heritageHintEl.style.top = heritageBtn.offsetTop + 'px';
-    heritageHintEl.hidden = false;
-    // Written on SHOW, per the note above.
-    markHeritageHintSeen();
-  }
-  if (heritageHintDismissBtn) {
-    heritageHintDismissBtn.addEventListener('click', dismissHeritageHint);
-  }
-  // Held back until the map has actually drawn its layers. Appearing over a
-  // blank canvas mid-load would read as a page element rather than as a pointer
-  // at a control, and it would also land on top of the cookie banner's own
-  // first-visit moment.
-  //
-  // DRIVEN FROM addMapLayers(), not from a listener registered here. `map` is
-  // still undefined at this point in the script — initMap() is an async IIFE
-  // that awaits /api/config before assigning it, so the whole rest of this file
-  // runs first and `map.once('load', ...)` here would silently bind to nothing.
-  // addMapLayers() is this file's established "the map is ready" hook and it
-  // already re-runs on every theme toggle, which the latch below absorbs.
-  var heritageHintShown = false;
-  function triggerHeritageHint() {
-    if (heritageHintShown) return;
-    heritageHintShown = true;
-    setTimeout(showHeritageHintOnce, 1200);
-  }
+  // Sets the resting label/pressed state from the default above, so the markup
+  // does not have to hardcode a value that then drifts from the flag.
+  setHeritageHighlightAll(heritageHighlightAll);
 
   // Sibling of the base-rail toggle above, same interaction shape: flip the
   // flag, re-apply, and keep the tooltip describing what the NEXT click will
@@ -8136,7 +8312,11 @@
       if (!currentMatches.length) { closeDropdown(); return; }
       highlightedIndex = -1;
       dropdownEl.innerHTML = currentMatches.map(function (s, i) {
-        return '<button type="button" class="sb-ac-item" id="' + optionId(i) + '" role="option" aria-selected="false">' + s.name + '</button>';
+        // Optional muted second line. Only heritage results set it today (the
+        // no-map-presence marker), but it is a generic field on the match object
+        // so any searchFn can use it without touching this renderer again.
+        var note = s.note ? '<span class="sb-ac-note">' + escapeAttr(s.note) + '</span>' : '';
+        return '<button type="button" class="sb-ac-item" id="' + optionId(i) + '" role="option" aria-selected="false">' + s.name + note + '</button>';
       }).join('');
       dropdownEl.classList.add('open');
       inputEl.setAttribute('aria-expanded', 'true');
@@ -8375,36 +8555,30 @@
   function submitOperatorPick(picked) {
     // Heritage results take a different route entirely: there is no
     // operators-content.json code to select, no tilestats key to check, and the
-    // flyTo target is the railway's own dot rather than a computed network
-    // extent. Handled BEFORE the mode guard because a heritage pick should work
-    // the same from either tab — selectHeritageRailwayByName() switches into
-    // Database itself, exactly as the line/dot click paths do.
+    // flyTo target is the railway's own curated centre rather than a computed
+    // network extent. Handled BEFORE the mode guard because a heritage pick
+    // should work the same from either tab — selectHeritageRailway() switches
+    // into Database itself, exactly as the line click path does.
     if (picked.heritageSlug) { submitHeritagePick(picked.heritageSlug); return; }
     if (mode !== 'database') return;
     selectOperator(picked.code);
     highlightAndFlyToOperator(picked.code, selectionSeq);
   }
   /**
-   * Search-driven heritage selection: enable the layer if the user has it off,
-   * then fly to the railway.
+   * Search-driven heritage selection. Now a thin wrapper: selectHeritageRailway()
+   * owns the lock, the mode switch, the panel and the camera, so a search pick
+   * and a click on the line itself land in exactly the same state. It used to
+   * also force the heritage layer visible (the search had to win over a toggle
+   * that could hide the result); heritage lines are always visible as of
+   * 2026-08-03, so there is nothing left to enable.
    *
-   * Enabling on demand is deliberate. A search result that silently does nothing
-   * because a toggle is off is indistinguishable from a broken search, so the
-   * search wins over the toggle state and setHeritageLinesVisible() keeps the
-   * button's aria-pressed and tooltip in step so the flip is visible rather than
-   * a hidden state change.
+   * Railways with no map presence still select and still open their panel — the
+   * panel carries the explanation (see heritageNoMapNoticeHtml) and
+   * focusHeritageRailway() holds the camera rather than flying to blank map.
    */
   function submitHeritagePick(slug) {
-    var r = heritageRailways[slug];
-    if (!r) return;
-    if (!heritageLinesVisible) setHeritageLinesVisible(true);
-    selectHeritageRailwayByName(r.name);
-    // 9 railways have no track in the segment graph and so no derived
-    // coordinate (needs_coordinates:true). They are still searchable and still
-    // title the panel — there is just nowhere to fly to, so the camera holds
-    // rather than jumping to null.
-    if (!r.center) return;
-    map.flyTo({ center: r.center, zoom: r.zoom || 12, padding: boundsFitPadding() });
+    if (!heritageRailways[slug]) return;
+    selectHeritageRailway(slug);
   }
   wireAutocomplete(operatorInput, document.getElementById('sb-ac-operator'), function (picked) {
     operatorPick = picked;
