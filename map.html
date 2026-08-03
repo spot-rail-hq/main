@@ -3761,9 +3761,20 @@
     lockedHeritageSlug = slug;
     hoveredHeritageSlug = null;
     applyOperatorHighlightPaint();
-    if (mode !== 'database') setMode('database');
+    // IN HISTORY: no mode switch, no camera move (2026-08-03). Both would fight
+    // History rather than serve it — switching mode would eject the user out of
+    // the year they are looking at, and a flyTo would override a camera that
+    // History drives from the slider. This mirrors exactly what modern operator
+    // lines already do in History: glow the line, fill the panel, stay put.
+    // Outside History both still happen, unchanged.
+    //
+    // This also fixes a shared LINK: ?mode=history&year=…&heritage=… restores
+    // mode and year first, and the unconditional setMode('database') here would
+    // have thrown both away before the panel opened.
+    var inHistory = mode === 'history';
+    if (!inHistory && mode !== 'database') setMode('database');
     if (!alreadySelected) selectHeritagePanel(slug);
-    focusHeritageRailway(slug);
+    if (!inHistory) focusHeritageRailway(slug);
   }
   // Camera half of the above, split out so a re-click can re-run the focus
   // without rebuilding the panel. Skipped entirely for a railway with no map
@@ -4251,13 +4262,13 @@
       // resolved to no canonical railway) — those still read as heritage, just
       // without an individual identity, which is exactly what they are.
       //
-      // SKIPPED IN HISTORY, deliberately. Heritage's per-railway selection is a
-      // Live/Database feature built around a Database-only panel and a camera
-      // fly; History has its own year-driven camera and drops dbOnly selections.
-      // Treating heritage as a plain operator here keeps History's modern band
-      // uniform (every line glows and opens the same card) and leaves the
-      // heritage feature itself literally untouched outside History.
-      if (mode !== 'history' && op === HERITAGE_OPERATOR_KEY && props.heritage_slug) {
+      // RUNS IN HISTORY TOO as of 2026-08-03. It was skipped there for one
+      // session, because a heritage selection was dbOnly (History dropped it)
+      // and selecting one forced a mode switch and a flyTo. Both are fixed at
+      // source — see selectHeritageRailway() and setMode()'s dbAndHistory
+      // category — so heritage now behaves in History exactly as modern
+      // operator lines do: glow, panel, no camera move, no mode change.
+      if (op === HERITAGE_OPERATOR_KEY && props.heritage_slug) {
         if (hoveredHeritageSlug !== props.heritage_slug || hoveredOperatorHighlight !== null) {
           hoveredHeritageSlug = props.heritage_slug;
           hoveredOperatorHighlight = null;
@@ -4361,8 +4372,8 @@
       // The national lock is deliberately left alone here: the two states are
       // independent (see their declarations), so clicking a heritage railway
       // does not disturb a locked national operator and vice versa.
-      // Skipped in History for the reason the hover handler documents.
-      if (mode !== 'history' && op === HERITAGE_OPERATOR_KEY && props.heritage_slug) {
+      // Runs in History too — see the hover handler's note.
+      if (op === HERITAGE_OPERATOR_KEY && props.heritage_slug) {
         selectHeritageRailway(props.heritage_slug);
         return;
       }
@@ -7771,9 +7782,32 @@
     // unaffected: both show real present-day track, so the path means
     // something there.
     var liveOnly = selection.type === 'saved';
-    // 'heritage' joins route/operator as Database-only: it is the same class of
-    // entity card, and Live has no tab that could present one.
-    var dbOnly = selection.type === 'route' || selection.type === 'operator' || selection.type === 'heritage';
+    // 'route' is the ONLY dbOnly type left. It stays here deliberately — see the
+    // dbAndHistory note below for the line that separates the two.
+    var dbOnly = selection.type === 'route';
+    // ── dbAndHistory: dropped in Live, kept in Database AND History ──────────
+    // 'heritage' moved here 2026-08-03, 'operator' 2026-08-04. Both had been in
+    // dbOnly by analogy — "same class of entity card, and Live has no tab that
+    // could present one" — where the first half is true and the second is only
+    // true of LIVE. History was collateral damage from that over-generalisation.
+    //
+    // THE RULE THAT DECIDES MEMBERSHIP: does the type have a real map
+    // representation in History? Operator and heritage both do — History's
+    // modern band (1994+) glows them exactly as Live/Database does, so their
+    // panel describes something the user can actually see. A selection of either
+    // kind can now also be CREATED in History by clicking a line, and a type you
+    // can create in a mode must survive being switched back into it.
+    //
+    // 'route' fails that test and is deliberately left in dbOnly: its magenta
+    // polyline is force-hidden in History (routeHighlightVisibility() returns
+    // 'none'), a deliberate 2026-07-27 decision that a present-day path drawn
+    // over an 1891 network is not a route anyone could have travelled. It is
+    // also not creatable in History — both entry points (a station panel's
+    // stopping-station rows, and the polyline's own hit layer) are unreachable
+    // there. Moving it would only ever produce a panel describing something the
+    // map is refusing to draw. See the report note about 'fromto', which does
+    // exactly that today and is the one real argument on the other side.
+    var dbAndHistory = selection.type === 'heritage' || selection.type === 'operator';
     // History-only selection types — the history-focused operator/station/line
     // panels. Same reasoning as liveOnly/dbOnly: carrying one into a mode that
     // cannot render it would leave the sidebar showing an inapplicable view.
@@ -7784,7 +7818,10 @@
     // that cannot render this view should not keep it.
     var historyOnly = selection.type === 'histop' || selection.type === 'histline' ||
       selection.type === 'histstation';
-    if ((mode === 'database' && liveOnly) || (mode === 'live' && dbOnly) ||
+    // dbAndHistory rides with dbOnly in the LIVE drop and is deliberately
+    // absent from the HISTORY drop — that asymmetry is the whole point of the
+    // category. Everything else is unchanged.
+    if ((mode === 'database' && liveOnly) || (mode === 'live' && (dbOnly || dbAndHistory)) ||
         (mode !== 'history' && historyOnly) || (mode === 'history' && (liveOnly || dbOnly))) {
       selection = { type: 'none' };
       activeSpanRange = null;
