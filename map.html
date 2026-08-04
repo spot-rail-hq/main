@@ -797,7 +797,9 @@
   .sb-attrib-summary { flex: 1; min-width: 0; line-height: 1.45; }
   .sb-attrib-chev { flex-shrink: 0; font-size: 12px; transition: transform 0.2s; }
   .sb-attrib-toggle[aria-expanded="true"] .sb-attrib-chev { transform: rotate(180deg); }
-  .sb-attrib-body { padding: 0 16px 10px; line-height: 1.5; max-height: 40vh; overflow-y: auto; }
+  /* Padding flipped with the DOM order — the body now sits ABOVE the toggle,
+     so its breathing room belongs on top rather than underneath. */
+  .sb-attrib-body { padding: 10px 16px 0; line-height: 1.5; max-height: 40vh; overflow-y: auto; }
   .sb-attrib-row { margin-bottom: 6px; }
   .sb-attrib-src { color: var(--ink-primary); }
   .sb-attrib-lic { color: var(--ink); }
@@ -909,6 +911,24 @@
      lines land (200 of 202 years have station events, so the box would then be
      populated almost always) — at which point this rule is the one to revisit. */
   .hs-highlight[hidden] { display: none; }
+  /* COLLAPSE CONTROL — same shape as .sb-attrib-toggle, and deliberately so:
+     two collapsibles in one sidebar that behaved differently would be worse
+     than either. Control last in the DOM, so it stays bottom-right in both
+     states (see the markup comment). */
+  .hs-highlight-body { width: 100%; }
+  .hs-highlight-toggle { width: 100%; margin-top: auto; display: flex; align-items: center; gap: 8px;
+    padding: 6px 0 0; background: transparent; border: none; cursor: pointer; color: var(--ink);
+    font-family: inherit; font-size: 11px; box-sizing: border-box; text-align: left; }
+  .hs-highlight-toggle-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis;
+    white-space: nowrap; font-family: var(--font-mono); letter-spacing: 0.04em; color: var(--ink); }
+  .hs-highlight-chev { flex-shrink: 0; font-size: 12px; transition: transform 0.2s; margin-left: auto; }
+  /* Chevron points DOWN to collapse and UP to expand — the direction the panel
+     will move, not the state it is in. */
+  .hs-highlight-toggle[aria-expanded="false"] .hs-highlight-chev { transform: rotate(180deg); }
+  /* Collapsed: the fixed min-height is released, so the panel shrinks to the
+     single control row instead of leaving ~290px of empty box — which is the
+     entire point of being able to collapse it on a short screen. */
+  .hs-highlight.is-collapsed { min-height: 0; }
   /* .hs-highlight-year removed 2026-08-04 with the year prefix it styled — the
      year is shown once, by #hs-year-sidebar above the slider track. */
   /* Auto-generated station open/close lines. Visually subordinate to the
@@ -1196,7 +1216,17 @@
       <input type="range" class="hs-range" id="hs-range-sidebar" step="1" aria-label="History year" />
     </div>
     <div class="hs-ticks" id="hs-ticks-sidebar"></div>
-    <div class="hs-highlight" id="hs-highlight" hidden></div>
+    <!-- Same body-first / control-last order as the attribution footer, for the
+         same reason: the toggle must not move when it is used. See the comment
+         on #sb-attribution. -->
+    <div class="hs-highlight" id="hs-highlight" hidden>
+      <div class="hs-highlight-body" id="hs-highlight-body"></div>
+      <button type="button" class="hs-highlight-toggle" id="hs-highlight-toggle" aria-expanded="true"
+              aria-controls="hs-highlight-body" aria-label="Collapse year details">
+        <span class="hs-highlight-toggle-label" id="hs-highlight-toggle-label"></span>
+        <i class="ti ti-chevron-down hs-highlight-chev"></i>
+      </button>
+    </div>
   </div>
 
   <div class="sb-selection">
@@ -1215,13 +1245,19 @@
        file updates the bar with no code change. Collapsed shows MANDATORY
        credits only; expanding adds the COURTESY ones. The static text below is
        a pre-JS fallback only and is replaced on load. -->
+  <!-- BODY FIRST, TOGGLE LAST (2026-08-04). The toggle used to come first and
+       the body expanded BELOW it, which moved the control every time it was
+       used: expand, and the arrow you just clicked is no longer under the
+       cursor. With the body above, the toggle row is the last thing in the
+       section in BOTH states, so the arrow stays pinned to the bottom-right
+       corner and the same spot toggles it open and shut. -->
   <div id="sb-attribution" class="sb-attrib">
+    <div class="sb-attrib-body" id="sb-attrib-body" hidden></div>
     <button type="button" class="sb-attrib-toggle" id="sb-attrib-toggle" aria-expanded="false"
             aria-controls="sb-attrib-body" aria-label="Data sources and attribution">
       <span class="sb-attrib-summary" id="sb-attrib-summary">© SpotRail HQ</span>
       <i class="ti ti-chevron-up sb-attrib-chev"></i>
     </button>
-    <div class="sb-attrib-body" id="sb-attrib-body" hidden></div>
   </div>
 </div>
 
@@ -1700,6 +1736,26 @@
   loadJsonContent('/data/year-events.json', function (d) {
     yearEvents = (d && d.years) || {};
     if (mode === 'history') renderYearHighlight();
+  });
+
+  // TAB CONSISTENCY: still-open historical stations with no station-list.json
+  // counterpart. A user switching Database -> History must never watch a station
+  // vanish, so History does not render these. Generated by
+  // scripts/build-historical-stations.mjs, which owns the name normalisation —
+  // a MapLibre filter has no regex and cannot strip "tube station" / "tram stop"
+  // / "(Hampshire)" itself, so the exact names are resolved at build time and
+  // this is a plain membership test.
+  //
+  // CLOSED stations are NOT in this list and never should be: existing only in
+  // History is the whole point of them.
+  //
+  // DEGRADES TO SHOWING EVERYTHING. If the fetch fails this stays [] and the
+  // filter below becomes a no-op — showing a station that Database lacks is a
+  // cosmetic inconsistency, hiding stations because a file 404'd is data loss.
+  var historyHiddenStationNames = [];
+  loadJsonContent('/data/history-hidden-stations.json', function (d) {
+    historyHiddenStationNames = (d && d.names) || [];
+    computeHistoryStationTierFilters();
   });
 
   // ── Operator line colors (Phase 5) ─────────────────────────────────────────
@@ -6733,7 +6789,15 @@
       ? ['!', ['match', ['coalesce', ['get', 'crs'], ''], allTiered, true, false]]
       : ['==', 1, 1];
     filters.closed = ['all', untiered, ['has', 'end_year']];
-    filters['open-other'] = ['all', untiered, ['!', ['has', 'end_year']]];
+    // open-other additionally drops the still-open stations that have no
+    // Database counterpart at all — see historyHiddenStationNames. Empty list
+    // (fetch not landed or failed) makes this term absent entirely rather than
+    // matching nothing, so the default is "show", not "hide".
+    var openOther = ['all', untiered, ['!', ['has', 'end_year']]];
+    if (historyHiddenStationNames.length) {
+      openOther.push(['!', ['match', ['get', 'name'], historyHiddenStationNames, true, false]]);
+    }
+    filters['open-other'] = openOther;
     historyStationTierFilters = filters;
     // History layers may already be on the map (the user can be in History
     // mode before these fetches land) — re-apply, no-op if not.
@@ -7099,18 +7163,24 @@
         'stations-label-' + t.id,
       );
     });
-    // THE SELECTED-STATION OVERLAY, TOO (2026-07-27). This is a separate
-    // GeoJSON source from the tiered markers above and was not in either list,
-    // so a station selected in Live/Database left its large turquoise dot (and
-    // its animated ring, and both From/To endpoint markers, which share these
-    // same two layers) floating over the historical map — reported as a ghost
-    // marker. Exactly the same class of leftover as the live station markers
-    // and the operator hit layers before them. Its opacity is driven
-    // imperatively by setSelectedStationPoints/syncSelectedMarkerLayers, so
-    // hiding by layout visibility here does not fight that animation, and
-    // restoring visibility does not force a marker back on screen when nothing
-    // is selected.
-    liveStationLayers.push(SELECTED_STATIONS_LAYER_ID, SELECTED_STATIONS_GLOW_LAYER_ID);
+    // THE SELECTED-STATION OVERLAY IS NO LONGER HIDDEN HERE (2026-08-04).
+    //
+    // It used to be. The 2026-07-27 reason was real: a station selected in
+    // Live/Database left its large turquoise dot and animated ring floating
+    // over the historical map — a ghost marker. Hiding the two layers killed
+    // the ghost, but it also made History the only tab where selecting a
+    // station produced no selection animation at all, because these are the
+    // very layers that draw it.
+    //
+    // The ghost is now killed at the source instead: setMode() clears the
+    // overlay's POINTS on both History transitions (see its clearing calls), so
+    // there is nothing to ghost in either direction, and History's own
+    // selectHistoricalStation() can set its own marker and get the same
+    // solid-fill-plus-ping treatment as the other two tabs.
+    //
+    // Not removed from restoreLiveLayersAfterHistory()'s restore list — being
+    // set visible when already visible is a harmless no-op, and keeping the two
+    // lists symmetrical is the rule that list exists to enforce.
     // AND THE MAGENTA PATH LINE ITSELF (2026-07-27). Its two endpoint markers
     // were hidden in History a batch earlier but the line between them was
     // not, which left a present-day routing path drawn across an 1891 network
@@ -7218,10 +7288,59 @@
     // station-only year would draw a rule above the first station line with
     // nothing above it.
     var html = hasBlurb ? '<div class="hs-highlight-main">' + escapeAttr(entry.blurb) + '</div>' : '';
-    el.innerHTML = html + stationHtml;
+    // Writes into the BODY, not the container — the container also holds the
+    // collapse control, which must survive a re-render.
+    var body = document.getElementById('hs-highlight-body');
+    (body || el).innerHTML = html + stationHtml;
     // Re-wired on every render because innerHTML replaces the buttons wholesale.
-    wireYearEventLinks(el);
+    wireYearEventLinks(body || el);
+    syncHighlightCollapse();
   }
+  /**
+   * Collapse control for the blurb panel. Same pattern as the attribution
+   * footer: body first, control last, so the chevron stays in the bottom-right
+   * corner in both states and one spot toggles it both ways.
+   *
+   * COLLAPSED STATE KEEPS A ONE-LINE SUMMARY rather than vanishing, so it is
+   * obvious there is content to bring back. The summary is the year label plus
+   * a short count of what is in there — enough to tell an empty year from a
+   * dense one at a glance.
+   */
+  var highlightCollapsed = false;
+  function highlightSummaryText() {
+    var atToday = historyYear === historyMaxYear();
+    var label = atToday && notableYears.today ? 'Today' : String(historyYear);
+    var ev = yearEvents[String(historyYear)] || {};
+    var bits = [];
+    if ((notableYears[atToday ? 'today' : String(historyYear)] || {}).blurb) bits.push('note');
+    var st = (ev.stations && (ev.stations.opened || ev.stations.closed)) ? 'stations' : null;
+    var ln = (ev.lines && (ev.lines.opened || ev.lines.closed)) ? 'lines' : null;
+    if (st) bits.push(st);
+    if (ln) bits.push(ln);
+    return label + (bits.length ? ' · ' + bits.join(', ') : '');
+  }
+  function syncHighlightCollapse() {
+    var wrap = document.getElementById('hs-highlight');
+    var body = document.getElementById('hs-highlight-body');
+    var btn = document.getElementById('hs-highlight-toggle');
+    var lbl = document.getElementById('hs-highlight-toggle-label');
+    if (!wrap || !body || !btn) return;
+    body.hidden = highlightCollapsed;
+    wrap.classList.toggle('is-collapsed', highlightCollapsed);
+    btn.setAttribute('aria-expanded', String(!highlightCollapsed));
+    btn.setAttribute('aria-label', highlightCollapsed ? 'Expand year details' : 'Collapse year details');
+    // The label only appears while collapsed — expanded, the content speaks for
+    // itself and a duplicate year line would just repeat #hs-year-sidebar.
+    if (lbl) lbl.textContent = highlightCollapsed ? highlightSummaryText() : '';
+  }
+  (function wireHighlightCollapse() {
+    var btn = document.getElementById('hs-highlight-toggle');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      highlightCollapsed = !highlightCollapsed;
+      syncHighlightCollapse();
+    });
+  })();
   /**
    * "Stations opened: A, B, C and 346 more" — four possible lines per year
    * (stations opened/closed, lines opened/closed), each omitted entirely when
@@ -7725,7 +7844,13 @@
     renderSelectionChrome();
     expandSidebarIfCollapsed();
     animateSidebarTransition();
-    setSelectedStationPoints([]);
+    // WAS setSelectedStationPoints([]) — an empty array, which cleared the
+    // overlay instead of placing a marker, so a History station click got no
+    // solid-fill transition and no radar-ping ring while Live and Database both
+    // did. `coords` was already being received and stored on the selection; it
+    // simply was not passed on. Same call shape as selectStation(), so both
+    // tabs drive the one animation rather than History growing its own.
+    setSelectedStationPoints(coords ? [{ lon: coords[0], lat: coords[1] }] : []);
     // A station's span is its first opening to its last closing — read from
     // the flattened scalars, since `periods` is a JSON string in the tiles.
     var first = props.p1_start, last = null, sawOpen = false;
@@ -8022,6 +8147,12 @@
       // is cleared rather than merely ignored — leaving it set would repaint
       // the moment the user switched back mid-highlight.
       clearOperatorHighlight();
+      // Clear the selected-station overlay's POINTS on the way in. This is what
+      // replaces hiding its layers (see setHistoryLayerVisibility): a marker
+      // from a Live/Database selection must not float over the historical map,
+      // but the layers themselves have to stay visible so History's own station
+      // selections can animate.
+      setSelectedStationPoints([]);
       ensureHistoryLayers();
       // Driven off SLIDER_INSTANCES rather than named calls, so removing or
       // re-adding an instance is a one-line change in one place.
@@ -8039,6 +8170,10 @@
       clearHistoryHover();
       clearHistoryLock();
       clearHistoryStationHover();
+      // Mirror of the clear on the way in — a History station's marker must not
+      // ghost into Live/Database either. The selection itself is already dropped
+      // by the historyOnly rule below; this drops its map overlay with it.
+      setSelectedStationPoints([]);
       restoreLiveLayersAfterHistory();
       applyOperatorHighlightPaint();
     }

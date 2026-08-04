@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-04T15:22:55.772Z",
+  "generated_at": "2026-08-04T17:09:14.465Z",
   "source": "Wikipedia year categories + Wikidata P625, GB polygon clip",
   "stats": {
     "candidate_articles": 9421,
@@ -13,9 +13,9 @@
     "inherited_start_year": 6,
     "unknown_start_year": 8,
     "triage": {
-      "c_name_match_failure": 188,
+      "c_name_match_failure": 216,
       "a_non_heavy_rail": 530,
-      "b_closure_unrecorded": 113
+      "b_closure_unrecorded": 85
     },
     "hidden_untriaged": 301,
     "max_periods": 5

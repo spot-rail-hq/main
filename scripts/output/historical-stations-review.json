@@ -5874,6 +5874,17 @@
         ]
       },
       {
+        "title": "Wansford railway station",
+        "openings": [
+          1845,
+          1977
+        ],
+        "coords": [
+          -0.38954,
+          52.5683
+        ]
+      },
+      {
         "title": "Stalybridge railway station (Lancashire and Yorkshire Railway)",
         "openings": [
           1846
@@ -6172,6 +6183,17 @@
         ]
       },
       {
+        "title": "Staverton railway station",
+        "openings": [
+          1872,
+          1969
+        ],
+        "coords": [
+          -3.7149,
+          50.461
+        ]
+      },
+      {
         "title": "Ravenscourt Park tube station",
         "openings": [
           1873
@@ -6376,6 +6398,17 @@
         ]
       },
       {
+        "title": "Embsay railway station",
+        "openings": [
+          1888,
+          1981
+        ],
+        "coords": [
+          -1.99119,
+          53.9755
+        ]
+      },
+      {
         "title": "Chesham tube station",
         "openings": [
           1889
@@ -6437,6 +6470,16 @@
         ]
       },
       {
+        "title": "Llanberis railway station (Snowdon Mountain Railway)",
+        "openings": [
+          1896
+        ],
+        "coords": [
+          -4.1195,
+          53.1163
+        ]
+      },
+      {
         "title": "Robroyston railway station",
         "openings": [
           1898,
@@ -6468,6 +6511,16 @@
         ]
       },
       {
+        "title": "Llandudno Victoria tram stop",
+        "openings": [
+          1902
+        ],
+        "coords": [
+          -3.8356,
+          53.3272
+        ]
+      },
+      {
         "title": "Newmarket railway station (Suffolk)",
         "openings": [
           1902
@@ -6495,6 +6548,17 @@
         "coords": [
           -0.299722,
           51.540833
+        ]
+      },
+      {
+        "title": "Castle Caereinion railway station",
+        "openings": [
+          1903,
+          1963
+        ],
+        "coords": [
+          -3.24108,
+          52.6446
         ]
       },
       {
@@ -6536,6 +6600,27 @@
         "coords": [
           -0.315556,
           51.550833
+        ]
+      },
+      {
+        "title": "Summit tram stop",
+        "openings": [
+          1903
+        ],
+        "coords": [
+          -3.8548,
+          53.3323
+        ]
+      },
+      {
+        "title": "Welshpool Raven Square railway station",
+        "openings": [
+          1903,
+          1981
+        ],
+        "coords": [
+          -3.1598,
+          52.6599
         ]
       },
       {
@@ -6800,6 +6885,17 @@
         ]
       },
       {
+        "title": "Bala (Penybont) railway station",
+        "openings": [
+          1934,
+          1976
+        ],
+        "coords": [
+          -3.59333,
+          52.9014
+        ]
+      },
+      {
         "title": "Upminster Bridge tube station",
         "openings": [
           1934
@@ -6840,6 +6936,18 @@
         ]
       },
       {
+        "title": "Seaton tram station",
+        "openings": [
+          1975,
+          1995,
+          2018
+        ],
+        "coords": [
+          -3.0677777777777777,
+          50.705
+        ]
+      },
+      {
         "title": "Bury Interchange",
         "openings": [
           1980,
@@ -6868,6 +6976,16 @@
         "coords": [
           -4.13265,
           52.9309
+        ]
+      },
+      {
+        "title": "Bo'ness railway station",
+        "openings": [
+          1981
+        ],
+        "coords": [
+          -3.59939,
+          56.0179
         ]
       },
       {
@@ -6928,6 +7046,36 @@
         "coords": [
           -1.6208,
           54.9743
+        ]
+      },
+      {
+        "title": "Walsingham (W&WLR) railway station",
+        "openings": [
+          1982
+        ],
+        "coords": [
+          0.872,
+          52.897
+        ]
+      },
+      {
+        "title": "Wells on Sea railway station",
+        "openings": [
+          1982
+        ],
+        "coords": [
+          0.865278,
+          52.9492
+        ]
+      },
+      {
+        "title": "Orton Mere railway station",
+        "openings": [
+          1983
+        ],
+        "coords": [
+          -0.280981,
+          52.5597
         ]
       },
       {
@@ -6993,6 +7141,36 @@
         ]
       },
       {
+        "title": "Peterborough Nene Valley railway station",
+        "openings": [
+          1986
+        ],
+        "coords": [
+          -0.247766,
+          52.5677
+        ]
+      },
+      {
+        "title": "Doniford Halt railway station",
+        "openings": [
+          1987
+        ],
+        "coords": [
+          -3.3111,
+          51.176
+        ]
+      },
+      {
+        "title": "Holt railway station (North Norfolk Railway)",
+        "openings": [
+          1987
+        ],
+        "coords": [
+          1.1133,
+          52.9145
+        ]
+      },
+      {
         "title": "Gelert's Farm Halt railway station",
         "openings": [
           1988
@@ -7000,6 +7178,36 @@
         "coords": [
           -4.12861,
           52.9311
+        ]
+      },
+      {
+        "title": "Birkhill railway station",
+        "openings": [
+          1989
+        ],
+        "coords": [
+          -3.66055556,
+          55.99333333
+        ]
+      },
+      {
+        "title": "Harman's Cross railway station",
+        "openings": [
+          1989
+        ],
+        "coords": [
+          -2.0271,
+          50.6198
+        ]
+      },
+      {
+        "title": "Aylsham railway station",
+        "openings": [
+          1990
+        ],
+        "coords": [
+          1.25393,
+          52.7905
         ]
       },
       {
@@ -7083,6 +7291,26 @@
         ]
       },
       {
+        "title": "Colesloggett Halt railway station",
+        "openings": [
+          1993
+        ],
+        "coords": [
+          -4.67418,
+          50.4596
+        ]
+      },
+      {
+        "title": "Totnes (Riverside) railway station",
+        "openings": [
+          1993
+        ],
+        "coords": [
+          -3.6858,
+          50.4398
+        ]
+      },
+      {
         "title": "Prestwick International Airport railway station",
         "openings": [
           1994
@@ -7090,6 +7318,26 @@
         "coords": [
           -4.6141,
           55.509
+        ]
+      },
+      {
+        "title": "Norden railway station (England)",
+        "openings": [
+          1995
+        ],
+        "coords": [
+          -2.0624,
+          50.6447
+        ]
+      },
+      {
+        "title": "Boscarne Junction railway station",
+        "openings": [
+          1997
+        ],
+        "coords": [
+          -4.7614,
+          50.4739
         ]
       },
       {
@@ -7130,6 +7378,16 @@
         "coords": [
           -2.294938888888889,
           53.47481111111111
+        ]
+      },
+      {
+        "title": "Kirkhaugh railway station",
+        "openings": [
+          1999
+        ],
+        "coords": [
+          -2.4769444444444444,
+          54.843333333333334
         ]
       },
       {
@@ -7180,6 +7438,16 @@
         "coords": [
           -0.020352,
           51.3455
+        ]
+      },
+      {
+        "title": "Llanberis railway station (Llanberis Lake Railway)",
+        "openings": [
+          2003
+        ],
+        "coords": [
+          -4.1194,
+          53.1174
         ]
       },
       {
@@ -7360,6 +7628,26 @@
         "coords": [
           -2.137961111111111,
           53.53771944444444
+        ]
+      },
+      {
+        "title": "Greenway Halt railway station (Devon)",
+        "openings": [
+          2012
+        ],
+        "coords": [
+          -3.5732,
+          50.3863
+        ]
+      },
+      {
+        "title": "Lintley Halt railway station",
+        "openings": [
+          2012
+        ],
+        "coords": [
+          -2.48608,
+          54.85229
         ]
       },
       {
@@ -13116,17 +13404,6 @@
     ],
     "b_closure_unrecorded": [
       {
-        "title": "Wansford railway station",
-        "openings": [
-          1845,
-          1977
-        ],
-        "coords": [
-          -0.38954,
-          52.5683
-        ]
-      },
-      {
         "title": "Cathcart Street Goods railway station",
         "openings": [
           1847
@@ -13296,17 +13573,6 @@
         ]
       },
       {
-        "title": "Staverton railway station",
-        "openings": [
-          1872,
-          1969
-        ],
-        "coords": [
-          -3.7149,
-          50.461
-        ]
-      },
-      {
         "title": "River Douglas railway station",
         "openings": [
           1878
@@ -13347,17 +13613,6 @@
         "coords": [
           -1.3056,
           51.0603
-        ]
-      },
-      {
-        "title": "Embsay railway station",
-        "openings": [
-          1888,
-          1981
-        ],
-        "coords": [
-          -1.99119,
-          53.9755
         ]
       },
       {
@@ -13408,16 +13663,6 @@
         "coords": [
           -4.1179,
           53.1045
-        ]
-      },
-      {
-        "title": "Llanberis railway station (Snowdon Mountain Railway)",
-        "openings": [
-          1896
-        ],
-        "coords": [
-          -4.1195,
-          53.1163
         ]
       },
       {
@@ -13532,27 +13777,6 @@
         ]
       },
       {
-        "title": "Llandudno Victoria tram stop",
-        "openings": [
-          1902
-        ],
-        "coords": [
-          -3.8356,
-          53.3272
-        ]
-      },
-      {
-        "title": "Castle Caereinion railway station",
-        "openings": [
-          1903,
-          1963
-        ],
-        "coords": [
-          -3.24108,
-          52.6446
-        ]
-      },
-      {
         "title": "Gree Goods station",
         "openings": [
           1903
@@ -13580,27 +13804,6 @@
         "coords": [
           -4.396302,
           55.785492
-        ]
-      },
-      {
-        "title": "Summit tram stop",
-        "openings": [
-          1903
-        ],
-        "coords": [
-          -3.8548,
-          53.3323
-        ]
-      },
-      {
-        "title": "Welshpool Raven Square railway station",
-        "openings": [
-          1903,
-          1981
-        ],
-        "coords": [
-          -3.1598,
-          52.6599
         ]
       },
       {
@@ -13706,17 +13909,6 @@
         ]
       },
       {
-        "title": "Bala (Penybont) railway station",
-        "openings": [
-          1934,
-          1976
-        ],
-        "coords": [
-          -3.59333,
-          52.9014
-        ]
-      },
-      {
         "title": "Powfoot Halt railway station",
         "openings": [
           1941
@@ -13777,18 +13969,6 @@
         ]
       },
       {
-        "title": "Seaton tram station",
-        "openings": [
-          1975,
-          1995,
-          2018
-        ],
-        "coords": [
-          -3.0677777777777777,
-          50.705
-        ]
-      },
-      {
         "title": "Nant Gwernol railway station",
         "openings": [
           1976
@@ -13819,16 +13999,6 @@
         ]
       },
       {
-        "title": "Bo'ness railway station",
-        "openings": [
-          1981
-        ],
-        "coords": [
-          -3.59939,
-          56.0179
-        ]
-      },
-      {
         "title": "Newton Dale Halt railway station",
         "openings": [
           1981
@@ -13836,16 +14006,6 @@
         "coords": [
           -0.717638,
           54.3424
-        ]
-      },
-      {
-        "title": "Walsingham (W&WLR) railway station",
-        "openings": [
-          1982
-        ],
-        "coords": [
-          0.872,
-          52.897
         ]
       },
       {
@@ -13859,16 +14019,6 @@
         ]
       },
       {
-        "title": "Wells on Sea railway station",
-        "openings": [
-          1982
-        ],
-        "coords": [
-          0.865278,
-          52.9492
-        ]
-      },
-      {
         "title": "Kelling Heath Park railway station",
         "openings": [
           1983
@@ -13876,16 +14026,6 @@
         "coords": [
           1.13759,
           52.9322
-        ]
-      },
-      {
-        "title": "Orton Mere railway station",
-        "openings": [
-          1983
-        ],
-        "coords": [
-          -0.280981,
-          52.5597
         ]
       },
       {
@@ -13906,36 +14046,6 @@
         "coords": [
           -2.4618,
           54.8309
-        ]
-      },
-      {
-        "title": "Peterborough Nene Valley railway station",
-        "openings": [
-          1986
-        ],
-        "coords": [
-          -0.247766,
-          52.5677
-        ]
-      },
-      {
-        "title": "Doniford Halt railway station",
-        "openings": [
-          1987
-        ],
-        "coords": [
-          -3.3111,
-          51.176
-        ]
-      },
-      {
-        "title": "Holt railway station (North Norfolk Railway)",
-        "openings": [
-          1987
-        ],
-        "coords": [
-          1.1133,
-          52.9145
         ]
       },
       {
@@ -13969,36 +14079,6 @@
         ]
       },
       {
-        "title": "Birkhill railway station",
-        "openings": [
-          1989
-        ],
-        "coords": [
-          -3.66055556,
-          55.99333333
-        ]
-      },
-      {
-        "title": "Harman's Cross railway station",
-        "openings": [
-          1989
-        ],
-        "coords": [
-          -2.0271,
-          50.6198
-        ]
-      },
-      {
-        "title": "Aylsham railway station",
-        "openings": [
-          1990
-        ],
-        "coords": [
-          1.25393,
-          52.7905
-        ]
-      },
-      {
         "title": "Brampton railway station (Norfolk)",
         "openings": [
           1990
@@ -14029,26 +14109,6 @@
         ]
       },
       {
-        "title": "Colesloggett Halt railway station",
-        "openings": [
-          1993
-        ],
-        "coords": [
-          -4.67418,
-          50.4596
-        ]
-      },
-      {
-        "title": "Totnes (Riverside) railway station",
-        "openings": [
-          1993
-        ],
-        "coords": [
-          -3.6858,
-          50.4398
-        ]
-      },
-      {
         "title": "Eurotunnel Folkestone Terminal",
         "openings": [
           1994
@@ -14066,16 +14126,6 @@
         "coords": [
           -0.25180833333333336,
           51.533252777777776
-        ]
-      },
-      {
-        "title": "Norden railway station (England)",
-        "openings": [
-          1995
-        ],
-        "coords": [
-          -2.0624,
-          50.6447
         ]
       },
       {
@@ -14099,16 +14149,6 @@
         ]
       },
       {
-        "title": "Boscarne Junction railway station",
-        "openings": [
-          1997
-        ],
-        "coords": [
-          -4.7614,
-          50.4739
-        ]
-      },
-      {
         "title": "Hayes Knoll railway station",
         "openings": [
           1999
@@ -14119,16 +14159,6 @@
         ]
       },
       {
-        "title": "Kirkhaugh railway station",
-        "openings": [
-          1999
-        ],
-        "coords": [
-          -2.4769444444444444,
-          54.843333333333334
-        ]
-      },
-      {
         "title": "Nappers Halt railway station",
         "openings": [
           1999
@@ -14136,16 +14166,6 @@
         "coords": [
           -3.70256,
           50.4613
-        ]
-      },
-      {
-        "title": "Llanberis railway station (Llanberis Lake Railway)",
-        "openings": [
-          2003
-        ],
-        "coords": [
-          -4.1194,
-          53.1174
         ]
       },
       {
@@ -14196,26 +14216,6 @@
         "coords": [
           -3.105,
           51.7741
-        ]
-      },
-      {
-        "title": "Greenway Halt railway station (Devon)",
-        "openings": [
-          2012
-        ],
-        "coords": [
-          -3.5732,
-          50.3863
-        ]
-      },
-      {
-        "title": "Lintley Halt railway station",
-        "openings": [
-          2012
-        ],
-        "coords": [
-          -2.48608,
-          54.85229
         ]
       },
       {
