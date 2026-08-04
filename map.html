@@ -6233,7 +6233,16 @@
   // current year resolved at runtime; hardcoding it would silently rot.
   var HISTORY_MIN_YEAR = 1825;
   function historyMaxYear() { return new Date().getUTCFullYear(); }
-  function historySnapYears() { return [1825, 1845, 1880, 1923, 1963, 1994, historyMaxYear()]; }
+  // 2026-08-04: the third snap point moved 1880 -> 1889. 1880 was only ever a
+  // "network mature" waypoint with no event attached (see
+  // HISTORICAL-SLIDER-FINDINGS.md's snap-point table); 1889 lands on the
+  // Regulation of Railways Act, which followed the Armagh disaster and made
+  // block signalling, interlocking and continuous automatic brakes compulsory.
+  // Positions are computed proportionally from these values and tick collisions
+  // are measured at runtime (pruneOverlappingTicks), so moving a year needs no
+  // layout change anywhere. Era BANDS are NOT keyed to these — eraBandForYear()
+  // splits on 1923/1948/1994 independently, so this does not touch paint.
+  function historySnapYears() { return [1825, 1845, 1889, 1923, 1963, 1994, historyMaxYear()]; }
   // ── TEMPORARY (2026-07-27): suppress the 1845 tick LABEL ──────────────────
   // 1845 stays in historySnapYears() above, so it remains a snap point at its
   // true proportional position and nothing about the slider's value handling

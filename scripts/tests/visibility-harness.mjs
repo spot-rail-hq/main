@@ -66,9 +66,9 @@ function check(label, cond, detail) {
 }
 const hitLayers = ROUTE_TIERS.map((t) => 'operator-lines-hit-' + t.id);
 
-console.log('\n=== HISTORY @ 1880 (pre-1994 band) ===');
+console.log('\n=== HISTORY @ 1889 (pre-1994 band, and a slider snap point) ===');
 {
-  const v = run('history', 1880);
+  const v = run('history', 1889);
   check('ALL operator hit layers hidden -> handlers cannot fire',
     hitLayers.every((id) => v[id] === 'none'),
     JSON.stringify(hitLayers.map((id) => id + '=' + v[id])));

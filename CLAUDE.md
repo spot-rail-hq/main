@@ -137,7 +137,17 @@ Include top 50 UK stations to start. Markers: 8px circle, turquoise stroke, dark
 - Shows map with ORM infrastructure overlay at full opacity
 - History slider appears below legend at bottom
 - History data: OpenHistoricalMap vector tiles, year filter on slider drag
-- Era snap-points: 1845, 1880, 1923, 1965, 1994, 2025
+- Slider snap-points: **1825, 1845, 1889, 1923, 1963, 1994, {current year}** — the
+  authoritative list is `historySnapYears()` in map.html; `scripts/scope-ohm-coverage.mjs`
+  keeps a copy for its coverage report only. Corrected 2026-08-04: this line
+  previously read "1845, 1880, 1923, 1965, 1994, 2025", which was wrong in four
+  ways — it omitted 1825, said 1965 where the code says 1963, hardcoded 2025
+  where the last stop is resolved at runtime, and listed 1880, which became
+  **1889** on 2026-08-04 (1880 was a "network mature" waypoint with no event
+  attached; 1889 is the Regulation of Railways Act). 1845 is a snap point but
+  its LABEL is suppressed (`HIDDEN_TICK_LABEL_YEARS`), so six labels render.
+- Snap-points are **not** era-band boundaries. `eraBandForYear()` splits on
+  1923/1948/1994 independently, so moving a snap point never changes paint.
 
 ## Legend bar (Database mode only, bottom of screen)
 > **⚠️ PARTLY OUT OF DATE — do not read the colours below as current fact.**

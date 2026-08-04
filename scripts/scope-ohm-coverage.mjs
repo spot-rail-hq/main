@@ -369,7 +369,10 @@ function analyseGeometry(elements) {
   // Snap-points are the LABELLED STOPS on a continuous slider, not discrete
   // snapshots — these are sanity samples, not the render set. The final stop
   // is the current year, resolved at runtime rather than hardcoded.
-  const snapPoints = [1825, 1845, 1880, 1923, 1963, 1994, new Date().getUTCFullYear()];
+  // Kept in step with map.html's historySnapYears() — 1880 became 1889 on
+  // 2026-08-04. These are sanity samples for the coverage report, so a drift
+  // here would only skew the report, not the map.
+  const snapPoints = [1825, 1845, 1889, 1923, 1963, 1994, new Date().getUTCFullYear()];
   const aliveAt = {};
   for (const y of snapPoints) {
     const alive = rows.filter((r) => r.start !== null && r.start <= y && (r.end === null || r.end >= y));

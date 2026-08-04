@@ -13,11 +13,56 @@
       "source": "wikipedia:History of rail transport in Great Britain",
       "reviewed": true
     },
+    "1829": {
+      "year": 1829,
+      "blurb": "The Rainhill Trials are run from 6 to 14 October to settle what should haul trains on the nearly-finished Liverpool and Manchester Railway. Ten locomotives are entered, five compete, and Stephenson's Rocket wins — making the case for the steam locomotive over stationary winding engines.",
+      "source": "wikipedia:Rainhill Trials",
+      "reviewed": false
+    },
     "1830": {
       "year": 1830,
       "blurb": "The Liverpool and Manchester Railway opens: the world's first inter-city passenger railway, and the first with scheduled services and terminal stations.",
       "source": "wikipedia:History of rail transport in Great Britain",
       "reviewed": true
+    },
+    "1836": {
+      "year": 1836,
+      "blurb": "The London and Greenwich Railway opens its first section — the capital's first steam railway, the first anywhere built specifically for passengers, and the first carried entirely on a viaduct.",
+      "source": "wikipedia:London and Greenwich Railway",
+      "reviewed": false,
+      "_note": "The line opened in stages between 1836 and 1838; the blurb says 'first section' rather than naming a completion date for that reason."
+    },
+    "1837": {
+      "year": 1837,
+      "blurb": "The Grand Junction Railway opens, joining the Liverpool and Manchester Railway to Birmingham by way of Warrington, Crewe and Stafford. It is the first trunk railway completed in England.",
+      "source": "wikipedia:Grand Junction Railway",
+      "reviewed": false,
+      "_note": "The source also calls it 'arguably the world's first long-distance railway with steam traction'. 'Arguably' is doing real work there, so the blurb claims only the first-trunk-railway-in-England point, which the source states flatly."
+    },
+    "1838": {
+      "year": 1838,
+      "blurb": "The London and Birmingham Railway opens throughout on 17 September — 112 miles from Euston to Curzon Street, and the first inter-city line built into London.",
+      "source": "wikipedia:London and Birmingham Railway",
+      "reviewed": false
+    },
+    "1840": {
+      "year": 1840,
+      "blurb": "The Railway Regulation Act sets up the Board of Trade's Railways Department, forerunner of the Railway Inspectorate. No line may open without notice to the Board, companies must make returns, and government inspectors are appointed for the first time.",
+      "source": "wikipedia:Railway Regulation Act 1840",
+      "reviewed": false
+    },
+    "1841": {
+      "year": 1841,
+      "blurb": "Thomas Cook runs his first railway excursion, taking members of the Leicester Temperance Society to Loughborough — the start of organised rail tourism in Britain.",
+      "source": "wikipedia:Thomas Cook",
+      "reviewed": false
+    },
+    "1844": {
+      "year": 1844,
+      "blurb": "Gladstone's Railway Regulation Act sets a minimum standard for rail travel, obliging companies to run cheap covered services for passengers who until then had ridden third class in open wagons — the 'Parliamentary train'.",
+      "source": "wikipedia:Railway Regulation Act 1844",
+      "reviewed": false,
+      "_note": "The Act is popularly remembered for the 'not more than one penny a mile' fare cap. That figure is NOT asserted here: it did not appear in the article text checked for this pass, and the rule is to source rather than infer. Worth adding if confirmed against the Act itself."
     },
     "1845": {
       "year": 1845,
@@ -25,12 +70,19 @@
       "source": "wikipedia:Railway Mania",
       "reviewed": true
     },
-    "1880": {
-      "year": 1880,
-      "blurb": "The Callander and Oban Railway opens throughout to Oban on 1 July.",
-      "source": "wikipedia:1880 in rail transport",
+    "1846": {
+      "year": 1846,
+      "blurb": "The Regulating the Gauge of Railways Act receives royal assent on 18 August, fixing 4 ft 8½ in as the standard gauge for Great Britain and 5 ft 3 in for Ireland.",
+      "source": "wikipedia:Regulating the Gauge of Railways Act 1846",
+      "reviewed": false,
+      "_note": "1846 was also Railway Mania's zenith (263 Acts, 9,500 miles proposed) — but the existing reviewed 1845 entry already carries that fact, so this entry covers the Gauge Act only to avoid the slider saying the same thing twice."
+    },
+    "1889": {
+      "year": 1889,
+      "blurb": "The Regulation of Railways Act. Passed within months of the Armagh rail disaster — in which a runaway excursion train killed around 80 people, many of them children — the Act made block signalling, the interlocking of points and signals, and continuous automatic brakes on passenger trains a legal requirement across Britain's railways. It's often regarded as the start of the modern era in UK rail safety.",
+      "source": "wikipedia:Regulation of Railways Act 1889; wikipedia:Armagh rail disaster",
       "reviewed": true,
-      "_note": "THIN ON PURPOSE, and flagged rather than padded. 1880 has no headline-grade GB event in the open sources — '1880 in rail transport' is dominated by US railroads, which is exactly the Phase 1 finding that the prose year-articles are global and thin on UK content. This is the one genuinely verifiable GB fact in it. A better 1880 highlight is Phase 2C work; inventing one to fill the slot is what the reviewed gate exists to prevent."
+      "_note": "DEATH TOLL IS DISPUTED BETWEEN SOURCES. Wikipedia's Armagh rail disaster article states plainly 'Eighty people were killed and 260 were injured, about a third of them children'; other accounts give 88 and a few give 89. 'around 80' is used deliberately so the sentence holds under the best-supported figure without asserting a precision the sources do not agree on. The Act's three provisions were checked directly against the Act's own article, which lists block signalling, interlocking of points and signals, and continuous automatic brakes (instantaneous, self-applying on loss of continuity, applicable to every vehicle, in daily use). SNAP POINT: 1889 replaced 1880 on 2026-08-04."
     },
     "1923": {
       "year": 1923,
