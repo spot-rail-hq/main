@@ -127,8 +127,17 @@
   *:focus-visible { outline: 2px solid var(--t); outline-offset: 2px; }
 
   #map { position: absolute; inset: 0; background: var(--bg); }
+  /* Carries .pill for its surface/border/blur, but deliberately overrides two of
+     .pill's properties (2026-08-04): .pill is border-radius 99px, which on a
+     two-line tooltip reads as a lozenge with the text crammed against the
+     curves. A rounded RECTANGLE is the right shape here, with enough horizontal
+     padding that the name is not touching the rounded corners. Overriding on the
+     id rather than editing .pill, because .pill is shared with the floating
+     header, the footer credits and the bottom hints — all of which should stay
+     pills. */
   #station-hover-tip { position: absolute; z-index: 60; transform: translate(-50%, -100%) translateY(-8px);
-    padding: 4px 10px; font-size: 14px; font-weight: 500; color: var(--ink-primary); white-space: nowrap;
+    padding: 5px 16px; border-radius: 10px;
+    font-size: 14px; font-weight: 500; color: var(--ink-primary); white-space: nowrap;
     pointer-events: none; display: none; }
   /* Two-line variant (2026-07-29, heritage dots). Only applied when
      showHoverTooltip() is given a subtitle — the single-line path stays a bare
@@ -136,7 +145,10 @@
      shared by every station hover and every operator-line hover. nowrap is
      relaxed for this variant only: the title is still one line via its own
      nowrap, but the block needs to be two lines tall. */
-  #station-hover-tip.has-subtitle { white-space: normal; text-align: center; padding: 5px 10px 4px; }
+  /* The two-line variant needs the same generous sides — it is the wider of the
+     two and the one in the screenshot that prompted this. Slightly more top/
+     bottom than the single-line case so the two lines sit centred in the box. */
+  #station-hover-tip.has-subtitle { white-space: normal; text-align: center; padding: 7px 18px 6px; }
   #station-hover-tip .tip-title { white-space: nowrap; }
   #station-hover-tip .tip-subtitle { font-size: 10px; font-weight: 500; color: var(--ink); opacity: 0.85;
     white-space: nowrap; margin-top: 1px; }
