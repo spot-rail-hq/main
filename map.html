@@ -869,7 +869,11 @@
      its single-row height. */
   .hs-ticks.two-row { height: 34px; }
   .hs-tick.row-2 { top: 16px; }
-  .hs-tick { position: absolute; transform: translateX(-50%); font-size: 15px; color: var(--ink);
+  /* 13.5px, matching .hs-year and the tab labels — these are axis furniture, not
+     body copy, and the tick row is the one place on the slider where width is
+     genuinely scarce. See the label change in renderTicks() for the other half
+     of this fix. */
+  .hs-tick { position: absolute; transform: translateX(-50%); font-size: 13.5px; color: var(--ink);
     background: transparent; border: none; padding: 0; cursor: pointer; font-family: inherit;
     white-space: nowrap; }
   .hs-tick:hover, .hs-tick.on { color: var(--t); }
@@ -6626,7 +6630,16 @@
       // .edge-last rather than with a magic inset here.
       var cls = 'hs-tick' + (i === 0 ? ' edge-first' : '') + (i === years.length - 1 ? ' edge-last' : '') +
         (HIDDEN_TICK_LABEL_YEARS.indexOf(y) !== -1 ? ' label-hidden' : '');
-      var label = y === max ? 'Today' : String(y);
+      // "Now", not "Today" (2026-08-04). THE LABEL LENGTH IS THE PROBLEM, not
+      // the font size. This tick is pinned to the right edge while 1994 sits at
+      // 84% of the track — only ~16% apart — so a 5-character label collides
+      // with it and pruneOverlappingTicks() drops it to a second row. Measured
+      // on a 368px track: "Today" needs 11px type to clear the 8px minimum gap,
+      // which is below the readable floor; "Now" clears it by 16.7px at 13.5px
+      // type. Shortening the word buys far more room than shrinking the text.
+      // The big readout above the track still says TODAY, so the meaning is
+      // never carried by this label alone.
+      var label = y === max ? 'Now' : String(y);
       return '<button type="button" class="' + cls + '" style="left:' + pct + '%" data-year="' + y + '">' + label + '</button>';
     }).join('');
     Array.prototype.forEach.call(host.querySelectorAll('.hs-tick'), function (btn) {
