@@ -59,10 +59,10 @@
     },
     "1844": {
       "year": 1844,
-      "blurb": "Gladstone's Railway Regulation Act sets a minimum standard for rail travel, obliging companies to run cheap covered services for passengers who until then had ridden third class in open wagons — the 'Parliamentary train'.",
+      "blurb": "Gladstone's Railway Regulation Act requires every line to run at least one third-class train each way every weekday, calling at all stations, at a fare of no more than a penny a mile and averaging at least 12 mph — with passengers sheltered from the weather and given seats. These become known as “Parliamentary trains”.",
       "source": "wikipedia:Railway Regulation Act 1844",
       "reviewed": false,
-      "_note": "The Act is popularly remembered for the 'not more than one penny a mile' fare cap. That figure is NOT asserted here: it did not appear in the article text checked for this pass, and the rule is to source rather than infer. Worth adding if confirmed against the Act itself."
+      "_note": "PENNY-A-MILE NOW CONFIRMED (2026-08-04) and folded into the blurb inline rather than split into a separate point — it is the single most-remembered provision of this Act, so separating it would have read as an afterthought. The pilot batch deliberately omitted it because it was absent from the first part of the article fetched; the Act article's own '== Provisions ==' section states it plainly, along with the other figures now used: one third-class train per line per weekday in each direction stopping at every station, fare 1d. per mile, average speed not less than 12 mph, passengers protected from the weather and provided with seats. Two further provisions are documented but left out for length: 56 lb of free luggage, and exemption from passenger duty for the operator in return."
     },
     "1845": {
       "year": 1845,
@@ -76,6 +76,51 @@
       "source": "wikipedia:Regulating the Gauge of Railways Act 1846",
       "reviewed": false,
       "_note": "1846 was also Railway Mania's zenith (263 Acts, 9,500 miles proposed) — but the existing reviewed 1845 entry already carries that fact, so this entry covers the Gauge Act only to avoid the slider saying the same thing twice."
+    },
+    "1852": {
+      "year": 1852,
+      "blurb": "King's Cross opens as the Great Northern Railway's London terminus, the southern end of what becomes the East Coast Main Line.",
+      "source": "wikipedia:London King's Cross railway station",
+      "reviewed": false
+    },
+    "1854": {
+      "year": 1854,
+      "blurb": "Cardwell's Act — the Railway and Canal Traffic Act — puts new obligations on companies as monopolies: each must accept all traffic offered, and must set and publish the same fares for all, ending undue preference between customers.",
+      "source": "wikipedia:Railway and Canal Traffic Act 1854",
+      "reviewed": false
+    },
+    "1859": {
+      "year": 1859,
+      "blurb": "Brunel's Royal Albert Bridge over the Tamar is opened by Prince Albert on 2 May, carrying the railway into Cornwall. Brunel dies later the same year, and his name is placed above the portals as a memorial.",
+      "source": "wikipedia:Royal Albert Bridge",
+      "reviewed": false
+    },
+    "1863": {
+      "year": 1863,
+      "blurb": "The Metropolitan Railway opens to the public on 10 January between Paddington and Farringdon — the world's first passenger-carrying underground railway, worked by steam locomotives hauling gas-lit wooden carriages.",
+      "source": "wikipedia:Metropolitan Railway",
+      "reviewed": false
+    },
+    "1868": {
+      "year": 1868,
+      "blurb": "The Regulation of Railways Act requires a means for passengers to communicate with the guard on any train booked to run more than 20 miles without stopping — the origin of the communication cord — with a fine for raising the alarm without cause.",
+      "source": "wikipedia:Regulation of Railways Act 1868",
+      "reviewed": false,
+      "_note": "DELIBERATELY NOT LINKED TO ABERGELE, and the date order is the reason. The Abergele rail disaster (33 killed, the worst in Great Britain to that date) also happened in 1868, on 20 August — but this Act received assent on 31 July, BEFORE the crash, so it cannot be a response to it. Treating them as cause and effect is an easy and appealing mistake. Abergele is a strong alternative entry for 1868 if a disaster is preferred to an Act here; only one can hold the year."
+    },
+    "1871": {
+      "year": 1871,
+      "blurb": "The Regulation of Railways Act makes accident reporting compulsory and gives the Board of Trade real investigative teeth: inspectors may enter railway premises, summon witnesses, compel the production of documents, and every report must be made public.",
+      "source": "https://www.legislation.gov.uk/ukpga/Vict/34-35/78/enacted",
+      "reviewed": false,
+      "_note": "The only entry in either batch sourced to the LEGISLATION ITSELF rather than to an encyclopaedia article — there is no Wikipedia article for this Act. legislation.gov.uk carries the enacted text, including the 'Accidents' cross-heading that the provisions above are drawn from."
+    },
+    "1880": {
+      "year": 1880,
+      "blurb": "The Callander and Oban Railway opens throughout to Oban on 1 July.",
+      "source": "wikipedia:1880 in rail transport",
+      "reviewed": true,
+      "_note": "RESTORED 2026-08-04 as an ordinary year after 1880 ceased to be a slider snap point (1889 took its place). Text and source are unchanged from the reviewed entry that existed before; it was already verified, so it was not re-checked. The original note called this 'thin on purpose' — that judgement was made when 1880 was a LABELLED STOP and a thin blurb sat under a prominent tick. As an ordinary year the standard is different: the slider only surfaces it in passing, and a short true fact is exactly what belongs there."
     },
     "1889": {
       "year": 1889,
