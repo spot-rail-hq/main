@@ -836,10 +836,12 @@
   .hs-jump-wrap { position: relative; margin-left: auto; }
   .hs-jump { width: 92px; padding: 5px 22px 5px 9px; border-radius: 8px; border: 0.5px solid var(--br);
     background: var(--bg); color: var(--ink-primary);
-    /* 15px to match body text. The uplift did move this (11 -> 13), but 13 still
-       read small against everything around it — a text INPUT should not be
-       smaller than the prose beside it. */
-    font-family: inherit; font-size: 15px; box-sizing: border-box; }
+    /* 13px, NOT the 15px body size. The uplift took this 11 -> 13, then 13 -> 15
+       on the theory that an input should not read smaller than the prose beside
+       it — but at 15px the field visibly outweighs the "Jump to" row it sits in,
+       so it went back to 13. It holds a 4-digit year in a 92px box; it does not
+       need to match prose. */
+    font-family: inherit; font-size: 13px; box-sizing: border-box; }
   .hs-jump:focus { outline: none; border-color: var(--brh); }
   .hs-jump.invalid { border-color: var(--m); }
 
@@ -894,25 +896,37 @@
      step and its length varies a lot — the shortest real entry is 12 words
      (1880), the longest is 67 (1889, which is the enforced maximum). Letting the
      box size to its content made everything below it jump on every drag.
-     RESIZED 190px -> 290px on 2026-08-04 when the station lines landed. 190px
-     was sized for a 67-word headline ALONE (~174px). With both auto-generated
-     station lines added, the real worst case is 1889 at ~281px — headline plus
-     an opens line plus a closes line — so 190px overflowed by ~91px. 290px
-     covers every year present in the data with a little slack.
+     RESIZED 190px -> 290px on 2026-08-04 when the station lines landed, then
+     290px -> 380px later the same day when the site-wide font uplift took this
+     box from 13px/12px to 15px/13.5px. Every re-size has had the same cause:
+     the content got taller, not the estimate got better.
+
+     ⚠ 380px IS SIZED FOR 1863, WHICH IS NOT THE YEAR YOU WOULD GUESS. The
+     obvious candidates are the ones with the longest headlines (1871, 1889,
+     both ~340px), but the tallest year is the one where all FOUR event rows are
+     populated with long names at once — 1863 at ~359px, whose "lines closed"
+     row alone runs to 3 lines (Hagger Leases Branch / South Moor Colliery
+     Waggonway / Dundee and Perth Railway). Sizing against the longest headline
+     instead would overflow it by ~20px. If a future data refresh adds names,
+     re-run the model rather than eyeballing the prose.
 
      ⚠ THIS BUYS STABILITY AT A REAL COST, and the cost is flagged rather than
-     hidden: only 24 of 202 years carry a headline, while 201 carry station
-     lines, so the MEDIAN year renders at ~106px and leaves ~176px of empty box.
-     Trimming does not fix it either — even 2 names and a 40-word cap still
-     leaves ~117px of dead space, because the content genuinely varies ~3x.
-     See the report for the alternatives (accept the dead space, scroll the
-     dense years from a shorter box, or drop the fixed height).
+     hidden: only 25 of the 202 reachable years carry a headline, while every
+     one of them carries station lines, so the MEDIAN year renders at ~193px and
+     leaves ~187px of empty box. Only 15 years exceed the old 290px, and the
+     75th percentile is still only ~217px. Trimming does not fix it —
+     the content genuinely varies ~3x. The alternatives, if the dead space ever
+     outweighs the stability: size to the 90th percentile (~260px) and let the
+     15 dense years scroll, or drop the fixed height entirely.
 
      THIS IS A CHARACTER-WIDTH MODEL, NOT A MEASUREMENT — there is no browser in
-     the build environment, so the real wrapped height is unverified. overflow-y
-     is auto specifically so that being short fails safe: the box scrolls rather
-     than pushing the content below it. Worth one visual check against 1889,
-     which is the tallest real case.
+     the build environment, so the real wrapped height is unverified. The model
+     was calibrated against a screenshot of 1871 and reproduces its line breaks
+     exactly (5 headline lines / 2 / 2 / 3 / 1) and its box height to within
+     ~2%, so the 380px carries roughly one row-line of headroom over 1863.
+     overflow-y is auto specifically so that being short fails safe: the box
+     scrolls rather than pushing the content below it. Worth one visual check
+     against 1863, which is the tallest real case.
 
      TOP-ALIGNED, not centred: a short entry centred inside a tall fixed box
      moves its own first line down, which is the same jumpiness the fixed height
@@ -920,16 +934,17 @@
      it. Top alignment keeps the first line at a constant y for every year. */
   .hs-highlight { margin-top: 10px; padding: 9px 11px; border-radius: 10px;
     background: rgba(64,224,208,0.05); border: 0.5px solid var(--br); line-height: 1.5; font-size: 15px; color: var(--ink);
-    min-height: 290px; box-sizing: border-box;
+    min-height: 380px; box-sizing: border-box;
     display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start;
     overflow-y: auto; }
-  /* A year with NO entry still collapses the box entirely — existing behaviour,
-     deliberately unchanged. The fixed height stops shifting BETWEEN POPULATED
-     years, which is the case the slider actually moves through; reserving 140px
-     of empty bordered box on the ~190 years that currently have nothing would be
-     worse than the shift it prevents. That balance flips once the auto station
-     lines land (200 of 202 years have station events, so the box would then be
-     populated almost always) — at which point this rule is the one to revisit. */
+  /* A year with NO entry at all still collapses the box entirely. This rule used
+     to matter a lot — before the auto station lines it fired on ~190 of the 202
+     reachable years, and reserving that much empty bordered box would have been
+     worse than the shift it prevents. It now fires on NONE of them: every year
+     the slider can actually reach (HISTORY_MIN_YEAR 1825 to the current year)
+     has at least one station or line event. Kept as a genuine guard, not as
+     live behaviour — the data could thin out, and a year with nothing should
+     still not draw an empty 380px box. */
   .hs-highlight[hidden] { display: none; }
   /* COLLAPSE CONTROL — same shape as .sb-attrib-toggle, and deliberately so:
      two collapsibles in one sidebar that behaved differently would be worse
