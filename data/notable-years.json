@@ -25,7 +25,9 @@
       "year": 1829,
       "blurb": "The Rainhill Trials are run from 6 to 14 October to settle what should haul trains on the nearly-finished Liverpool and Manchester Railway. Ten locomotives are entered, five compete, and Stephenson's Rocket wins — making the case for the steam locomotive over stationary winding engines.",
       "source": "wikipedia:Rainhill Trials",
-      "reviewed": false
+      "reviewed": false,
+      "_shorterDraft": "The Rainhill Trials are held in October to decide what should haul trains on the Liverpool and Manchester Railway. Stephenson's Rocket wins, settling the case for steam over stationary engines.",
+      "_shorterDraftNote": "SUGGESTED REPLACEMENT, NOT APPLIED. `blurb` above is unchanged. Drafted 2026-08-04 against the ~33-word target (this entry was 45). drops the exact 6-14 October dates and the ten-entered / five-competed detail. Swap it into `blurb` on approval."
     },
     "1830": {
       "year": 1830,
@@ -57,7 +59,9 @@
       "year": 1840,
       "blurb": "The Railway Regulation Act sets up the Board of Trade's Railways Department, forerunner of the Railway Inspectorate. No line may open without notice to the Board, companies must make returns, and government inspectors are appointed for the first time.",
       "source": "wikipedia:Railway Regulation Act 1840",
-      "reviewed": false
+      "reviewed": false,
+      "_shorterDraft": "The Railway Regulation Act creates the Board of Trade's Railways Department, forerunner of the Railway Inspectorate. No line may open without notice, and government inspectors are appointed for the first time.",
+      "_shorterDraftNote": "SUGGESTED REPLACEMENT, NOT APPLIED. `blurb` above is unchanged. Drafted 2026-08-04 against the ~33-word target (this entry was 39). drops 'companies must make returns'. Swap it into `blurb` on approval."
     },
     "1841": {
       "year": 1841,
@@ -70,7 +74,9 @@
       "blurb": "Gladstone's Railway Regulation Act requires every line to run at least one third-class train each way every weekday, calling at all stations, at a fare of no more than a penny a mile and averaging at least 12 mph — with passengers sheltered from the weather and given seats. These become known as “Parliamentary trains”.",
       "source": "wikipedia:Railway Regulation Act 1844",
       "reviewed": false,
-      "_note": "PENNY-A-MILE NOW CONFIRMED (2026-08-04) and folded into the blurb inline rather than split into a separate point — it is the single most-remembered provision of this Act, so separating it would have read as an afterthought. The pilot batch deliberately omitted it because it was absent from the first part of the article fetched; the Act article's own '== Provisions ==' section states it plainly, along with the other figures now used: one third-class train per line per weekday in each direction stopping at every station, fare 1d. per mile, average speed not less than 12 mph, passengers protected from the weather and provided with seats. Two further provisions are documented but left out for length: 56 lb of free luggage, and exemption from passenger duty for the operator in return."
+      "_note": "PENNY-A-MILE NOW CONFIRMED (2026-08-04) and folded into the blurb inline rather than split into a separate point — it is the single most-remembered provision of this Act, so separating it would have read as an afterthought. The pilot batch deliberately omitted it because it was absent from the first part of the article fetched; the Act article's own '== Provisions ==' section states it plainly, along with the other figures now used: one third-class train per line per weekday in each direction stopping at every station, fare 1d. per mile, average speed not less than 12 mph, passengers protected from the weather and provided with seats. Two further provisions are documented but left out for length: 56 lb of free luggage, and exemption from passenger duty for the operator in return.",
+      "_shorterDraft": "Gladstone's Railway Regulation Act requires one third-class train each way daily on every line, calling at all stations at no more than a penny a mile, with seats and shelter — the “Parliamentary train”.",
+      "_shorterDraftNote": "SUGGESTED REPLACEMENT, NOT APPLIED. `blurb` above is unchanged. Drafted 2026-08-04 against the ~33-word target (this entry was 55). drops the 12 mph minimum average speed. Swap it into `blurb` on approval."
     },
     "1845": {
       "year": 1845,
@@ -95,13 +101,17 @@
       "year": 1854,
       "blurb": "Cardwell's Act — the Railway and Canal Traffic Act — puts new obligations on companies as monopolies: each must accept all traffic offered, and must set and publish the same fares for all, ending undue preference between customers.",
       "source": "wikipedia:Railway and Canal Traffic Act 1854",
-      "reviewed": false
+      "reviewed": false,
+      "_shorterDraft": "Cardwell's Act — the Railway and Canal Traffic Act — treats companies as monopolies: each must accept all traffic offered and publish the same fares for all, ending undue preference.",
+      "_shorterDraftNote": "SUGGESTED REPLACEMENT, NOT APPLIED. `blurb` above is unchanged. Drafted 2026-08-04 against the ~33-word target (this entry was 38). drops 'between customers' from the closing clause only; no provision lost. Swap it into `blurb` on approval."
     },
     "1859": {
       "year": 1859,
       "blurb": "Brunel's Royal Albert Bridge over the Tamar is opened by Prince Albert on 2 May, carrying the railway into Cornwall. Brunel dies later the same year, and his name is placed above the portals as a memorial.",
       "source": "wikipedia:Royal Albert Bridge",
-      "reviewed": false
+      "reviewed": false,
+      "_shorterDraft": "Brunel's Royal Albert Bridge over the Tamar is opened by Prince Albert on 2 May, carrying the railway into Cornwall. Brunel dies later that year, his name placed above the portals.",
+      "_shorterDraftNote": "SUGGESTED REPLACEMENT, NOT APPLIED. `blurb` above is unchanged. Drafted 2026-08-04 against the ~33-word target (this entry was 37). no fact lost — tighter phrasing only. Swap it into `blurb` on approval."
     },
     "1863": {
       "year": 1863,
@@ -114,14 +124,18 @@
       "blurb": "The Regulation of Railways Act requires a means for passengers to communicate with the guard on any train booked to run more than 20 miles without stopping — the origin of the communication cord — with a fine for raising the alarm without cause.",
       "source": "wikipedia:Regulation of Railways Act 1868",
       "reviewed": false,
-      "_note": "DELIBERATELY NOT LINKED TO ABERGELE, and the date order is the reason. The Abergele rail disaster (33 killed, the worst in Great Britain to that date) also happened in 1868, on 20 August — but this Act received assent on 31 July, BEFORE the crash, so it cannot be a response to it. Treating them as cause and effect is an easy and appealing mistake. Abergele is a strong alternative entry for 1868 if a disaster is preferred to an Act here; only one can hold the year."
+      "_note": "DELIBERATELY NOT LINKED TO ABERGELE, and the date order is the reason. The Abergele rail disaster (33 killed, the worst in Great Britain to that date) also happened in 1868, on 20 August — but this Act received assent on 31 July, BEFORE the crash, so it cannot be a response to it. Treating them as cause and effect is an easy and appealing mistake. Abergele is a strong alternative entry for 1868 if a disaster is preferred to an Act here; only one can hold the year.",
+      "_shorterDraft": "The Regulation of Railways Act requires a way for passengers to reach the guard on trains running more than 20 miles without a stop — the origin of the communication cord.",
+      "_shorterDraftNote": "SUGGESTED REPLACEMENT, NOT APPLIED. `blurb` above is unchanged. Drafted 2026-08-04 against the ~33-word target (this entry was 44). drops the fine for raising the alarm without cause. Swap it into `blurb` on approval."
     },
     "1871": {
       "year": 1871,
       "blurb": "The Regulation of Railways Act makes accident reporting compulsory and gives the Board of Trade real investigative teeth: inspectors may enter railway premises, summon witnesses, compel the production of documents, and every report must be made public.",
       "source": "https://www.legislation.gov.uk/ukpga/Vict/34-35/78/enacted",
       "reviewed": false,
-      "_note": "The only entry in either batch sourced to the LEGISLATION ITSELF rather than to an encyclopaedia article — there is no Wikipedia article for this Act. legislation.gov.uk carries the enacted text, including the 'Accidents' cross-heading that the provisions above are drawn from."
+      "_note": "The only entry in either batch sourced to the LEGISLATION ITSELF rather than to an encyclopaedia article — there is no Wikipedia article for this Act. legislation.gov.uk carries the enacted text, including the 'Accidents' cross-heading that the provisions above are drawn from.",
+      "_shorterDraft": "The Regulation of Railways Act makes accident reporting compulsory. Board of Trade inspectors may enter premises, summon witnesses and compel documents, and every report must be published.",
+      "_shorterDraftNote": "SUGGESTED REPLACEMENT, NOT APPLIED. `blurb` above is unchanged. Drafted 2026-08-04 against the ~33-word target (this entry was 37). no provision lost — same four powers, tighter phrasing. Swap it into `blurb` on approval."
     },
     "1880": {
       "year": 1880,
@@ -132,10 +146,10 @@
     },
     "1889": {
       "year": 1889,
-      "blurb": "The Regulation of Railways Act. Passed within months of the Armagh rail disaster — in which a runaway excursion train killed around 80 people, many of them children — the Act made block signalling, the interlocking of points and signals, and continuous automatic brakes on passenger trains a legal requirement across Britain's railways. It's often regarded as the start of the modern era in UK rail safety.",
+      "blurb": "The Regulation of Railways Act follows the Armagh disaster, which killed around 80 people. It makes block signalling, interlocking, and automatic brakes compulsory — marking the start of modern UK rail safety.",
       "source": "wikipedia:Regulation of Railways Act 1889; wikipedia:Armagh rail disaster",
       "reviewed": true,
-      "_note": "DEATH TOLL IS DISPUTED BETWEEN SOURCES. Wikipedia's Armagh rail disaster article states plainly 'Eighty people were killed and 260 were injured, about a third of them children'; other accounts give 88 and a few give 89. 'around 80' is used deliberately so the sentence holds under the best-supported figure without asserting a precision the sources do not agree on. The Act's three provisions were checked directly against the Act's own article, which lists block signalling, interlocking of points and signals, and continuous automatic brakes (instantaneous, self-applying on loss of continuity, applicable to every vehicle, in daily use). SNAP POINT: 1889 replaced 1880 on 2026-08-04."
+      "_note": "DEATH TOLL IS DISPUTED BETWEEN SOURCES. Wikipedia's Armagh rail disaster article states plainly 'Eighty people were killed and 260 were injured, about a third of them children'; other accounts give 88 and a few give 89. 'around 80' is used deliberately so the sentence holds under the best-supported figure without asserting a precision the sources do not agree on. The Act's three provisions were checked directly against the Act's own article, which lists block signalling, interlocking of points and signals, and continuous automatic brakes (instantaneous, self-applying on loss of continuity, applicable to every vehicle, in daily use). SNAP POINT: 1889 replaced 1880 on 2026-08-04. SHORTENED 2026-08-04 from 67 words to 32 under the new ~33-word target; the three provisions, the disaster link and the 'around 80' hedge all survive the cut, so nothing verified was lost."
     },
     "1923": {
       "year": 1923,

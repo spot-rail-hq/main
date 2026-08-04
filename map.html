@@ -897,15 +897,19 @@
      lines land (200 of 202 years have station events, so the box would then be
      populated almost always) — at which point this rule is the one to revisit. */
   .hs-highlight[hidden] { display: none; }
-  .hs-highlight-year { font-family: var(--font-mono); color: var(--t); margin-right: 6px; }
+  /* .hs-highlight-year removed 2026-08-04 with the year prefix it styled — the
+     year is shown once, by #hs-year-sidebar above the slider track. */
   /* Auto-generated station open/close lines. Visually subordinate to the
      hand-written headline above them — dimmer, slightly smaller — because they
      are derived data rather than editorial, and a reader should be able to tell
-     the two apart at a glance. Separated by a hairline rather than a gap so the
-     two kinds of content still read as one panel. */
-  .hs-highlight-stations { margin-top: 7px; padding-top: 7px; border-top: 0.5px solid var(--br);
-    font-size: 12px; line-height: 1.45; color: var(--ink); }
-  .hs-highlight-stations + .hs-highlight-stations { margin-top: 4px; padding-top: 0; border-top: 0; }
+     the two apart at a glance. */
+  .hs-highlight-stations { margin-top: 4px; font-size: 12px; line-height: 1.45; color: var(--ink); }
+  /* The hairline sits ONLY between a headline and the first station line, as an
+     adjacent-sibling rule. A year with station lines and no headline emits no
+     .hs-highlight-main at all (see renderYearHighlight), so it correctly gets no
+     rule above its first line rather than one floating at the top of the box. */
+  .hs-highlight-main + .hs-highlight-stations { margin-top: 7px; padding-top: 7px;
+    border-top: 0.5px solid var(--br); }
   .hs-stations-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 1px;
     text-transform: uppercase; color: var(--ink-mute); margin-right: 5px; }
 
@@ -7125,6 +7129,13 @@
     // and is matched positionally, so it follows the slider's end stop forever.
     // The tick already labels that position "Today" rather than the year for the
     // same reason (see renderTicks).
+    //
+    // NO YEAR PREFIX IN THIS BOX (2026-08-04). It used to open with a
+    // .hs-highlight-year chip repeating the year — which #hs-year-sidebar
+    // already shows, large, directly above the slider track. Worse, the chip and
+    // the body had no separator of their own, so the "today" entry rendered as
+    // "TodayExplore 200 years…". The year is stated once, above the track, and
+    // this box carries body text only.
     var atToday = historyYear === historyMaxYear();
     var entry = atToday ? (notableYears.today || notableYears[String(historyYear)])
                         : notableYears[String(historyYear)];
@@ -7138,12 +7149,13 @@
     var hasBlurb = !!(entry && entry.blurb);
     if (!hasBlurb && !stationHtml) { el.hidden = true; el.innerHTML = ''; return; }
     el.hidden = false;
-    // Label matches the tick: "Today" at the end stop, the year everywhere else.
-    var label = atToday && notableYears.today ? 'Today' : String(historyYear);
-    var html = '<div class="hs-highlight-main"><span class="hs-highlight-year">' + escapeAttr(label) + '</span>';
-    if (hasBlurb) html += escapeAttr(entry.blurb);
-    html += '</div>' + stationHtml;
-    el.innerHTML = html;
+    // Body text only — see the no-year-prefix note above. The wrapper is emitted
+    // ONLY when there is a headline: the separator between headline and station
+    // lines is a CSS adjacent-sibling rule, so an empty wrapper on a
+    // station-only year would draw a rule above the first station line with
+    // nothing above it.
+    var html = hasBlurb ? '<div class="hs-highlight-main">' + escapeAttr(entry.blurb) + '</div>' : '';
+    el.innerHTML = html + stationHtml;
   }
   /**
    * "Stations opened: A, B, C and 346 more" — one line each for opens and
