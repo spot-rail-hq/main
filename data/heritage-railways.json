@@ -8,6 +8,12 @@
     "zoom": 16,
     "placement_source": "naptan-1km",
     "placement_confirmed": false,
+    "bbox": [
+      -4.083883,
+      52.422417,
+      -4.08277,
+      52.424304
+    ],
     "center": [
       -4.081894,
       52.414045
@@ -22,6 +28,12 @@
     "zoom": 15,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -2.699913,
+      57.231911,
+      -2.690444,
+      57.238377
+    ],
     "center": [
       -2.6977,
       57.238362
@@ -35,6 +47,12 @@
     "zoom": 16,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -3.55596,
+      55.884591,
+      -3.548112,
+      55.885366
+    ],
     "center": [
       -3.548112,
       55.885366
@@ -51,6 +69,12 @@
     "zoom": 14.5,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -1.683072,
+      55.396384,
+      -1.658739,
+      55.403872
+    ],
     "center": [
       -1.658739,
       55.396589
@@ -64,6 +88,12 @@
     "zoom": 15,
     "placement_source": "naptan-1km",
     "placement_confirmed": false,
+    "bbox": [
+      -0.539567,
+      50.898546,
+      -0.533795,
+      50.901609
+    ],
     "center": [
       -0.541992,
       50.89668
@@ -79,6 +109,12 @@
     "zoom": 15,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -2.010472,
+      52.847478,
+      -2.004053,
+      52.850138
+    ],
     "center": [
       -2.009816,
       52.847496
@@ -93,6 +129,12 @@
     "zoom": 16,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -2.265942,
+      53.032718,
+      -2.265748,
+      53.03679
+    ],
     "center": [
       -2.265862,
       53.03679
@@ -107,12 +149,19 @@
     "band": "regional",
     "km": 4.69,
     "zoom": 13,
-    "placement_source": "terminus",
+    "placement_source": "naptan-200m",
     "placement_confirmed": false,
+    "bbox": [
+      -2.47717,
+      51.414145,
+      -2.456497,
+      51.444633
+    ],
     "center": [
-      -2.47633,
-      51.430485
-    ]
+      -2.476214,
+      51.430349
+    ],
+    "principal_station": "Bitton"
   },
   "babbacombe-cliff-railway": {
     "name": "Babbacombe Cliff Railway",
@@ -122,6 +171,12 @@
     "zoom": 16,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -3.51794,
+      50.481549,
+      -3.515081,
+      50.481747
+    ],
     "center": [
       -3.51794,
       50.481549
@@ -133,12 +188,19 @@
     "band": "regional",
     "km": 7.38,
     "zoom": 12.5,
-    "placement_source": "terminus",
+    "placement_source": "naptan-200m",
     "placement_confirmed": false,
-    "center": [
+    "bbox": [
       -3.66533,
-      52.855304
+      52.855304,
+      -3.592067,
+      52.901648
     ],
+    "center": [
+      -3.592659,
+      52.901613
+    ],
+    "principal_station": "Bala",
     "aliases": [
       "Rheilffordd Llyn Tegid"
     ]
@@ -151,6 +213,12 @@
     "zoom": 15.5,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -1.389321,
+      53.27451,
+      -1.380834,
+      53.279974
+    ],
     "center": [
       -1.380834,
       53.27451
@@ -168,6 +236,12 @@
     "zoom": 14,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -1.665541,
+      54.884892,
+      -1.660966,
+      54.889259
+    ],
     "type_secondary": "tramway",
     "center": [
       -1.664947,
@@ -180,12 +254,19 @@
     "band": "micro",
     "km": 0.49,
     "zoom": 16,
-    "placement_source": "terminus",
+    "placement_source": "naptan-1km",
     "placement_confirmed": false,
-    "center": [
-      -2.075708,
+    "bbox": [
+      -2.077045,
+      52.51921,
+      -2.075171,
       52.522774
     ],
+    "center": [
+      -2.07282,
+      52.51746
+    ],
+    "principal_station": "Tipton Road",
     "aliases": [
       "BCLM",
       "BCLM Tram"
@@ -199,6 +280,12 @@
     "zoom": 16,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -2.453381,
+      52.624294,
+      -2.452444,
+      52.626074
+    ],
     "type_secondary": "tramway",
     "center": [
       -2.453381,
@@ -213,11 +300,17 @@
     "zoom": 11,
     "placement_source": "naptan-200m",
     "placement_confirmed": false,
-    "center": [
-      -0.0179,
-      51.126274
+    "bbox": [
+      -0.049726,
+      50.9929,
+      0.000263,
+      51.125389
     ],
-    "principal_station": "East Grinstead Rail Station",
+    "center": [
+      -0.04472,
+      51.046146
+    ],
+    "principal_station": "Horsted Keynes",
     "aliases": [
       "Ardingly Branch",
       "Bluebell Railway (Full Route of Oxted Line)"
@@ -229,12 +322,19 @@
     "band": "regional",
     "km": 8.56,
     "zoom": 12.5,
-    "placement_source": "terminus",
+    "placement_source": "naptan-200m",
     "placement_confirmed": false,
-    "center": [
-      -3.660109,
-      55.97813
+    "bbox": [
+      -3.665075,
+      55.977083,
+      -3.595972,
+      56.018977
     ],
+    "center": [
+      -3.600419,
+      56.017944
+    ],
+    "principal_station": "Bo’ness",
     "aliases": [
       "Bo'ness Branch",
       "Bo'ness and Kinneil Railway",
@@ -249,11 +349,17 @@
     "zoom": 12,
     "placement_source": "naptan-200m",
     "placement_confirmed": false,
-    "center": [
-      -4.662928,
-      50.445863
+    "bbox": [
+      -4.763292,
+      50.445379,
+      -4.661218,
+      50.47398
     ],
-    "principal_station": "Bodmin Parkway Rail Station"
+    "center": [
+      -4.674167,
+      50.459799
+    ],
+    "principal_station": "Colesloggett Halt"
   },
   "bowes-railway": {
     "name": "Bowes Railway",
@@ -274,6 +380,12 @@
     "zoom": 12.5,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -3.380802,
+      51.77786,
+      -3.360459,
+      51.840637
+    ],
     "center": [
       -3.364445,
       51.77786
@@ -287,6 +399,12 @@
     "zoom": 16,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -2.418268,
+      52.534168,
+      -2.417653,
+      52.534406
+    ],
     "center": [
       -2.417653,
       52.534168
@@ -300,6 +418,12 @@
     "zoom": 14.5,
     "placement_source": "naptan-1km",
     "placement_confirmed": false,
+    "bbox": [
+      -2.618013,
+      51.445984,
+      -2.596675,
+      51.448369
+    ],
     "center": [
       -2.594149,
       51.440088
@@ -314,6 +438,12 @@
     "zoom": 16,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -2.50254,
+      52.189901,
+      -2.501319,
+      52.191045
+    ],
     "center": [
       -2.501319,
       52.189901
@@ -327,11 +457,17 @@
     "zoom": 11.5,
     "placement_source": "naptan-200m",
     "placement_confirmed": false,
-    "center": [
-      1.407997,
-      52.715571
+    "bbox": [
+      1.254733,
+      52.716657,
+      1.408845,
+      52.791091
     ],
-    "principal_station": "Hoveton & Wroxham Rail Station"
+    "center": [
+      1.254882,
+      52.79133
+    ],
+    "principal_station": "Aylsham"
   },
   "cairngorm-funicular": {
     "name": "Cairngorm Funicular",
@@ -341,6 +477,12 @@
     "zoom": 14.5,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -3.670097,
+      57.124947,
+      -3.649369,
+      57.133709
+    ],
     "center": [
       -3.670097,
       57.133709
@@ -355,12 +497,19 @@
     "band": "regional",
     "km": 7.65,
     "zoom": 12.5,
-    "placement_source": "terminus",
+    "placement_source": "naptan-200m",
     "placement_confirmed": false,
-    "center": [
+    "bbox": [
+      -2.652685,
+      56.71784,
       -2.546225,
-      56.719379
+      56.731641
     ],
+    "center": [
+      -2.652138,
+      56.731445
+    ],
+    "principal_station": "Brechin",
     "aliases": [
       "Brechin Railway Preservation Society",
       "Brechin to Bridge of Dun line"
@@ -374,6 +523,12 @@
     "zoom": 14.5,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -3.050562,
+      52.849236,
+      -3.045929,
+      52.863329
+    ],
     "center": [
       -3.047797,
       52.863329
@@ -387,6 +542,12 @@
     "zoom": 16,
     "placement_source": "naptan-1km",
     "placement_confirmed": false,
+    "bbox": [
+      -0.398238,
+      54.280828,
+      -0.397167,
+      54.280999
+    ],
     "center": [
       -0.405703,
       54.279792
@@ -405,6 +566,12 @@
     "zoom": 15,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -1.959794,
+      52.661953,
+      -1.946693,
+      52.676728
+    ],
     "center": [
       -1.955084,
       52.663922
@@ -419,6 +586,12 @@
     "zoom": 12.5,
     "placement_source": "naptan-200m",
     "placement_confirmed": false,
+    "bbox": [
+      -0.910697,
+      51.694454,
+      -0.84419,
+      51.725508
+    ],
     "center": [
       -0.843881,
       51.71786
@@ -433,11 +606,17 @@
     "zoom": 13.5,
     "placement_source": "naptan-200m",
     "placement_confirmed": false,
-    "center": [
-      -1.158023,
-      51.570202
+    "bbox": [
+      -1.161415,
+      51.570295,
+      -1.135408,
+      51.597647
     ],
-    "principal_station": "Cholsey Rail Station",
+    "center": [
+      -1.135364,
+      51.597911
+    ],
+    "principal_station": "Wallingford",
     "aliases": [
       "Cholsey and Walingford Railway",
       "Cholsey and Wallingford Railway"
@@ -449,12 +628,19 @@
     "band": "trunk",
     "km": 20.36,
     "zoom": 11,
-    "placement_source": "terminus",
+    "placement_source": "naptan-200m",
     "placement_confirmed": false,
+    "bbox": [
+      -2.034413,
+      53.017829,
+      -1.95504,
+      53.094096
+    ],
     "center": [
-      -1.960758,
-      53.017829
-    ]
+      -1.964553,
+      53.021597
+    ],
+    "principal_station": "Kingsley & Froghall"
   },
   "cleethorpes-coast-light-railway": {
     "name": "Cleethorpes Coast Light Railway",
@@ -464,6 +650,12 @@
     "zoom": 15,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -0.017006,
+      53.543434,
+      -0.007832,
+      53.55088
+    ],
     "center": [
       -0.017006,
       53.550867
@@ -477,6 +669,12 @@
     "zoom": 15,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      0.575715,
+      51.991845,
+      0.588129,
+      51.997776
+    ],
     "center": [
       0.588129,
       51.991845
@@ -490,6 +688,12 @@
     "zoom": 15,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -3.844991,
+      52.642856,
+      -3.841557,
+      52.653507
+    ],
     "center": [
       -3.844849,
       52.642856
@@ -503,6 +707,12 @@
     "zoom": 14.5,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -1.492774,
+      53.089363,
+      -1.485712,
+      53.100195
+    ],
     "type_secondary": "tramway",
     "center": [
       -1.485712,
@@ -517,6 +727,12 @@
     "zoom": 16,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -0.861801,
+      53.617799,
+      -0.85597,
+      53.620589
+    ],
     "center": [
       -0.855995,
       53.617799
@@ -530,11 +746,17 @@
     "zoom": 12,
     "placement_source": "naptan-200m",
     "placement_confirmed": false,
-    "center": [
-      -3.564876,
-      50.434719
+    "bbox": [
+      -3.597271,
+      50.34866,
+      -3.55536,
+      50.524712
     ],
-    "principal_station": "Paignton Rail Station"
+    "center": [
+      -3.562034,
+      50.425403
+    ],
+    "principal_station": "Goodrington"
   },
   "dean-forest-railway": {
     "name": "Dean Forest Railway",
@@ -544,11 +766,17 @@
     "zoom": 12.5,
     "placement_source": "naptan-200m",
     "placement_confirmed": false,
-    "center": [
-      -2.530864,
-      51.714136
+    "bbox": [
+      -2.556465,
+      51.715135,
+      -2.526982,
+      51.768431
     ],
-    "principal_station": "Lydney Rail Station"
+    "center": [
+      -2.532337,
+      51.726186
+    ],
+    "principal_station": "Lydney Town"
   },
   "derwent-valley-light-railway": {
     "name": "Derwent Valley Light Railway",
@@ -558,6 +786,12 @@
     "zoom": 16,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -1.019127,
+      53.962928,
+      -1.009268,
+      53.963205
+    ],
     "center": [
       -1.019127,
       53.963205
@@ -571,6 +805,12 @@
     "zoom": 16,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -3.510151,
+      50.857562,
+      -3.509129,
+      50.859005
+    ],
     "center": [
       -3.510141,
       50.857562
@@ -584,6 +824,12 @@
     "zoom": 14,
     "placement_source": "naptan-200m",
     "placement_confirmed": false,
+    "bbox": [
+      -1.246481,
+      51.611509,
+      -1.241541,
+      51.61803
+    ],
     "type_secondary": "operating",
     "center": [
       -1.242893,
@@ -599,6 +845,12 @@
     "zoom": 14.5,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -4.458522,
+      55.336385,
+      -4.43573,
+      55.344205
+    ],
     "type_secondary": "museum",
     "center": [
       -4.458522,
@@ -616,6 +868,12 @@
     "zoom": 15,
     "placement_source": "naptan-200m",
     "placement_confirmed": false,
+    "bbox": [
+      0.757812,
+      51.924247,
+      0.759739,
+      51.927884
+    ],
     "center": [
       0.758501,
       51.925906
@@ -631,6 +889,12 @@
     "zoom": 15,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      1.684757,
+      52.450311,
+      1.68726,
+      52.452745
+    ],
     "center": [
       1.687237,
       52.452745
@@ -645,6 +909,12 @@
     "zoom": 16,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      0.594767,
+      50.856376,
+      0.595337,
+      50.856817
+    ],
     "center": [
       0.595337,
       50.856817
@@ -658,11 +928,17 @@
     "zoom": 13.5,
     "placement_source": "naptan-200m",
     "placement_confirmed": false,
-    "center": [
-      1.22991,
-      51.188399
+    "bbox": [
+      1.229169,
+      51.189216,
+      1.270279,
+      51.203714
     ],
-    "principal_station": "Shepherds Well Rail Station"
+    "center": [
+      1.264204,
+      51.199302
+    ],
+    "principal_station": "Eythorne"
   },
   "east-lancashire-railway": {
     "name": "East Lancashire Railway",
@@ -670,12 +946,19 @@
     "band": "trunk",
     "km": 20.84,
     "zoom": 11,
-    "placement_source": "terminus",
+    "placement_source": "naptan-200m",
     "placement_confirmed": false,
-    "center": [
+    "bbox": [
+      -2.319842,
+      53.58505,
       -2.205304,
-      53.588289
+      53.698974
     ],
+    "center": [
+      -2.299713,
+      53.593545
+    ],
+    "principal_station": "Bury Bolton Street",
     "aliases": [
       "East Lancashire Heritage railway",
       "East Lancashire Railway Preservation Society",
@@ -690,6 +973,12 @@
     "zoom": 13.5,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -2.519978,
+      51.17952,
+      -2.475471,
+      51.18543
+    ],
     "center": [
       -2.475471,
       51.18543
@@ -703,6 +992,12 @@
     "zoom": 16,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      1.683295,
+      52.450764,
+      1.686789,
+      52.452975
+    ],
     "center": [
       1.686784,
       52.452975
@@ -716,11 +1011,17 @@
     "zoom": 11.5,
     "placement_source": "naptan-200m",
     "placement_confirmed": false,
-    "center": [
-      -1.485972,
-      52.988401
+    "bbox": [
+      -1.576497,
+      52.987386,
+      -1.371168,
+      53.090326
     ],
-    "principal_station": "Duffield Rail Station",
+    "center": [
+      -1.569336,
+      53.035979
+    ],
+    "principal_station": "Idridgehay",
     "aliases": [
       "Wirksworth Branch Line"
     ]
@@ -733,6 +1034,12 @@
     "zoom": 13,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -2.457098,
+      54.530837,
+      -2.375162,
+      54.562108
+    ],
     "center": [
       -2.457098,
       54.562108
@@ -744,12 +1051,19 @@
     "band": "regional",
     "km": 6.99,
     "zoom": 12.5,
-    "placement_source": "terminus",
+    "placement_source": "naptan-200m",
     "placement_confirmed": false,
-    "center": [
+    "bbox": [
       -1.999875,
-      53.971913
-    ]
+      53.971913,
+      -1.904007,
+      53.977321
+    ],
+    "center": [
+      -1.991685,
+      53.975604
+    ],
+    "principal_station": "Embsay"
   },
   "epping-ongar-railway": {
     "name": "Epping Ongar Railway",
@@ -757,12 +1071,19 @@
     "band": "regional",
     "km": 9.94,
     "zoom": 12,
-    "placement_source": "terminus",
+    "placement_source": "naptan-200m",
     "placement_confirmed": false,
-    "center": [
+    "bbox": [
       0.115647,
-      51.694924
-    ]
+      51.694924,
+      0.244537,
+      51.713112
+    ],
+    "center": [
+      0.113767,
+      51.69368
+    ],
+    "principal_station": "Epping"
   },
   "evesham-vale-light-railway": {
     "name": "Evesham Vale Light Railway",
@@ -772,6 +1093,12 @@
     "zoom": 15,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -1.937493,
+      52.113629,
+      -1.934528,
+      52.117481
+    ],
     "center": [
       -1.937266,
       52.117223
@@ -788,11 +1115,17 @@
     "zoom": 16,
     "placement_source": "naptan-200m",
     "placement_confirmed": false,
-    "center": [
-      -4.049413,
-      52.696042
+    "bbox": [
+      -4.058328,
+      52.695183,
+      -4.048463,
+      52.715437
     ],
-    "principal_station": "Fairbourne Rail Station"
+    "center": [
+      -4.049836,
+      52.695585
+    ],
+    "principal_station": "Fairbourne"
   },
   "fawley-museum-society-limited": {
     "name": "Fawley Hill Railway",
@@ -802,6 +1135,12 @@
     "zoom": 15.5,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -0.911731,
+      51.562809,
+      -0.905586,
+      51.568557
+    ],
     "center": [
       -0.90559,
       51.562809
@@ -818,6 +1157,12 @@
     "zoom": 14.5,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      1.054587,
+      52.380425,
+      1.06643,
+      52.384199
+    ],
     "center": [
       1.062203,
       52.381567
@@ -842,6 +1187,12 @@
     "zoom": 11,
     "placement_source": "naptan-200m",
     "placement_confirmed": false,
+    "bbox": [
+      -4.127462,
+      52.919524,
+      -3.935955,
+      52.998713
+    ],
     "center": [
       -4.126818,
       52.924041
@@ -860,6 +1211,12 @@
     "zoom": 16,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -1.817328,
+      50.720976,
+      -1.817323,
+      50.721236
+    ],
     "center": [
       -1.817323,
       50.721236
@@ -873,6 +1230,12 @@
     "zoom": 13,
     "placement_source": "naptan-1km",
     "placement_confirmed": false,
+    "bbox": [
+      -2.073668,
+      52.970963,
+      -2.036776,
+      53.002943
+    ],
     "center": [
       -2.066961,
       52.968142
@@ -890,6 +1253,12 @@
     "zoom": 15,
     "placement_source": "naptan-1km",
     "placement_confirmed": false,
+    "bbox": [
+      -2.406123,
+      50.988926,
+      -2.399429,
+      50.996455
+    ],
     "center": [
       -2.417725,
       51.001503
@@ -904,6 +1273,12 @@
     "zoom": 16,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      0.188902,
+      50.994805,
+      0.192468,
+      50.995951
+    ],
     "center": [
       0.191587,
       50.99527
@@ -917,11 +1292,17 @@
     "zoom": 11,
     "placement_source": "naptan-200m",
     "placement_confirmed": false,
-    "center": [
-      -1.195928,
-      52.778955
+    "bbox": [
+      -1.206485,
+      52.667451,
+      -1.132539,
+      52.842607
     ],
-    "principal_station": "Loughborough (Leics) Rail Station"
+    "center": [
+      -1.195823,
+      52.768571
+    ],
+    "principal_station": "Loughborough Central"
   },
   "great-central-railway-nottingham": {
     "name": "Great Central Railway (Nottingham)",
@@ -931,6 +1312,12 @@
     "zoom": 11.5,
     "placement_source": "naptan-200m",
     "placement_confirmed": false,
+    "bbox": [
+      -1.206485,
+      52.777879,
+      -1.146175,
+      52.892082
+    ],
     "center": [
       -1.195928,
       52.778955
@@ -943,13 +1330,19 @@
     "band": "local",
     "km": 1.97,
     "zoom": 14.5,
-    "placement_source": "naptan-1km",
+    "placement_source": "naptan-200m",
     "placement_confirmed": false,
-    "center": [
-      -3.827001,
-      53.320916
+    "bbox": [
+      -3.839516,
+      53.327221,
+      -3.835529,
+      53.328706
     ],
-    "principal_station": "Llandudno Rail Station"
+    "center": [
+      -3.835619,
+      53.327194
+    ],
+    "principal_station": "Victoria"
   },
   "gwili-railway": {
     "name": "Gwili Railway",
@@ -959,6 +1352,12 @@
     "zoom": 13,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -4.332035,
+      51.867347,
+      -4.280666,
+      51.908857
+    ],
     "center": [
       -4.28138,
       51.867347
@@ -991,6 +1390,12 @@
     "zoom": 14.5,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -0.987326,
+      50.781592,
+      -0.967487,
+      50.784432
+    ],
     "center": [
       -0.987324,
       50.784275
@@ -1004,6 +1409,12 @@
     "zoom": 14,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -2.130904,
+      55.638165,
+      -2.106535,
+      55.646549
+    ],
     "center": [
       -2.122362,
       55.646549
@@ -1015,12 +1426,19 @@
     "band": "local",
     "km": 1.12,
     "zoom": 15.5,
-    "placement_source": "terminus",
+    "placement_source": "naptan-1km",
     "placement_confirmed": false,
-    "center": [
+    "bbox": [
       -2.256656,
-      53.531545
-    ]
+      53.531545,
+      -2.245376,
+      53.532874
+    ],
+    "center": [
+      -2.267285,
+      53.530506
+    ],
+    "principal_station": "Heaton Park"
   },
   "helston-railway": {
     "name": "Helston Railway",
@@ -1030,6 +1448,12 @@
     "zoom": 14.5,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -5.296968,
+      50.120644,
+      -5.283644,
+      50.133552
+    ],
     "center": [
       -5.296968,
       50.133552
@@ -1043,6 +1467,12 @@
     "zoom": 15,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -0.782828,
+      51.053286,
+      -0.775554,
+      51.057476
+    ],
     "center": [
       -0.782828,
       51.057476
@@ -1056,6 +1486,12 @@
     "zoom": 16,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -1.39927,
+      50.870613,
+      -1.393394,
+      50.874736
+    ],
     "center": [
       -1.393394,
       50.874736
@@ -1069,11 +1505,17 @@
     "zoom": 12.5,
     "placement_source": "naptan-200m",
     "placement_confirmed": false,
-    "center": [
-      -1.154198,
-      50.711102
+    "bbox": [
+      -1.241264,
+      50.696469,
+      -1.155055,
+      50.718694
     ],
-    "principal_station": "Smallbrook Junction Rail Station"
+    "center": [
+      -1.183137,
+      50.696255
+    ],
+    "principal_station": "Ashey"
   },
   "keighley-and-worth-valley-railway": {
     "name": "Keighley & Worth Valley Railway",
@@ -1083,11 +1525,17 @@
     "zoom": 12.5,
     "placement_source": "naptan-200m",
     "placement_confirmed": false,
-    "center": [
-      -1.901649,
-      53.867963
+    "bbox": [
+      -1.952763,
+      53.814283,
+      -1.900034,
+      53.870048
     ],
-    "principal_station": "Keighley Rail Station",
+    "center": [
+      -1.924348,
+      53.845959
+    ],
+    "principal_station": "Damems",
     "aliases": [
       "Keighley and Worth Valley Railway"
     ]
@@ -1098,13 +1546,19 @@
     "band": "trunk",
     "km": 17.34,
     "zoom": 11.5,
-    "placement_source": "naptan-1km",
+    "placement_source": "naptan-200m",
     "placement_confirmed": false,
-    "center": [
-      -2.954069,
-      57.550899
+    "bbox": [
+      -3.132246,
+      57.453358,
+      -2.954868,
+      57.54686
     ],
-    "principal_station": "Keith Rail Station"
+    "center": [
+      -3.040031,
+      57.483143
+    ],
+    "principal_station": "Drummuir"
   },
   "kent-and-east-sussex-railway": {
     "name": "Kent and East Sussex Railway",
@@ -1112,12 +1566,19 @@
     "band": "trunk",
     "km": 17.87,
     "zoom": 11.5,
-    "placement_source": "terminus",
+    "placement_source": "naptan-200m",
     "placement_confirmed": false,
-    "center": [
+    "bbox": [
       0.522445,
-      50.990722
-    ]
+      50.990722,
+      0.68781,
+      51.071833
+    ],
+    "center": [
+      0.614578,
+      51.009507
+    ],
+    "principal_station": "Northiam"
   },
   "kingdom-of-fife-railway-preservation-society": {
     "name": "Fife Heritage Railway",
@@ -1127,6 +1588,12 @@
     "zoom": 15.5,
     "placement_source": "naptan-1km",
     "placement_confirmed": false,
+    "bbox": [
+      -3.022964,
+      56.194954,
+      -3.011481,
+      56.195644
+    ],
     "center": [
       -3.001894,
       56.192386
@@ -1144,6 +1611,12 @@
     "zoom": 16,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -3.775563,
+      50.280266,
+      -3.774449,
+      50.282273
+    ],
     "center": [
       -3.775563,
       50.282273
@@ -1155,12 +1628,19 @@
     "band": "regional",
     "km": 6.41,
     "zoom": 13,
-    "placement_source": "terminus",
+    "placement_source": "naptan-200m",
     "placement_confirmed": false,
+    "bbox": [
+      -3.005046,
+      54.249299,
+      -2.95532,
+      54.278285
+    ],
     "center": [
-      -2.999783,
-      54.249524
-    ]
+      -2.955682,
+      54.278387
+    ],
+    "principal_station": "Lakeside"
   },
   "lappa-valley-steam-railway": {
     "name": "Lappa Valley Steam Railway",
@@ -1170,6 +1650,12 @@
     "zoom": 14.5,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -5.042107,
+      50.362256,
+      -5.039226,
+      50.376595
+    ],
     "center": [
       -5.040806,
       50.376591
@@ -1183,6 +1669,12 @@
     "zoom": 16,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -3.464939,
+      56.108528,
+      -3.461489,
+      56.111223
+    ],
     "center": [
       -3.464939,
       56.108528
@@ -1196,6 +1688,12 @@
     "zoom": 14,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -4.40715,
+      50.638746,
+      -4.364331,
+      50.641485
+    ],
     "center": [
       -4.364331,
       50.640462
@@ -1209,6 +1707,12 @@
     "zoom": 15,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      0.065047,
+      50.934931,
+      0.07348,
+      50.94686
+    ],
     "center": [
       0.07348,
       50.94686
@@ -1222,6 +1726,12 @@
     "zoom": 16,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -2.518257,
+      51.873068,
+      -2.517606,
+      51.873674
+    ],
     "center": [
       -2.518257,
       51.873068
@@ -1233,12 +1743,19 @@
     "band": "local",
     "km": 1.46,
     "zoom": 15,
-    "placement_source": "terminus",
+    "placement_source": "naptan-200m",
     "placement_confirmed": false,
-    "center": [
+    "bbox": [
       -3.769497,
-      55.402079
-    ]
+      55.402079,
+      -3.757257,
+      55.412545
+    ],
+    "center": [
+      -3.769464,
+      55.402115
+    ],
+    "principal_station": "Glengonnar"
   },
   "leighton-buzzard-light-railway": {
     "name": "Leighton Buzzard Light Railway",
@@ -1248,6 +1765,12 @@
     "zoom": 13,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -0.651751,
+      51.908664,
+      -0.630593,
+      51.940143
+    ],
     "center": [
       -0.651751,
       51.908664
@@ -1261,6 +1784,12 @@
     "zoom": 16,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      0.330937,
+      53.174028,
+      0.335546,
+      53.178685
+    ],
     "center": [
       0.330937,
       53.174028
@@ -1274,6 +1803,12 @@
     "zoom": 14,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -0.040569,
+      53.440088,
+      -0.029082,
+      53.467875
+    ],
     "center": [
       -0.040524,
       53.467875
@@ -1287,6 +1822,12 @@
     "zoom": 16,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -2.698782,
+      54.067611,
+      -2.697888,
+      54.06826
+    ],
     "center": [
       -2.69807,
       54.067611
@@ -1298,12 +1839,19 @@
     "band": "regional",
     "km": 4.01,
     "zoom": 13.5,
-    "placement_source": "terminus",
+    "placement_source": "naptan-200m",
     "placement_confirmed": false,
-    "center": [
+    "bbox": [
       -4.150209,
+      53.117267,
+      -4.114581,
       53.137306
-    ]
+    ],
+    "center": [
+      -4.119688,
+      53.115817
+    ],
+    "principal_station": "Llanberis"
   },
   "llanelli-and-mynydd-mawr-railway": {
     "name": "Llanelli & Mynydd Mawr Railway",
@@ -1313,6 +1861,12 @@
     "zoom": 15.5,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -4.185665,
+      51.742565,
+      -4.182082,
+      51.7485
+    ],
     "center": [
       -4.182082,
       51.742565
@@ -1324,12 +1878,19 @@
     "band": "trunk",
     "km": 16.42,
     "zoom": 11.5,
-    "placement_source": "terminus",
+    "placement_source": "naptan-200m",
     "placement_confirmed": false,
-    "center": [
+    "bbox": [
+      -3.373225,
+      52.971136,
       -3.170082,
-      52.971296
-    ]
+      52.98291
+    ],
+    "center": [
+      -3.266745,
+      52.976629
+    ],
+    "principal_station": "Glyndyfrdwy"
   },
   "lynton-and-barnstaple-railway": {
     "name": "Lynton & Barnstaple Railway",
@@ -1339,6 +1900,12 @@
     "zoom": 15,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -3.904282,
+      51.19621,
+      -3.885473,
+      51.201759
+    ],
     "center": [
       -3.904282,
       51.19621
@@ -1355,6 +1922,12 @@
     "zoom": 16,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -3.835472,
+      51.231304,
+      -3.832369,
+      51.231626
+    ],
     "center": [
       -3.835472,
       51.231304
@@ -1368,6 +1941,12 @@
     "zoom": 15.5,
     "placement_source": "naptan-1km",
     "placement_confirmed": false,
+    "bbox": [
+      -0.114071,
+      51.524034,
+      -0.110926,
+      51.525805
+    ],
     "type_secondary": "operating",
     "center": [
       -0.105205,
@@ -1386,6 +1965,12 @@
     "zoom": 15,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      0.799363,
+      51.646644,
+      0.812922,
+      51.652053
+    ],
     "center": [
       0.807584,
       51.646644
@@ -1399,6 +1984,12 @@
     "zoom": 10.5,
     "placement_source": "naptan-200m",
     "placement_confirmed": false,
+    "bbox": [
+      0.945971,
+      52.564833,
+      1.117339,
+      52.748026
+    ],
     "center": [
       1.118026,
       52.565412
@@ -1416,6 +2007,12 @@
     "zoom": 15.5,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      1.116989,
+      52.250147,
+      1.130011,
+      52.252041
+    ],
     "center": [
       1.116989,
       52.250361
@@ -1429,6 +2026,12 @@
     "zoom": 15,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -1.540063,
+      53.761081,
+      -1.531028,
+      53.775707
+    ],
     "center": [
       -1.539182,
       53.772961
@@ -1445,6 +2048,12 @@
     "zoom": 12.5,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -1.41058,
+      53.058271,
+      -1.342755,
+      53.066171
+    ],
     "center": [
       -1.380804,
       53.06349
@@ -1472,6 +2081,12 @@
     "zoom": 16,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -1.625212,
+      53.641369,
+      -1.61989,
+      53.643822
+    ],
     "center": [
       -1.625212,
       53.642513
@@ -1483,13 +2098,19 @@
     "band": "trunk",
     "km": 16.3,
     "zoom": 11.5,
-    "placement_source": "naptan-1km",
+    "placement_source": "naptan-200m",
     "placement_confirmed": false,
-    "center": [
-      -0.249837,
-      52.574975
+    "bbox": [
+      -0.410679,
+      52.554186,
+      -0.244443,
+      52.569277
     ],
-    "principal_station": "Peterborough Rail Station"
+    "center": [
+      -0.280862,
+      52.559759
+    ],
+    "principal_station": "Orton Mere"
   },
   "north-bay-railway": {
     "name": "North Bay Railway",
@@ -1499,6 +2120,12 @@
     "zoom": 15.5,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -0.413665,
+      54.292821,
+      -0.410399,
+      54.301298
+    ],
     "center": [
       -0.411308,
       54.292821
@@ -1512,6 +2139,12 @@
     "zoom": 15.5,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -2.254388,
+      50.902941,
+      -2.248581,
+      50.908215
+    ],
     "center": [
       -2.254388,
       50.908215
@@ -1540,11 +2173,17 @@
     "zoom": 12,
     "placement_source": "naptan-200m",
     "placement_confirmed": false,
-    "center": [
-      1.21032,
-      52.941427
+    "bbox": [
+      1.113352,
+      52.912543,
+      1.209481,
+      52.943573
     ],
-    "principal_station": "Sheringham Rail Station"
+    "center": [
+      1.207931,
+      52.941735
+    ],
+    "principal_station": "Sheringham"
   },
   "north-tyneside-steam-railway": {
     "name": "North Tyneside Steam Railway",
@@ -1552,12 +2191,19 @@
     "band": "local",
     "km": 2.95,
     "zoom": 14,
-    "placement_source": "terminus",
+    "placement_source": "naptan-1km",
     "placement_confirmed": false,
-    "center": [
+    "bbox": [
       -1.497855,
+      54.99566,
+      -1.476961,
       55.016593
-    ]
+    ],
+    "center": [
+      -1.474138,
+      54.999454
+    ],
+    "principal_station": "Percy Main"
   },
   "north-yorkshire-moors-railway": {
     "name": "North Yorkshire Moors Railway",
@@ -1567,6 +2213,12 @@
     "zoom": 10.5,
     "placement_source": "naptan-200m",
     "placement_confirmed": false,
+    "bbox": [
+      -0.778714,
+      54.246739,
+      -0.688585,
+      54.439802
+    ],
     "center": [
       -0.724966,
       54.436113
@@ -1581,6 +2233,12 @@
     "zoom": 16,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -0.774818,
+      51.182311,
+      -0.771757,
+      51.184689
+    ],
     "center": [
       -0.771757,
       51.18349
@@ -1594,11 +2252,17 @@
     "zoom": 13,
     "placement_source": "naptan-200m",
     "placement_confirmed": false,
-    "center": [
-      -1.558911,
-      53.138408
+    "bbox": [
+      -1.610001,
+      53.137576,
+      -1.558043,
+      53.176908
     ],
-    "principal_station": "Matlock Rail Station"
+    "center": [
+      -1.594296,
+      53.160404
+    ],
+    "principal_station": "Darley Dale"
   },
   "perrygrove-railway": {
     "name": "Perrygrove Railway",
@@ -1608,9 +2272,15 @@
     "zoom": 15,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -2.613605,
+      51.781191,
+      -2.609162,
+      51.785387
+    ],
     "center": [
-      -2.610616,
-      51.782008
+      -2.609736,
+      51.782677
     ]
   },
   "plym-valley-railway": {
@@ -1621,6 +2291,12 @@
     "zoom": 14.5,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -4.086386,
+      50.393884,
+      -4.078835,
+      50.408981
+    ],
     "center": [
       -4.081885,
       50.393884
@@ -1634,6 +2310,12 @@
     "zoom": 13.5,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -3.11908,
+      51.765815,
+      -3.079897,
+      51.784325
+    ],
     "center": [
       -3.11908,
       51.784325
@@ -1647,11 +2329,17 @@
     "zoom": 12,
     "placement_source": "naptan-200m",
     "placement_confirmed": false,
-    "center": [
-      -3.408814,
-      54.355707
+    "bbox": [
+      -3.409046,
+      54.35553,
+      -3.274196,
+      54.396044
     ],
-    "principal_station": "Ravenglass Rail Station",
+    "center": [
+      -3.274298,
+      54.395185
+    ],
+    "principal_station": "Dalegarth",
     "aliases": [
       "Ravenglass and Eskdale Railway"
     ]
@@ -1664,6 +2352,12 @@
     "zoom": 14,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -4.429973,
+      52.040061,
+      -4.393556,
+      52.042362
+    ],
     "center": [
       -4.393894,
       52.040919
@@ -1677,6 +2371,12 @@
     "zoom": 15,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -3.273857,
+      52.615093,
+      -3.266145,
+      52.616617
+    ],
     "center": [
       -3.267928,
       52.616609
@@ -1690,6 +2390,12 @@
     "zoom": 13.5,
     "placement_source": "naptan-1km",
     "placement_confirmed": false,
+    "bbox": [
+      -2.759156,
+      53.75524,
+      -2.716679,
+      53.760078
+    ],
     "center": [
       -2.708128,
       53.756859
@@ -1702,12 +2408,19 @@
     "band": "trunk",
     "km": 36.02,
     "zoom": 10.5,
-    "placement_source": "terminus",
+    "placement_source": "naptan-200m",
     "placement_confirmed": false,
-    "center": [
-      1.072396,
+    "bbox": [
+      0.949945,
+      50.914216,
+      1.072407,
       51.071353
     ],
+    "center": [
+      0.953802,
+      50.985542
+    ],
+    "principal_station": "New Romney",
     "aliases": [
       "Romney, Hythe & Dymchurch",
       "Romney, Hythe and Dymchurch Railway"
@@ -1721,6 +2434,12 @@
     "zoom": 14,
     "placement_source": "naptan-200m",
     "placement_confirmed": false,
+    "bbox": [
+      0.468692,
+      50.984961,
+      0.537359,
+      50.996474
+    ],
     "center": [
       0.468783,
       50.984933
@@ -1735,6 +2454,12 @@
     "zoom": 14.5,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -2.458217,
+      57.055475,
+      -2.428744,
+      57.058484
+    ],
     "center": [
       -2.428744,
       57.056369
@@ -1748,6 +2473,12 @@
     "zoom": 16,
     "placement_source": "naptan-1km",
     "placement_confirmed": false,
+    "bbox": [
+      -0.971049,
+      54.585719,
+      -0.970781,
+      54.586145
+    ],
     "center": [
       -0.974133,
       54.583451
@@ -1763,12 +2494,19 @@
     "band": "regional",
     "km": 4.97,
     "zoom": 13,
-    "placement_source": "terminus",
+    "placement_source": "naptan-200m",
     "placement_confirmed": false,
-    "center": [
-      -3.0625,
+    "bbox": [
+      -3.067855,
+      50.705001,
+      -3.057843,
       50.742074
-    ]
+    ],
+    "center": [
+      -3.061951,
+      50.74147
+    ],
+    "principal_station": "Colyton"
   },
   "severn-valley-railway": {
     "name": "Severn Valley Railway",
@@ -1778,6 +2516,12 @@
     "zoom": 10.5,
     "placement_source": "naptan-1km",
     "placement_confirmed": false,
+    "bbox": [
+      -2.421756,
+      52.368319,
+      -2.23977,
+      52.533073
+    ],
     "center": [
       -2.238471,
       52.384482
@@ -1792,11 +2536,17 @@
     "zoom": 15,
     "placement_source": "naptan-200m",
     "placement_confirmed": false,
-    "center": [
-      -2.530864,
-      51.714136
+    "bbox": [
+      -2.556465,
+      51.697286,
+      -2.407694,
+      51.768431
     ],
-    "principal_station": "Lydney Rail Station",
+    "center": [
+      -2.532337,
+      51.726186
+    ],
+    "principal_station": "Lydney Town",
     "no_line": true
   },
   "shipley-glen-tramway-preservation-co-ltd": {
@@ -1807,6 +2557,12 @@
     "zoom": 16,
     "placement_source": "naptan-1km",
     "placement_confirmed": false,
+    "bbox": [
+      -1.794399,
+      53.842897,
+      -1.790594,
+      53.845087
+    ],
     "center": [
       -1.79048,
       53.838493
@@ -1824,6 +2580,12 @@
     "zoom": 14,
     "placement_source": "naptan-1km",
     "placement_confirmed": false,
+    "bbox": [
+      0.733013,
+      51.344833,
+      0.757418,
+      51.362281
+    ],
     "center": [
       0.734684,
       51.341977
@@ -1836,12 +2598,19 @@
     "band": "regional",
     "km": 7.76,
     "zoom": 12.5,
-    "placement_source": "terminus",
+    "placement_source": "naptan-200m",
     "placement_confirmed": false,
-    "center": [
+    "bbox": [
+      -4.126823,
+      53.068318,
       -4.07676,
-      53.06833
-    ]
+      53.116402
+    ],
+    "center": [
+      -4.119688,
+      53.115817
+    ],
+    "principal_station": "Llanberis"
   },
   "somerset-and-dorset-railway-heritage-trust": {
     "name": "Somerset & Dorset Railway Heritage Trust",
@@ -1851,6 +2620,12 @@
     "zoom": 14.5,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -2.496723,
+      51.270688,
+      -2.482759,
+      51.281199
+    ],
     "center": [
       -2.482791,
       51.281199
@@ -1864,6 +2639,12 @@
     "zoom": 16,
     "placement_source": "naptan-1km",
     "placement_confirmed": false,
+    "bbox": [
+      -0.397672,
+      54.274094,
+      -0.396775,
+      54.274353
+    ],
     "center": [
       -0.405703,
       54.279792
@@ -1879,13 +2660,19 @@
     "band": "trunk",
     "km": 10.73,
     "zoom": 12,
-    "placement_source": "naptan-1km",
+    "placement_source": "naptan-200m",
     "placement_confirmed": false,
-    "center": [
-      -3.688692,
-      50.435865
+    "bbox": [
+      -3.769257,
+      50.438394,
+      -3.681665,
+      50.485296
     ],
-    "principal_station": "Totnes Rail Station",
+    "center": [
+      -3.715049,
+      50.461058
+    ],
+    "principal_station": "Staverton",
     "aliases": [
       "Ashburton Branch"
     ]
@@ -1898,11 +2685,17 @@
     "zoom": 12.5,
     "placement_source": "naptan-200m",
     "placement_confirmed": false,
-    "center": [
-      -2.441812,
-      54.814631
+    "bbox": [
+      -2.50774,
+      54.814118,
+      -2.441639,
+      54.866412
     ],
-    "principal_station": "Alston Rail Station"
+    "center": [
+      -2.506715,
+      54.865466
+    ],
+    "principal_station": "Slaggyford"
   },
   "southend-cliff-lift": {
     "name": "Southend Cliff Lift",
@@ -1912,6 +2705,12 @@
     "zoom": 16,
     "placement_source": "naptan-1km",
     "placement_confirmed": false,
+    "bbox": [
+      0.710924,
+      51.53351,
+      0.711016,
+      51.533991
+    ],
     "center": [
       0.711727,
       51.537065
@@ -1929,6 +2728,12 @@
     "zoom": 14.5,
     "placement_source": "naptan-1km",
     "placement_confirmed": false,
+    "bbox": [
+      0.715766,
+      51.51626,
+      0.721367,
+      51.532849
+    ],
     "center": [
       0.711727,
       51.537065
@@ -1943,11 +2748,17 @@
     "zoom": 12.5,
     "placement_source": "naptan-200m",
     "placement_confirmed": false,
-    "center": [
-      0.201432,
-      51.088966
+    "bbox": [
+      0.184925,
+      51.088491,
+      0.253465,
+      51.124199
     ],
-    "principal_station": "Eridge Rail Station"
+    "center": [
+      0.252982,
+      51.123589
+    ],
+    "principal_station": "Tunbridge Wells West"
   },
   "stainmore-railway": {
     "name": "Stainmore Railway",
@@ -1957,6 +2768,12 @@
     "zoom": 15.5,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -2.363749,
+      54.462411,
+      -2.357673,
+      54.463947
+    ],
     "center": [
       -2.362639,
       54.463312
@@ -1970,9 +2787,15 @@
     "zoom": 15.5,
     "placement_source": "terminus",
     "placement_confirmed": false,
-    "center": [
+    "bbox": [
+      -1.583244,
+      53.095119,
       -1.570661,
-      53.095719
+      53.096799
+    ],
+    "center": [
+      -1.571667,
+      53.095119
     ]
   },
   "strathspey-railway": {
@@ -1983,6 +2806,12 @@
     "zoom": 11.5,
     "placement_source": "naptan-200m",
     "placement_confirmed": false,
+    "bbox": [
+      -3.828772,
+      57.187099,
+      -3.656614,
+      57.297812
+    ],
     "center": [
       -3.828867,
       57.188512
@@ -1997,11 +2826,17 @@
     "zoom": 11.5,
     "placement_source": "naptan-200m",
     "placement_confirmed": false,
-    "center": [
-      -2.0551,
-      50.6383
+    "bbox": [
+      -2.135706,
+      50.609934,
+      -1.959666,
+      50.682148
     ],
-    "principal_station": "Corfe Castle",
+    "center": [
+      -2.062248,
+      50.644728
+    ],
+    "principal_station": "Norden - Park and Ride",
     "aliases": [
       "Swanage Branch"
     ]
@@ -2014,6 +2849,12 @@
     "zoom": 13,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -1.851548,
+      51.590807,
+      -1.828786,
+      51.624142
+    ],
     "center": [
       -1.828786,
       51.590807
@@ -2025,13 +2866,19 @@
     "band": "trunk",
     "km": 12.08,
     "zoom": 12,
-    "placement_source": "naptan-1km",
+    "placement_source": "naptan-200m",
     "placement_confirmed": false,
-    "center": [
-      -4.093559,
-      52.585576
+    "bbox": [
+      -4.089174,
+      52.582879,
+      -3.950596,
+      52.642665
     ],
-    "principal_station": "Tywyn Rail Station",
+    "center": [
+      -4.081987,
+      52.586841
+    ],
+    "principal_station": "Tywyn Pendre",
     "aliases": [
       "Rheilffordd Talyllyn Railway Company",
       "Talyllyn"
@@ -2045,6 +2892,12 @@
     "zoom": 14.5,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -3.114392,
+      52.801412,
+      -3.102708,
+      52.811516
+    ],
     "center": [
       -3.114392,
       52.811419
@@ -2061,6 +2914,12 @@
     "zoom": 13,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -1.700159,
+      54.887799,
+      -1.674894,
+      54.920689
+    ],
     "center": [
       -1.674894,
       54.920689
@@ -2074,6 +2933,12 @@
     "zoom": 16,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -4.167524,
+      50.956916,
+      -4.165117,
+      50.959122
+    ],
     "center": [
       -4.165117,
       50.956916
@@ -2087,6 +2952,12 @@
     "zoom": 14,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -2.482837,
+      52.654719,
+      -2.476229,
+      52.671747
+    ],
     "center": [
       -2.480023,
       52.671747
@@ -2100,6 +2971,12 @@
     "zoom": 16,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      0.132631,
+      51.505801,
+      0.136402,
+      51.50931
+    ],
     "center": [
       0.136402,
       51.50931
@@ -2116,6 +2993,12 @@
     "zoom": 14.5,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -0.544225,
+      51.841027,
+      -0.536181,
+      51.847511
+    ],
     "center": [
       -0.543958,
       51.844729
@@ -2144,6 +3027,12 @@
     "zoom": 16,
     "placement_source": "naptan-1km",
     "placement_confirmed": false,
+    "bbox": [
+      1.178373,
+      51.076916,
+      1.178597,
+      51.077223
+    ],
     "center": [
       1.169482,
       51.082888
@@ -2156,12 +3045,19 @@
     "band": "micro",
     "km": 0.8,
     "zoom": 16,
-    "placement_source": "terminus",
+    "placement_source": "naptan-200m",
     "placement_confirmed": false,
-    "center": [
+    "bbox": [
       -1.92973,
+      51.982028,
+      -1.928981,
       51.988871
-    ]
+    ],
+    "center": [
+      -1.928306,
+      51.989016
+    ],
+    "principal_station": "Toddington"
   },
   "tufts-bridge": {
     "name": "Tufts Bridge",
@@ -2169,12 +3065,19 @@
     "band": "micro",
     "km": 0.03,
     "zoom": 16,
-    "placement_source": "terminus",
+    "placement_source": "naptan-200m",
     "placement_confirmed": false,
+    "bbox": [
+      -2.556465,
+      51.730404,
+      -2.535982,
+      51.768431
+    ],
     "center": [
-      -2.536001,
-      51.730404
-    ]
+      -2.538444,
+      51.736939
+    ],
+    "principal_station": "Norchard"
   },
   "vale-of-rheidol-railway": {
     "name": "Vale of Rheidol Railway",
@@ -2184,11 +3087,17 @@
     "zoom": 11,
     "placement_source": "naptan-200m",
     "placement_confirmed": false,
-    "center": [
-      -4.081894,
-      52.414045
+    "bbox": [
+      -4.081064,
+      52.375963,
+      -3.85409,
+      52.413317
     ],
-    "principal_station": "Aberystwyth Rail Station",
+    "center": [
+      -4.061999,
+      52.406193
+    ],
+    "principal_station": "Llanbadarn",
     "aliases": [
       "Vale of Rheidol Railway Driver Experience"
     ]
@@ -2199,12 +3108,19 @@
     "band": "micro",
     "km": 0.08,
     "zoom": 16,
-    "placement_source": "terminus",
+    "placement_source": "naptan-200m",
     "placement_confirmed": false,
-    "center": [
+    "bbox": [
       -3.855772,
-      52.376061
-    ]
+      52.376061,
+      -3.854656,
+      52.376319
+    ],
+    "center": [
+      -3.854153,
+      52.375848
+    ],
+    "principal_station": "Devils Bridge"
   },
   "vivian-incline": {
     "name": "Vivian Incline",
@@ -2212,12 +3128,19 @@
     "band": "micro",
     "km": 0.04,
     "zoom": 16,
-    "placement_source": "terminus",
+    "placement_source": "naptan-1km",
     "placement_confirmed": false,
-    "center": [
+    "bbox": [
+      -4.115716,
+      53.123226,
       -4.115259,
       53.123459
-    ]
+    ],
+    "center": [
+      -4.119688,
+      53.115817
+    ],
+    "principal_station": "Llanberis"
   },
   "volks-electric-railway": {
     "name": "Volk's Electric Railway",
@@ -2227,6 +3150,12 @@
     "zoom": 14.5,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -0.132877,
+      50.814472,
+      -0.110886,
+      50.818941
+    ],
     "center": [
       -0.132877,
       50.818941
@@ -2243,6 +3172,12 @@
     "zoom": 11.5,
     "placement_source": "naptan-200m",
     "placement_confirmed": false,
+    "bbox": [
+      -1.167426,
+      51.085569,
+      -0.964215,
+      51.153618
+    ],
     "center": [
       -0.966913,
       51.151969
@@ -2262,6 +3197,12 @@
     "zoom": 14.5,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      1.053052,
+      52.377229,
+      1.062724,
+      52.383453
+    ],
     "center": [
       1.055259,
       52.383453
@@ -2275,6 +3216,12 @@
     "zoom": 15,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -2.750136,
+      55.290555,
+      -2.74661,
+      55.297994
+    ],
     "center": [
       -2.746941,
       55.297994
@@ -2291,6 +3238,12 @@
     "zoom": 11,
     "placement_source": "naptan-200m",
     "placement_confirmed": false,
+    "bbox": [
+      -2.004973,
+      54.657017,
+      -1.675791,
+      54.744363
+    ],
     "center": [
       -1.964411,
       54.726995
@@ -2303,12 +3256,19 @@
     "band": "regional",
     "km": 6.44,
     "zoom": 13,
-    "placement_source": "terminus",
+    "placement_source": "naptan-200m",
     "placement_confirmed": false,
-    "center": [
+    "bbox": [
       0.864564,
+      52.896124,
+      0.879132,
       52.949915
-    ]
+    ],
+    "center": [
+      0.871829,
+      52.89606
+    ],
+    "principal_station": "Walsingham"
   },
   "welsh-highland-railway": {
     "name": "Welsh Highland Railway",
@@ -2318,11 +3278,17 @@
     "zoom": 10,
     "placement_source": "naptan-200m",
     "placement_confirmed": false,
-    "center": [
-      -4.126818,
-      52.924041
+    "bbox": [
+      -4.278658,
+      52.918189,
+      -3.935955,
+      53.138422
     ],
-    "principal_station": "Porthmadog Harbour Ffestiniog Railway Station",
+    "center": [
+      -4.27666,
+      53.103755
+    ],
+    "principal_station": "Dinas",
     "aliases": [
       "Ffestiniog Railway"
     ]
@@ -2333,12 +3299,19 @@
     "band": "trunk",
     "km": 13.25,
     "zoom": 11.5,
-    "placement_source": "terminus",
+    "placement_source": "naptan-200m",
     "placement_confirmed": false,
-    "center": [
+    "bbox": [
+      -3.32278,
+      52.644224,
       -3.159288,
-      52.660119
+      52.6638
     ],
+    "center": [
+      -3.241732,
+      52.64428
+    ],
+    "principal_station": "Castle Caereinion",
     "aliases": [
       "Welshpool And Llanfair Light Railway"
     ]
@@ -2349,13 +3322,19 @@
     "band": "trunk",
     "km": 36.81,
     "zoom": 10.5,
-    "placement_source": "naptan-1km",
+    "placement_source": "naptan-200m",
     "placement_confirmed": false,
-    "center": [
-      -1.441273,
-      54.333072
+    "bbox": [
+      -1.934706,
+      54.288638,
+      -1.448042,
+      54.340226
     ],
-    "principal_station": "Northallerton Rail Station",
+    "center": [
+      -1.717609,
+      54.30568
+    ],
+    "principal_station": "Finghall",
     "aliases": [
       "Wensleydale Railway plc"
     ]
@@ -2368,6 +3347,12 @@
     "zoom": 16,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -1.881396,
+      50.714944,
+      -1.881274,
+      50.715253
+    ],
     "center": [
       -1.881396,
       50.715253
@@ -2381,6 +3366,12 @@
     "zoom": 16,
     "placement_source": "naptan-1km",
     "placement_confirmed": false,
+    "bbox": [
+      0.587004,
+      50.855745,
+      0.587668,
+      50.856964
+    ],
     "center": [
       0.576742,
       50.857896
@@ -2398,6 +3389,12 @@
     "zoom": 16,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -2.838893,
+      53.6993,
+      -2.837264,
+      53.70145
+    ],
     "center": [
       -2.837474,
       53.69938
@@ -2411,11 +3408,17 @@
     "zoom": 10,
     "placement_source": "naptan-200m",
     "placement_confirmed": false,
-    "center": [
-      -3.19433,
-      51.054586
+    "bbox": [
+      -3.469748,
+      51.021931,
+      -3.141102,
+      51.207231
     ],
-    "principal_station": "Bishop's Lydeard Rail Station",
+    "center": [
+      -3.469013,
+      51.206903
+    ],
+    "principal_station": "Minehead",
     "aliases": [
       "Allerford Spur (WSR)",
       "Barnstaple Branch (WSR)",
@@ -2433,6 +3436,12 @@
     "zoom": 16,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -2.944169,
+      51.090783,
+      -2.941441,
+      51.091054
+    ],
     "center": [
       -2.944169,
       51.09092
@@ -2446,6 +3455,12 @@
     "zoom": 13,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -1.6861,
+      53.587176,
+      -1.610761,
+      53.597221
+    ],
     "center": [
       -1.610761,
       53.597151
@@ -2470,6 +3485,12 @@
     "zoom": 15.5,
     "placement_source": "naptan-200m",
     "placement_confirmed": false,
+    "bbox": [
+      -3.020371,
+      53.3951,
+      -3.009937,
+      53.39791
+    ],
     "center": [
       -3.01368,
       53.394694
@@ -2499,6 +3520,12 @@
     "zoom": 16,
     "placement_source": "terminus",
     "placement_confirmed": false,
+    "bbox": [
+      -0.610498,
+      54.032897,
+      -0.607611,
+      54.035439
+    ],
     "center": [
       -0.607611,
       54.032897

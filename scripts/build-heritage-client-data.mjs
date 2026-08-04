@@ -176,6 +176,33 @@ for (const [name, meta] of Object.entries(HERITAGE_META)) {
     placement_source: source,
     placement_confirmed: false,
   };
+  // BBOX OF THE ACTUAL TRACK (2026-08-04) — what the map should fly to.
+  //
+  // `center` is a PLACEMENT point: a nearby NaPTAN station or, failing that, the
+  // terminus closest to one. That is the right anchor for "where is this
+  // railway's visitor entrance", and the wrong one for "frame this railway":
+  // flying to it puts an END of the line in the middle of the viewport with the
+  // rest running off to one side. Measured across the 164 railways with track,
+  // `center` sits a median 804 m from the line's own midpoint, p90 7.1 km, max
+  // 16.4 km — Churnet Valley is 4.8 km off on a 10 km line, which is what the
+  // reported off-centre flyTo was.
+  //
+  // `center` is deliberately KEPT: the panel still wants the principal station,
+  // and a railway with no usable bbox still needs somewhere to go.
+  if (segs.length) {
+    let minLon = Infinity, minLat = Infinity, maxLon = -Infinity, maxLat = -Infinity;
+    for (const sg of segs) {
+      for (const c of sg.coords) {
+        if (c[0] < minLon) minLon = c[0];
+        if (c[0] > maxLon) maxLon = c[0];
+        if (c[1] < minLat) minLat = c[1];
+        if (c[1] > maxLat) maxLat = c[1];
+      }
+    }
+    if (minLon <= maxLon) {
+      entry.bbox = [round6(minLon), round6(minLat), round6(maxLon), round6(maxLat)];
+    }
+  }
   if (meta.secondary) entry.type_secondary = meta.secondary;
   if (center) entry.center = center;
   if (principal) entry.principal_station = principal;

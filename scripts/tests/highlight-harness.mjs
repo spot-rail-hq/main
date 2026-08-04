@@ -110,7 +110,11 @@ console.log('\n=== DATABASE: heritage railway locked (last session, must be unch
   const c = run({ mode: 'database', lockedHeritage: 'bluebell-railway' });
   check('greys all 7 tiers', greyWrites(c).length === 7);
   check('active filter is heritage_slug', JSON.stringify(activeFilter(c).value) === JSON.stringify(['==', ['get', 'heritage_slug'], 'bluebell-railway']));
-  check('active dash is DOTTED (heritage-only)', JSON.stringify(activeDash(c).value) === JSON.stringify(HERITAGE_DASH));
+  // Heritage lines went SOLID on 2026-08-04 — the dotted core inside a solid
+  // glow ring read as a broken line in a smear. Heritage is distinguished by
+  // colour now, so the overlay dash must be SOLID even when every active group
+  // is heritage. This assertion is inverted from what it originally checked.
+  check('active dash is SOLID even for heritage-only', JSON.stringify(activeDash(c).value) === JSON.stringify(SOLID_DASH));
   check('glow rings painted', glowColors(c).length === 3);
 }
 
@@ -118,7 +122,7 @@ console.log('\n=== DATABASE: heritage highlight-all (last session, must be uncha
 {
   const c = run({ mode: 'database', highlightAll: true });
   check('active filter is operators==Heritage', JSON.stringify(activeFilter(c).value) === JSON.stringify(['==', ['get', 'operators'], 'Heritage']));
-  check('active dash is DOTTED', JSON.stringify(activeDash(c).value) === JSON.stringify(HERITAGE_DASH));
+  check('active dash is SOLID (heritage no longer dotted)', JSON.stringify(activeDash(c).value) === JSON.stringify(SOLID_DASH));
 }
 
 console.log('\n=== HISTORY: national operator locked (the fix — glow-only) ===');
