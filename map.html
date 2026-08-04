@@ -3733,6 +3733,11 @@
     dlr: 'mode-regional',
     tram: 'mode-regional',
     metro: 'mode-regional',
+    // Heritage railway stations (183 added 2026-08-04 from NaPTAN's MET stops,
+    // which register them alongside tram/metro). Tiered with the other small
+    // dense networks: a preserved line is a handful of stations over a few
+    // miles, which is exactly why mode-regional moved to z10.
+    heritage: 'mode-regional',
   };
   function stationTierFilter(tierId) { return ['==', ['get', 'tier'], tierId]; }
   // Shared by both the station tiers and the route category tiers below —
@@ -4713,6 +4718,7 @@
   var MODE_LABELS = {
     underground: 'Underground', dlr: 'Light rail', tram: 'Tram',
     metro: 'Metro', subway: 'Subway', rail: 'National Rail',
+    heritage: 'Heritage railway',
   };
   // Phrased as a fixed property of the data, not a pending feature: no amount of
   // waiting will produce a Darwin feed for a tram stop, and "coming soon" would

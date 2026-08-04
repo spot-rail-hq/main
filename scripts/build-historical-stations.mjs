@@ -518,6 +518,69 @@ async function main() {
     stats.emitted++;
   }
 
+  // ── NaPTAN COORDINATE CORRECTION (2026-08-04) ────────────────────────────
+  // Wikidata coordinates run a systematic offset against NaPTAN's surveyed
+  // positions — measured across 2,662 matched pairs: median 30.9 m, 41% worse
+  // than 25 m, and visibly landing on the road rather than the platform
+  // (Solihull was the reported case). station-list.json is NaPTAN-derived and
+  // already loaded above, so the fix is a join, not a fetch.
+  //
+  // TWO JOIN KEYS, DIFFERENT RELIABILITY:
+  //   CRS  — exact and safe. 2,461 of the 3,095 open-at-2026 stations. Measured
+  //          worst case 750 m (Newsham, a genuine relocation), zero false
+  //          positives.
+  //   NAME — only when the name resolves to exactly ONE live station. 201 more.
+  //          Median 10.8 m but it produced one 147 km false positive
+  //          ("Haymarket": Edinburgh vs Newcastle Metro), which is precisely
+  //          why the distance guard below is not optional.
+  //
+  // THE >1 km GUARD IS THE SAFETY RAIL. If the two sources disagree by more
+  // than a kilometre, that is not a survey difference, it is a mismatch — the
+  // Wikidata position is kept and the pair is written to the report for a human
+  // to look at. Nothing is hand-excluded; Haymarket is caught by the rule.
+  //
+  // The remaining ~433 have no NaPTAN counterpart at all and stay on Wikidata
+  // coordinates, correctly: NaPTAN registers currently-active infrastructure,
+  // and a station closed in 1964 has none.
+  const COORD_REJECT_KM = 1;
+  const liveByName = new Map();
+  for (const s of stationList) {
+    if (!s.name) continue;
+    const k = String(s.name).replace(/\b(rail|metro|tram|underground|dlr)?\s*(station|stop)\b/gi, '').trim().toLowerCase();
+    if (!liveByName.has(k)) liveByName.set(k, []);
+    liveByName.get(k).push(s);
+  }
+  const coordFix = { byCrs: 0, byName: 0, rejected: [], unmatched: 0, movedM: [] };
+  for (const f of features) {
+    const [lon, lat] = f.geometry.coordinates;
+    let target = null, via = null;
+    const crsKey = f.properties.crs;
+    if (crsKey && crsToCoords[crsKey]) { target = crsToCoords[crsKey]; via = 'crs'; }
+    else {
+      const k = String(f.properties.name || '').replace(/\b(rail|metro|tram|underground|dlr)?\s*(station|stop)\b/gi, '').trim().toLowerCase();
+      const cands = liveByName.get(k);
+      // Exactly one candidate only — an ambiguous name is not a match.
+      if (cands && cands.length === 1) { target = [cands[0].lon, cands[0].lat]; via = 'name'; }
+    }
+    if (!target) { coordFix.unmatched++; continue; }
+    const km = haversineKm(target, [lon, lat]);
+    if (km > COORD_REJECT_KM) {
+      coordFix.rejected.push({ name: f.properties.name, crs: crsKey || null, via, km: Math.round(km * 10) / 10 });
+      continue;
+    }
+    f.geometry.coordinates = [Math.round(target[0] * 1e6) / 1e6, Math.round(target[1] * 1e6) / 1e6];
+    // Provenance, additive — nothing reads it yet, but "where did this dot come
+    // from" is exactly the question that took an investigation to answer once.
+    f.properties.coord_source = 'naptan';
+    coordFix.movedM.push(km * 1000);
+    if (via === 'crs') coordFix.byCrs++; else coordFix.byName++;
+  }
+  coordFix.movedM.sort((a, b) => a - b);
+  const medMoved = coordFix.movedM.length ? coordFix.movedM[Math.floor(coordFix.movedM.length / 2)] : 0;
+  console.log(`  NaPTAN coordinate correction: ${coordFix.byCrs} by CRS + ${coordFix.byName} by name = ${coordFix.byCrs + coordFix.byName} moved`);
+  console.log(`    median move ${medMoved.toFixed(1)} m · rejected >${COORD_REJECT_KM}km: ${coordFix.rejected.length} · no NaPTAN match: ${coordFix.unmatched}`);
+  for (const r of coordFix.rejected) console.log(`    REJECTED (${r.via}) ${r.name} — ${r.km} km apart, kept Wikidata position`);
+
   mkdirSync(OUTPUT_DIR, { recursive: true });
   writeFileSync(
     OUT_GEOJSON,
