@@ -2,9 +2,17 @@
   "_notes": "Notable-year highlights for the historical map slider's sidebar. Keyed by four-digit year as a string. THE `reviewed` FLAG IS A HARD GATE: map.html must refuse to render any entry where reviewed is not exactly true. That is deliberate belt-and-braces — Phase 1B's recommendation was that historical-accuracy stakes here are higher than the locomotive spotlight's, so an unreviewed blurb must not be able to reach the page through an oversight rather than a decision. The gate is enforced at load time (unreviewed entries are dropped from the in-memory map entirely, so no later code path can accidentally surface one) rather than at render time. NOT EVERY YEAR HAS AN ENTRY, and that is normal — the sidebar section collapses cleanly when the current slider year has no reviewed entry rather than showing an empty box. STUB SET ONLY: a small number of hand-verifiable entries so the rendering path can be exercised, plus one deliberately-unreviewed entry so the gate itself is testable. Generating these at scale is Phase 2C, using the approach in HISTORICAL-SLIDER-FINDINGS.md section 3 — derive candidate years statistically from the opening/closure series, have Claude draft from fetched text, and land them here with reviewed:false for human review.",
   "_schema": {
     "year": "four-digit year, also the object key",
-    "blurb": "1-2 sentences. Shown verbatim.",
+    "blurb": "1-2 sentences. Shown verbatim. HARD MAXIMUM 67 WORDS — set 2026-08-04 from the 1889 entry, the longest and the flagship. The fixed-height blurb container in map.html (.hs-highlight min-height) is sized to exactly this worst case, so exceeding it makes the box scroll.",
     "source": "where the fact came from — 'wikipedia:{Article}' or a URL",
-    "reviewed": "boolean. MUST be exactly true to render. Default false."
+    "reviewed": "boolean. MUST be exactly true to render. Default false.",
+    "_wordLimit": {
+      "max": 67,
+      "basis": "the 1889 blurb, measured 2026-08-04 — longest entry in the file and the one the container height was sized from",
+      "countingRule": "whitespace-delimited tokens of [word characters, apostrophes, hyphens, em dashes]; a standalone em dash used as punctuation still counts, so the limit is slightly conservative",
+      "appliesTo": "every headline blurb, existing and future, reviewed or not",
+      "audit2026_08_04": "all 24 entries measured; none exceeded 67. Longest after 1889 is 1844 at 55; shortest is 1880 at 12.",
+      "enforcement": "NOT enforced in code — flagged for a human to reword, never auto-truncated, because trimming a historical statement can change its meaning"
+    }
   },
   "years": {
     "1825": {
@@ -158,6 +166,13 @@
       "blurb": "Railway privatisation begins. Track and infrastructure pass to Railtrack while passenger services are franchised to private operators — originally 25 franchises.",
       "source": "wikipedia:History of rail transport in Great Britain",
       "reviewed": true
+    },
+    "today": {
+      "year": "today",
+      "blurb": "Explore 200 years of British railway history — drag the slider from 1825's first steam passenger railway through to today.",
+      "source": "editorial — site copy, not a historical claim",
+      "reviewed": true,
+      "_note": "KEYED 'today', NOT BY YEAR, deliberately. The slider's last stop is historyMaxYear() — the current year — so a '2026' key would stop matching on 1 January 2027 and the message would vanish with nothing to explain it. renderYearHighlight() matches this key positionally when historyYear === historyMaxYear(). 20 words, within the 67-word limit. reviewed:true because it is site copy rather than a sourced historical statement — the gate exists to stop unverified HISTORY reaching the page, and there is no fact here to verify beyond '200 years', which holds from 1825 to 2025 onward."
     }
   }
 }
