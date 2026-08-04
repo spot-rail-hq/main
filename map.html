@@ -3707,12 +3707,21 @@
     // its stops reveal together instead of the line arriving first and running
     // empty.
     //
-    // Measured before choosing: of the 632 appended stations, 226 are
-    // Underground/Subway — whose lines are hyperlocal (z10), so the old 'dense'
-    // tier already had them at the right zoom — and 406 are DLR/tram/metro,
-    // whose lines are regional (z7.5) but whose stops sat at z10, i.e. 2.5 zoom
-    // levels late. That 406 is the real defect here, not all 632.
-    { id: 'mode-regional', minzoom: 7.5 },
+    // 2026-08-04: mode-regional was 7.5, pinned to its LINES' reveal zoom on the
+    // reasoning that a line and its stops should arrive together. Reverted to 10
+    // after seeing it live — reported as light-rail/metro stops showing at
+    // national zoom. The line-parity argument was the wrong one: a tram network
+    // is geographically tiny and very dense, so at z7.5 its stops collapse into
+    // an unreadable blob over one city while the surrounding National Rail
+    // network is still showing only its majors. Density, not line parity, is
+    // what should set a station tier's zoom — which is the rule the CRS tiers
+    // already follow. Both mode tiers now sit with 'dense'.
+    //
+    // The two tiers are deliberately NOT merged even though they now share a
+    // zoom: they still carry the mode split (MODE_STATION_TIER), and keeping
+    // them separate means a future change to one network family does not need
+    // the tier structure rebuilt.
+    { id: 'mode-regional', minzoom: 10 },
     { id: 'mode-hyperlocal', minzoom: 10 },
   ];
   // mode -> station tier, mirroring how computeRouteTierFilters() buckets the
@@ -6624,8 +6633,28 @@
   // share one late-revealing tier; their LABELS come later still, because at
   // 1923 there are ~4,900 of them and letting MapLibre's collision detection
   // arbitrarily choose which to drop is not legibility.
+  //
+  // 2026-08-04 — THE COMPLEMENT TIER IS NOW SPLIT IN TWO, because one tier was
+  // conflating two very different populations and mis-revealing one of them.
+  // computeHistoryStationTierFilters() below can only borrow a live tier for a
+  // station that HAS a CRS station-list.json knows, so everything else landed in
+  // `closed` at z8. Measured at the Today position: that swept up 530 still-open
+  // stations with no CRS and 104 whose CRS the live list does not carry — 634
+  // stations revealing at z8 while their Database counterparts wait for z9
+  // ('small') or z10 ('dense'/'mode-*'). Reported as stations appearing in
+  // History earlier than in Database, and that was exactly it.
+  //
+  // Splitting on `end_year` separates them cleanly and needs no retiling:
+  //   closed      — has an end_year, i.e. genuinely closed. Stays at z8, which
+  //                 is what historical browsing needs: at 1923 there are ~4,900
+  //                 of these and pushing them to z10 would gut the era views.
+  //   open-other  — no end_year, i.e. still open but untiered. Sits at z10 with
+  //                 'dense' and the two mode tiers, so nothing in History can
+  //                 now reveal ahead of the same station in Database.
+  // Labels stay at z10 for both, unchanged.
   var HISTORY_STATION_CLOSED_TIER = { id: 'closed', minzoom: 8, labelMinzoom: 10 };
-  var HISTORY_STATION_TIERS = STATION_TIERS.concat([HISTORY_STATION_CLOSED_TIER]);
+  var HISTORY_STATION_OPEN_OTHER_TIER = { id: 'open-other', minzoom: 10, labelMinzoom: 10 };
+  var HISTORY_STATION_TIERS = STATION_TIERS.concat([HISTORY_STATION_CLOSED_TIER, HISTORY_STATION_OPEN_OTHER_TIER]);
   function historyStationLayerIds(tierId) {
     return {
       circle: 'history-stations-' + tierId,
@@ -6690,9 +6719,15 @@
     // — a historical station carrying a CRS that station-list.json doesn't
     // know about (none today, but the two datasets refresh independently)
     // would otherwise match no tier at all and silently vanish from the map.
-    filters.closed = allTiered.length
+    // The complement of the tiered set, split by whether the station ever
+    // closed. `has end_year` is the test, not a year comparison: the tileset's
+    // own year filter already decides WHETHER a station shows for the current
+    // slider year, so this only has to decide WHICH tier it shows in.
+    var untiered = allTiered.length
       ? ['!', ['match', ['coalesce', ['get', 'crs'], ''], allTiered, true, false]]
       : ['==', 1, 1];
+    filters.closed = ['all', untiered, ['has', 'end_year']];
+    filters['open-other'] = ['all', untiered, ['!', ['has', 'end_year']]];
     historyStationTierFilters = filters;
     // History layers may already be on the map (the user can be in History
     // mode before these fetches land) — re-apply, no-op if not.
