@@ -1,0 +1,141 @@
+{
+  "_notes": "PILOT ONLY — 2026-08-04. NOT wired into anything and NOT merged into heritage-content.json; the live heritage schema is untouched so the existing panel cannot break while this is reviewed. 20 railways sampled STRATIFIED BY TYPE (11 operating, 3 museum, 3 funicular, 3 tramway) rather than alphabetically, because the article shape differs sharply by type and an A-Z sample would have been almost all 'operating'. Every value is quoted from the article text in `source`; nothing is inferred. Blank means the article does not state it.",
+  "method": "en.wikipedia.org action=query&prop=extracts&explaintext, first 6000 chars, via the wikipedia_title already stored in heritage-content.json",
+  "sample": {
+    "alford-valley-railway": {
+      "type": "operating",
+      "opened_year": 1859,
+      "heritage_reopened_year": 1980,
+      "source": "'construction of the Alford Valley Railway started in 1856 and the line opened in 1859 as a GNSR branch line'; 'The narrow gauge railway... proposed in 1979 and opened in 1980'",
+      "_flag": "THREE opening events, not two: original 1859, narrow-gauge heritage line 1980, and a further re-opening in August 2023 after six years closed. The schema has nowhere to put the third."
+    },
+    "aln-valley-railway": {
+      "type": "operating",
+      "opened_year": 1850,
+      "heritage_reopened_year": 2013,
+      "source": "'The line opened on 5 August 1850, both to freight and passenger traffic'; 'formally opened by the Duke of Northumberland on 30 October 2013'"
+    },
+    "amerton-railway": {
+      "type": "operating",
+      "opened_year": 1992,
+      "heritage_reopened_year": null,
+      "source": "'The first trains ran in 1992'",
+      "_flag": "NEW BUILD, never a mainline — a narrow-gauge line laid on a greenfield site. opened_year here means 'opened as the heritage railway it is', the opposite of what the field means elsewhere. heritage_reopened_year is not blank-because-unknown, it is not applicable."
+    },
+    "avon-valley-railway": {
+      "type": "operating",
+      "opened_year": null,
+      "heritage_reopened_year": null,
+      "source": "no original opening year stated in the article extract",
+      "_flag": "Original Bristol-Mangotsfield-Bath line date absent. '2024 marked the 50th anniversary since the first trains ran' would give 1974 for the heritage reopening BY ARITHMETIC — left blank rather than derived, per the sourcing rule."
+    },
+    "bala-lake-railway": {
+      "type": "operating",
+      "opened_year": 1868,
+      "heritage_reopened_year": 1972,
+      "source": "'The railway, which opened in August 1868, was built by the Bala and Dolgelley Railway Company'; 'Bala Lake Railway opened on 13 August 1972'"
+    },
+    "bluebell-railway": {
+      "type": "operating",
+      "opened_year": 1882,
+      "heritage_reopened_year": 1960,
+      "source": "'the northern half of the Lewes and East Grinstead Railway... opened in 1882'; 'Preservationists successfully launched a rescued operation... on 7 August 1960'"
+    },
+    "brecon-mountain-railway": {
+      "type": "operating",
+      "opened_year": null,
+      "heritage_reopened_year": 1980,
+      "source": "'The railway opened to passengers in June 1980'",
+      "_flag": "1980 is the HERITAGE opening. The original Brecon & Merthyr line's date is not in the extract, so opened_year is blank."
+    },
+    "bristol-harbour-railway": {
+      "type": "operating",
+      "opened_year": 1872,
+      "heritage_reopened_year": 1978,
+      "source": "'the first part of the network opened in 1872 between Temple Meads and the Floating Harbour'; 'In 1978, a heritage railway named the Bristol Harbour Railway was opened'"
+    },
+    "bure-valley-railway": {
+      "type": "operating",
+      "opened_year": 1880,
+      "heritage_reopened_year": 1990,
+      "source": "'the East Norfolk Railway opened from Norwich to Cromer [1877], with an extension from Wroxham to Aylsham in 1880'; 'The Bure Valley Railway opened on 10 July 1990'",
+      "_flag": "TWO candidate original years. 1877 is the parent ENR (Norwich-Cromer); 1880 is the Wroxham-Aylsham extension, which is the trackbed the BVR actually occupies. Took 1880 — flag if the parent company's date is preferred."
+    },
+    "caledonian-railway-brechin": {
+      "type": "operating",
+      "opened_year": null,
+      "heritage_reopened_year": 1993,
+      "source": "'since 1993 trains have run at weekends during the summer'",
+      "_flag": "Article extract is dominated by a locomotive roster; no original Caledonian Railway opening date appears. 1993 is a 'trains have run since' phrasing rather than a stated opening."
+    },
+    "cambrian-heritage-railway": {
+      "type": "operating",
+      "opened_year": null,
+      "heritage_reopened_year": null,
+      "source": "no opening year of either kind in the extract",
+      "_flag": "Extract covers only the 2009 trust merger and restoration works. Neither the original Cambrian Railways opening nor a heritage reopening is stated."
+    },
+    "almond-valley-heritage-centre": {
+      "type": "museum",
+      "opened_year": null,
+      "heritage_reopened_year": null,
+      "source": "article extract is 916 characters and contains no year-bearing sentence",
+      "_flag": "Effectively a stub for this purpose."
+    },
+    "amberley-museum-railway": {
+      "type": "museum",
+      "opened_year": null,
+      "heritage_reopened_year": null,
+      "source": "'A running line was built at Amberley from 1982 to 1984'",
+      "_flag": "MUSEUM railway, never a mainline. The only date is a construction SPAN (1982-1984), not an opening, and the museum's own opening date is separate and not given. Both fields left blank."
+    },
+    "barrow-hill-roundhouse": {
+      "type": "museum",
+      "opened_year": 1870,
+      "heritage_reopened_year": 1998,
+      "source": "'Staveley Roundhouse was built to a standard Midland Railway square shed design in 1870'; 'The site reopened to the public in July 1998'",
+      "_flag": "1870 is 'built', not 'opened' — for a locomotive shed those are usually the same year, but it is a wording difference worth noting."
+    },
+    "aberystwyth-cliff-railway": {
+      "type": "funicular",
+      "opened_year": 1896,
+      "heritage_reopened_year": null,
+      "source": "'The Aberystwyth Cliff Railway opened on 1 August 1896'",
+      "_flag": "Continuously operating funicular — never closed, so there is no heritage reopening. The 1998 charity purchase is an ownership change, not a reopening."
+    },
+    "babbacombe-cliff-railway": {
+      "type": "funicular",
+      "opened_year": 1926,
+      "heritage_reopened_year": null,
+      "source": "'Construction started in 1924, and the line was first opened on 1 April 1926'",
+      "_flag": "THREE reopenings in the article (1951 after wartime closure, July 2023 after repairs) and none is a heritage reopening — this is a working funicular, not a preserved line. Picking any of them would misrepresent it."
+    },
+    "bridgnorth-cliff-railway": {
+      "type": "funicular",
+      "opened_year": 1892,
+      "heritage_reopened_year": null,
+      "source": "'The railway was opened on 7 July 1892 by Mayor John Anderson'",
+      "_flag": "1944 re-opening was electrification, 2024 was repair. Neither is a heritage reopening."
+    },
+    "central-tramway-scarborough": {
+      "type": "tramway",
+      "opened_year": 1881,
+      "heritage_reopened_year": null,
+      "source": "'Built in just 6 months between January and August 1881, the Tramway opened on Monday 1 August'"
+    },
+    "crich-tramway": {
+      "type": "tramway",
+      "opened_year": 1963,
+      "heritage_reopened_year": null,
+      "source": "timeline: '1963 - First horse tram service at what was then the Crich Tramway Museum'",
+      "_flag": "MUSEUM, never a mainline. 1963 is the museum's first service. Also note the site sits on a mineral railway built by George Stephenson, whose date is not given — so 'original opening' is genuinely undefined here."
+    },
+    "east-anglian-transport-museum-tramway": {
+      "type": "tramway",
+      "opened_year": 1972,
+      "heritage_reopened_year": null,
+      "source": "'the museum opened to the public on 28 May 1972'",
+      "_flag": "MUSEUM, never a mainline. Its narrow-gauge railway opened separately in 1973, so even 'the' opening year is two-valued."
+    }
+  }
+}
