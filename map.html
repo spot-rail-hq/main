@@ -826,12 +826,20 @@
   .hs-head { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
   /* Same size as the Live / Database / History tab labels (13.5px), per direct
      feedback that the first draft's 28px read as oversized next to them. */
-  .hs-year { font-family: var(--font-display); font-size: 15px; font-weight: 600; letter-spacing: 0;
+  /* REVERTED to 13.5px (2026-08-04). The site-wide font uplift took this to
+     15px, which pushed "TODAY" past the 46px min-width and wrapped it onto a
+     second line. This label sits in a fixed-width slot next to the Jump-to
+     field, so it is one of the few places where bigger is worse — excluded from
+     the uplift deliberately rather than by oversight. */
+  .hs-year { font-family: var(--font-display); font-size: 13.5px; font-weight: 600; letter-spacing: 0;
     color: var(--t); flex-shrink: 0; min-width: 46px; }
   .hs-jump-wrap { position: relative; margin-left: auto; }
   .hs-jump { width: 92px; padding: 5px 22px 5px 9px; border-radius: 8px; border: 0.5px solid var(--br);
     background: var(--bg); color: var(--ink-primary);
-    font-family: inherit; font-size: 13px; box-sizing: border-box; }
+    /* 15px to match body text. The uplift did move this (11 -> 13), but 13 still
+       read small against everything around it — a text INPUT should not be
+       smaller than the prose beside it. */
+    font-family: inherit; font-size: 15px; box-sizing: border-box; }
   .hs-jump:focus { outline: none; border-color: var(--brh); }
   .hs-jump.invalid { border-color: var(--m); }
 
@@ -3596,7 +3604,27 @@
           'line-width': t.id.indexOf('heritage-') === 0 ? 30 : 18,
           'line-offset': operatorLineOffsetExpression(),
         },
-      }, t.minzoom);
+        // HERITAGE HIT LAYERS IGNORE THEIR BAND'S MINZOOM (2026-08-04).
+        //
+        // The glow rings and 'operator-lines-active' are added with NO minzoom
+        // at all, so a highlighted heritage line renders at every zoom — but its
+        // hit layer inherited the band minzoom (local z9, micro z11). Below
+        // that, the user sees a glowing heritage line and cannot hover it,
+        // which is the "smaller railways still not responding on hover at low
+        // level" report. Widening the stroke to 30px last round did not touch
+        // this, because the layer was not on the map to be hit at all.
+        //
+        // Pinned to 7.5 — the lowest heritage band minzoom — so hit coverage
+        // starts where the earliest heritage line can appear and is uniform
+        // across all four bands.
+        //
+        // The usual objection to a hit layer outrunning its visible line is
+        // "invisible but clickable is worse than absent". It does not apply
+        // here: hovering one of these produces a NAMED TOOLTIP for a real
+        // railway, so the interaction explains itself rather than being a dead
+        // zone. The visible tier minzooms are untouched, so nothing new is
+        // drawn and no clutter is added.
+      }, t.id.indexOf('heritage-') === 0 ? 7.5 : t.minzoom);
     });
     if (!operatorLineInteractionsWired) { wireOperatorLineInteractions(); operatorLineInteractionsWired = true; }
     if (!bearingIconWired) { wireBearingIcon(); bearingIconWired = true; }
@@ -3970,7 +3998,17 @@
     if (!SRHQ_HERITAGE_DEBUG && !window.SRHQ_DEBUG_HERITAGE) return;
     console.log('SRHQ heritage ' + step, detail === undefined ? '' : detail);
   }
-  function selectHeritageRailway(slug) {
+  /**
+   * @param {boolean} [focus] — move the camera. DEFAULT OFF (2026-08-04).
+   *   Clicking a heritage LINE on the map no longer flies anywhere, because no
+   *   other line does: clicking a National Rail route highlights it in place and
+   *   leaves the camera alone. Heritage flying away on click was inconsistent
+   *   with the rest of the map and disorienting — you already had the line under
+   *   the cursor. SEARCH and URL-restore still pass true, matching
+   *   highlightAndFlyToOperator(): arriving from a search means you do not know
+   *   where the thing is, which is the case a camera move is actually for.
+   */
+  function selectHeritageRailway(slug, focus) {
     if (!slug) return;
     heritageDebug('1/6 selectHeritageRailway entered', { slug: slug, mode: mode });
     // RE-SELECTING THE SAME RAILWAY IS FOCUS-ONLY. The lock is already correct
@@ -3998,7 +4036,7 @@
     heritageDebug('3/6 mode settled', mode);
     if (!alreadySelected) selectHeritagePanel(slug);
     heritageDebug('4/6 panel populated', { alreadySelected: alreadySelected });
-    if (!inHistory) focusHeritageRailway(slug);
+    if (!inHistory && focus) focusHeritageRailway(slug);
     heritageDebug('6/6 selectHeritageRailway complete');
   }
   // Camera half of the above, split out so a re-click can re-run the focus
@@ -4043,8 +4081,9 @@
     if (r.bbox) {
       var pad = boundsFitPadding(60);
       heritageDebug('5/6 fitBounds', { bbox: r.bbox, padding: pad });
-      map.fitBounds([[r.bbox[0], r.bbox[1]], [r.bbox[2], r.bbox[3]]],
-        { padding: pad, maxZoom: 14, duration: 800 });
+      // flyToBoundsZoomedOut, not a bare fitBounds — it applies the same
+      // one-level-out margin every other camera move now uses.
+      flyToBoundsZoomedOut([[r.bbox[0], r.bbox[1]], [r.bbox[2], r.bbox[3]]], 60, 1, 800, 13);
       return;
     }
     // Fallback for the few railways with a curated centre but no track bbox.
@@ -5383,7 +5422,7 @@
     Array.prototype.forEach.call(contentBlock.querySelectorAll('.db-region-chip'), function (btn) {
       btn.addEventListener('click', function () {
         var region = regionsData[btn.dataset.region];
-        if (region) map.flyTo({ center: region.center, zoom: region.zoom, duration: 800 });
+        if (region) map.flyTo({ center: region.center, zoom: Math.max(4, region.zoom - 1), duration: 800 }); // -1: one level further out, see FROMTO_ZOOM_OUT
         // Phase 2 integration: also LOCKS this operator's highlight, same as
         // clicking one of its lines directly on the map — region chips only
         // ever render when selection.code is a valid operators-content.json
@@ -5480,8 +5519,20 @@
     if (selection.type === 'operator') return operatorDetailSkeletonHtml();
     if (selection.type === 'heritage') return heritageDetailSkeletonHtml();
     if (selection.type === 'fromto') return mode === 'database' ? fromToDatabaseSkeletonHtml() : fromToSkeletonHtml();
-    if (selectedStationId) return mode === 'database' ? stationDatabaseSkeletonHtml() : stationLiveSkeletonHtml();
+    // HISTORY IS CHECKED BEFORE selectedStationId (2026-08-04), and the order is
+    // the whole fix. selectedStationId is SHARED STATE across all three tabs, so
+    // a station picked in Live or Database is still set after switching to
+    // History — and this line used to render stationLiveSkeletonHtml() for it,
+    // putting a live departure board and the Live-updates feed inside the
+    // History tab. Reported from a screenshot showing "DEPARTURES / Loading
+    // departures…" under History for Four Oaks.
+    //
+    // History's own station panel is the `histstation` branch above, which still
+    // takes precedence — this only catches a station carried IN from another
+    // tab, which History has nothing meaningful to say about, so it falls
+    // through to the slider's default view.
     if (mode === 'history') return historyDefaultSkeletonHtml();
+    if (selectedStationId) return mode === 'database' ? stationDatabaseSkeletonHtml() : stationLiveSkeletonHtml();
     return mode === 'database' ? databaseDefaultSkeletonHtml() : liveDefaultSkeletonHtml();
   }
   function historyDefaultSkeletonHtml() {
@@ -5539,6 +5590,16 @@
       injectSchemaJsonLd(stationEntry && stationEntry.schema_jsonld);
     } else if (mode === 'database' && !selectedStationId) {
       wireDatabaseDefault();
+      injectSchemaJsonLd(null);
+    } else if (mode === 'history') {
+      // EXPLICIT HISTORY BRANCH (2026-08-04). Without it History fell into the
+      // `else` below and wired the LIVE furniture — the departure-board refresh,
+      // the news filter row and the Live-updates feed — into the History tab.
+      // That is the other half of the same bug as sidebarSkeletonHtml()'s
+      // ordering: the skeleton stopped RENDERING the live panel, and this stops
+      // it being WIRED. History's own panels wire themselves in the histop /
+      // histline / histstation branches above; its default view has nothing to
+      // wire.
       injectSchemaJsonLd(null);
     } else {
       wireDepartureBoardRefresh(); // no-ops if this cycle has no dep-board (plain live-default view)
@@ -5739,7 +5800,7 @@
         // in heritageRailways — that file may not have loaded yet, and the panel
         // degrades to a slug-derived name rather than silently dropping the
         // selection.
-        selectHeritageRailway(heritageSlug);
+        selectHeritageRailway(heritageSlug, true); // URL restore: fly, same as the operator branch below
       } else if (operatorCode) {
         // 2026-07-29: this used to call selectOperator() alone, which rebuilds
         // the SIDEBAR and nothing else — so going back/forward through operator
@@ -6313,7 +6374,7 @@
 
   function flyToAndSelectStation(id) {
     var coords = coordsForId(id);
-    if (coords) map.flyTo({ center: coords, zoom: 11, duration: 800 });
+    if (coords) map.flyTo({ center: coords, zoom: 10, duration: 800 }); // was 11 — one level out
     selectStation(stationNameForId(id), id);
   }
   var ROUTE_LAYER_ID = 'route-highlight-layer', ROUTE_SOURCE_ID = 'route-highlight';
@@ -6444,7 +6505,9 @@
     var bounds = coords.reduce(function (b, c) { return b.extend(c); }, new maplibregl.LngLatBounds(coords[0], coords[0]));
     // boundsFitPadding(60), not a bare 60 — a curated route is a bounds fit like
     // any other and has to clear the same floating chrome. See that function.
-    map.fitBounds(bounds, { padding: boundsFitPadding(60), duration: 800 });
+    // via flyToBoundsZoomedOut rather than a bare fitBounds so a curated route
+    // gets the same one-level-out margin as everything else.
+    flyToBoundsZoomedOut(bounds, 60, 1, 800);
   }
   function clearRoutePolyline() {
     currentRouteId = null;
@@ -7489,7 +7552,7 @@
           var id = row ? stationIdOf(row) : item.crs;
           selectStation(stationNameForId(id), id);
         }
-        if (coords && map) map.flyTo({ center: coords, zoom: 13, padding: boundsFitPadding(0) });
+        if (coords && map) map.flyTo({ center: coords, zoom: 12, padding: boundsFitPadding(0) }); // was 13 — one level out
       });
     });
   }
@@ -8439,7 +8502,7 @@
   document.getElementById('my-location').addEventListener('click', function () {
     if (!navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition(function (pos) {
-      map.flyTo({ center: [pos.coords.longitude, pos.coords.latitude], zoom: 12 });
+      map.flyTo({ center: [pos.coords.longitude, pos.coords.latitude], zoom: 11 }); // was 12 — one level out
     });
   });
   // Right-click drag can rotate (bearing) and tilt (pitch) the map into 3D
@@ -8621,7 +8684,9 @@
     if (maxZoom !== undefined) z = Math.min(z, maxZoom);
     map.flyTo({ center: cam.center, zoom: Math.max(OPERATOR_TILES_MIN_ZOOM, z), duration: duration });
   }
-  var FROMTO_ZOOM_OUT = 2;
+  // 3, not 2 (2026-08-04) — one further level out. Reported across the board:
+  // every fly landed with the subject almost touching the viewport edge.
+  var FROMTO_ZOOM_OUT = 3;
 
   // 2026-07-22 request: searching for an OPERATOR (not clicking one on the
   // map, and not a region chip — both of those already have their own
@@ -8656,7 +8721,9 @@
   //                 single station, so "as close as we ever auto-fly".
   // The z5 floor in flyToBoundsZoomedOut() applies underneath all of this.
   var OPERATOR_FIT_PADDING = 60;
-  var OPERATOR_ZOOM_OUT = 0;
+  // 1, not 0 (2026-08-04) — see FROMTO_ZOOM_OUT. An operator network fitted
+  // exactly to its bounds left no margin around it.
+  var OPERATOR_ZOOM_OUT = 1;
   var OPERATOR_FIT_MAX_ZOOM = 11;
   // `gestureAtStart` is userCameraGestureSeq as it stood when the search was
   // submitted (2026-07-27). This function retries for up to 15 x 300ms = 4.5
@@ -9052,7 +9119,7 @@
 
   var stationPick = null;
   function submitStationPick(picked) {
-    if (picked.lat != null && picked.lon != null) map.flyTo({ center: [picked.lon, picked.lat], zoom: 11, duration: 800 });
+    if (picked.lat != null && picked.lon != null) map.flyTo({ center: [picked.lon, picked.lat], zoom: 10, duration: 800 }); // was 11 — one level out
     selectStation(picked.name, stationIdOf(picked));
   }
   wireAutocomplete(searchInput, document.getElementById('sb-ac-station'), function (picked) {
@@ -9200,7 +9267,7 @@
    */
   function submitHeritagePick(slug) {
     if (!heritageRailways[slug]) return;
-    selectHeritageRailway(slug);
+    selectHeritageRailway(slug, true); // search: fly, same as an operator pick
   }
   wireAutocomplete(operatorInput, document.getElementById('sb-ac-operator'), function (picked) {
     operatorPick = picked;
@@ -9455,7 +9522,7 @@
         var sid = row.dataset.sid;
         var feature = stationsData && stationsData.features.find(function (f) { return f.properties.sid === sid; });
         if (!feature) return;
-        map.flyTo({ center: feature.geometry.coordinates, zoom: 11, duration: 800 });
+        map.flyTo({ center: feature.geometry.coordinates, zoom: 10, duration: 800 }); // was 11 — one level out
         selectStation(feature.properties.name, feature.properties.sid);
       });
     });
