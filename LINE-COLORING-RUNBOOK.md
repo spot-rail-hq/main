@@ -590,11 +590,36 @@ sub-brand. Splitting them back out needs route-name matching shaped like
 `splitTflLine()`; deferred, and the harness records GTR as a legitimate pass so
 the state is explicit rather than silently green.
 
-**Hull Trains, Grand Central, Lumo.** All three are open-access operators with
-no route relation in OSM at all, so they have no network to extract — their
-track exists only under the franchised operator that shares it. Nothing in this
-pipeline can recover them; it needs either upstream relations or a timetable
-source, neither of which is in scope.
+**Hull Trains, Grand Central, Lumo.** ⚠ **PARTLY WRONG AS ORIGINALLY WRITTEN —
+corrected 2026-08-04.** It claimed all three had no route relation and no
+network to extract. Two of the three do:
+
+| key | segments | km | state |
+|---|---|---|---|
+| GC (Grand Central) | 84 | 619 | **present** — the original note was wrong |
+| LD (Lumo) | 277 | 2,168 | **present** — the original note was wrong |
+| HT (Hull Trains) | 0 | 0 | still absent, and still the real case |
+
+Counted from `line-segments.json` (stage 4, post-dedupe).
+
+**Hull Trains needs no geometry.** Its whole route is already in the graph under
+other operators — Hull/Brough NT and TP, Howden/Selby TP, Doncaster through
+Stevenage GC+GR+LD, King's Cross GTR. So this is an ATTRIBUTION gap, not an
+extraction gap: what is missing is `HT` on the operator list of segments that
+already exist. Routing between its calling points on `data/routing-graph.json`
+would resolve which ones. **Not yet done.**
+
+**Also zero-geometry, flagged 2026-08-04, not yet resolved:**
+
+- **GX / GN / TL** (Gatwick Express, Great Northern, Thameslink) — the known
+  GTR parent-level tagging case above, listed here so the set is complete.
+- **LN (London Northwestern Railway)** — newly identified, and the same shape as
+  HT: it IS in the canonicalisation map (`scripts/lib/operator-classify.mjs`)
+  but no OSM relation carries the string, so it never materialises.
+
+Use this table rather than the prose above it — the prose was accurate when
+written and silently went stale as the graph grew, which is exactly the failure
+mode the stage table in CLAUDE.md exists to prevent.
 
 **Merseyrail Kirkby.** No ME-keyed track within tolerance of Kirkby. Merseyrail
 terminates there on a platform shared with Northern's Wigan service and the

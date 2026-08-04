@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-29T18:58:41.675Z",
+  "generated_at": "2026-08-04T20:57:39.019Z",
   "threshold_m": 150,
   "bridges": [
     {
@@ -16,22 +16,6 @@
       ],
       "toOperators": [
         "GW"
-      ]
-    },
-    {
-      "anchor": "BEF,BGV,BHO,BKG,BSO,CFH,CHW,CRH,DDK,ETL,FST,GPO,GRY,HRY,LAI,LEM,LER,LES,LHS,OCK,PFL,PSE,RNM,SFO,SOC,SOE,SRY,STO,TIL,TPB,UHL,UPM,WCF,WEH,WGR,WHR,WMW,WNP",
-      "crs": "BEF",
-      "from": "S:BKG",
-      "to": "3303248175",
-      "distM": 19.65,
-      "confidence": "mode-crossing-waived",
-      "waiver": "Barking — LTS/District shared throat; real heavy-rail junction not in the segment graph",
-      "fromOperators": [
-        "CC"
-      ],
-      "toOperators": [
-        "District",
-        "Hammersmith & City"
       ]
     },
     {
@@ -80,6 +64,21 @@
       ]
     },
     {
+      "anchor": "SHC",
+      "crs": "SHC",
+      "from": "415718",
+      "to": "2074640670",
+      "distM": 3.48,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "NT"
+      ],
+      "toOperators": [
+        "NT"
+      ]
+    },
+    {
       "anchor": "BXB,HFE,RYH,RYN,SMT,WAR",
       "crs": "BXB",
       "from": "1637962120",
@@ -92,6 +91,21 @@
       ],
       "toOperators": [
         "LE"
+      ]
+    },
+    {
+      "anchor": "BDN,LKE,RYD,RYP,RYR,SAB,SAN,SHN",
+      "crs": "BDN",
+      "from": "1392346948",
+      "to": "4342787207",
+      "distM": 126.17,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "IL"
+      ],
+      "toOperators": [
+        "Heritage"
       ]
     },
     {
@@ -110,21 +124,6 @@
         "LD",
         "VT",
         "WMR"
-      ]
-    },
-    {
-      "anchor": "NRC",
-      "crs": "NRC",
-      "from": "20955753",
-      "to": "5462556232",
-      "distM": 56.54,
-      "confidence": "mode-matched",
-      "waiver": null,
-      "fromOperators": [
-        "Central"
-      ],
-      "toOperators": [
-        "District"
       ]
     },
     {
@@ -284,6 +283,21 @@
       ]
     },
     {
+      "anchor": "MCM",
+      "crs": "MCM",
+      "from": "S:MCM",
+      "to": "5443775652",
+      "distM": 24.76,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "NT"
+      ],
+      "toOperators": [
+        "NT"
+      ]
+    },
+    {
       "anchor": "LYP,LYT",
       "crs": "LYP",
       "from": "8931055356",
@@ -297,6 +311,21 @@
       "toOperators": [
         "SW",
         "XC"
+      ]
+    },
+    {
+      "anchor": "SHM,WRN",
+      "crs": "SHM",
+      "from": "1864094088",
+      "to": "S:CMR",
+      "distM": 14.93,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "LE"
+      ],
+      "toOperators": [
+        "LE"
       ]
     },
     {
@@ -392,8 +421,45 @@
   ],
   "unbridged": [
     {
-      "compIdx": 29,
-      "islandSize": 23,
+      "compIdx": 6,
+      "islandSize": 44,
+      "stations": [
+        "BLD"
+      ],
+      "closestM": null,
+      "result": "gap-too-large",
+      "detail": null
+    },
+    {
+      "compIdx": 7,
+      "islandSize": 37,
+      "stations": [
+        "HEL",
+        "RWC",
+        "SNI",
+        "WBD"
+      ],
+      "closestM": null,
+      "result": "gap-too-large",
+      "detail": null
+    },
+    {
+      "compIdx": 9,
+      "islandSize": 32,
+      "stations": [
+        "FEA",
+        "GLH",
+        "KNO",
+        "PFM",
+        "POT"
+      ],
+      "closestM": null,
+      "result": "gap-too-large",
+      "detail": null
+    },
+    {
+      "compIdx": 12,
+      "islandSize": 29,
       "stations": [
         "BUY",
         "HBP",
@@ -408,40 +474,55 @@
       "detail": null
     },
     {
-      "compIdx": 54,
-      "islandSize": 16,
+      "compIdx": 15,
+      "islandSize": 25,
       "stations": [
-        "BDN",
-        "LKE",
-        "RYD",
-        "RYP",
-        "RYR",
-        "SAB",
-        "SAN",
-        "SHN"
+        "AFV",
+        "BPB",
+        "BPS",
+        "LTM",
+        "MOS",
+        "SAS",
+        "SQU"
       ],
       "closestM": null,
       "result": "gap-too-large",
       "detail": null
     },
     {
-      "compIdx": 83,
+      "compIdx": 37,
+      "islandSize": 13,
+      "stations": [
+        "CTL"
+      ],
+      "closestM": null,
+      "result": "gap-too-large",
+      "detail": null
+    },
+    {
+      "compIdx": 44,
+      "islandSize": 11,
+      "stations": [
+        "BUW",
+        "GSY",
+        "MNN"
+      ],
+      "closestM": null,
+      "result": "gap-too-large",
+      "detail": null
+    },
+    {
+      "compIdx": 47,
       "islandSize": 10,
       "stations": [
-        "CMR",
-        "GNT",
-        "HXM",
-        "NWA",
-        "RNR",
-        "SAH",
-        "WRT"
+        "COR"
       ],
       "closestM": null,
       "result": "gap-too-large",
       "detail": null
     },
     {
-      "compIdx": 84,
+      "compIdx": 52,
       "islandSize": 9,
       "stations": [
         "BNE",
@@ -455,28 +536,48 @@
       "detail": null
     },
     {
-      "compIdx": 86,
+      "compIdx": 54,
       "islandSize": 9,
       "stations": [
-        "ZZT"
+        "BEY",
+        "ILK"
       ],
       "closestM": null,
       "result": "gap-too-large",
       "detail": null
     },
     {
-      "compIdx": 148,
-      "islandSize": 4,
+      "compIdx": 55,
+      "islandSize": 8,
       "stations": [
-        "SHM",
-        "WRN"
+        "HHB"
       ],
       "closestM": null,
       "result": "gap-too-large",
       "detail": null
     },
     {
-      "compIdx": 160,
+      "compIdx": 96,
+      "islandSize": 5,
+      "stations": [
+        "SBE"
+      ],
+      "closestM": null,
+      "result": "gap-too-large",
+      "detail": null
+    },
+    {
+      "compIdx": 97,
+      "islandSize": 5,
+      "stations": [
+        "KNA"
+      ],
+      "closestM": null,
+      "result": "gap-too-large",
+      "detail": null
+    },
+    {
+      "compIdx": 129,
       "islandSize": 3,
       "stations": [
         "CNE"
@@ -486,7 +587,7 @@
       "detail": null
     },
     {
-      "compIdx": 161,
+      "compIdx": 131,
       "islandSize": 3,
       "stations": [
         "DBD"

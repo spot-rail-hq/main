@@ -218,15 +218,26 @@ for (const group of groups.values()) {
   for (const g of group) if (g.seg.coords.length > canonical.seg.coords.length) canonical = g;
   const operators = new Set();
   const wayIds = new Set();
+  // operator_precision is keyed BY OPERATOR (see ingest-branch-ways.mjs), and it
+  // has to be unioned alongside `operators` for the same reason they are: the
+  // spread below would otherwise keep only the CANONICAL segment's provenance
+  // while inheriting every member's operators. A relation-sourced segment that
+  // wins canonical over an inferred one would then silently launder the
+  // inferred attribution into looking sourced — the exact claim the field
+  // exists to prevent. Absent key = sourced, so pre-existing segments
+  // contribute nothing here and need no backfill.
+  const precision = {};
   for (const g of group) {
     for (const o of g.seg.operators || []) operators.add(o);
     for (const w of g.seg.way_ids || []) wayIds.add(w);
+    Object.assign(precision, g.seg.operator_precision || {});
   }
   const mergedSeg = {
     ...canonical.seg,
     operators: [...operators],
     way_ids: [...wayIds],
   };
+  if (Object.keys(precision).length) mergedSeg.operator_precision = precision;
   keep.push(mergedSeg);
   const others = group.filter((g) => g !== canonical).map((g) => g.seg.id);
   console.log(
