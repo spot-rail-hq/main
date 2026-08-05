@@ -90,7 +90,19 @@ for (const r of stationLinks.results) {
   stationsBySegment.get(r.segment_id).push(r);
 }
 
-const nodeStationId = (crs) => 'S:' + crs;
+// FIXED 2026-08-05 — see build-station-graph-links.mjs's `atco` comment for the
+// full story. This used to be `'S:' + crs` with no fallback, so JS's implicit
+// string coercion turned EVERY non-CRS station's id into the literal
+// `"S:null"` — collapsing all 800 snapped non-CRS stations nationwide (tram and
+// metro stops) onto one shared graph node. That created a phantom near-zero-
+// cost edge between any two of them (verified: Arsenal tube in London and
+// Meadows Way West tram in Nottingham, ~180km apart, ended up "adjacent" via
+// S:null for ~1.4km of graph cost), which corrupted Dijkstra shortest-path
+// results for any query that happened to route near two such stops — not a
+// Hull-Trains-only bug, this is the general routing graph used for From/To too.
+// ATCO is unique per row (verified against station-list.json: all 815 non-CRS
+// rows carry one, zero collisions), so it is the fallback key.
+const nodeStationId = (crs, atco) => 'S:' + (crs || ('A:' + atco));
 
 const adjacency = new Map(); // nodeId -> [{to, length_m, edge}]
 const nodeCoord = new Map(); // nodeId -> [lon,lat] — approximate, just for fitBounds()-ing a resolved path into view before tile-querying its real geometry, not for rendering
@@ -124,8 +136,9 @@ for (const seg of graph.segments) {
   const cuts = [{ kind: 'node', id: startNode, edgeIndex: 0, t: 0, coord: seg.coords[0] }];
   for (const st of ordered) {
     const stationCoord = pointAt(seg.coords, st.edge_index, st.edge_t);
-    nodeCoord.set(nodeStationId(st.crs), stationCoord);
-    cuts.push({ kind: 'station', id: nodeStationId(st.crs), edgeIndex: st.edge_index, t: st.edge_t, coord: stationCoord });
+    const sid = nodeStationId(st.crs, st.atco);
+    nodeCoord.set(sid, stationCoord);
+    cuts.push({ kind: 'station', id: sid, edgeIndex: st.edge_index, t: st.edge_t, coord: stationCoord });
   }
   cuts.push({ kind: 'node', id: endNode, edgeIndex: seg.coords.length - 2, t: 1, coord: seg.coords[seg.coords.length - 1] });
 
@@ -162,9 +175,16 @@ for (const seg of graph.segments) {
 
 // Station -> graph node lookup, for every station (even unsnapped ones, so
 // the client can tell "no node at all" apart from "node exists but no path").
+// CRS-keyed only, deliberately — every real consumer (attribute-by-calling-
+// points.mjs, From/To search) looks a station up by its CRS, so a non-CRS
+// station has nothing to be keyed BY here regardless of the S:null fix above.
+// Skipped rather than assigned to a shared 'null' key, which would silently
+// keep the same collision this file's other fix just removed from the graph
+// itself, just in a table nothing reads.
 const stationNode = {};
 for (const r of stationLinks.results) {
-  stationNode[r.crs] = r.snapped ? nodeStationId(r.crs) : null;
+  if (!r.crs) continue;
+  stationNode[r.crs] = r.snapped ? nodeStationId(r.crs, r.atco) : null;
 }
 
 // Prune known Metrolink tram-stop nodes that ended up topologically merged

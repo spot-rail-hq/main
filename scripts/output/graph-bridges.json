@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-05T15:26:52.654Z",
+  "generated_at": "2026-08-05T15:55:30.255Z",
   "threshold_m": 150,
   "bridges": [
     {
@@ -16,6 +16,22 @@
       ],
       "toOperators": [
         "GW"
+      ]
+    },
+    {
+      "anchor": "BEF,BGV,BHO,BKG,BSO,CFH,CHW,CRH,DDK,ETL,FST,GPO,GRY,HRY,LAI,LEM,LER,LES,LHS,OCK,PFL,PSE,RNM,SFO,SOC,SOE,SRY,STO,TIL,TPB,UHL,UPM,WCF,WEH,WGR,WHR,WMW,WNP",
+      "crs": "BEF",
+      "from": "S:BKG",
+      "to": "3303248175",
+      "distM": 19.65,
+      "confidence": "mode-crossing-waived",
+      "waiver": "Barking — LTS/District shared throat; real heavy-rail junction not in the segment graph",
+      "fromOperators": [
+        "CC"
+      ],
+      "toOperators": [
+        "District",
+        "Hammersmith & City"
       ]
     },
     {
@@ -46,6 +62,21 @@
       ],
       "toOperators": [
         "NT"
+      ]
+    },
+    {
+      "anchor": "NRC",
+      "crs": "NRC",
+      "from": "20955753",
+      "to": "5462556232",
+      "distM": 56.54,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "Central"
+      ],
+      "toOperators": [
+        "District"
       ]
     },
     {
@@ -93,21 +124,6 @@
       "toOperators": [
         "LE",
         "SX"
-      ]
-    },
-    {
-      "anchor": "BDN,LKE,RYD,RYP,RYR,SAB,SAN,SHN",
-      "crs": "BDN",
-      "from": "1392346948",
-      "to": "4342787207",
-      "distM": 126.17,
-      "confidence": "mode-matched",
-      "waiver": null,
-      "fromOperators": [
-        "IL"
-      ],
-      "toOperators": [
-        "Heritage"
       ]
     },
     {
@@ -316,21 +332,6 @@
       ]
     },
     {
-      "anchor": "SHM,WRN",
-      "crs": "SHM",
-      "from": "1864094088",
-      "to": "S:CMR",
-      "distM": 14.93,
-      "confidence": "mode-matched",
-      "waiver": null,
-      "fromOperators": [
-        "LE"
-      ],
-      "toOperators": [
-        "LE"
-      ]
-    },
-    {
       "anchor": "WNC",
       "crs": "WNC",
       "from": "283820317",
@@ -425,7 +426,7 @@
   ],
   "unbridged": [
     {
-      "compIdx": 6,
+      "compIdx": 21,
       "islandSize": 44,
       "stations": [
         "BLD"
@@ -435,7 +436,7 @@
       "detail": null
     },
     {
-      "compIdx": 7,
+      "compIdx": 23,
       "islandSize": 37,
       "stations": [
         "HEL",
@@ -448,7 +449,7 @@
       "detail": null
     },
     {
-      "compIdx": 9,
+      "compIdx": 27,
       "islandSize": 32,
       "stations": [
         "FEA",
@@ -462,7 +463,7 @@
       "detail": null
     },
     {
-      "compIdx": 12,
+      "compIdx": 31,
       "islandSize": 29,
       "stations": [
         "BUY",
@@ -478,7 +479,7 @@
       "detail": null
     },
     {
-      "compIdx": 15,
+      "compIdx": 40,
       "islandSize": 25,
       "stations": [
         "AFV",
@@ -494,7 +495,24 @@
       "detail": null
     },
     {
-      "compIdx": 37,
+      "compIdx": 70,
+      "islandSize": 16,
+      "stations": [
+        "BDN",
+        "LKE",
+        "RYD",
+        "RYP",
+        "RYR",
+        "SAB",
+        "SAN",
+        "SHN"
+      ],
+      "closestM": null,
+      "result": "gap-too-large",
+      "detail": null
+    },
+    {
+      "compIdx": 76,
       "islandSize": 13,
       "stations": [
         "CTL"
@@ -504,7 +522,17 @@
       "detail": null
     },
     {
-      "compIdx": 44,
+      "compIdx": 84,
+      "islandSize": 12,
+      "stations": [
+        "ZZT"
+      ],
+      "closestM": null,
+      "result": "gap-too-large",
+      "detail": null
+    },
+    {
+      "compIdx": 86,
       "islandSize": 11,
       "stations": [
         "BUW",
@@ -516,7 +544,23 @@
       "detail": null
     },
     {
-      "compIdx": 47,
+      "compIdx": 93,
+      "islandSize": 11,
+      "stations": [
+        "CMR",
+        "GNT",
+        "HXM",
+        "NWA",
+        "RNR",
+        "SAH",
+        "WRT"
+      ],
+      "closestM": null,
+      "result": "gap-too-large",
+      "detail": null
+    },
+    {
+      "compIdx": 94,
       "islandSize": 10,
       "stations": [
         "COR"
@@ -526,7 +570,7 @@
       "detail": null
     },
     {
-      "compIdx": 52,
+      "compIdx": 100,
       "islandSize": 9,
       "stations": [
         "BNE",
@@ -540,7 +584,7 @@
       "detail": null
     },
     {
-      "compIdx": 54,
+      "compIdx": 103,
       "islandSize": 9,
       "stations": [
         "BEY",
@@ -551,7 +595,7 @@
       "detail": null
     },
     {
-      "compIdx": 55,
+      "compIdx": 104,
       "islandSize": 8,
       "stations": [
         "HHB"
@@ -561,7 +605,7 @@
       "detail": null
     },
     {
-      "compIdx": 96,
+      "compIdx": 156,
       "islandSize": 5,
       "stations": [
         "SBE"
@@ -571,7 +615,7 @@
       "detail": null
     },
     {
-      "compIdx": 97,
+      "compIdx": 157,
       "islandSize": 5,
       "stations": [
         "KNA"
@@ -581,7 +625,18 @@
       "detail": null
     },
     {
-      "compIdx": 129,
+      "compIdx": 180,
+      "islandSize": 4,
+      "stations": [
+        "SHM",
+        "WRN"
+      ],
+      "closestM": null,
+      "result": "gap-too-large",
+      "detail": null
+    },
+    {
+      "compIdx": 199,
       "islandSize": 3,
       "stations": [
         "CNE"
@@ -591,7 +646,7 @@
       "detail": null
     },
     {
-      "compIdx": 131,
+      "compIdx": 203,
       "islandSize": 3,
       "stations": [
         "DBD"

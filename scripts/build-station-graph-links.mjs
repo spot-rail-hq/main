@@ -289,6 +289,19 @@ for (const st of stations) {
   if (ok) tierCounts[['operator', 'mode', 'any'][nearest.tier]]++;
   results.push({
     crs: st.crs,
+    // ATCO, carried through 2026-08-05. 815 of 3,443 stations have no CRS (tram/
+    // metro stops), and every downstream consumer that built a per-station
+    // routing-graph node id out of `'S:' + crs` was coercing all of them to the
+    // literal string "S:null" — collapsing 800 snapped, unrelated stations
+    // nationwide onto ONE shared graph node. Dijkstra could then "teleport"
+    // between any two of them for the sum of their two real (short) snap
+    // distances, e.g. Arsenal tube (London) <-> Meadows Way West tram (Nottingham)
+    // for ~1.4km of graph cost. That produced a real, wrong shortest path for
+    // Hull Trains' Stevenage->Grantham leg, routing via the Nottingham tram
+    // network instead of the East Coast Main Line. ATCO is unique per row
+    // (verified: all 815 non-CRS rows carry one, zero collisions), so
+    // build-routing-graph.mjs now keys non-CRS stations on it instead.
+    atco: st.atco || null,
     name: st.name,
     lat: st.lat,
     lon: st.lon,
