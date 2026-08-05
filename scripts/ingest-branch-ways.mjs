@@ -84,9 +84,30 @@ const BRANCHES = [
     stations: ['SHC', 'PFM', 'POT', 'KNO', 'FEA', 'RWC', 'GLH', 'PFR'],
     names: ['Pontefract Line', 'Wakefield and Goole Line',
       'Castleford and Pontefract Monkhill Line',
-      'Knottingley West Junction and Shaftholme Junction Line',
       'Down Goole', 'Up Goole', 'Down Doncaster', 'Up Doncaster'],
     bbox: [53.63, -1.55, 53.76, -0.90] },
+  // SPLIT OUT OF `pontefract` 2026-08-04, after external verification. The
+  // Askern branch was originally swept up by the Pontefract name list and
+  // attributed to NT along with it — wrong: Northern runs NO passenger service
+  // over Knottingley West Jn - Shaftholme Jn. It is a freight-primary line
+  // (Freightliner, DB Cargo UK, GB Railfreight) plus two passenger operators,
+  // Grand Central (its Bradford services run via Pontefract Monkhill and
+  // Askern) and LNER.
+  //
+  // ONLY THE PASSENGER OPERATORS ARE RENDERED, and that is a model limit, not
+  // a judgement: data/operator-colors.json has no entry for any freight
+  // operator, so there is nothing to colour them with. Adding freight would
+  // mean new palette entries, which forces a regeneration — and CLAUDE.md
+  // requires the hand-set Heritage colour to be re-verified by hand whenever
+  // that happens. Out of scope here; flagged instead of forced.
+  //
+  // The short `Down Doncaster` / `Up Doncaster` ways stay with `pontefract`
+  // above: all three are sub-kilometre and sit at Knottingley itself
+  // (53.703-53.706), i.e. the junction throat, not the branch corridor.
+  { key: 'askern', op: ['GC', 'GR'], label: 'Askern branch (Knottingley-Shaftholme, freight-primary)',
+    stations: [],
+    names: ['Knottingley West Junction and Shaftholme Junction Line'],
+    bbox: [53.55, -1.40, 53.76, -1.00] },
   { key: 'south_fylde', op: 'NT', label: 'South Fylde (Preston-Blackpool South)',
     stations: ['LTM', 'AFV', 'MOS'],
     names: ['South Fylde Community Railway Line', 'Preston and Wyre Joint Railway'],
@@ -155,7 +176,7 @@ async function main() {
     const [s, w, n, e] = b.bbox;
     const nameFilter = b.names.map((nm) => `way["railway"="rail"]["name"="${nm}"](${s},${w},${n},${e});`).join('');
     const q = `[out:json][timeout:120];(${nameFilter});out geom;`;
-    console.log(`[${b.key}] ${b.label} -> ${b.op}`);
+    console.log(`[${b.key}] ${b.label} -> ${[].concat(b.op).join('+')}`);
     const data = await overpass(q);
     const ways = (data.elements || []).filter((x) => x.type === 'way');
 
@@ -169,15 +190,18 @@ async function main() {
       if (coords.length < 2) continue;
       maxId += 1;
       const len = lengthOf(coords);
+      // `op` may be one key or several — the Askern branch carries two
+      // passenger operators and no single correct answer.
+      const ops = Array.isArray(b.op) ? b.op : [b.op];
       added.push({
         id: maxId,
         nodes: way.nodes || [],
         coords,
-        operators: [b.op],
+        operators: ops,
         way_ids: [way.id],
         length_m: len,
         // See the header: keyed by operator so a dedupe union stays truthful.
-        operator_precision: { [b.op]: 'inferred' },
+        operator_precision: Object.fromEntries(ops.map((o) => [o, 'inferred'])),
         operator_source: 'way-tag',
         ingested_by: 'ingest-branch-ways.mjs',
         ingest_branch: b.key,
