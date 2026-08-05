@@ -333,6 +333,44 @@ fan-out width at every zoom.
 
 Quote the span only from stage 5, after stage 4 has run.
 
+### Stage 5 has a MEMORY. Do not delete it casually.
+
+`scripts/output/lane-offsets.json` records the lane assignment from the last
+successful stage-5 run, and `build-operator-tiles-geojson.mjs` both seeds from it
+and charges `STABILITY_WEIGHT` (0.35) for moving away from it.
+
+**Why it exists.** The lane optimiser minimises a cost over the WHOLE network and
+had no preference for the answer it gave last time. Adding the 338 branch-ingest
+segments — Wharfedale, Harrogate, Pontefract, South Fylde, Morecambe, Corby, none
+of them within 100 km of the East Coast Main Line — re-solved everything and moved
+**739 of 9,897 lane offsets (7.5%)** by 1–4 units on corridors nobody had touched.
+In the Retford–Newark–Grantham–Stamford box alone, offset jogs went **2 → 5**, and
+the three new ones were LNER, CrossCountry and Grand Central sitting on the ECML.
+On screen a jog is a line that steps sideways mid-corridor and reads as the route
+snapping in half. Reported as "the railway lines are breaking up", and it took a
+four-way elimination (z0 change, dedupe, sub-brand split, render tiers — all
+innocent) to find. Seeding from the pre-ingest assignment put the ECML back to 2.
+
+**Consequences for anyone touching stage 5:**
+
+- **Deleting `lane-offsets.json` is a real change, not a cache clear.** The next
+  run re-solves from scratch and offsets move once, network-wide. Only do it
+  deliberately, and re-check a main line afterwards.
+- **The run is idempotent and must stay that way.** An identical re-run changes
+  **0** offsets. If it ever doesn't, something has broken the anchor — that is a
+  bug, not noise.
+- **`Lane jogs: N` is logged every run.** It is the user-visible metric (97 today,
+  worst 2.0 lanes). Watch it across a change; a rise means visible breaks.
+- **`LANE_JOG_REPAIR=1` exists and is OFF.** It cuts jogs 99 → 84 but is NOT
+  idempotent — it optimises jog count while the optimiser optimises cost, so they
+  fight across runs (an identical re-run moved 387 offsets at weight 0.35, 434 at
+  0.9). Stability beats 13 jogs. Making it shippable means folding jog count into
+  the optimiser's own cost, or iterating optimise→repair to convergence.
+- **Not all jogs are defects.** Offsets are centred per segment, so where the
+  number of operators differs either side the whole fan must shift — that is the
+  fan converging and is correct. Measured: 80 of 99 are structural, 19 avoidable.
+  Only chase the avoidable ones.
+
 ## Local dev environment notes
 - Terse/auto-looking commits you may see in `git log` ("map", "route", "05",
   "00", "1", "Update map.html", etc.) are Aaron committing via GitHub

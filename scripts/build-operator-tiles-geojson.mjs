@@ -337,6 +337,56 @@ const COMPACTNESS = 0;
 const LANE_WINDOW = 4;   // candidate lanes searched either side; wider found nothing more
 const MAX_SWEEPS = 60;   // a bound, never reached — converges at 3-4 sweeps
 
+// ── STABILITY / LANE MEMORY (2026-08-05) ─────────────────────────────────
+// THE BUG THIS FIXES. Everything above minimises a cost over the WHOLE network
+// with no preference for the answer it gave last time, so the solution is only
+// as stable as the input. Adding 338 branch-ingest segments — Wharfedale,
+// Harrogate, Pontefract, South Fylde, Morecambe, Corby, none of them within
+// 100 km of the East Coast Main Line — re-solved the entire network and moved
+// 739 of 9,897 lane offsets (7.5%) by 1-4 units on corridors nobody had
+// touched. Measured in the Retford-Newark-Grantham-Stamford box alone, offset
+// jogs went 2 -> 5, and the three new ones were LNER, CrossCountry and Grand
+// Central sitting directly on the ECML. On screen a jog is a line that steps
+// sideways mid-corridor, which reads as the route breaking in half.
+//
+// Nothing was wrong with the optimiser's answer either time. The failure is
+// that "a good solution" and "the same good solution" are different
+// requirements, and only the first was ever asked for.
+//
+// THE FIX. Remember the previous run's assignment and (a) seed from it, so the
+// local search starts in the basin it already settled in, and (b) charge a
+// small cost for moving away from it, so an offset only changes where doing so
+// actually buys something.
+//
+// WEIGHT CHOICE. 0.35 per unit of deviation, deliberately BELOW the 1.0 cost of
+// a single 1-unit jog at POWER=2. That ordering is the whole design: removing a
+// real jog always outbids the memory, so this can never freeze a genuine defect
+// in place, but two equally-good solutions are no longer a coin flip. Do not
+// raise it above 1.0 — at that point the optimiser would rather keep a visible
+// break than move a lane, which is the opposite of the point.
+//
+// NOT THE SAME AS COMPACTNESS, which is disabled above for reasons that look
+// superficially similar. Compactness pulls every lane toward zero — a constant
+// force with no relation to any solution, which is why it tips the search into
+// a worse basin at any weight. This pulls toward a specific previously-verified
+// assignment, i.e. it anchors the search rather than dragging it. Verified
+// empirically rather than argued: see the jog counts logged at the end of a run.
+const STABILITY_WEIGHT = 0.35;
+const LANE_MEMORY_PATH = path.join(__dirname, 'output', 'lane-offsets.json');
+// { "<segmentId>": { "<operator>": lane } } from the previous run. Absent on a
+// first run (or after a deliberate reset), in which case this whole mechanism
+// is inert and the optimiser behaves exactly as it did before.
+let laneMemory = new Map();
+try {
+  const raw = JSON.parse(readFileSync(LANE_MEMORY_PATH, 'utf8'));
+  for (const [segId, ops] of Object.entries(raw.lanes || {})) {
+    laneMemory.set(Number(segId), new Map(Object.entries(ops)));
+  }
+  console.log(`Lane memory: ${laneMemory.size} segments remembered from ${raw.generated_at || 'an earlier run'}`);
+} catch {
+  console.log('Lane memory: none found — this run will establish it (offsets may move once).');
+}
+
 // Every adjacency boundary that actually matters: a pair of segments sharing an
 // endpoint node, and the operators they have in common.
 const nodeToSegsAll = new Map();
@@ -376,6 +426,23 @@ for (const bd of boundaries) {
 function optimiseLanes(seed) {
   const lanes = new Map();
   for (const [id, asg] of seed) lanes.set(id, new Map(asg));
+  // Start the local search from the remembered answer wherever there is one.
+  // The seed above (assignStableLanes + relaxLanes) is a fresh derivation that
+  // knows nothing about the last run, so without this the search begins in a
+  // different basin and the stability term can only tug it partway back —
+  // seeding is what makes the memory actually hold. A remembered lane is only
+  // adopted if the operator is still on the segment; anything else is ignored,
+  // so a stale memory degrades to the fresh seed rather than corrupting it.
+  let seededOps = 0;
+  for (const [id, asg] of lanes) {
+    const remembered = laneMemory.get(id);
+    if (!remembered) continue;
+    for (const op of asg.keys()) {
+      const was = remembered.get(op);
+      if (was !== undefined) { asg.set(op, was); seededOps++; }
+    }
+  }
+  if (seededOps) console.log(`Lane memory: seeded ${seededOps} (segment, operator) lanes from the previous run`);
   const allOperators = [...new Set(graph.segments.flatMap((s) => s.operators || []))];
 
   const jogCost = (d) => Math.pow(d, JOG_COST_POWER);
@@ -396,6 +463,18 @@ function optimiseLanes(seed) {
     if (!asg) return 0;
     const perLane = new Map();
     let c = 0;
+    // Lane memory: charge for drifting from the previous run's answer. Linear,
+    // not squared — a 1-unit drift should cost a predictable 0.35 rather than
+    // being nearly free, and the squared jog term is what must dominate at
+    // larger distances. Operators with no remembered lane (new segments, or a
+    // new sub-brand on an old segment) contribute nothing, so growth is free.
+    const remembered = laneMemory.get(segId);
+    if (remembered) {
+      for (const [op, l] of asg) {
+        const was = remembered.get(op);
+        if (was !== undefined && was !== l) c += STABILITY_WEIGHT * Math.abs(l - was);
+      }
+    }
     for (const l of asg.values()) {
       perLane.set(l, (perLane.get(l) || 0) + 1);
       c += COMPACTNESS * Math.abs(l);
@@ -645,6 +724,192 @@ if (maxOperatorTotal > 9) {
 const idSet = new Set(features.map((f) => f.properties.id));
 if (idSet.size !== features.length) {
   throw new Error(`Generated ${features.length} features but only ${idSet.size} distinct ids — id collision in the fan-out scheme, investigate before tiling.`);
+}
+
+// ── Targeted jog repair (2026-08-05) ─────────────────────────────────────
+// optimiseLanes() converges to a genuine local minimum of its COST function,
+// but cost and visible breakage are not the same thing: a 1-unit jog costs 1.0
+// and the optimiser will happily keep one if moving it would cost 1.1
+// elsewhere. On screen that trade is not neutral — the kept jog is a line that
+// visibly steps sideways on the East Coast Main Line.
+//
+// This pass optimises the METRIC the user actually sees. For every remaining
+// jog it tries relocating the smaller of the two same-lane runs onto the other
+// side's lane, and keeps the move ONLY if the total jog count strictly falls
+// and no segment ends up with two operators in one lane. Strict improvement
+// means it cannot loop, and the collision check means it cannot produce
+// overlapping lines to buy a cosmetic win.
+//
+// SCOPED TO AVOIDABLE JOGS ON PURPOSE. Where the two sides carry a DIFFERENT
+// NUMBER of operators the shift is structural — offsets are centred per segment,
+// so a fan converging from 4 lanes to 2 must move every lane in it, and that is
+// the correct drawing, not a defect. Those (80 of 99 measured) are left alone;
+// only the 19 where both sides carry the same operator count are candidates.
+//
+// ⚠ OFF BY DEFAULT (LANE_JOG_REPAIR=1 to enable), and that is a considered
+// decision rather than a half-finished feature. It works — it cut 99 jogs to 84
+// — but it is NOT IDEMPOTENT, and idempotency matters more here than 7 jogs.
+// The repair optimises JOG COUNT while optimiseLanes() optimises COST, and the
+// two disagree: repair moves a run off the cost optimum, the next run's
+// optimiser walks it straight back, and the run after that repairs it again
+// somewhere slightly different. Measured: with repair on, an IDENTICAL re-run
+// moved 387 offsets at STABILITY_WEIGHT 0.35 and 434 at 0.9 — raising the
+// anchor does not fix it, because the fight is between two objectives rather
+// than between the anchor and one objective. That drift is the very bug this
+// whole change exists to eliminate, so the trade is not close.
+//
+// To make it shippable it would have to join the fixed point rather than run
+// after it — e.g. fold the jog-count term into optimiseLanes' own cost, or
+// iterate optimise->repair to convergence and only then record. Either is a
+// real piece of work and neither should be bolted on under time pressure.
+if (process.env.LANE_JOG_REPAIR === '1') {
+  const neighbourAt = new Map();
+  for (const s of graph.segments) {
+    for (const n of [s.nodes[0], s.nodes[s.nodes.length - 1]]) {
+      if (n == null) continue;
+      if (!neighbourAt.has(n)) neighbourAt.set(n, []);
+      neighbourAt.get(n).push(s);
+    }
+  }
+  const laneOf = (id, op) => laneById.get(id)?.get(op);
+  // Returns BOTH count and worst magnitude. Count alone is not a safe objective:
+  // the first version of this pass optimised it in isolation, cut 99 jogs to 86
+  // and pushed the worst from 2.0 to 3.0 lanes — trading several barely-visible
+  // steps for one obvious one. That is POWER=1's documented failure mode
+  // restated, and it is a worse map even though the number went down.
+  const measure = () => {
+    let count = 0, worst = 0;
+    for (const [, list] of neighbourAt) {
+      if (list.length < 2) continue;
+      const ops = new Set();
+      list.forEach((s) => (s.operators || []).forEach((o) => ops.add(o)));
+      for (const op of ops) {
+        const c = list.filter((s) => (s.operators || []).includes(op));
+        if (c.length < 2) continue;
+        const offs = [...new Set(c.map((s) => laneOf(s.id, op)).filter((v) => v !== undefined))];
+        if (offs.length > 1) { count++; worst = Math.max(worst, Math.max(...offs) - Math.min(...offs)); }
+      }
+    }
+    return { count, worst };
+  };
+  const collides = (id) => {
+    const asg = laneById.get(id);
+    if (!asg) return false;
+    const seen = new Set();
+    for (const l of asg.values()) { if (seen.has(l)) return true; seen.add(l); }
+    return false;
+  };
+  // Connected run of segments on which `op` sits at one lane — same notion the
+  // optimiser's MOVE 1 uses, recomputed here against the final assignment.
+  const runOf = (startId, op, lane) => {
+    const seen = new Set([startId]); const queue = [startId]; const out = [];
+    while (queue.length) {
+      const id = queue.shift(); out.push(id);
+      const s = segByIdAll.get(id);
+      for (const n of [s.nodes[0], s.nodes[s.nodes.length - 1]]) {
+        for (const nb of neighbourAt.get(n) || []) {
+          if (seen.has(nb.id) || !(nb.operators || []).includes(op)) continue;
+          if (laneOf(nb.id, op) !== lane) continue;
+          seen.add(nb.id); queue.push(nb.id);
+        }
+      }
+    }
+    return out;
+  };
+
+  let before = measure(), repaired = 0;
+  for (let pass = 0; pass < 6; pass++) {
+    let movedThisPass = 0;
+    for (const [, list] of neighbourAt) {
+      if (list.length < 2) continue;
+      const ops = new Set();
+      list.forEach((s) => (s.operators || []).forEach((o) => ops.add(o)));
+      for (const op of ops) {
+        const carrying = list.filter((s) => (s.operators || []).includes(op));
+        if (carrying.length < 2) continue;
+        const lanes = [...new Set(carrying.map((s) => laneOf(s.id, op)).filter((v) => v !== undefined))];
+        if (lanes.length < 2) continue;
+        // Structural (fan converging) — leave it, see the note above.
+        if (new Set(carrying.map((s) => s.operators.length)).size > 1) continue;
+        // Try moving each side's run onto the other side's lane.
+        for (const from of lanes) {
+          for (const to of lanes) {
+            if (from === to) continue;
+            const anchor = carrying.find((s) => laneOf(s.id, op) === from);
+            if (!anchor) continue;
+            const run = runOf(anchor.id, op, from);
+            const undo = [];
+            for (const id of run) {
+              const asg = laneById.get(id);
+              // Swap with whoever currently holds the target lane here.
+              const holder = [...asg.entries()].find(([o, l]) => l === to && o !== op);
+              undo.push([id, op, asg.get(op), holder ? holder[0] : null, holder ? holder[1] : null]);
+              asg.set(op, to);
+              if (holder) asg.set(holder[0], from);
+            }
+            const bad = run.some((id) => collides(id));
+            const after = bad ? null : measure();
+            // Strictly fewer jogs AND never a wider one. Both conditions, so a
+            // move can neither loop nor buy a smaller count with a bigger step.
+            const better = after && after.count < before.count && after.worst <= before.worst;
+            if (better) { before = after; repaired++; movedThisPass++; }
+            else {
+              for (const [id, o, oldLane, hOp, hLane] of undo) {
+                const asg = laneById.get(id);
+                asg.set(o, oldLane);
+                if (hOp) asg.set(hOp, hLane);
+              }
+            }
+          }
+        }
+      }
+    }
+    if (!movedThisPass) break;
+  }
+  if (repaired) console.log(`Jog repair: ${repaired} avoidable jogs eliminated by run relocation`);
+}
+
+// ── Lane memory + jog census ─────────────────────────────────────────────
+// Written BEFORE the GeoJSON so a later failure cannot leave a tileset on disk
+// whose lane assignment was never recorded — the next run would then re-solve
+// freely and silently move offsets again, which is the exact bug the memory
+// exists to prevent.
+{
+  const out = {};
+  for (const [id, asg] of laneById) out[id] = Object.fromEntries(asg);
+  writeFileSync(LANE_MEMORY_PATH, JSON.stringify({
+    generated_at: new Date().toISOString(),
+    stability_weight: STABILITY_WEIGHT,
+    note: 'Lane assignment from the last successful run. Seeds and anchors the next one so an unrelated segment change cannot reshuffle offsets network-wide. Safe to delete — the next run then re-solves from scratch and offsets may move once.',
+    segments: laneById.size,
+    lanes: out,
+  }, null, 0));
+
+  // THE USER-VISIBLE METRIC, reported every run so a regression is caught here
+  // rather than on the map. A "jog" is an operator that CONTINUES through a
+  // junction but is drawn at a different lane offset either side — on screen,
+  // a line that steps sideways mid-corridor and reads as a break.
+  const atNode = new Map();
+  for (const s of graph.segments) {
+    for (const n of [s.nodes[0], s.nodes[s.nodes.length - 1]]) {
+      if (n == null) continue;
+      if (!atNode.has(n)) atNode.set(n, []);
+      atNode.get(n).push(s);
+    }
+  }
+  let jogs = 0, worst = 0;
+  for (const [, list] of atNode) {
+    if (list.length < 2) continue;
+    const ops = new Set();
+    list.forEach((s) => (s.operators || []).forEach((o) => ops.add(o)));
+    for (const op of ops) {
+      const carrying = list.filter((s) => (s.operators || []).includes(op));
+      if (carrying.length < 2) continue;      // terminates here; not a jog
+      const offs = [...new Set(carrying.map((s) => laneById.get(s.id)?.get(op)).filter((v) => v !== undefined))];
+      if (offs.length > 1) { jogs++; worst = Math.max(worst, Math.max(...offs) - Math.min(...offs)); }
+    }
+  }
+  console.log(`Lane jogs: ${jogs} junction/operator pairs where the lane steps sideways (worst ${worst.toFixed(1)} lanes) — lower is better, 0 means no visible breaks`);
 }
 
 writeFileSync(OUT_PATH, features.map((f) => JSON.stringify(f)).join('\n'));
