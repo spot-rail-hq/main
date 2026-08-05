@@ -712,11 +712,34 @@
      regardless of how long the text is (no per-cell distance to compute).
      transform-only animation, so this never triggers layout — row height
      and column widths are untouched, just like the ellipsis case it
-     replaces. */
+     replaces.
+
+     Hold-scroll-hold, not a continuous crawl: 2s static at the start (so a
+     reader who just glanced over actually gets to read it before it moves),
+     then a linear scroll, then 2s static once it's back at the visual start
+     (the -50% point, which — same duplicate-copy trick — is pixel-identical
+     to 0%) before looping. The hold/scroll split is a % of the total
+     duration and that % depends on each cell's own scroll distance, which
+     @keyframes can't take from a CSS custom property (keyframe selectors
+     must be static percentages) — so applyDepartureMarquees() writes a
+     small, uniquely-named @keyframes rule per marqueeing cell instead of
+     reusing one shared one. --dep-marquee-name/-duration are custom
+     properties, not animation set directly inline, so the
+     prefers-reduced-motion override below (same specificity, later in the
+     stylesheet) still wins when it applies. */
   .dep-cell-marquee { text-overflow: clip; }
-  .dep-cell-track { display: inline-flex; white-space: nowrap; animation: dep-marquee-scroll linear infinite; animation-duration: var(--dep-marquee-duration, 8s); }
+  .dep-cell-track {
+    display: inline-flex; white-space: nowrap;
+    animation-name: var(--dep-marquee-name, dep-marquee-scroll-fallback);
+    animation-duration: var(--dep-marquee-duration, 8s);
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+  }
   .dep-cell-track .dep-cell-text { padding-right: 28px; }
-  @keyframes dep-marquee-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  /* Only reached if a track's --dep-marquee-name custom property is somehow
+     unset — applyDepartureMarquees() always sets a real per-cell rule, so
+     this is a safety net, not the normal path. */
+  @keyframes dep-marquee-scroll-fallback { from { transform: translateX(0); } to { transform: translateX(-50%); } }
   /* Readable, not a moving target: hovering (mouse) or focusing (keyboard —
      applyDepartureMarquees() gives a marqueeing cell tabindex="0" precisely
      so this is reachable) freezes it in place. */
@@ -2381,6 +2404,76 @@
     return coordsOut.length >= 2 ? coordsOut : null;
   }
 
+  // Shared by the initial resolve in selectFromTo() and the zoom-triggered
+  // re-resolve below (scheduleFromToGeometryRefine) — same bounded retry
+  // either way, since both are waiting on the same thing: tiles for the
+  // edges in question actually being loaded at the map's CURRENT zoom.
+  // mySeq is the selectionSeq value at the moment this was kicked off — the
+  // same stale-response guard loadDepartureBoard/tryResolveGeometry already
+  // use elsewhere in this file, so a selection change (or a second refine
+  // superseding this one) during the retry loop drops the result instead of
+  // clobbering something newer.
+  var MAX_GEOMETRY_ATTEMPTS = 10;
+  function resolveFromToGeometryWithRetry(edges, mySeq, onResolved) {
+    var attempts = 0;
+    function attempt() {
+      if (mySeq !== selectionSeq) return;
+      attempts++;
+      var coords = resolveFromToGeometry(edges);
+      if (!coords) {
+        if (attempts < MAX_GEOMETRY_ATTEMPTS) setTimeout(attempt, 400);
+        return; // give up quietly — see tryResolveGeometry's original comment on why this doesn't retry forever
+      }
+      onResolved(coords);
+    }
+    attempt();
+  }
+  // Re-resolves the CURRENT from/to highlight's geometry after the user
+  // zooms in further than whatever zoom it was last drawn at — fixes the
+  // highlight staying frozen at the low-zoom, tippecanoe-simplified detail
+  // level it was first resolved at (flyToBoundsZoomedOut deliberately lands
+  // zoomed OUT — see FROMTO_ZOOM_OUT — so a long route's first resolve is
+  // often quite coarse), while the real track drawn alongside it keeps
+  // refining per-zoom as normal. Debounced on zoomend rather than firing
+  // per zoom frame — a scroll-wheel zoom or a few button taps in quick
+  // succession should settle once, not requery tiles after every tick.
+  //
+  // Only refines on the way IN (FROMTO_REFINE_MIN_ZOOM_DELTA gate below) —
+  // zooming back out never needs a redraw: the already-resolved geometry is
+  // real, full-precision track, just rendered at a zoom that doesn't need
+  // all of its detail. There's no equivalent staleness the other direction.
+  var FROMTO_REFINE_MIN_ZOOM_DELTA = 1, FROMTO_REFINE_DEBOUNCE_MS = 400;
+  var fromToZoomRefineTimer = null;
+  function scheduleFromToGeometryRefine() {
+    if (fromToZoomRefineTimer) clearTimeout(fromToZoomRefineTimer);
+    fromToZoomRefineTimer = setTimeout(function () {
+      fromToZoomRefineTimer = null;
+      if (selection.type !== 'fromto' || !selection.fromToPath || !selection.fromToPath.found) return;
+      var fp = selection.fromToPath;
+      // renderedAtZoom unset means selectFromTo()'s OWN initial resolve
+      // hasn't completed yet (it's on its own setTimeout/retry right now) —
+      // this only re-resolves an ALREADY-drawn highlight, so let that first
+      // draw own itself rather than racing it with a redundant second
+      // resolveFromToGeometryWithRetry call for the same edges.
+      if (fp.renderedAtZoom == null) return;
+      if (map.getZoom() <= fp.renderedAtZoom + FROMTO_REFINE_MIN_ZOOM_DELTA) return; // not meaningfully more detail available than what's already drawn
+      var mySeq = selectionSeq;
+      resolveFromToGeometryWithRetry(fp.edges, mySeq, function (coords) {
+        // selection.fromToPath !== fp: a NEWER from/to selection replaced
+        // this one while the retry loop was waiting on tiles — mySeq alone
+        // wouldn't catch that if, improbably, selectionSeq had wrapped back
+        // to the same value, so check both.
+        if (mySeq !== selectionSeq || selection.type !== 'fromto' || selection.fromToPath !== fp) return;
+        fp.renderCoords = coords;
+        fp.renderedAtZoom = map.getZoom(); // the zoom AT RESOLUTION, not the zoom that triggered this — the user may have kept zooming during the retry wait
+        renderFromToPolylineGeometry();
+      });
+    }, FROMTO_REFINE_DEBOUNCE_MS);
+  }
+  // NOT registered here — `map` doesn't exist yet at this point in the
+  // script (it's instantiated further down, see `map = new maplibregl.Map`).
+  // Wired up alongside the other early map.on() registrations instead.
+
   // ── Sidebar selection state ────────────────────────────────────────────────
   // selectedStationCrs/Name is the ONE shared "which station is selected"
   // state that both Live and Database rendering read from (Task 4) — it
@@ -2598,6 +2691,11 @@
     // wheel, pinch and keyboard zoom.
     map.on('movestart', noteUserCameraGesture);
     map.on('zoomstart', noteUserCameraGesture);
+    // Registered here (not with the other map.on() calls near
+    // scheduleFromToGeometryRefine's own definition, further up the file)
+    // because `map` doesn't exist yet at that point in the script — this is
+    // the first point after `map = new maplibregl.Map(...)` above.
+    map.on('zoomend', scheduleFromToGeometryRefine);
     map.on('load', addMapLayers);
     map.on('load', function () { verifyInitialCameraPosition(); }); // separate listener, not folded into addMapLayers — that also re-runs on every theme toggle via setStyle, and this correction is a true-first-load-only concern
   })();
@@ -4819,12 +4917,32 @@
         '</div>';
     }).join('');
   }
-  // Speed the marquee scrolls at, not a fixed duration — a longer
-  // destination name should take proportionally longer to read, not race
-  // past at the same speed a short one crawls at. 60px/s is a comfortable
-  // reading pace at this font-size; MIN keeps a barely-overflowing cell
-  // from looking twitchy at the low end.
-  var DEP_MARQUEE_PX_PER_SEC = 60, DEP_MARQUEE_MIN_DURATION_S = 3;
+  // Speed the marquee SCROLLS at (the moving portion only, not the holds
+  // either side of it) — a longer destination name should take
+  // proportionally longer to read, not race past at the same speed a short
+  // one crawls at. 60px/s is a comfortable reading pace at this font-size;
+  // MIN keeps a barely-overflowing cell from looking twitchy at the low end.
+  var DEP_MARQUEE_PX_PER_SEC = 60, DEP_MARQUEE_MIN_SCROLL_S = 3;
+  // Static at the start, and again once the loop is back at its visual
+  // start, so the text is actually readable before/after it moves rather
+  // than starting to scroll the instant it appears.
+  var DEP_MARQUEE_HOLD_S = 2;
+  // One shared <style> holding one dynamically-generated @keyframes rule per
+  // currently-marqueeing cell (unique name per cell, since each cell's
+  // hold/scroll percentage split depends on ITS OWN scroll distance — see
+  // the CSS comment on .dep-cell-track for why this can't just be a shared
+  // rule driven by a custom property). Rebuilt from scratch on every
+  // applyDepartureMarquees() call so stale rules from a previous board
+  // render never accumulate.
+  var depMarqueeStyleEl = null, depMarqueeUid = 0;
+  function depMarqueeStylesheet() {
+    if (!depMarqueeStyleEl) {
+      depMarqueeStyleEl = document.createElement('style');
+      depMarqueeStyleEl.id = 'dep-marquee-keyframes';
+      document.head.appendChild(depMarqueeStyleEl);
+    }
+    return depMarqueeStyleEl;
+  }
   // Upgrades whichever .dep-dest/.dep-plat/.dep-status cells actually
   // overflow their column (scrollWidth > clientWidth, measured post-render —
   // this needs real layout, so it can't be decided from the string data
@@ -4839,6 +4957,7 @@
     // all keeps the plain, already-readable ellipsis truncation instead.
     if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     var cells = container.querySelectorAll('.dep-dest, .dep-plat, .dep-status');
+    var keyframeRules = [];
     Array.prototype.forEach.call(cells, function (cell) {
       if (cell.scrollWidth <= cell.clientWidth + 1) return; // fits — leave alone
       var text = cell.textContent;
@@ -4860,9 +4979,19 @@
       }
       cell.appendChild(track);
       var singleCopyWidth = track.scrollWidth / 2;
-      var duration = Math.max(DEP_MARQUEE_MIN_DURATION_S, singleCopyWidth / DEP_MARQUEE_PX_PER_SEC);
-      track.style.setProperty('--dep-marquee-duration', duration.toFixed(2) + 's');
+      var scrollS = Math.max(DEP_MARQUEE_MIN_SCROLL_S, singleCopyWidth / DEP_MARQUEE_PX_PER_SEC);
+      var totalS = DEP_MARQUEE_HOLD_S * 2 + scrollS;
+      var holdEndPct = (DEP_MARQUEE_HOLD_S / totalS * 100).toFixed(3);
+      var scrollEndPct = ((DEP_MARQUEE_HOLD_S + scrollS) / totalS * 100).toFixed(3);
+      var name = 'dep-marquee-' + (depMarqueeUid++);
+      keyframeRules.push(
+        '@keyframes ' + name + ' { 0%, ' + holdEndPct + '% { transform: translateX(0); } ' +
+        scrollEndPct + '%, 100% { transform: translateX(-50%); } }'
+      );
+      track.style.setProperty('--dep-marquee-name', name);
+      track.style.setProperty('--dep-marquee-duration', totalS.toFixed(2) + 's');
     });
+    depMarqueeStylesheet().textContent = keyframeRules.join('\n');
   }
   function renderDepartureRows(rows) {
     var container = document.getElementById('sb-dep-rows');
@@ -5359,13 +5488,84 @@
   // updates which supposed to be under Live tab"). Database mode gets the
   // database view of the same thing instead: what the resolved path IS,
   // rather than what's running on it right now.
-  function pathStationCrsList() {
+  // A path node's id is 'S:' + either a real CRS ('S:BHM') or, since the
+  // 2026-08-05 S:null/ATCO fix, 'A:'+atco for a station with no CRS
+  // ('S:A:9400ZZLUNDN' — a tram/metro/Underground stop). Strips the graph
+  // prefix down to the bare id stationRowById()/stationNameForId() expect
+  // (CRS as-is, or the ATCO with its 'A:' marker removed).
+  function pathNodeToStationId(rawNodeId) {
+    var s = String(rawNodeId);
+    if (s.slice(0, 2) !== 'S:') return null; // not a station node (a plain OSM way-node mid-segment)
+    s = s.slice(2);
+    return s.slice(0, 2) === 'A:' ? s.slice(2) : s;
+  }
+  // A From/To search's endpoints are always real National Rail stations —
+  // computeFromToPath() only ever resolves fromCrs/toCrs through
+  // routingGraph.station_node, which build-routing-graph.mjs builds CRS-only
+  // (see its comment: a tram/metro/Underground stop "has no node in it and
+  // never can have one"). So this is 'rail' for every search possible
+  // through the UI today. Written as a real per-row check rather than a
+  // hardcoded constant so it stays correct if a non-CRS endpoint is ever
+  // wired up later.
+  function stationNetworkMode(row) {
+    return (row && row.crs) ? 'rail' : 'other';
+  }
+  // "Stations along this path" is every station whose position the ROUTE'S
+  // TRACK physically passes — not the same thing as calling points, and the
+  // panel already says so. But Phase 3's station-to-segment snapping
+  // (build-station-graph-links.mjs) attaches by nearest-segment proximity
+  // with no mode filter at all, so ~125 tram/metro/Underground stops
+  // nationwide ended up attached to a purely National-Rail-operated segment
+  // just because they sit physically close to it (verified: none of them
+  // are actually served by the rail operator running that track — e.g.
+  // Neasden/Dollis Hill/Willesden Green/Kilburn/Finchley Road/Swiss Cottage/
+  // St John's Wood on the Chiltern main line, which runs immediately
+  // parallel to the Metropolitan/Jubilee line there but never touches it).
+  // For a single-mode search (both ends the same network — currently always
+  // National Rail, see stationNetworkMode() above), a path node from a
+  // DIFFERENT network is filtered out unless it's a genuine interchange.
+  //
+  // Investigated two candidate signals for "genuine interchange" before
+  // deciding what to ship, rather than guessing:
+  //  (a) Does the attached segment carry a REAL rail + non-rail operator
+  //      pairing (genuine shared running, not just proximity)? Checked
+  //      every segment in the current graph: only 3 non-CRS stations
+  //      nationwide attach to one. Two are real (Fellgate and Stadium Of
+  //      Light, Tyne & Wear Metro trains running on Northern-operated
+  //      track at Sunderland) — but the third, Chalk Farm, is tagged
+  //      ['Lioness', 'WMR'], and WMR (West Midlands Railway) has no service
+  //      anywhere near London. That's a pre-existing operator-
+  //      canonicalisation data bug upstream of this fix, not a real
+  //      interchange — trusting the tag as-is would surface a station on
+  //      bad data. n=3 with one confirmed wrong is too small and too
+  //      unreliable to safely automate.
+  //  (b) Coordinate proximity to a real CRS station? No clean threshold
+  //      exists: genuine interchanges range from ~150m (Victoria) to ~290m
+  //      (Tottenham Court Road) apart, which overlaps the distance between
+  //      pairs of stations that are NOT the same interchange at all
+  //      (Kilburn Underground / Brondesbury Rail, ~220m apart, are two
+  //      unrelated stations).
+  // Neither held up as an accurate automated override, so this ships the
+  // mode-match filter alone — the reliable half of the two signals actually
+  // checked — rather than trade the current wrong list for a differently-
+  // wrong one. A hand-curated interchange allow-list is possible future
+  // work if this turns out to matter in practice.
+  function pathStationIds() {
     var p = selection.fromToPath;
     if (!p || !p.found) return [];
-    var out = [selection.fromCrs];
+    var searchMode = stationNetworkMode(stationRowById(selection.fromCrs)); // === toCrs's mode, always, today
+    // selection.fromCrs is already a bare CRS (not a graph node id) — the
+    // starting point of the walk, everything after it comes from edges[].to.
+    var ids = [selection.fromCrs];
     for (var i = 0; i < p.edges.length; i++) {
-      var id = String(p.edges[i].to);
-      if (id.slice(0, 2) === 'S:') out.push(id.slice(2));
+      var id = pathNodeToStationId(p.edges[i].to);
+      if (id) ids.push(id); // omits a plain way-node between stations, not a station itself
+    }
+    var out = [];
+    for (var j = 0; j < ids.length; j++) {
+      var row = stationRowById(ids[j]);
+      if (stationNetworkMode(row) !== searchMode) continue;
+      out.push(ids[j]);
     }
     return out;
   }
@@ -5377,16 +5577,16 @@
     // Miles alongside km: British railway distances are quoted in miles, and
     // the rest of the database panels use plain units with no jargon.
     html += dbFieldHtml('Distance', km.toFixed(1) + ' km (' + (km * 0.621371).toFixed(1) + ' miles)');
-    var crsList = pathStationCrsList();
-    if (crsList.length) {
+    var stationIds = pathStationIds();
+    if (stationIds.length) {
       // Every station this path physically runs through, which is not the
       // same as a given train's calling points — worth saying plainly rather
       // than implying a timetable this panel doesn't have.
-      html += '<div class="db-field" data-anim-row><div class="db-label">Stations along this path (' + crsList.length + ')</div>' +
+      html += '<div class="db-field" data-anim-row><div class="db-label">Stations along this path (' + stationIds.length + ')</div>' +
         '<div class="sv-list" id="db-path-stations">' +
-        crsList.map(function (crs, i) {
-          return '<div class="sv-item" data-crs="' + escapeAttr(crs) + '">' +
-            '<span class="sv-name">' + (i + 1) + '. ' + escapeAttr(stationNameForCrs(crs)) + '</span></div>';
+        stationIds.map(function (id, i) {
+          return '<div class="sv-item" data-id="' + escapeAttr(id) + '">' +
+            '<span class="sv-name">' + (i + 1) + '. ' + escapeAttr(stationNameForId(id)) + '</span></div>';
         }).join('') + '</div></div>';
     }
     return html;
@@ -5395,7 +5595,7 @@
     var listEl = document.getElementById('db-path-stations');
     if (!listEl) return;
     Array.prototype.forEach.call(listEl.querySelectorAll('.sv-item'), function (row) {
-      row.addEventListener('click', function () { flyToAndSelectStation(row.dataset.crs); });
+      row.addEventListener('click', function () { flyToAndSelectStation(row.dataset.id); });
     });
   }
 
@@ -6148,20 +6348,18 @@
       // returned real matches for 4 of 5 sampled edges after one idle
       // pass, zero for the 5th). Fixed with a bounded setTimeout retry loop
       // instead of relying on 'idle' semantics at all — simpler to reason
-      // about, and immune to the "already idle" pitfall.
-      var geometryAttempts = 0, MAX_GEOMETRY_ATTEMPTS = 10;
-      function tryResolveGeometry() {
-        if (mySeq !== selectionSeq) return;
-        geometryAttempts++;
-        var coords = resolveFromToGeometry(result.edges);
-        if (!coords) {
-          if (geometryAttempts < MAX_GEOMETRY_ATTEMPTS) setTimeout(tryResolveGeometry, 400);
-          return; // give up quietly after MAX_GEOMETRY_ATTEMPTS rather than retrying forever — the path was still found and the sidebar reflects that, it just can't draw the highlight if tiles genuinely never finish loading (e.g. a real network failure)
-        }
-        selection.fromToPath.renderCoords = coords;
-        renderFromToPolylineGeometry();
-      }
-      setTimeout(tryResolveGeometry, 400); // let the fitBounds camera move start before the first attempt
+      // about, and immune to the "already idle" pitfall. Shared with
+      // scheduleFromToGeometryRefine's later zoom-triggered re-resolves —
+      // see resolveFromToGeometryWithRetry.
+      setTimeout(function () {
+        resolveFromToGeometryWithRetry(result.edges, mySeq, function (coords) {
+          selection.fromToPath.renderCoords = coords;
+          // The zoom this was actually resolved at — scheduleFromToGeometryRefine
+          // reads this to decide whether a later zoom-in is worth re-querying for.
+          selection.fromToPath.renderedAtZoom = map.getZoom();
+          renderFromToPolylineGeometry();
+        });
+      }, 400); // let the fitBounds camera move start before the first attempt
     });
   }
 
