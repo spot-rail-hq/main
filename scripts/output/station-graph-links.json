@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-05T09:00:39.358Z",
+  "generated_at": "2026-08-05T12:34:23.592Z",
   "tolerance_m": 200,
   "station_count": 3443,
   "snapped_count": 3378,
@@ -5901,7 +5901,8 @@
       "segment_id": 1311,
       "snap_tier": "operator",
       "snap_operators": [
-        "WMR"
+        "WMR",
+        "XC"
       ],
       "nearest_distance_m": 4.6,
       "snap_point": [
@@ -12052,7 +12053,9 @@
       "snap_tier": "operator",
       "snap_operators": [
         "CS",
-        "VT"
+        "VT",
+        "XC",
+        "AW"
       ],
       "nearest_distance_m": 1.2,
       "snap_point": [
@@ -31273,7 +31276,8 @@
       "snap_operators": [
         "EM",
         "NT",
-        "TP"
+        "TP",
+        "AW"
       ],
       "nearest_distance_m": 20.4,
       "snap_point": [
@@ -40529,7 +40533,8 @@
       "snap_operators": [
         "CS",
         "LD",
-        "VT"
+        "VT",
+        "WMR"
       ],
       "nearest_distance_m": 16.7,
       "snap_point": [
@@ -52954,7 +52959,9 @@
       "snap_tier": "operator",
       "snap_operators": [
         "WMR",
-        "XC"
+        "XC",
+        "AW",
+        "VT"
       ],
       "nearest_distance_m": 15.7,
       "snap_point": [

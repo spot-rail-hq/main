@@ -1,44 +1,55 @@
 #!/usr/bin/env node
 /**
- * fill-operator-gaps.mjs — closes HOLES in an operator's attributed network by
- * routing between its own endpoints on the existing routing graph.
+ * fill-operator-gaps.mjs — closes SHORT HOLES in an operator's attributed
+ * network, so a selected operator draws as a continuous line.
  *
- * THE DEFECT. Selecting CrossCountry in Database mode draws its network red and
- * leaves plain grey track in the middle of it — at York, XC's segments end
- * against neighbours tagged [NT+TP], [GC] and [GC+TP] that carry no XC at all,
- * even though CrossCountry demonstrably runs through York. The cause is the same
- * one behind the six missing branches: OSM route relations are the only source
- * of attribution, and their coverage has holes. This does not invent geometry —
- * every segment involved already exists and is already drawn.
+ * THE DEFECT. Selecting an operator in Database mode drew its network with small
+ * breaks in it — grey base track showing through an otherwise continuous
+ * coloured line, at Cambridge, Battersea, York, Shortlands and many other
+ * places. The cause is that OSM route relations are the sole source of
+ * attribution, and relations routinely omit the short connecting pieces between
+ * the long running lines they do cover: junction stubs, crossovers, platform
+ * links. No geometry is missing — the segment is already there and already
+ * drawn — only the operator list on it is incomplete.
  *
- * WHY NOT THE OBVIOUS RULE. The first attempt was topological: any chain of
- * non-carrying segments joining two carrying ones is a hole. On a dense network
- * that connects almost anything — measured 2,819 "holes" totalling 11,505 km,
- * half the network, including a 108 km "hole" for Stansted Express. Filling on
- * that basis would paint operators onto track they never touch, which is far
- * worse than a visible gap. That rule was measured, rejected and is not used.
+ * THE RULE. A segment is filled only if ALL of these hold:
+ *   1. it does not already carry the operator;
+ *   2. it has a neighbour carrying that operator at EACH END — so the operator
+ *      demonstrably arrives on one side and leaves on the other, and the
+ *      segment sits inside its network rather than extending it;
+ *   3. it is shorter than MAX_STUB_M.
  *
- * WHAT THIS DOES INSTEAD. For each node where an operator ARRIVES BUT DOES NOT
- * CONTINUE, a bounded Dijkstra over data/routing-graph.json looks for the
- * nearest other node carrying that operator. The gap is filled only if the whole
- * path clears three independent limits:
+ * The measurement that produced this rule: 974 segments are sandwiched with a
+ * carrier at both ends, and 730 of them are UNDER 100 METRES. That distribution
+ * is the whole finding — these are stubs, not routes. Capped at 2 km it is 929
+ * segments and 121.5 km, about 0.5% of the network's 22,742 km.
  *
- *   MAX_GAP_M     the path is short in absolute terms
- *   MAX_DETOUR    the path is not much longer than the straight line between
- *                 its ends — a long way round means the two ends are not really
- *                 the same corridor, which is exactly how the topological rule
- *                 wandered onto unrelated track
- *   MAX_SEGMENTS  the chain is a handful of segments, not a route of its own
+ * TWO EARLIER RULES WERE MEASURED AND REJECTED, recorded so neither is retried:
  *
- * Anything that fails a limit is LEFT ALONE and counted. An operator that simply
- * terminates somewhere is not a hole and is never extended — that would invent
- * route coverage, which is the one thing this must not do.
+ *   - ANY chain of non-carrying segments joining two carriers (depth <= 4).
+ *     On a dense network this connects almost anything: 2,819 "holes" totalling
+ *     11,505 km, half the network, including a 108 km "hole" for Stansted
+ *     Express. It would paint operators onto track they never touch.
+ *   - BOUNDED DIJKSTRA between an operator's own endpoints. Better behaved
+ *     (314 segments / 863 km) but it did NOT fix the reported York case, and
+ *     because it mutated the graph as it went, results depended on operator
+ *     iteration order — a dry run said 314 segments where the live run produced
+ *     209. Both disqualifying.
  *
- * PROVENANCE. Filled attribution is INFERRED — no relation asserts it — so every
- * touched segment gets operator_precision[op] = 'inferred', the same marking
- * ingest-branch-ways.mjs uses and the same one dedupe-line-segments.mjs knows to
- * union. A segment already carrying that operator from a relation is never
- * downgraded.
+ * ORDER-INDEPENDENT BY CONSTRUCTION. Every fill is decided against the ORIGINAL
+ * operator lists and applied only afterwards, so no operator can see another
+ * operator's fills and the output does not depend on iteration order. This is
+ * the specific bug that sank the Dijkstra version.
+ *
+ * WHAT IT WILL NOT DO. It never extends an operator past the end of its network
+ * (that needs a carrier at BOTH ends), and it never bridges a long gap — the
+ * 12 km "hole" at Shortlands is a real route the operator does not run, and the
+ * length cap is what keeps it out. Filling either would invent service.
+ *
+ * PROVENANCE. No relation asserts these, so every fill sets
+ * operator_precision[op] = 'inferred' — the same marking ingest-branch-ways.mjs
+ * uses and dedupe-line-segments.mjs knows to union. A relation-sourced
+ * attribution is never touched or downgraded.
  *
  * Usage:
  *   node scripts/fill-operator-gaps.mjs --dry-run
@@ -51,141 +62,75 @@ import path from 'node:path';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SEG_PATH = path.join(__dirname, 'output', 'line-segments.json');
-const RG_PATH = path.join(__dirname, '..', 'data', 'routing-graph.json');
 const DRY = process.argv.includes('--dry-run');
 const ONLY = (process.argv.find((a) => a.startsWith('--only=')) || '').split('=')[1] || null;
 
-const MAX_GAP_M = 12000;    // 12 km. A missing stretch inside a network is short;
-                            // anything longer is a route the operator does not run.
-const MAX_DETOUR = 1.8;     // path length / straight-line distance between its ends.
-const MAX_SEGMENTS = 6;     // chain depth.
+// 2 km. Chosen from the measured distribution, not picked round: 730 of 974
+// sandwiched segments are under 100 m and only 31 are over 5 km, so the cap sits
+// in the empty space between "stub" and "route". Raising it past ~5 km starts
+// admitting real alternative routes such as the 12 km Shortlands case.
+const MAX_STUB_M = 2000;
 
 const graph = JSON.parse(readFileSync(SEG_PATH, 'utf8'));
-const rg = JSON.parse(readFileSync(RG_PATH, 'utf8'));
-const segById = new Map(graph.segments.map((s) => [s.id, s]));
+const segs = graph.segments;
 
-const R = 6371000, rad = (d) => d * Math.PI / 180;
-function metres(a, b) {
-  const dLat = rad(b[1] - a[1]), dLon = rad(b[0] - a[0]);
-  const h = Math.sin(dLat / 2) ** 2 + Math.cos(rad(a[1])) * Math.cos(rad(b[1])) * Math.sin(dLon / 2) ** 2;
-  return 2 * R * Math.asin(Math.sqrt(h));
+// Endpoint index. Junctions only ever occur at segment endpoints (see
+// build-line-segments.mjs), so this is the complete adjacency.
+const atNode = new Map();
+for (const s of segs) {
+  for (const n of [s.nodes[0], s.nodes[s.nodes.length - 1]]) {
+    if (n == null) continue;
+    if (!atNode.has(n)) atNode.set(n, []);
+    atNode.get(n).push(s);
+  }
 }
-const coordOf = (n) => rg.node_coord[n] || rg.node_coord[String(n)] || null;
+// Snapshot of the ORIGINAL operator lists — every decision reads this, never the
+// mutating segment objects. See "order-independent" above.
+const originalOps = new Map(segs.map((s) => [s.id, new Set(s.operators || [])]));
+const carriesAt = (node, op, selfId) =>
+  (atNode.get(node) || []).some((x) => x.id !== selfId && originalOps.get(x.id).has(op));
 
-// Which routing-graph nodes touch a segment carrying operator `op`.
-function nodesCarrying(op) {
-  const out = new Set();
-  for (const [node, edges] of Object.entries(rg.nodes)) {
-    for (const e of edges) {
-      const sid = e.edge && e.edge.segment_id;
-      if (sid == null) continue;
-      const s = segById.get(sid);
-      if (s && (s.operators || []).includes(op)) { out.add(node); break; }
-    }
-  }
-  return out;
-}
-
-/** Bounded Dijkstra from `start`, stopping at the first node in `targets`. */
-function findGap(start, targets, op) {
-  const dist = new Map([[start, 0]]);
-  const prev = new Map();
-  // Small graph + tight bound, so a sorted-array frontier is fine here.
-  const frontier = [[0, start]];
-  while (frontier.length) {
-    frontier.sort((a, b) => a[0] - b[0]);
-    const [d, node] = frontier.shift();
-    if (d > MAX_GAP_M) return null;
-    if (node !== start && targets.has(node)) {
-      const chain = [];
-      let cur = node;
-      while (prev.has(cur)) { const [p, sid] = prev.get(cur); if (sid != null) chain.push(sid); cur = p; }
-      return { end: node, length: d, segments: [...new Set(chain)] };
-    }
-    for (const e of rg.nodes[node] || []) {
-      const sid = e.edge && e.edge.segment_id;
-      const s = sid == null ? null : segById.get(sid);
-      // Never route THROUGH track the operator already has — that is not a gap.
-      if (s && (s.operators || []).includes(op) && node !== start) continue;
-      const nd = d + (e.length_m || 0);
-      if (nd > MAX_GAP_M) continue;
-      if (dist.has(e.to) && dist.get(e.to) <= nd) continue;
-      dist.set(e.to, nd);
-      prev.set(e.to, [node, sid]);
-      frontier.push([nd, e.to]);
-    }
-  }
-  return null;
-}
-
-// SCOPED TO REAL TOCs. Metro/tram systems, the London Underground lines and the
-// Heritage category are deliberately excluded, and the dry run is why: District
-// came out at +62 km against a 110 km existing network, which is not a gap fill,
-// it is a rewrite. Tube and tram lines share track with each other far more
-// densely than TOCs do, so "the nearest node carrying this operator" is a much
-// weaker signal there — the Circle/District/H&C corridors are largely the same
-// rails, and a gap in one is usually genuinely another line's track. Heritage is
-// not an operator at all but a category shared by ~175 unrelated railways, so
-// bridging between two of them would be meaningless. If metro coverage needs
-// improving it needs its own rule, not this one.
-const colors = JSON.parse(readFileSync(path.join(__dirname, '..', 'data', 'operator-colors.json'), 'utf8'));
-const TOC_KEYS = new Set(Object.keys(colors.toc || {}).filter((k) => !k.startsWith('_')));
-const operators = [...new Set(graph.segments.flatMap((s) => s.operators || []))]
-  .filter((op) => TOC_KEYS.has(op))
-  .filter((op) => !ONLY || op === ONLY);
-
-const report = [];
-let filledSegs = 0, filledKm = 0, rejected = { tooLong: 0, detour: 0, tooDeep: 0 };
-
-for (const op of operators) {
-  const carrying = graph.segments.filter((s) => (s.operators || []).includes(op));
-  if (carrying.length < 2) continue;
-  const opNodes = nodesCarrying(op);
-  // Nodes where the operator arrives but does not continue.
-  const dead = [];
-  for (const node of opNodes) {
-    const edges = rg.nodes[node] || [];
-    if (edges.length < 2) continue;                       // genuine line end
-    const withOp = edges.filter((e) => {
-      const s = segById.get(e.edge && e.edge.segment_id);
-      return s && (s.operators || []).includes(op);
-    });
-    if (withOp.length < edges.length && withOp.length >= 1) dead.push(node);
-  }
-  const touched = new Set();
-  let opSegs = 0, opKm = 0;
-  for (const node of dead) {
-    const hit = findGap(node, opNodes, op);
-    if (!hit) continue;
-    if (hit.segments.length > MAX_SEGMENTS) { rejected.tooDeep++; continue; }
-    const a = coordOf(node), b = coordOf(hit.end);
-    if (a && b) {
-      const straight = metres(a, b);
-      if (straight > 0 && hit.length / straight > MAX_DETOUR) { rejected.detour++; continue; }
-    }
-    for (const sid of hit.segments) {
-      if (touched.has(sid)) continue;
-      const s = segById.get(sid);
-      if (!s || (s.operators || []).includes(op)) continue;
-      touched.add(sid);
-      opSegs++; opKm += s.length_m / 1000;
-      if (!DRY) {
-        s.operators = [...s.operators, op];
-        s.operator_precision = { ...(s.operator_precision || {}), [op]: 'inferred' };
-        s.gap_filled = true;
-      }
-    }
-  }
-  if (opSegs) {
-    report.push({ op, segments: opSegs, km: +opKm.toFixed(1), deadEnds: dead.length });
-    filledSegs += opSegs; filledKm += opKm;
-    console.log(`  ${op.padEnd(22)} ${String(opSegs).padStart(4)} segments  ${opKm.toFixed(1).padStart(8)} km  (from ${dead.length} discontinuities)`);
+const operators = [...new Set(segs.flatMap((s) => s.operators || []))].filter((op) => !ONLY || op === ONLY);
+const plan = [];   // {seg, op}
+for (const s of segs) {
+  if (s.length_m > MAX_STUB_M) continue;
+  const a = s.nodes[0], b = s.nodes[s.nodes.length - 1];
+  if (a == null || b == null || a === b) continue;      // loop/spur: no "both ends"
+  for (const op of operators) {
+    if (originalOps.get(s.id).has(op)) continue;
+    if (!carriesAt(a, op, s.id) || !carriesAt(b, op, s.id)) continue;
+    plan.push({ seg: s, op });
   }
 }
 
-console.log(`\nTotal: ${filledSegs} segment-attributions added, ${filledKm.toFixed(1)} km`);
-console.log(`Rejected by guard: ${rejected.detour} detour, ${rejected.tooDeep} too many segments`);
+const byOp = {};
+for (const p of plan) {
+  byOp[p.op] = byOp[p.op] || { n: 0, km: 0 };
+  byOp[p.op].n++; byOp[p.op].km += p.seg.length_m / 1000;
+}
+for (const [op, v] of Object.entries(byOp).sort((a, b) => b[1].n - a[1].n)) {
+  console.log(`  ${op.padEnd(22)} ${String(v.n).padStart(4)} segments ${v.km.toFixed(1).padStart(8)} km`);
+}
+const totalKm = plan.reduce((t, p) => t + p.seg.length_m / 1000, 0);
+console.log(`\nTotal: ${plan.length} segment-attributions, ${totalKm.toFixed(1)} km (cap ${MAX_STUB_M} m per segment)`);
+const lens = plan.map((p) => p.seg.length_m).sort((a, b) => a - b);
+if (lens.length) {
+  console.log(`Filled-segment length: median ${Math.round(lens[Math.floor(lens.length / 2)])} m, max ${Math.round(lens[lens.length - 1])} m`);
+}
 if (DRY) { console.log('DRY RUN — line-segments.json untouched.'); process.exit(0); }
-graph.gap_fill = { generated_at: new Date().toISOString(), max_gap_m: MAX_GAP_M, max_detour: MAX_DETOUR, max_segments: MAX_SEGMENTS, filled: report };
+
+for (const { seg, op } of plan) {
+  seg.operators = [...seg.operators, op];
+  seg.operator_precision = { ...(seg.operator_precision || {}), [op]: 'inferred' };
+  seg.gap_filled = true;
+}
+graph.gap_fill = {
+  generated_at: new Date().toISOString(),
+  rule: 'depth-1 sandwiched stub: no carrier on this segment, a carrier at BOTH endpoints, length <= max_stub_m',
+  max_stub_m: MAX_STUB_M,
+  attributions: plan.length,
+  km: +totalKm.toFixed(1),
+  by_operator: Object.fromEntries(Object.entries(byOp).map(([k, v]) => [k, { segments: v.n, km: +v.km.toFixed(1) }])),
+};
 writeFileSync(SEG_PATH, JSON.stringify(graph));
 console.log('Written:', SEG_PATH);
