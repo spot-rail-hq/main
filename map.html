@@ -462,7 +462,7 @@
   .sb-search-panel { display: none; margin-top: 10px; }
   .sb-search-panel.open { display: block; }
   .sb-search-modes { display: flex; align-items: center; gap: 20px; padding-bottom: 12px; }
-  .sb-search-mode-tab { font-family: var(--font-body); font-size: 16px; font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase; color: var(--ink); }
+  .sb-search-mode-tab { font-family: var(--font-body); font-size: 14px; font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase; color: var(--ink); }
   /* Operator search only makes sense in Database mode (2026-07-21 bugfix) —
      an operator has no live/departures-style data of its own, and
      setMode()'s own dbOnly logic already treats an operator selection as
@@ -696,12 +696,38 @@
   .dep-row:nth-child(even) { background: var(--surface2); }
   .dep-time { font-family: var(--font-mono); font-size: 16px; width: 52px; flex-shrink: 0; }
   .dep-dest { font-size: 16px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .dep-plat { font-family: var(--font-mono); width: 50px; flex-shrink: 0; font-size: 16px; }
-  .dep-status { font-size: 16px; width: 64px; flex-shrink: 0; white-space: nowrap; }
+  .dep-plat { font-family: var(--font-mono); width: 50px; flex-shrink: 0; font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .dep-status { font-size: 16px; width: 64px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .dep-status.on-time { color: var(--l); }
   .dep-status.delayed { color: var(--a); }
   .dep-status.cancelled { color: var(--m); }
   .dep-status.scheduled { color: var(--ink); }
+  /* Marquee — applied by applyDepartureMarquees() only to cells whose text
+     actually overflows its column (measured post-render, scrollWidth vs
+     clientWidth); a cell that fits stays plain ellipsis-truncated text,
+     never gets this markup at all. Two back-to-back copies of the text in
+     .dep-cell-track, translated exactly -50% — since both copies are
+     pixel-identical, -50% always lands the second copy exactly where the
+     first started, so the loop can restart at 0% with no visible seam,
+     regardless of how long the text is (no per-cell distance to compute).
+     transform-only animation, so this never triggers layout — row height
+     and column widths are untouched, just like the ellipsis case it
+     replaces. */
+  .dep-cell-marquee { text-overflow: clip; }
+  .dep-cell-track { display: inline-flex; white-space: nowrap; animation: dep-marquee-scroll linear infinite; animation-duration: var(--dep-marquee-duration, 8s); }
+  .dep-cell-track .dep-cell-text { padding-right: 28px; }
+  @keyframes dep-marquee-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  /* Readable, not a moving target: hovering (mouse) or focusing (keyboard —
+     applyDepartureMarquees() gives a marqueeing cell tabindex="0" precisely
+     so this is reachable) freezes it in place. */
+  .dep-cell-marquee:hover .dep-cell-track, .dep-cell-marquee:focus .dep-cell-track { animation-play-state: paused; }
+  @media (prefers-reduced-motion: reduce) {
+    /* Belt-and-braces: applyDepartureMarquees() already checks this and skips
+       building the marquee structure at all when it's set, leaving plain
+       ellipsis-truncated text instead — this rule only matters if that check
+       is ever bypassed (e.g. the media query changes after render). */
+    .dep-cell-track { animation: none; }
+  }
   .dep-empty { font-size: 15px; color: var(--ink); padding: 6px 0; }
   body.mode-database #sb-dep-board { display: none !important; }
 
@@ -1061,7 +1087,7 @@
 
 </style>
 </head>
-<body>
+<body class="mode-database">
 
 <!-- Master site header — identical markup/behaviour to departures.html's nav -->
 <nav class="nav">
@@ -1187,8 +1213,8 @@
   <div class="sb-top">
     <div class="sb-top-upper">
       <div class="sb-top-tabs">
-        <button class="header-tab live-on" id="sb-tab-live" aria-label="Live mode" aria-pressed="true">Live</button>
-        <button class="header-tab" id="sb-tab-database" aria-label="Database mode" aria-pressed="false">Database</button>
+        <button class="header-tab db-on" id="sb-tab-database" aria-label="Database mode" aria-pressed="true">Database</button>
+        <button class="header-tab" id="sb-tab-live" aria-label="Live mode" aria-pressed="false">Live</button>
         <button class="header-tab" id="sb-tab-history" aria-label="History mode" aria-pressed="false">History</button>
       </div>
       <div class="sb-top-actions">
@@ -1523,7 +1549,7 @@
   }
   var incidents = [];
   var activeFilter = 'all';
-  var mode = 'live';
+  var mode = 'database';
   // Hidden by default (2026-07-21 feedback — the base rail network reads as
   // "busy" and competes with the operator-colored routes users actually
   // interact with) — still toggleable back on via #layers-btn, just an
@@ -4786,16 +4812,63 @@
     if (!rows || !rows.length) return '<div class="dep-empty">No departures available right now.</div>';
     return rows.slice(0, 5).map(function (d) {
       return '<div class="dep-row">' +
-        '<span class="dep-time">' + (d.scheduledTime || '--:--') + '</span>' +
-        '<span class="dep-dest">' + d.destination + '</span>' +
-        '<span class="dep-plat">' + (d.platform || '—') + '</span>' +
-        '<span class="dep-status ' + depStatusClass(d.status) + '">' + d.status + '</span>' +
+        '<span class="dep-time">' + escapeAttr(d.scheduledTime || '--:--') + '</span>' +
+        '<span class="dep-dest">' + escapeAttr(d.destination) + '</span>' +
+        '<span class="dep-plat">' + escapeAttr(d.platform || '—') + '</span>' +
+        '<span class="dep-status ' + depStatusClass(d.status) + '">' + escapeAttr(d.status) + '</span>' +
         '</div>';
     }).join('');
   }
+  // Speed the marquee scrolls at, not a fixed duration — a longer
+  // destination name should take proportionally longer to read, not race
+  // past at the same speed a short one crawls at. 60px/s is a comfortable
+  // reading pace at this font-size; MIN keeps a barely-overflowing cell
+  // from looking twitchy at the low end.
+  var DEP_MARQUEE_PX_PER_SEC = 60, DEP_MARQUEE_MIN_DURATION_S = 3;
+  // Upgrades whichever .dep-dest/.dep-plat/.dep-status cells actually
+  // overflow their column (scrollWidth > clientWidth, measured post-render —
+  // this needs real layout, so it can't be decided from the string data
+  // alone) into a looping marquee; a cell that fits is left exactly as
+  // departureRowsHtml() rendered it; plain ellipsis-truncated text, same as
+  // before this feature existed.
+  function applyDepartureMarquees(container) {
+    if (!container) return;
+    // Reduced motion: skip the marquee upgrade entirely rather than build it
+    // and rely on the CSS `animation: none` fallback to neutralise it — that
+    // would leave the text hard-clipped with no ellipsis. Not upgrading at
+    // all keeps the plain, already-readable ellipsis truncation instead.
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var cells = container.querySelectorAll('.dep-dest, .dep-plat, .dep-status');
+    Array.prototype.forEach.call(cells, function (cell) {
+      if (cell.scrollWidth <= cell.clientWidth + 1) return; // fits — leave alone
+      var text = cell.textContent;
+      cell.textContent = '';
+      cell.classList.add('dep-cell-marquee');
+      cell.title = text;
+      cell.tabIndex = 0; // reachable by keyboard, so :focus can pause it (see CSS)
+      var track = document.createElement('span');
+      track.className = 'dep-cell-track';
+      // Two identical copies back-to-back — see the CSS comment on
+      // .dep-cell-track for why this is what makes a seamless loop possible
+      // without measuring an exact scroll distance per cell.
+      for (var i = 0; i < 2; i++) {
+        var span = document.createElement('span');
+        span.className = 'dep-cell-text';
+        span.textContent = text;
+        if (i === 1) span.setAttribute('aria-hidden', 'true'); // the visual-loop copy, not real content
+        track.appendChild(span);
+      }
+      cell.appendChild(track);
+      var singleCopyWidth = track.scrollWidth / 2;
+      var duration = Math.max(DEP_MARQUEE_MIN_DURATION_S, singleCopyWidth / DEP_MARQUEE_PX_PER_SEC);
+      track.style.setProperty('--dep-marquee-duration', duration.toFixed(2) + 's');
+    });
+  }
   function renderDepartureRows(rows) {
     var container = document.getElementById('sb-dep-rows');
-    if (container) container.innerHTML = departureRowsHtml(rows);
+    if (!container) return;
+    container.innerHTML = departureRowsHtml(rows);
+    applyDepartureMarquees(container);
   }
 
   // ── Sidebar selection state (station / from-to / saved-list / none) ──────
@@ -5762,7 +5835,10 @@
   var suppressHistoryPush = false;
   function buildStateUrl() {
     var params = new URLSearchParams();
-    if (mode === 'database') params.set('mode', 'database');
+    // Database is the default mode (no ?mode= param round-trips to it) — Live
+    // is the one that now needs writing out explicitly, the reverse of when
+    // Live was the default.
+    if (mode === 'live') params.set('mode', 'live');
     // A shared historical view MUST restore both mode and year — one without
     // the other loads the wrong map. The year is always written while in
     // History mode, including when the slider-follow rules moved it as a side
@@ -5822,7 +5898,9 @@
     try {
       var params = new URLSearchParams(location.search);
       var rawMode = params.get('mode');
-      var urlMode = rawMode === 'database' ? 'database' : (rawMode === 'history' ? 'history' : 'live');
+      // Database is the default (a missing/unrecognised ?mode= resolves to
+      // it) — mirrors buildStateUrl()'s Database-is-implicit convention.
+      var urlMode = rawMode === 'live' ? 'live' : (rawMode === 'history' ? 'history' : 'database');
       if (urlMode !== mode) setMode(urlMode);
       // Year is restored BEFORE any entity selection, so the slider-follow
       // rules see the shared year as the user's current position — Rule 1
