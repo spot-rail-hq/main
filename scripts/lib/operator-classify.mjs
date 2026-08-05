@@ -58,11 +58,35 @@ export const CANONICAL_TOC = {
   'Southeastern Railways': 'SE', // plural — new variant, not seen in station data
   // "Greater Thameslink Railway" is deliberately NOT mapped to SN/TL/GN/GX
   // here — see GTR_FOLD below.
+  // Sub-brand strings the GTR fold used to swallow; see GTR_FOLD's note.
+  'Thameslink Railway': 'TL',
+  // Stansted Express (added 2026-08-05). A brand of state-owned Greater Anglia,
+  // NOT a separate company — but it is separately branded, separately liveried
+  // and separately ticketed, so it gets its own key for the same reason the GTR
+  // sub-brands do. Confirmed 2026-08-05 against Wikipedia that it is still
+  // "Stansted Express" and has NOT been renamed to "GBR Stansted Express".
+  // Do not confuse with 'Stansted Transit', the airport people-mover, which is
+  // in EXCLUDED and is not a TOC.
+  'Stansted Express': 'SX',
 };
 
 // See build-operator-inventory.mjs's GTR_NOTE for the full 31 May 2026
 // renationalization finding this encodes.
-export const GTR_FOLD = ['Greater Thameslink Railway', 'Southern Railway', 'Thameslink Railway', 'Govia Thameslink Railway'];
+//
+// NARROWED 2026-08-05 to the two genuine PARENT-ENTITY strings. It previously
+// also held 'Southern Railway' and 'Thameslink Railway', which are SUB-BRAND
+// strings — and because classify() tests this list FIRST, the fold caught them
+// before CANONICAL_TOC could map them to SN/TL. That is why 8 GTR route
+// relations looked unsplittable: their names carry no brand prefix, so the
+// operator tag was the only signal, and the fold was swallowing it. It is also
+// why SN already had segments while TL/GN/GX had none — the bare string
+// 'Southern' was never in this list, so it alone escaped.
+//
+// The two remaining entries are correct and must stay: they are the company,
+// not a brand, and their relations are split by NAME prefix instead (see
+// split-subbrand-segments.mjs). A relation tagged with the parent and carrying
+// no brand prefix legitimately stays GTR.
+export const GTR_FOLD = ['Greater Thameslink Railway', 'Govia Thameslink Railway'];
 
 export const CANONICAL_METRO = {
   'Transport for London': 'Transport for London',

@@ -126,6 +126,11 @@
     "LN": {
       "dark": "#0BFF99",
       "light": "#00BF6F"
+    },
+    "SX": {
+      "dark": "#B5473F",
+      "light": "#A03A2E",
+      "_note": "HAND-SET 2026-08-05, bypassing the generator's placement search — added after the palette was built, so build-operator-palette.mjs will NOT reproduce it and a regeneration will drop it (same standing as Grand Central, Blackpool Tramway and Heritage). Stansted Express's corporate identity is RED, and red was tried first: #E4002B measured ΔE76 4.8 against toc:LE (Greater Anglia's own red #D70428, floor 15) and #C8102E measured 5.2 against tfl_lines:Windrush with CVD 3.7 — the bright-red band is saturated (LE, AW #FF0000, GR #CE0E40, tfl:Central, Windrush, HT, heritage). Brick red is the nearest family with room and keeps the brand intent. Gated via scripts/check-color-separation.mjs, which applies passesGates() without regenerating: DARK #B5473F closest ΔE76 17.8 (toc:XC), worst-case CVD 5.9 (advisory, non-adjacent) — PASS. LIGHT #A03A2E closest ΔE76 17.2 (toc:WR), worst-case CVD 10.4 (advisory) — PASS. A dark candidate #C85A46 also passed but at only 15.6 against heritage (floor 15), and heritage is the one entry that has never been through passesGates() at all, so it was rejected for #B5473F's 17.8 of headroom. OPEN ITEM: SX shares the West Anglia Main Line with LE, so the SX/LE pair belongs in KNOWN_ADJACENT and should be re-checked under the STRICT CVD gate, which is not applied to it today."
     }
   },
   "metro": {

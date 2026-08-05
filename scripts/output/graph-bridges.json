@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-04T21:37:08.439Z",
+  "generated_at": "2026-08-05T09:00:39.842Z",
   "threshold_m": 150,
   "bridges": [
     {
@@ -87,10 +87,12 @@
       "confidence": "mode-matched",
       "waiver": null,
       "fromOperators": [
-        "LE"
+        "LE",
+        "SX"
       ],
       "toOperators": [
-        "LE"
+        "LE",
+        "SX"
       ]
     },
     {
@@ -218,7 +220,7 @@
         "WMR"
       ],
       "toOperators": [
-        "GTR"
+        "SN"
       ]
     },
     {
@@ -412,10 +414,12 @@
       "confidence": "mode-matched",
       "waiver": null,
       "fromOperators": [
-        "LE"
+        "LE",
+        "SX"
       ],
       "toOperators": [
-        "LE"
+        "LE",
+        "SX"
       ]
     }
   ],
