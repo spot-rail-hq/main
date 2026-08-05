@@ -154,6 +154,149 @@ for (const pat of PATTERNS) {
       console.log(`    ${leg[i]} -> ${leg[i + 1]}: ${(best.length / 1000).toFixed(1)} km, ${best.segments.length} segments${flag}`);
     }
   }
+  // ── PARALLEL-TRACK EXPANSION ───────────────────────────────────────────
+  // A shortest path picks ONE track. Main lines are modelled as several
+  // parallel segments (fast and slow lines are separate ways in OSM), so the
+  // raw path attributes one of them and leaves its neighbours bare — the
+  // rendered line then hops between parallels and reads as broken. Measured at
+  // Huntingdon: 4 segments in the area, only 1 attributed, the other three
+  // being the same corridor's other tracks.
+  //
+  // So every segment that runs ALONGSIDE the routed path is pulled in too: it
+  // must lie within PARALLEL_M of the path along most of its length AND already
+  // carry at least one operator the path itself runs with. The second condition
+  // is what stops this leaking onto crossing branches and depot roads that
+  // merely pass close by — they are not part of the corridor and do not share
+  // its operators.
+  const PARALLEL_M = 120;
+  {
+    const pathSegs = [...all].map((id) => segById.get(id)).filter(Boolean);
+    const corridorOps = new Set(pathSegs.flatMap((s) => s.operators || []));
+    const rad = (d) => d * Math.PI / 180;
+    const near = (a, b) => {
+      const dLat = rad(b[1] - a[1]), dLon = rad(b[0] - a[0]);
+      const h = Math.sin(dLat / 2) ** 2 + Math.cos(rad(a[1])) * Math.cos(rad(b[1])) * Math.sin(dLon / 2) ** 2;
+      return 2 * 6371000 * Math.asin(Math.sqrt(h));
+    };
+    // Coarse grid over the path so this stays O(n) rather than O(n*m).
+    const grid = new Map();
+    const cell = (c) => Math.round(c[0] * 200) + ':' + Math.round(c[1] * 200);
+    for (const s of pathSegs) for (const c of s.coords) {
+      const k = cell(c);
+      if (!grid.has(k)) grid.set(k, []);
+      grid.get(k).push(c);
+    }
+    let added = 0;
+    for (const s of graph.segments) {
+      if (all.has(s.id)) continue;
+      if (!(s.operators || []).some((o) => corridorOps.has(o))) continue;
+      let hits = 0, checked = 0;
+      for (let i = 0; i < s.coords.length; i += Math.max(1, Math.floor(s.coords.length / 12))) {
+        const c = s.coords[i];
+        checked++;
+        let best = Infinity;
+        const cx = Math.round(c[0] * 200), cy = Math.round(c[1] * 200);
+        for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) {
+          for (const p of grid.get((cx + dx) + ':' + (cy + dy)) || []) {
+            const d = near(c, p);
+            if (d < best) best = d;
+          }
+        }
+        if (best <= PARALLEL_M) hits++;
+      }
+      if (checked && hits / checked >= 0.8) { all.add(s.id); added++; }
+    }
+    if (added) console.log(`    parallel-track expansion: +${added} segments alongside the routed path`);
+  }
+
+  // ── OVERSHOOT SPLIT ────────────────────────────────────────────────────
+  // Attribution is WHOLE-SEGMENT, so a route using part of a long segment
+  // paints all of it: segment 2548 is 80.7 km and pushed Hull Trains 44 km past
+  // Beverley toward Driffield. TWO BLUNTER FIXES WERE TRIED AND REJECTED first,
+  // recorded so neither is retried:
+  //   - corridor containment (70% within 6 km of the calling-point polyline)
+  //     dropped 42 segments and took Selby AND Beverley to zero coverage, because
+  //     real track curves far from the chord — Doncaster to Selby is 60 km of
+  //     railway across a 30 km gap;
+  //   - dropping any segment reaching outside the calling-point envelope removed
+  //     the overshoot but also removed Selby, Howden, Cottingham and Beverley,
+  //     since the segments serving them are long ones that continue past.
+  // Both failed the same way: a segment is genuinely PART on-route and PART not,
+  // and no keep/drop rule can express that.
+  //
+  // So split it. The portion inside the envelope keeps the original id and gains
+  // the operator; the portion outside becomes a NEW segment carrying the
+  // original operators but not this one. Safe because every downstream consumer
+  // is regenerated from this file afterwards — the routing graph (and therefore
+  // map.html's geometry pointers) is rebuilt in stages 6-9, so new ids are
+  // picked up rather than dangling.
+  const OVERSHOOT_M = 5000;
+  {
+    const pts = [];
+    for (const leg of pat.legs) for (const crs of leg) { const c = crsCoord.get(crs); if (c) pts.push(c); }
+    const minLon = Math.min(...pts.map((c) => c[0])), maxLon = Math.max(...pts.map((c) => c[0]));
+    const minLat = Math.min(...pts.map((c) => c[1])), maxLat = Math.max(...pts.map((c) => c[1]));
+    const dLat = OVERSHOOT_M / 111320;
+    const dLon = OVERSHOOT_M / (111320 * Math.cos((minLat + maxLat) / 2 * Math.PI / 180));
+    const inside = (c) => c[0] >= minLon - dLon && c[0] <= maxLon + dLon && c[1] >= minLat - dLat && c[1] <= maxLat + dLat;
+    const rad = (d) => d * Math.PI / 180;
+    const dist = (a, b) => {
+      const dla = rad(b[1] - a[1]), dlo = rad(b[0] - a[0]);
+      const h = Math.sin(dla / 2) ** 2 + Math.cos(rad(a[1])) * Math.cos(rad(b[1])) * Math.sin(dlo / 2) ** 2;
+      return 2 * 6371000 * Math.asin(Math.sqrt(h));
+    };
+    const lenOf = (cs) => { let t = 0; for (let i = 1; i < cs.length; i++) t += dist(cs[i - 1], cs[i]); return t; };
+    let maxId = Math.max(...graph.segments.map((x) => x.id));
+    const split = [];
+    for (const id of [...all]) {
+      const s2 = segById.get(id);
+      if (!s2 || s2.coords.every(inside)) continue;
+      // Keep the single longest run of consecutive in-envelope points.
+      let bestA = -1, bestB = -1, curA = -1;
+      for (let i = 0; i <= s2.coords.length; i++) {
+        const ok = i < s2.coords.length && inside(s2.coords[i]);
+        if (ok && curA < 0) curA = i;
+        if (!ok && curA >= 0) { if (i - curA > bestB - bestA) { bestA = curA; bestB = i; } curA = -1; }
+      }
+      if (bestA < 0 || bestB - bestA < 2) { all.delete(id); split.push(`${id} wholly outside — dropped`); continue; }
+      // NODES MUST BE SLICED WITH THE COORDS. The first version created the
+      // remainders with `nodes: []`, which silently destroyed topology: the
+      // routing graph builds adjacency from endpoint node ids, so a segment with
+      // none connects to nothing. That orphaned the Bridlington line (ATB, BDT,
+      // BEM, DRF, FIL, HUB, HUT, NFN, SOM) into its own island and produced a
+      // bridge with an `undefined` endpoint that the routing build then skipped
+      // every run — 28 bridges written, 27 applied, stable across passes, which
+      // is exactly the mismatch CLAUDE.md says to treat as a failure.
+      const hasNodes = Array.isArray(s2.nodes) && s2.nodes.length === s2.coords.length;
+      const keep = s2.coords.slice(bestA, bestB);
+      const keepNodes = hasNodes ? s2.nodes.slice(bestA, bestB) : [];
+      const restPairs = [
+        [s2.coords.slice(0, Math.max(1, bestA + 1)), hasNodes ? s2.nodes.slice(0, Math.max(1, bestA + 1)) : []],
+        [s2.coords.slice(bestB - 1), hasNodes ? s2.nodes.slice(bestB - 1) : []],
+      ].filter(([a]) => a.length >= 2);
+      const rest = restPairs.map(([a]) => a);
+      for (const [r, rn] of restPairs) {
+        maxId += 1;
+        graph.segments.push({
+          id: maxId, nodes: rn, coords: r,
+          operators: s2.operators.slice(), way_ids: (s2.way_ids || []).slice(),
+          length_m: Math.round(lenOf(r)),
+          ...(s2.operator_precision ? { operator_precision: { ...s2.operator_precision } } : {}),
+          split_from: s2.id, split_reason: `off-route remainder after ${pat.op} overshoot split`,
+        });
+      }
+      s2.coords = keep;
+      if (hasNodes) s2.nodes = keepNodes;
+      s2.length_m = Math.round(lenOf(keep));
+      s2.split_for = pat.op;
+      split.push(`${id}: kept ${(s2.length_m / 1000).toFixed(1)} km on-route, ${rest.length} remainder segment(s)`);
+    }
+    if (split.length) {
+      console.log(`    overshoot split: ${split.length} segment(s) cut at the route envelope:`);
+      split.slice(0, 8).forEach((x) => console.log(`      ${x}`));
+    }
+  }
+
   const fresh = [...all].filter((id) => segById.get(id) && !segById.get(id).operators.includes(pat.op));
   const km = fresh.reduce((t, id) => t + segById.get(id).length_m, 0) / 1000;
   console.log(`  -> ${fresh.length} segments to attribute, ${km.toFixed(1)} km` + (failed ? `, ${failed} legs FAILED` : ''));
