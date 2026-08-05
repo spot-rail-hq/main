@@ -1394,8 +1394,19 @@
   // company rather than their own brand, so they have no key of their own. This
   // is not an error and the panel says so by name. See CLAUDE.md's note on the
   // "Greater Thameslink Railway" finding for why OSM tags them this way.
+  //
+  // GN/GX/TL/SN REMOVED 2026-08-05 — they are no longer folded. The four GTR
+  // sub-brands now carry their own segments (SN 509, TL 290, GN 88, GX 45) and
+  // their own colours, split out of the parent by route-relation name prefix and
+  // operator tag (scripts/split-subbrand-segments.mjs). Leaving them here would
+  // have been actively wrong in two places: the panel would claim they have no
+  // track of their own, and the highlight would redirect to GTR — which now has
+  // ZERO segments, so selecting Southern would have highlighted nothing at all.
+  //
+  // LN stays: London Northwestern really does still have no track of its own.
+  // Its OSM relations exist and carry an `LNWR:` name prefix, so the same split
+  // would work — that is queued, not done.
   var OPERATOR_FOLDED_INTO = {
-    GN: 'GTR', GX: 'GTR', TL: 'GTR', SN: 'GTR',
     LN: 'WMR',
   };
   // Set only by submitOperatorPick(), once the metadata above has CONFIRMED the
@@ -9248,13 +9259,24 @@
       if (keys && !keys[code]) {
         operatorNoTrackCode = code;
         rebuildSidebarContent();
-        // A FOLDED operator (GN/GX/TL/SN -> GTR, LN -> WMR) has no track of its
-        // own because OSM tags those services under the parent brand — but the
-        // trains do run, and the user asking for Great Northern is entitled to
-        // see where. Highlight the PARENT's network instead of leaving the map
-        // blank; the notice in the panel names the parent so the substitution
-        // is never silent. Only a genuine absence (HT) still shows nothing,
-        // which is honest — there is no geometry anywhere to point at.
+        // A FOLDED operator (LN -> WMR) has no track of its own because OSM tags
+        // those services under the parent brand — but the trains do run, and the
+        // user asking for London Northwestern is entitled to see where.
+        // Highlight the PARENT's network instead of leaving the map blank; the
+        // notice in the panel names the parent so the substitution is never
+        // silent. A genuine absence (HT) still shows nothing, which is honest —
+        // there is no geometry anywhere to point at.
+        //
+        // GN/GX/TL/SN were in this list until 2026-08-05 and are not any more —
+        // they carry their own segments now. See OPERATOR_FOLDED_INTO.
+        //
+        // ⚠ KNOWN GAP, flagged not fixed: GTR is now the mirror image of this
+        // case. It has ZERO segments (all four sub-brands took them), so
+        // selecting the parent falls through to the generic "route data isn't
+        // available yet" notice — which is misleading, since its trains are all
+        // over the map under four other names. Fixing it needs a ONE-TO-MANY
+        // fold (GTR -> [SN, TL, GN, GX]) that this map cannot express: both
+        // OPERATOR_FOLDED_INTO and highlightCode are single-valued.
         highlightCode = OPERATOR_FOLDED_INTO[code];
         if (!highlightCode || !keys[highlightCode]) return; // nothing to show — camera stays put
       } else {

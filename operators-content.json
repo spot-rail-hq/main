@@ -3587,12 +3587,8 @@
   },
   "SX": {
     "name": "Stansted Express",
-    "wikipedia_title": "Stansted Express",
-    "aliases": [],
-    "stations_operated": 6,
-    "headline": "A dedicated airport service that has run every 15 minutes since 1997",
+    "headline": "A dedicated airport service running every 15 minutes since 1997",
     "parent_company": "Greater Anglia",
-    "legal_entity": "Greater Anglia",
     "franchises": [
       {
         "name": "Brand of Greater Anglia",
@@ -3600,37 +3596,51 @@
         "end": null
       }
     ],
-    "regions_served": {
-      "main": [
-        "London",
-        "Essex",
-        "Hertfordshire"
-      ],
-      "other": []
+    "wikipedia_title": "Stansted Express",
+    "_wikipedia": {
+      "fetched_at": "2026-08-05T09:15:16.628Z",
+      "title": "Stansted Express",
+      "url": "https://en.wikipedia.org/wiki/Stansted_Express",
+      "license": "CC BY-SA 4.0"
     },
+    "aliases": [],
+    "stations_operated": 6,
     "notable_features": [
-      "A brand of Greater Anglia rather than a separate company — the trains, staff and licence are all Greater Anglia",
-      "Runs London Liverpool Street to Stansted Airport along the West Anglia Main Line",
-      "Calls at six stations: London Liverpool Street, Tottenham Hale, Harlow Town, Bishop's Stortford, Stansted Mountfitchet and Stansted Airport",
+      "A brand of Greater Anglia rather than a separate company — same trains, staff and operating licence",
+      "Runs the West Anglia Main Line between London Liverpool Street and Stansted Airport, calling at Tottenham Hale, Harlow Town, Bishop's Stortford and Stansted Mountfitchet",
       "A train every 15 minutes on a clock-face timetable, 46 minutes end to end",
-      "Worked by ten Class 745/1 FLIRT electric units, introduced from July 2020",
+      "Worked by ten Class 745/1 FLIRT electric units introduced from July 2020",
       "Kept its own name and branding when Greater Anglia passed into public ownership"
     ],
-    "_sources": {
-      "fetched_at": "2026-08-05T08:54:19.550Z",
-      "note": "Route, station list, frequency, journey time, fleet and 1997 start date verified against the Wikipedia Stansted Express article on 2026-08-05, which also confirms it remains branded \"Stansted Express\" and has NOT been renamed \"GBR Stansted Express\". Intro copy and the operator sidebar text still need the Section 5 pass; this entry is data only.",
-      "wikipedia": {
-        "title": "Stansted Express",
-        "url": "https://en.wikipedia.org/wiki/Stansted_Express",
-        "license": "CC BY-SA 4.0"
-      }
+    "regions_served": {
+      "main": [
+        "Essex",
+        "London"
+      ],
+      "other": [
+        "Hertfordshire"
+      ]
     },
     "website": "https://www.stanstedexpress.com/",
     "fleet_classes": [
       {
         "id": "745",
-        "label": "Class 745/1"
+        "display": "Class 745"
       }
-    ]
+    ],
+    "schema_jsonld": {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Stansted Express",
+      "parentOrganization": {
+        "@type": "Organization",
+        "name": "Greater Anglia"
+      },
+      "areaServed": [
+        "Essex",
+        "London",
+        "Hertfordshire"
+      ]
+    }
   }
 }
