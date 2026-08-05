@@ -3342,12 +3342,18 @@
   // restores the measured pixel widths exactly. If the optimiser's constants
   // ever change, re-check its reported span and rescale again — the build logs
   // it on every run.
+  // RESCALED AGAIN 2026-08-05, 5/7 -> 5/8 (each stop x 0.875). The gap-fill pass
+  // (scripts/fill-operator-gaps.mjs) added 929 operator-attributions to short
+  // stub segments, which puts more operators on more segments and widens the
+  // fan: the optimiser's reported span went 7.0 -> 8.0. Left at the 5/7 values
+  // the fan would render 14% wider than every pixel measurement above. This is
+  // exactly the re-check the note above asks for.
   var LANE_FAN_ZOOM_STOPS = [
-    [4, 0.179],
-    [6, 0.357],
-    [8, 0.714],
-    [12, 2.286],
-    [16, 3.214],
+    [4, 0.157],
+    [6, 0.312],
+    [8, 0.625],
+    [12, 2.000],
+    [16, 2.812],
   ];
   function operatorLineOffsetExpression() {
     // Same top-level-zoom-expression constraint as the width expression above:
