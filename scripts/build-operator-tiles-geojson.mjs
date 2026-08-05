@@ -714,6 +714,113 @@ for (const s of graph.segments) {
   });
 }
 
+// ── CHAIN MERGE (2026-08-05) ─────────────────────────────────────────────
+// THE BUG. Everything above emits ONE FEATURE PER SEGMENT PER OPERATOR, and
+// map.html renders those with `line-offset`. MapLibre applies line-offset
+// PER FEATURE, computing the perpendicular from that feature's own geometry —
+// so where two segments meet at an angle, the two offset polylines are pushed
+// sideways in slightly different directions and their ends no longer touch,
+// leaving a wedge-shaped gap on the outside of the bend. `line-cap: round`
+// hides small ones, which is why this only became obvious once the lane span
+// widened from 7 to 8 units.
+//
+// Measured on the pre-merge output: 3,709 same-operator feature-to-feature
+// joins, 1,992 of them (53.7%) with a direction change over 2 degrees and 488
+// over 15 degrees, worst 179.6. Every one is a potential visible break, and it
+// is why the reported gaps at Peterborough, Hitchin and Standish survived the
+// attribution gap-fill — the DATA at all three is continuous (0 discontinuities
+// for LD, TL and XC respectively); only the rendering was broken.
+//
+// THE FIX. Concatenate segments that share an endpoint, an operator AND a lane
+// offset into a single LineString. The offset is then computed once along a
+// continuous polyline, so there is no join left to come apart. This is what
+// every other railway map does and it is the right baseline.
+//
+// WHY IT IS SAFE FOR THE TWO CONSUMERS THAT DEPEND ON PER-SEGMENT FEATURES:
+//   - HOVER uses `promoteId: 'id'`, and each merged chain still gets a single
+//     unique id, so feature-state keys stay unique. Hovering now highlights the
+//     whole continuous run rather than one arbitrary fragment of it, which is
+//     the behaviour a continuous line should have anyway.
+//   - THE ROUTING GEOMETRY LOOKUP in map.html filters the tile source by
+//     segment_id. A merged feature covers several, so it carries `segment_ids`
+//     as a COMMA-DELIMITED STRING with leading and trailing commas (",12,13,")
+//     and map.html matches with ['in', ',<id>,', ['get','segment_ids']]. The
+//     delimiters matter: without them ",1," would also match ",21,". Vector
+//     tiles cannot store arrays, which is why this is a string and not a list.
+//     The caller already cuts the returned line down to its edge's own stretch
+//     using from_coord/to_coord, so a longer line is not a problem for it.
+{
+  const key = (f) => f.properties.operators + ' ' + f.properties.lane_offset;
+  const pt = (c) => c[0].toFixed(7) + ',' + c[1].toFixed(7);
+  const groups = new Map();
+  for (const f of features) {
+    if (!groups.has(key(f))) groups.set(key(f), []);
+    groups.get(key(f)).push(f);
+  }
+  const merged = [];
+  for (const [, list] of groups) {
+    // Endpoint index within this (operator, lane) group only.
+    const ends = new Map();
+    for (const f of list) {
+      const c = f.geometry.coordinates;
+      for (const k of [pt(c[0]), pt(c[c.length - 1])]) {
+        if (!ends.has(k)) ends.set(k, []);
+        ends.get(k).push(f);
+      }
+    }
+    const used = new Set();
+    // Walk from every feature, extending in both directions while exactly one
+    // unused neighbour continues. Requiring exactly one keeps the merge off
+    // junctions: at a fork there is no single continuation, so the chain stops
+    // and the fork stays a separate feature — which is correct, since the two
+    // branches genuinely diverge.
+    const nextFrom = (endKey, self) => {
+      const cands = (ends.get(endKey) || []).filter((x) => x !== self && !used.has(x));
+      return cands.length === 1 ? cands[0] : null;
+    };
+    for (const seed of list) {
+      if (used.has(seed)) continue;
+      used.add(seed);
+      let coords = seed.geometry.coordinates.slice();
+      const ids = [seed.properties.segment_id];
+      let lengthM = seed.properties.length_m || 0;
+      // Extend forward off the tail, then backward off the head.
+      for (const forward of [true, false]) {
+        for (;;) {
+          const tailKey = forward ? pt(coords[coords.length - 1]) : pt(coords[0]);
+          const nxt = nextFrom(tailKey, null);
+          if (!nxt || used.has(nxt)) break;
+          const nc = nxt.geometry.coordinates;
+          const headMatches = pt(nc[0]) === tailKey;
+          const piece = headMatches ? nc.slice(1) : nc.slice(0, -1).reverse();
+          if (!piece.length) break;
+          used.add(nxt);
+          ids.push(nxt.properties.segment_id);
+          lengthM += nxt.properties.length_m || 0;
+          if (forward) coords = coords.concat(piece);
+          else coords = piece.slice().reverse().concat(coords);
+        }
+      }
+      merged.push({
+        type: 'Feature',
+        properties: {
+          ...seed.properties,
+          segment_ids: ',' + ids.join(',') + ',',
+          segment_count: ids.length,
+          length_m: Math.round(lengthM),
+        },
+        geometry: { type: 'LineString', coordinates: coords },
+      });
+    }
+  }
+  const beforeCount = features.length;
+  features.length = 0;
+  features.push(...merged);
+  console.log(`Chain merge: ${beforeCount} per-segment features -> ${features.length} continuous features ` +
+    `(median chain ${(() => { const a = merged.map((f) => f.properties.segment_count).sort((x, y) => x - y); return a[Math.floor(a.length / 2)]; })()} segments, ` +
+    `longest ${Math.max(...merged.map((f) => f.properties.segment_count))})`);
+}
+
 // Sanity-check the id-uniqueness assumption (segment id * 10 + enumeration
 // index) before writing anything — if a segment ever has 10+ operators this
 // scheme silently collides, so fail loudly instead.

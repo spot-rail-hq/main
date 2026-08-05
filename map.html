@@ -2289,7 +2289,21 @@
       }
       var feats = map.querySourceFeatures('operator-vector', {
         sourceLayer: 'operators',
-        filter: ['==', ['get', 'segment_id'], info.segment_id],
+        // MATCHES A MERGED CHAIN, not a single segment. build-operator-tiles-
+        // geojson.mjs now concatenates segments that share an operator, a lane
+        // offset and an endpoint into one continuous LineString, so that
+        // `line-offset` is computed along an unbroken polyline and stops
+        // leaving wedge gaps at every bend (1,992 such joins before the merge,
+        // 161 after). A chain therefore covers several segment ids and carries
+        // them as a comma-delimited string with LEADING AND TRAILING COMMAS —
+        // ",12,13," — and the delimiters are load-bearing: matching a bare "1"
+        // would also hit ",21,". Vector tiles cannot hold arrays, which is why
+        // this is a string rather than a list.
+        //
+        // Returning a LONGER line than this edge is harmless: the code below
+        // already cuts it down to the edge's own stretch using from_coord/
+        // to_coord, which it had to do anyway for segments split at a station.
+        filter: ['in', ',' + info.segment_id + ',', ['get', 'segment_ids']],
       });
       var full = feats.length ? mergeTileClippedFragments(feats) : null;
       if (!full) {
