@@ -9262,27 +9262,27 @@
   // Leamington Spa, 19 stations) of the target framing; measured directly
   // off it, the route fills ~45% of the visible map's width AND height
   // (~754/1663px wide, ~540/1183px tall, sidebar/header chrome excluded),
-  // i.e. roughly 25-30% empty margin per side, not the much larger gap the
-  // old value of 2 was producing.
+  // i.e. roughly 25-30% empty margin per side.
   //
-  // zoomOut is an EXPONENTIAL lever (each whole step halves/doubles the
-  // rendered size of the route on screen — it subtracts from the tightest-
-  // fit zoom, which is a power-of-2 scale), so working back from that ~45%
-  // target implies something under 1, not 2. 0 is chosen over a fractional
-  // value both because every other value here has always been a round
-  // number and because it's the safe end of Aaron's requested "2-3 levels
-  // more": it fully removes the extra pull-back and lands on the tightest
-  // fit that FROMTO_FIT_PADDING alone still gives breathing room around —
-  // it can never crop a route end the way a NEGATIVE zoomOut could.
+  // 1, not 0 (2026-08-06, correcting the same-day change directly above
+  // this comment) — 0 was reasoned from the reference image alone and
+  // overshot: reported back as too zoomed in, with a screenshot of
+  // Solihull->Leamington Spa AT zoomOut=0. That screenshot gave a real,
+  // calibrated data point instead of an estimate: its route filled ~87% of
+  // the visible map height (the binding axis, ~982/1133px), well past the
+  // ~45% target. zoomOut is an EXPONENTIAL lever (each whole step halves
+  // the on-screen size), so closing an 87%->45% gap takes very close to one
+  // full step (0.87/2 = 0.435, almost exactly the target), not the near-
+  // zero step 0 implied. Landing on 1 — a round number, and consistent with
+  // both reference points now rather than just the first one.
   //
-  // Flagging plainly: going by that same math, 0 may end up MORE zoomed in
-  // than the reference image, not less (0 removes the pull-back entirely,
-  // the ~45% target implied only a partial reduction) — this could not be
-  // confirmed without a live browser. If it overshoots, dial back up
-  // in single steps (this exact value has already round-tripped 2 -> 3 -> 2
-  // once already this project purely from visual reports, so treat this as
-  // a first cut needing the same visual check, not a final answer).
-  var FROMTO_ZOOM_OUT = 0;
+  // This value has round-tripped 2 -> 3 -> 2 -> 0 -> 1 across this project
+  // purely from visual reports, each step reasoned as best it could without
+  // a live browser to check against. 1 is calibrated against an actual
+  // rendered screenshot rather than estimated blind, so it should be closer
+  // — but still flag any further over/under-shoot rather than assuming
+  // this is final.
+  var FROMTO_ZOOM_OUT = 1;
 
   // 2026-07-22 request: searching for an OPERATOR (not clicking one on the
   // map, and not a region chip — both of those already have their own
