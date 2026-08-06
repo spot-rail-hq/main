@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-08-06T14:01:33.892Z",
+  "generated_at": "2026-08-06T16:43:35.470Z",
   "tolerance_m": 200,
   "station_count": 3443,
-  "snapped_count": 3379,
-  "unsnapped_count": 64,
+  "snapped_count": 3407,
+  "unsnapped_count": 36,
   "results": [
     {
       "crs": "AAP",
@@ -318,20 +318,20 @@
       "name": "Acle Rail Station",
       "lat": 52.63468201731,
       "lon": 1.54391527585,
-      "snapped": false,
-      "distance_m": 12431.5,
-      "segment_id": 447,
+      "snapped": true,
+      "distance_m": 0,
+      "segment_id": 9143,
       "snap_tier": "mode",
       "snap_operators": [
         "LE"
       ],
-      "nearest_distance_m": 12431.5,
+      "nearest_distance_m": 0,
       "snap_point": [
-        1.399873,
-        52.704642
+        1.543915,
+        52.634682
       ],
-      "edge_index": 33,
-      "edge_t": 1
+      "edge_index": 5,
+      "edge_t": 0.85859
     },
     {
       "crs": "ACN",
@@ -1071,20 +1071,20 @@
       "name": "Althorne Rail Station",
       "lat": 51.6478704748,
       "lon": 0.7524835631,
-      "snapped": false,
-      "distance_m": 3270,
-      "segment_id": 7727,
+      "snapped": true,
+      "distance_m": 11.3,
+      "segment_id": 9025,
       "snap_tier": "mode",
       "snap_operators": [
-        "Heritage"
+        "LE"
       ],
-      "nearest_distance_m": 3270,
+      "nearest_distance_m": 11.3,
       "snap_point": [
-        0.799385,
-        51.651887
+        0.752479,
+        51.647768
       ],
-      "edge_index": 8,
-      "edge_t": 1
+      "edge_index": 7,
+      "edge_t": 0.343063
     },
     {
       "crs": "ALO",
@@ -3613,19 +3613,19 @@
       "lat": 52.61948351405,
       "lon": 1.43929896138,
       "snapped": false,
-      "distance_m": 5604.8,
-      "segment_id": 447,
+      "distance_m": 229.2,
+      "segment_id": 9122,
       "snap_tier": "mode",
       "snap_operators": [
         "LE"
       ],
-      "nearest_distance_m": 5604.8,
+      "nearest_distance_m": 229.2,
       "snap_point": [
-        1.379578,
-        52.654654
+        1.44191,
+        52.61816
       ],
-      "edge_index": 80,
-      "edge_t": 1
+      "edge_index": 0,
+      "edge_t": 0
     },
     {
       "crs": "BDB",
@@ -4419,19 +4419,19 @@
       "lat": 52.62344330976,
       "lon": 1.41841639227,
       "snapped": false,
-      "distance_m": 4335.7,
-      "segment_id": 447,
+      "distance_m": 1691.7,
+      "segment_id": 9122,
       "snap_tier": "mode",
       "snap_operators": [
         "LE"
       ],
-      "nearest_distance_m": 4335.7,
+      "nearest_distance_m": 1691.7,
       "snap_point": [
-        1.379578,
-        52.654654
+        1.44191,
+        52.61816
       ],
-      "edge_index": 80,
-      "edge_t": 1
+      "edge_index": 0,
+      "edge_t": 0
     },
     {
       "crs": "BGD",
@@ -4884,20 +4884,20 @@
       "name": "Billericay Rail Station",
       "lat": 51.62888366054,
       "lon": 0.41862972179,
-      "snapped": false,
-      "distance_m": 4719.7,
-      "segment_id": 5954,
+      "snapped": true,
+      "distance_m": 14.6,
+      "segment_id": 8948,
       "snap_tier": "mode",
       "snap_operators": [
         "LE"
       ],
-      "nearest_distance_m": 4719.7,
+      "nearest_distance_m": 14.6,
       "snap_point": [
-        0.370538,
-        51.659192
+        0.418554,
+        51.62876
       ],
-      "edge_index": 643,
-      "edge_t": 0.143256
+      "edge_index": 55,
+      "edge_t": 0.487118
     },
     {
       "crs": "BID",
@@ -5527,20 +5527,20 @@
       "name": "Battlesbridge Rail Station",
       "lat": 51.62482540254,
       "lon": 0.56528563473,
-      "snapped": false,
-      "distance_m": 7908,
-      "segment_id": 6311,
+      "snapped": true,
+      "distance_m": 1.2,
+      "segment_id": 9018,
       "snap_tier": "mode",
       "snap_operators": [
-        "CC"
+        "LE"
       ],
-      "nearest_distance_m": 7908,
+      "nearest_distance_m": 1.2,
       "snap_point": [
-        0.517334,
-        51.55989
+        0.565275,
+        51.624835
       ],
-      "edge_index": 170,
-      "edge_t": 0
+      "edge_index": 0,
+      "edge_t": 0.864968
     },
     {
       "crs": "BLD",
@@ -8200,20 +8200,20 @@
       "name": "Buckenham Rail Station",
       "lat": 52.59773841295,
       "lon": 1.47032550704,
-      "snapped": false,
-      "distance_m": 9913.4,
-      "segment_id": 447,
+      "snapped": true,
+      "distance_m": 6.6,
+      "segment_id": 9130,
       "snap_tier": "mode",
       "snap_operators": [
         "LE"
       ],
-      "nearest_distance_m": 9913.4,
+      "nearest_distance_m": 6.6,
       "snap_point": [
-        1.389746,
-        52.672637
+        1.470266,
+        52.597692
       ],
-      "edge_index": 73,
-      "edge_t": 1
+      "edge_index": 13,
+      "edge_t": 0.822384
     },
     {
       "crs": "BUD",
@@ -8458,20 +8458,20 @@
       "name": "Burnham-on-Crouch Rail Station",
       "lat": 51.63365782506,
       "lon": 0.81402793935,
-      "snapped": false,
-      "distance_m": 1503.4,
-      "segment_id": 7767,
+      "snapped": true,
+      "distance_m": 7,
+      "segment_id": 9027,
       "snap_tier": "mode",
       "snap_operators": [
-        "Heritage"
+        "LE"
       ],
-      "nearest_distance_m": 1503.4,
+      "nearest_distance_m": 7,
       "snap_point": [
-        0.807584,
-        51.646644
+        0.813994,
+        51.633718
       ],
-      "edge_index": 14,
-      "edge_t": 1
+      "edge_index": 10,
+      "edge_t": 0.997302
     },
     {
       "crs": "BUW",
@@ -8844,20 +8844,20 @@
       "name": "Berney Arms Rail Station",
       "lat": 52.58978716074,
       "lon": 1.63037565597,
-      "snapped": false,
-      "distance_m": 13726,
-      "segment_id": 6495,
+      "snapped": true,
+      "distance_m": 8.2,
+      "segment_id": 9114,
       "snap_tier": "mode",
       "snap_operators": [
         "LE"
       ],
-      "nearest_distance_m": 13726,
+      "nearest_distance_m": 8.2,
       "snap_point": [
-        1.716481,
-        52.477378
+        1.630296,
+        52.589843
       ],
-      "edge_index": 121,
-      "edge_t": 1
+      "edge_index": 27,
+      "edge_t": 0.967779
     },
     {
       "crs": "BYB",
@@ -12030,20 +12030,20 @@
       "name": "Cantley Rail Station",
       "lat": 52.57874812482,
       "lon": 1.51341232631,
-      "snapped": false,
-      "distance_m": 13343.2,
-      "segment_id": 6495,
+      "snapped": true,
+      "distance_m": 5.8,
+      "segment_id": 9130,
       "snap_tier": "mode",
       "snap_operators": [
         "LE"
       ],
-      "nearest_distance_m": 13343.2,
+      "nearest_distance_m": 5.8,
       "snap_point": [
-        1.578429,
-        52.46482
+        1.513453,
+        52.578794
       ],
-      "edge_index": 18,
-      "edge_t": 1
+      "edge_index": 36,
+      "edge_t": 0.819042
     },
     {
       "crs": "COA",
@@ -16305,20 +16305,20 @@
       "name": "Dovercourt Rail Station",
       "lat": 51.93873839552,
       "lon": 1.28061113132,
-      "snapped": false,
-      "distance_m": 4900.2,
-      "segment_id": 444,
+      "snapped": true,
+      "distance_m": 12.8,
+      "segment_id": 9051,
       "snap_tier": "mode",
       "snap_operators": [
         "LE"
       ],
-      "nearest_distance_m": 4900.2,
+      "nearest_distance_m": 12.8,
       "snap_point": [
-        1.32784,
-        51.971975
+        1.28054,
+        51.938845
       ],
-      "edge_index": 23,
-      "edge_t": 0.78831
+      "edge_index": 3,
+      "edge_t": 1
     },
     {
       "crs": "DVH",
@@ -22245,18 +22245,18 @@
       "lat": 52.61215989544,
       "lon": 1.72088634115,
       "snapped": false,
-      "distance_m": 14834,
-      "segment_id": 6495,
+      "distance_m": 1640.3,
+      "segment_id": 9104,
       "snap_tier": "mode",
       "snap_operators": [
         "LE"
       ],
-      "nearest_distance_m": 14834,
+      "nearest_distance_m": 1640.3,
       "snap_point": [
-        1.723113,
-        52.478012
+        1.699409,
+        52.619066
       ],
-      "edge_index": 130,
+      "edge_index": 16,
       "edge_t": 1
     },
     {
@@ -22332,20 +22332,20 @@
       "name": "Haddiscoe Rail Station",
       "lat": 52.52878732684,
       "lon": 1.62300727158,
-      "snapped": false,
-      "distance_m": 7436.8,
-      "segment_id": 6495,
+      "snapped": true,
+      "distance_m": 9.7,
+      "segment_id": 9139,
       "snap_tier": "mode",
       "snap_operators": [
         "LE"
       ],
-      "nearest_distance_m": 7436.8,
+      "nearest_distance_m": 9.7,
       "snap_point": [
-        1.588992,
-        52.46484
+        1.623137,
+        52.528824
       ],
-      "edge_index": 38,
-      "edge_t": 1
+      "edge_index": 15,
+      "edge_t": 0.922885
     },
     {
       "crs": "HAF",
@@ -24771,20 +24771,20 @@
       "name": "Hockley Rail Station",
       "lat": 51.60355622614,
       "lon": 0.65900119885,
-      "snapped": false,
-      "distance_m": 6957.1,
-      "segment_id": 6311,
+      "snapped": true,
+      "distance_m": 12.1,
+      "segment_id": 8955,
       "snap_tier": "mode",
       "snap_operators": [
-        "CC"
+        "LE"
       ],
-      "nearest_distance_m": 6957.1,
+      "nearest_distance_m": 12.1,
       "snap_point": [
-        0.645901,
-        51.541174
+        0.659054,
+        51.60366
       ],
-      "edge_index": 84,
-      "edge_t": 1
+      "edge_index": 2,
+      "edge_t": 0.031649
     },
     {
       "crs": "HOH",
@@ -25197,20 +25197,20 @@
       "name": "Harwich International Rail Station",
       "lat": 51.9472895019,
       "lon": 1.25512449178,
-      "snapped": false,
-      "distance_m": 5361.7,
-      "segment_id": 444,
+      "snapped": true,
+      "distance_m": 0.3,
+      "segment_id": 9096,
       "snap_tier": "mode",
       "snap_operators": [
         "LE"
       ],
-      "nearest_distance_m": 5361.7,
+      "nearest_distance_m": 0.3,
       "snap_point": [
-        1.307778,
-        51.983118
+        1.255124,
+        51.947287
       ],
-      "edge_index": 45,
-      "edge_t": 1
+      "edge_index": 13,
+      "edge_t": 0.494399
     },
     {
       "crs": "HPT",
@@ -26092,20 +26092,20 @@
       "name": "Harwich Town Rail Station",
       "lat": 51.94414539521,
       "lon": 1.2866819234,
-      "snapped": false,
-      "distance_m": 4210,
-      "segment_id": 444,
+      "snapped": true,
+      "distance_m": 10,
+      "segment_id": 9051,
       "snap_tier": "mode",
       "snap_operators": [
         "LE"
       ],
-      "nearest_distance_m": 4210,
+      "nearest_distance_m": 10,
       "snap_point": [
-        1.321427,
-        51.975526
+        1.286539,
+        51.944161
       ],
-      "edge_index": 31,
-      "edge_t": 0
+      "edge_index": 20,
+      "edge_t": 0.788483
     },
     {
       "crs": "HWD",
@@ -30014,20 +30014,20 @@
       "name": "Lingwood Rail Station",
       "lat": 52.622102067,
       "lon": 1.48994460875,
-      "snapped": false,
-      "distance_m": 10970.3,
-      "segment_id": 447,
+      "snapped": true,
+      "distance_m": 1.6,
+      "segment_id": 9108,
       "snap_tier": "mode",
       "snap_operators": [
         "LE"
       ],
-      "nearest_distance_m": 10970.3,
+      "nearest_distance_m": 1.6,
       "snap_point": [
-        1.399873,
-        52.704642
+        1.48995,
+        52.622088
       ],
-      "edge_index": 33,
-      "edge_t": 1
+      "edge_index": 20,
+      "edge_t": 0.557841
     },
     {
       "crs": "LGE",
@@ -33686,20 +33686,20 @@
       "name": "Mistley Rail Station",
       "lat": 51.94363099055,
       "lon": 1.08140019787,
-      "snapped": false,
-      "distance_m": 1544.5,
-      "segment_id": 5954,
+      "snapped": true,
+      "distance_m": 8.1,
+      "segment_id": 9068,
       "snap_tier": "mode",
       "snap_operators": [
         "LE"
       ],
-      "nearest_distance_m": 1544.5,
+      "nearest_distance_m": 8.1,
       "snap_point": [
-        1.069353,
-        51.95543
+        1.081422,
+        51.943559
       ],
-      "edge_index": 1163,
-      "edge_t": 0
+      "edge_index": 3,
+      "edge_t": 0.500329
     },
     {
       "crs": "MKC",
@@ -35844,20 +35844,20 @@
       "name": "North Fambridge Rail Station",
       "lat": 51.64858373723,
       "lon": 0.6816589112,
-      "snapped": false,
-      "distance_m": 12126.6,
-      "segment_id": 6311,
+      "snapped": true,
+      "distance_m": 8.6,
+      "segment_id": 9041,
       "snap_tier": "mode",
       "snap_operators": [
-        "CC"
+        "LE"
       ],
-      "nearest_distance_m": 12126.6,
+      "nearest_distance_m": 8.6,
       "snap_point": [
-        0.647478,
-        51.541013
+        0.681661,
+        51.648662
       ],
-      "edge_index": 81,
-      "edge_t": 1
+      "edge_index": 3,
+      "edge_t": 0.589841
     },
     {
       "crs": "NFD",
@@ -39699,20 +39699,20 @@
       "name": "Prittlewell Rail Station",
       "lat": 51.55068732035,
       "lon": 0.71067614041,
-      "snapped": false,
-      "distance_m": 1455.5,
-      "segment_id": 6301,
+      "snapped": true,
+      "distance_m": 4.1,
+      "segment_id": 8973,
       "snap_tier": "mode",
       "snap_operators": [
-        "CC"
+        "LE"
       ],
-      "nearest_distance_m": 1455.5,
+      "nearest_distance_m": 4.1,
       "snap_point": [
-        0.714997,
-        51.537805
+        0.710618,
+        51.550679
       ],
       "edge_index": 10,
-      "edge_t": 0.287317
+      "edge_t": 0.526217
     },
     {
       "crs": "PRN",
@@ -41415,20 +41415,20 @@
       "name": "Reedham (Norfolk) Rail Station",
       "lat": 52.56450373443,
       "lon": 1.55965140119,
-      "snapped": false,
-      "distance_m": 11076.2,
-      "segment_id": 6495,
+      "snapped": true,
+      "distance_m": 4.8,
+      "segment_id": 9128,
       "snap_tier": "mode",
       "snap_operators": [
         "LE"
       ],
-      "nearest_distance_m": 11076.2,
+      "nearest_distance_m": 4.8,
       "snap_point": [
-        1.581639,
-        52.465241
+        1.559631,
+        52.564462
       ],
-      "edge_index": 25,
-      "edge_t": 0.939525
+      "edge_index": 12,
+      "edge_t": 0.461476
     },
     {
       "crs": "REI",
@@ -41502,20 +41502,20 @@
       "name": "Rochford Rail Station",
       "lat": 51.58172869681,
       "lon": 0.70230335294,
-      "snapped": false,
-      "distance_m": 4915.5,
-      "segment_id": 6311,
+      "snapped": true,
+      "distance_m": 12.6,
+      "segment_id": 8991,
       "snap_tier": "mode",
       "snap_operators": [
-        "CC"
+        "LE"
       ],
-      "nearest_distance_m": 4915.5,
+      "nearest_distance_m": 12.6,
       "snap_point": [
-        0.683876,
-        51.538796
+        0.702147,
+        51.58167
       ],
-      "edge_index": 26,
-      "edge_t": 0.757161
+      "edge_index": 49,
+      "edge_t": 0.991432
     },
     {
       "crs": "RFY",
@@ -41887,20 +41887,20 @@
       "name": "Rayleigh Rail Station",
       "lat": 51.58929327233,
       "lon": 0.59998347987,
-      "snapped": false,
-      "distance_m": 5308.9,
-      "segment_id": 6311,
+      "snapped": true,
+      "distance_m": 10,
+      "segment_id": 9016,
       "snap_tier": "mode",
       "snap_operators": [
-        "CC"
+        "LE"
       ],
-      "nearest_distance_m": 5308.9,
+      "nearest_distance_m": 10,
       "snap_point": [
-        0.599923,
-        51.541281
+        0.599914,
+        51.589373
       ],
-      "edge_index": 108,
-      "edge_t": 0.797112
+      "edge_index": 5,
+      "edge_t": 0.451407
     },
     {
       "crs": "RLN",
@@ -45055,20 +45055,20 @@
       "name": "Southend Airport Rail Station",
       "lat": 51.56866960942,
       "lon": 0.70504986182,
-      "snapped": false,
-      "distance_m": 3481.5,
-      "segment_id": 6301,
+      "snapped": true,
+      "distance_m": 10,
+      "segment_id": 8991,
       "snap_tier": "mode",
       "snap_operators": [
-        "CC"
+        "LE"
       ],
-      "nearest_distance_m": 3481.5,
+      "nearest_distance_m": 10,
       "snap_point": [
-        0.715393,
-        51.537857
+        0.705194,
+        51.568662
       ],
-      "edge_index": 10,
-      "edge_t": 0.620923
+      "edge_index": 8,
+      "edge_t": 0.846629
     },
     {
       "crs": "SIC",
@@ -45118,20 +45118,20 @@
       "name": "Sherburn-in-Elmet Rail Station",
       "lat": 53.79715210498,
       "lon": -1.23268439004,
-      "snapped": false,
-      "distance_m": 1821.7,
-      "segment_id": 8859,
+      "snapped": true,
+      "distance_m": 14.7,
+      "segment_id": 8916,
       "snap_tier": "mode",
       "snap_operators": [
-        "TP"
+        "NT"
       ],
-      "nearest_distance_m": 1821.7,
+      "nearest_distance_m": 14.7,
       "snap_point": [
-        -1.237606,
-        53.780939
+        -1.232908,
+        53.797159
       ],
-      "edge_index": 17,
-      "edge_t": 0.29795
+      "edge_index": 14,
+      "edge_t": 0.968826
     },
     {
       "crs": "SIH",
@@ -45929,20 +45929,20 @@
       "name": "Southminster Rail Station",
       "lat": 51.66062431914,
       "lon": 0.83519265623,
-      "snapped": false,
-      "distance_m": 2097.1,
-      "segment_id": 7753,
+      "snapped": true,
+      "distance_m": 11.7,
+      "segment_id": 9043,
       "snap_tier": "mode",
       "snap_operators": [
-        "Heritage"
+        "LE"
       ],
-      "nearest_distance_m": 2097.1,
+      "nearest_distance_m": 11.7,
       "snap_point": [
-        0.812922,
-        51.647731
+        0.835354,
+        51.660592
       ],
-      "edge_index": 3,
-      "edge_t": 1
+      "edge_index": 1,
+      "edge_t": 0.91899
     },
     {
       "crs": "SMO",
@@ -46487,20 +46487,20 @@
       "name": "South Woodham Ferrers Rail Station",
       "lat": 51.64945833244,
       "lon": 0.60650517416,
-      "snapped": false,
-      "distance_m": 11512.5,
-      "segment_id": 6311,
+      "snapped": true,
+      "distance_m": 1.1,
+      "segment_id": 9023,
       "snap_tier": "mode",
       "snap_operators": [
-        "CC"
+        "LE"
       ],
-      "nearest_distance_m": 11512.5,
+      "nearest_distance_m": 1.1,
       "snap_point": [
-        0.536584,
-        51.554946
+        0.606509,
+        51.649448
       ],
-      "edge_index": 154,
-      "edge_t": 1
+      "edge_index": 8,
+      "edge_t": 0.848214
     },
     {
       "crs": "SOG",
@@ -46788,20 +46788,20 @@
       "name": "Southend Victoria Rail Station",
       "lat": 51.54151270052,
       "lon": 0.7115008594,
-      "snapped": false,
-      "distance_m": 450.4,
-      "segment_id": 6301,
+      "snapped": true,
+      "distance_m": 27.5,
+      "segment_id": 8979,
       "snap_tier": "mode",
       "snap_operators": [
-        "CC"
+        "LE"
       ],
-      "nearest_distance_m": 450.4,
+      "nearest_distance_m": 27.5,
       "snap_point": [
-        0.712843,
-        51.537527
+        0.711603,
+        51.541753
       ],
-      "edge_index": 5,
-      "edge_t": 0.750882
+      "edge_index": 0,
+      "edge_t": 0
     },
     {
       "crs": "SOW",
@@ -48931,20 +48931,20 @@
       "name": "Somerleyton Rail Station",
       "lat": 52.5102307381,
       "lon": 1.65226028383,
-      "snapped": false,
-      "distance_m": 5559.6,
-      "segment_id": 6495,
+      "snapped": true,
+      "distance_m": 5.9,
+      "segment_id": 9127,
       "snap_tier": "mode",
       "snap_operators": [
         "LE"
       ],
-      "nearest_distance_m": 5559.6,
+      "nearest_distance_m": 5.9,
       "snap_point": [
-        1.682785,
-        52.46356
+        1.652208,
+        52.510189
       ],
-      "edge_index": 89,
-      "edge_t": 0.892948
+      "edge_index": 10,
+      "edge_t": 0.006421
     },
     {
       "crs": "TAB",
@@ -53196,20 +53196,20 @@
       "name": "Wickford Rail Station",
       "lat": 51.61502314242,
       "lon": 0.51918514821,
-      "snapped": false,
-      "distance_m": 5849.6,
-      "segment_id": 6288,
+      "snapped": true,
+      "distance_m": 4.7,
+      "segment_id": 8978,
       "snap_tier": "mode",
       "snap_operators": [
-        "CC"
+        "LE"
       ],
-      "nearest_distance_m": 5849.6,
+      "nearest_distance_m": 4.7,
       "snap_point": [
-        0.484705,
-        51.566711
+        0.51914,
+        51.614991
       ],
-      "edge_index": 194,
-      "edge_t": 0.864573
+      "edge_index": 3,
+      "edge_t": 0.240201
     },
     {
       "crs": "WID",
@@ -54713,20 +54713,20 @@
       "name": "Wrabness Rail Station",
       "lat": 51.93950950641,
       "lon": 1.17149812063,
-      "snapped": false,
-      "distance_m": 8363.4,
-      "segment_id": 5954,
+      "snapped": true,
+      "distance_m": 4.2,
+      "segment_id": 9061,
       "snap_tier": "mode",
       "snap_operators": [
         "LE"
       ],
-      "nearest_distance_m": 8363.4,
+      "nearest_distance_m": 4.2,
       "snap_point": [
-        1.089762,
-        51.995611
+        1.171494,
+        51.939547
       ],
-      "edge_index": 1221,
-      "edge_t": 0
+      "edge_index": 21,
+      "edge_t": 0.739926
     },
     {
       "crs": "WRE",

@@ -175,22 +175,231 @@ const BRANCHES = [
   // rest of relation 282107 southbound, which is separate, larger, un-scoped
   // work — these six only fix the immediate join at Baghill itself.
   //
-  // NORTH (Knottingley/Ferrybridge direction) was investigated with the same
-  // rigor and NOT extended, for two independent reasons: (1) the equivalent
-  // chain there (243765938/243765937/177364259/177364258 up-line,
-  // 50944898/50944927/203754994 down-line — also relation-282107 members)
-  // traced out to where it stays ~150-190m short of the existing WAG1
-  // "Pontefract Line" track near Knottingley, i.e. it doesn't actually close
-  // that gap the way the south chain closes this one; and (2) Northern's own
-  // station page states the short curves north of PFR near Ferrybridge that
-  // would carry this "are now only in use for freight and diverted passenger
-  // services" — not regular NT service, so tagging that direction NT would
-  // misattribute freight-only track even if it did connect.
+  // NORTH (Knottingley/Ferrybridge direction) was investigated at the same
+  // time and NOT extended THAT way: the chain there (243765938/243765937/
+  // 177364259/177364258 up-line, 50944898/50944927/203754994 down-line —
+  // also relation-282107 members) stays ~150-190m short of the existing
+  // WAG1 "Pontefract Line" track near Knottingley, and Northern's own
+  // station page says the curves that would carry it near Ferrybridge "are
+  // now only in use for freight and diverted passenger services" — so that
+  // specific join was correctly left alone.
+  //
+  // SUPERSEDED 2026-08-06 — the note above stopped at the Ferrybridge/
+  // Knottingley dead end without checking whether SMJ2 continues north by
+  // ANY other path. It does: reported by the user via Northern's own March
+  // 2026 network map (Pontefract Baghill, Knottingley, Glasshoughton, South
+  // Milford, Sherburn-in-Elmet, Church Fenton and Ulleskelf are all listed
+  // as served Northern stations) plus a live Google Maps journey (Northern,
+  // York -> Ulleskelf -> Church Fenton -> Sherburn-in-Elmet -> Baghill).
+  // Re-traced from Overpass geometry with a full shared-node BFS (not
+  // spot-checked endpoints) starting from 243765934's north tip: it reaches,
+  // 83 ways later, to within 56.7m of segment 3659 (the existing ULL/CHF
+  // segment, already NT/TP/XC) — via SMJ2/SMJ3, Brotherton Tunnel, Normanton
+  // and Colton Junction Line (NOC), Milford Curve (MGW), Hull Line (HUL3/
+  // HUL4) and Sherburn Curve (SHG), NOT via the Ferrybridge curves or WAG1
+  // at all. Two ways the BFS reached were excluded: 70594523 (service=spur)
+  // and 472403303 (service=siding) — real infrastructure, just not part of
+  // the through route. See the 'baghill_milford_junction_link' branch below.
   { key: 'pontefract_baghill_spur', op: 'NT',
     label: 'Pontefract Baghill spur (Swinton & Knottingley Joint, Streethouse Jn – Baghill leg)',
     stations: ['PFR'],
     wayIds: [243765934, 302911126, 263248057, 263248089, 263248096, 302911139, 302911122, 302911128],
     bbox: [53.649, -1.320, 53.701, -1.281] },
+  // Continues 'pontefract_baghill_spur' north from 243765934/302911126's own
+  // tip (53.700635,-1.28212) up to Church Fenton — see that branch's
+  // SUPERSEDED note above for how this was found and verified. NOT
+  // name-matched (most of these ways are unnamed SMJ2/SMJ3 fragments, same
+  // structural reason as the spur itself) and NOT a small hand list this
+  // time — 83 way ids, all shared-node BFS-verified into one continuous
+  // chain from the existing 'pontefract_baghill_spur' segment to within
+  // 56.7m of segment 3659. op:'NT' confirmed by Northern's own March 2026
+  // network map, not inferred by proximity.
+  { key: 'baghill_milford_junction_link', op: 'NT',
+    label: 'Baghill spur north continuation to Church Fenton (SMJ2/SMJ3, Brotherton, Normanton & Colton Jn, Milford Curve, Hull Line, Sherburn Curve)',
+    stations: ['SIE', 'SOM'],
+    wayIds: [
+      243765938, 50944898, 243765937, 50944927, 243765943, 177364259, 203754994, 177364258,
+      212497373, 3689903, 212497374, 212497375, 212497369, 212497370, 212497371,
+      366657911, 366657916, 366657921, 149386470, 366657908, 193617442, 366657912, 193617441,
+      366657904, 70594519, 366657902, 70594515, 366657913, 295426235, 366657910, 295426236,
+      366657919, 29257371, 366657903, 29257372,
+      549908125, 549908124, 366657906, 549908123, 549908122, 366657905, 549908117, 549908121,
+      244109339, 549908119, 549908118, 796874767, 549914220, 796874766, 549914222, 796874769,
+      244109341, 549914224, 268376471, 268377484, 796874768, 268680337, 268376474, 268680342,
+      149877563, 549903766, 472402553, 472402552, 29250991, 149877562, 149877574,
+      628296634, 628296635, 149877580, 149877584, 144455179, 150894102, 148679893,
+      628296631, 628296632, 313370170, 313370144, 628296628,
+      366657922, 268683531, 366657920, 366657915, 366657907,
+    ],
+    bbox: [53.700, -1.390, 53.825, -1.220] },
+  // National gap audit 2026-08-06 (comparing gb-railways.pmtiles, which has
+  // every named line, against line-segments.json, which has ~3.7% fewer):
+  // both of the next two branches came from that audit, both are real,
+  // current Greater Anglia (LE) passenger corridors with zero coverage.
+  //
+  // Shenfield to Southend Victoria: named "Shenfield to Southend Line" /
+  // "Shenfield and Southend Victoria Line" (ref EA 1050/SSV) for the western
+  // 65 ways, Shenfield end verified 34.5m from the existing seg 4298 (LE,
+  // already covers Shenfield itself via the wider GEML). The named way ends
+  // short of Southend Victoria station itself (stops near Rochford/Southend
+  // Airport) — the final stretch into the terminus is unnamed, same pattern
+  // as every other gap this session; found via shared-node BFS (47 more
+  // ways), landing 28m from Southend Victoria (SOV) station. NOT connected
+  // to segment 6301 (477m away) — that's correct, not a gap: 6301 is the
+  // separate c2c (CC) Southend Central/East route, a different terminus a
+  // few hundred metres away, not the same line. One siding-tagged way
+  // (144905252) excluded.
+  { key: 'shenfield_southend_victoria', op: 'LE',
+    label: 'Shenfield to Southend Victoria Line (Greater Anglia)',
+    stations: ['SNF', 'BIC', 'WIC', 'RLG', 'HOC', 'RFD', 'SIA', 'SOV'],
+    wayIds: [
+      4309923, 28832916, 48817249, 94456207, 94456210, 94456216, 94456219, 94456226, 94456227,
+      105023763, 105023765, 128816280, 128816283, 128816284, 128816285, 128816596, 128816597,
+      144947672, 144947682, 144947689, 148593669, 163266955, 163266957, 164012372,
+      164759325, 164759328, 164759329, 164759333, 164759336, 164759340, 177599967, 177599971,
+      290547904, 290547905, 290547907, 290547908, 290547909, 290547910, 290547911, 290547912,
+      290547913, 290547914, 290547915, 290547916, 290547917, 290547918, 290547919, 290547927,
+      290547942, 290547946, 333303172, 897753843, 1136739729, 1136739730,
+      1206955938, 1206955939, 1206955940, 1206955941,
+      48817248, 48816981, 48816980, 94454436, 94454428, 94454431, 94454427,
+      185697482, 139107731, 1029030008, 28832918, 139107734, 139107748, 149588488, 28832920,
+      144908282, 342947243,
+    ],
+    bbox: [51.535, 0.325, 51.645, 0.720] },
+  // Crouch Valley Line (Wickford - Southminster) — all 28 ways carry the
+  // name directly, ref WIS, 0 already in graph. Confirmed Greater Anglia
+  // (not c2c, which was this audit's first guess — corrected via
+  // greateranglia.co.uk's own Crouch Valley Line Community Rail Partnership
+  // page and Class 720 Aventra service reports, checked 2026-08-06) — also
+  // matches the geometry: the branch's west (Wickford) end sits 146m from
+  // an SSV-tagged stub (the Shenfield-Southend Victoria line above), not
+  // from the c2c network 5.7km away, which is the wrong line entirely to
+  // compare against. Both real termini (Wickford end, Southminster end) are
+  // this branch's genuine dead-ends — the Wickford-side 146m gap to the
+  // Shenfield-Southend Victoria line is a real, small, unresolved gap, not
+  // closed here (same "needs a manual bridge, not more ingestion" shape as
+  // the Church Fenton join — flagged, not fixed blind).
+  { key: 'crouch_valley', op: 'LE',
+    label: 'Crouch Valley Line (Wickford - Southminster, Greater Anglia)',
+    stations: ['SOF', 'NFA', 'ALN', 'BUU', 'SMN'],
+    wayIds: [
+      1029024703, 89814914, 89814911, 94570288, 94570285, 103885786, 28489765,
+      1029024702, 28489764, 28536311, 28536312, 28536316, 28536317,
+      366472304, 366472305, 366472303, 28832604, 28832612,
+      58507005, 58506920, 58506980, 58506983, 58506985, 58506916, 58506917,
+      94576253, 94576254, 1029020387,
+    ],
+    bbox: [51.605, 0.520, 51.665, 0.840] },
+  // Manningtree and Harwich Line — named directly (ref MAH), Greater Anglia
+  // (LE, same operator that already covers Manningtree itself via segment
+  // 5954). 62 named ways split into two chains by BFS (likely Up/Down lines
+  // mapped as separate way sequences that only meet at specific points, same
+  // pattern seen elsewhere this session) — both included. Manningtree end
+  // verified exact shared node (0m) with the existing seg 5954. Harwich end:
+  // one chain lands 109m from Harwich Town, the other 348m from Harwich
+  // International — both real, both small, neither closed here (same
+  // "flag, don't auto-bridge" treatment as every other near-miss this
+  // session). 3 siding-tagged ways excluded (105411788-90); 2
+  // crossover-tagged ways kept (real through-track, not spurs).
+  { key: 'manningtree_harwich', op: 'LE',
+    label: 'Manningtree and Harwich Line (Greater Anglia)',
+    stations: ['WRB', 'DVC', 'HWC', 'HPQ'],
+    wayIds: [
+      28228594, 30715573, 30726347, 30726349, 30878043, 30878044, 32459742, 35263683,
+      35902907, 35902908, 36822991, 43721816, 43721826, 43721828, 43721829, 47145456, 47145488,
+      96652456, 98532190, 98799204, 98799211, 98799285, 98806668, 101344525, 118976157,
+      167807954, 167807956, 167807957, 167807964, 167807976, 167807989, 167807992, 167807994,
+      167807996, 230885787, 230885788, 230885789, 230885790, 230885791, 230885792,
+      230888699, 230888700, 230888703, 230888706, 230891279, 230891280, 230891281,
+      230891284, 230891285, 230891286, 265588859,
+      793496244, 793496245, 793496246, 793496247, 793496251, 793496252, 793496253, 840709305,
+    ],
+    bbox: [51.938, 1.045, 51.950, 1.290] },
+  // Wherry Lines (Norwich - Reedham - Great Yarmouth / Lowestoft, via the
+  // Reedham triangle junction) — the audit's "Reedham Swing Bridge" hit was
+  // real: the whole named "Wherry Lines" way set (45 ways, ref NOL) was
+  // missing, not just the bridge itself. Greater Anglia (LE), matches
+  // existing LE coverage at both Norwich (seg 447 side) and the Lowestoft/
+  // Yarmouth end (seg 6495 side) already in the graph. 0 already in graph,
+  // 0 service-tagged. Reedham (REE), Haddiscoe (HAD) and Brundall (BDA) were
+  // the unsnapped stations driving this — REE was 11km from its nearest
+  // existing track before this.
+  { key: 'wherry_lines', op: 'LE',
+    label: 'Wherry Lines (Norwich - Reedham - Great Yarmouth / Lowestoft, Greater Anglia)',
+    stations: ['REE', 'HAD', 'BDA', 'BYA', 'CNY', 'SYT'],
+    wayIds: [
+      12537942, 23341091, 23341290, 25971563, 25971564, 25971565, 26209656, 26234568,
+      27845792, 27845793, 33081917, 33081918, 35445958, 79396133,
+      118433299, 118521516, 118521556, 118521583, 118989836, 204858137,
+      290548862, 290548863, 290548864, 290548865, 290548866, 290548867, 290548868,
+      290548869, 290548871, 290548873, 445275097, 445275101,
+      501172665, 501172674, 501172680, 501172684, 501172696, 501172697, 501172698, 501172701,
+      1136004905, 1136005587, 1193156360, 1213564861, 1213564862,
+    ],
+    bbox: [52.470, 1.440, 52.640, 1.710] },
+  // Dunfermline - Alloa Line, reopened for passengers 2008, ScotRail (SR) —
+  // matches the SR already on both existing neighbours (seg 4459 at
+  // Dunfermline, seg 5180 at Alloa, both already SR-tagged). Two named
+  // chains cover it in OSM, in three geographic clusters: "Dunfermline -
+  // Alloa Line" itself (15 ways, split into a 4-way cluster touching seg4459
+  // at an exact shared node, and an 11-way cluster ~2.9km further west) and
+  // "Stirling, Alloa and Kincardine Railway" (24 ways, the Alloa end). Real
+  // gaps remain BETWEEN these three clusters (not closed here, same
+  // flag-don't-bridge treatment as elsewhere this session) — but each
+  // cluster is itself real, current, SR-confirmed track and belongs in the
+  // dataset regardless. 3 of the 39 way ids were already in the graph
+  // (harmless — ingest skips duplicates); 0 service-tagged.
+  { key: 'dunfermline_alloa', op: 'SR',
+    label: 'Dunfermline - Alloa Line (ScotRail)',
+    stations: [],
+    wayIds: [
+      4353222, 26764177, 35978663, 69056886, 69056907, 87388592,
+      89973848, 89973859, 89973860, 93311142, 93311158, 97822627, 165525727,
+      371158405, 431358473, 484393902, 508426313, 541378478,
+      763501922, 763501923, 840963320, 840963321, 875911759, 875911760,
+      919598190, 922720229, 922720230, 1019104944, 1019104945, 1019183353,
+      1281167280, 1281167281, 1283608797, 1453094733, 1453371288,
+      1463485261, 1463485262, 1463485263, 1463485264,
+    ],
+    bbox: [56.050, -3.795, 56.130, -3.450] },
+  // East West Rail (Oxford - Bicester - Winslow - Bletchley, reopened 2025).
+  // Operator was a real blocker at first — no 'EWR' code exists anywhere in
+  // data/operator-colors.json — but Chiltern Railways was named the actual
+  // operator (chilternrailways.co.uk / press release, checked 2026-08-06),
+  // and 'CH' already exists in the palette, so no regeneration needed.
+  // Named directly in OSM ("East West Rail", ref OXD/BFO). BFS from the
+  // Bicester end found 222 ways total, 106 already in the graph (the
+  // western stretch reuses existing Chiltern Main Line track through
+  // Bicester) — only the 116 new ones (113 after excluding 3 Bletchley
+  // Depot/Carriage Sidings) are added here. Bletchley end: exact shared
+  // node (0m) with the existing seg 4143. Bicester end distance read as
+  // 53.7km against seg5928, which is a red herring, not a real gap — 5928
+  // is tagged 'Weaver' (a London Overground line, nowhere near Bicester),
+  // itself a stale nearest-segment mismatch that this ingest corrects.
+  // Winslow itself (new 2025 station) isn't in station-list.json at all —
+  // a separate station-data gap, not a track gap, not fixed here.
+  { key: 'east_west_rail', op: 'CH',
+    label: 'East West Rail (Oxford - Bicester - Winslow - Bletchley, Chiltern Railways)',
+    stations: ['BLY'],
+    wayIds: [
+      926827727, 799321784, 1081186500, 460403487, 22754008, 1081186501, 1332727027,
+      1081186502, 1332727026, 1332727028, 4359853, 1332727025, 3550662, 1125722168,
+      4359851, 1125722167, 1137103307, 1150156433, 1229069772, 1150156434, 1214490325,
+      1229069773, 1214490324, 1214490327, 1137103306, 1214490326, 4005862, 1150156435,
+      5024226, 1150156436, 199529631, 1150156437, 199529629, 1150156438, 5024227,
+      1150156439, 5024228, 1150156440, 1329259275, 1150156441, 1329259276, 1329259273,
+      12580703, 1329259274, 1334628277, 1146014557, 1334628276, 1334628278, 199529661,
+      1334628275, 1164966276, 1146014554, 1164966277, 1164966278, 4005861, 1164966279,
+      560537090, 1146014555, 560537091, 1146014556, 560537092, 1081224815, 5024539,
+      1081224816, 952378239, 1081224819, 952378238, 1081224820, 1081224810, 1081224822,
+      1081224811, 1081224812, 46615541, 1081224813, 46615540, 1081224821, 1081224807,
+      1081224808, 514245560, 1081224809, 1081224825, 1335362302, 320013522, 1081224824,
+      1081224826, 1081224823, 320013521, 179325153, 1335362303, 179325155, 179329535,
+      179325154, 1038711131, 44287122, 179329533, 179329542, 1038711132, 179333697,
+      72867066, 1335362304, 179329541, 179334963, 80501630, 1524570186, 1524570185,
+      846260099, 80501631, 846260098, 846260101, 427324696, 179391534, 510836024, 511074780,
+    ],
+    bbox: [51.890, -1.150, 52.005, -0.725] },
 ];
 
 async function overpass(q) {
