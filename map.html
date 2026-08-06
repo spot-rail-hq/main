@@ -5038,13 +5038,11 @@
   // Speed the marquee SCROLLS at (the moving portion only, not the holds
   // either side of it) — a longer name should take proportionally longer
   // to read, not race past at the same speed a short one crawls at.
-  // Tuned up considerably from the first pass (60px/s, 3s floor — reported
-  // as feeling too slow) to 130px/s with a 1s floor. Not blind-verified:
-  // faster risks the opposite problem (unreadable), and that tradeoff needs
-  // an actual look, not a guess — worth Aaron's visual confirmation, and
-  // these are the two constants to hand-tune if it needs adjusting either
-  // way.
-  var MARQUEE_PX_PER_SEC = 130, MARQUEE_MIN_SCROLL_S = 1;
+  // 60px/s, 1s floor (2026-08-06) — 130px/s was tried and reverted back to
+  // the original 60px/s speed; the 3s floor from the original pass was kept
+  // down at 1s (that part wasn't reported as a problem). These are the two
+  // constants to hand-tune if speed needs adjusting again.
+  var MARQUEE_PX_PER_SEC = 60, MARQUEE_MIN_SCROLL_S = 1;
   // Static at the start, and again once the loop is back at its visual
   // start, so the text is actually readable before/after it moves rather
   // than starting to scroll the instant it appears. (Separate, deliberate
@@ -9259,18 +9257,32 @@
     if (maxZoom !== undefined) z = Math.min(z, maxZoom);
     map.flyTo({ center: cam.center, zoom: Math.max(OPERATOR_TILES_MIN_ZOOM, z), duration: duration });
   }
-  // 2, not 3 (2026-08-05, reverting the 2026-08-04 change directly above
-  // this comment) — 3 fixed the too-tight complaint that motivated it but
-  // over-corrected: the NEXT report was too much empty space around a
-  // resolved route (see FROMTO_FIT_PADDING's note, same investigation).
-  // Landing back on the pre-08-04 value rather than a new untested number,
-  // since 2 is already known to behave reasonably for the short/close-
-  // together case that 3 was solving for — the risk this reintroduces
-  // that old "almost touching the edge" complaint for SOME pair is real
-  // and worth Aaron re-checking visually alongside the long-diagonal case
-  // this change targets, since neither can be confirmed without a browser
-  // here.
-  var FROMTO_ZOOM_OUT = 2;
+  // 0, not 2 (2026-08-06) — still reported as too small/too much empty
+  // space at 2. Aaron supplied a reference screenshot (Telford Central ->
+  // Leamington Spa, 19 stations) of the target framing; measured directly
+  // off it, the route fills ~45% of the visible map's width AND height
+  // (~754/1663px wide, ~540/1183px tall, sidebar/header chrome excluded),
+  // i.e. roughly 25-30% empty margin per side, not the much larger gap the
+  // old value of 2 was producing.
+  //
+  // zoomOut is an EXPONENTIAL lever (each whole step halves/doubles the
+  // rendered size of the route on screen — it subtracts from the tightest-
+  // fit zoom, which is a power-of-2 scale), so working back from that ~45%
+  // target implies something under 1, not 2. 0 is chosen over a fractional
+  // value both because every other value here has always been a round
+  // number and because it's the safe end of Aaron's requested "2-3 levels
+  // more": it fully removes the extra pull-back and lands on the tightest
+  // fit that FROMTO_FIT_PADDING alone still gives breathing room around —
+  // it can never crop a route end the way a NEGATIVE zoomOut could.
+  //
+  // Flagging plainly: going by that same math, 0 may end up MORE zoomed in
+  // than the reference image, not less (0 removes the pull-back entirely,
+  // the ~45% target implied only a partial reduction) — this could not be
+  // confirmed without a live browser. If it overshoots, dial back up
+  // in single steps (this exact value has already round-tripped 2 -> 3 -> 2
+  // once already this project purely from visual reports, so treat this as
+  // a first cut needing the same visual check, not a final answer).
+  var FROMTO_ZOOM_OUT = 0;
 
   // 2026-07-22 request: searching for an OPERATOR (not clicking one on the
   // map, and not a region chip — both of those already have their own
