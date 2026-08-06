@@ -471,18 +471,62 @@
     #sidebar { top: calc(var(--nav-h) + var(--sidebar-gap)); left: var(--sidebar-gap); bottom: var(--sidebar-gap);
       width: var(--sidebar-w); border-radius: 16px; }
   }
+  /* Bottom-anchored draggable sheet (2026-08-06) — implements the mobile
+     layout CLAUDE.md always specified ("bottom sheet pinned to bottom of
+     screen") but the code never actually built; the old rule below was a
+     top-anchored, capped-height card instead. Edge-to-edge (no side gap,
+     unlike the desktop column) with only the top corners rounded, matching
+     the native bottom-sheet convention the drag handle/snap-states below
+     imply. 45vh below is just the pre-JS/no-script fallback (matches the
+     'half' state, see SHEET_VH) — setSheetState() sets inline style.height
+     directly once JS runs, which wins over this. .sheet-dragging drops the
+     transition during an active pointer drag so it tracks 1:1 with no lag,
+     re-enabled the moment the drag ends so a snap settles smoothly. */
   @media (max-width: 768px) {
-    #sidebar { top: calc(var(--nav-h) + var(--sidebar-gap)); left: var(--sidebar-gap); right: var(--sidebar-gap);
-      max-height: 35vh; border-radius: 16px; }
+    #sidebar { top: auto; bottom: 0; left: 0; right: 0;
+      height: 45vh; max-height: 90vh; min-height: 10vh;
+      border-radius: 16px 16px 0 0;
+      transition: height 0.28s cubic-bezier(0.22, 1, 0.36, 1); }
+    #sidebar.sheet-dragging { transition: none; }
   }
 
-  .sb-handle-row { display: none; align-items: center; justify-content: center; position: relative; padding: 8px 0 4px; flex-shrink: 0; }
+  .sb-handle-row { display: none; align-items: center; justify-content: center; position: relative; padding: 8px 0 4px; flex-shrink: 0; touch-action: none; }
   @media (max-width: 768px) { .sb-handle-row { display: flex; } }
   .sb-handle { width: 28px; height: 2.5px; border-radius: 2px; background: rgba(154,164,178,0.3); }
+  /* #sb-min-btn was the old binary collapse toggle (mobile-only — the row
+     it's in is display:none on desktop, so nothing here ever applied there).
+     Repurposed as a second, larger tap target for the same tap-to-cycle the
+     handle bar itself supports (wireSheet() below) rather than kept as a
+     separate collapsed/expanded state — a 3-state sheet has no single
+     "collapsed" to toggle back to. The rotate-on-full echoes its old
+     rotate-when-collapsed semantics: the arrow points the direction another
+     tap will move the sheet. */
   #sb-min-btn { position: absolute; right: 12px; top: 6px; font-size: 13.5px; }
   #sb-min-btn i { transition: transform 0.2s; }
-  #sidebar.collapsed #sb-min-btn i { transform: rotate(180deg); }
-  #sidebar.collapsed .sb-top-lower, #sidebar.collapsed .sb-selection, #sidebar.collapsed #sb-body, #sidebar.collapsed #sb-attribution { display: none; }
+  #sidebar[data-sheet-state="full"] #sb-min-btn i { transform: rotate(180deg); }
+
+  /* Peek state (2026-08-06) — station name + short teaser only; everything
+     else in the sheet (utility row, selection chrome, full content, footer
+     attribution) hides until the sheet is dragged/tapped up to half or full.
+     !important matches this file's existing convention for a state that must
+     win regardless of another display rule's own specificity/source order
+     (see body:not(.mode-database) #sb-mode-operator above) — .sb-selection
+     and .hist-slider both already carry their own conditional display rules
+     this needs to override unconditionally. */
+  #sb-peek-summary { display: none; flex-direction: column; gap: 2px; padding: 0 16px 14px; flex-shrink: 0; }
+  #sb-peek-title { font-family: var(--font-display); font-size: 17px; font-weight: 600; letter-spacing: -0.3px; color: var(--ink-primary);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #sb-peek-teaser { font-family: var(--font-body); font-size: 13px; color: var(--ink); line-height: 1.4;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  @media (max-width: 768px) {
+    #sb-search-btn { display: none; } /* redundant with #search-pill, which delegates to this button's own click handler */
+    #sidebar[data-sheet-state="peek"] .sb-top,
+    #sidebar[data-sheet-state="peek"] .sb-hist-slider,
+    #sidebar[data-sheet-state="peek"] .sb-selection,
+    #sidebar[data-sheet-state="peek"] #sb-body,
+    #sidebar[data-sheet-state="peek"] #sb-attribution { display: none !important; }
+    #sidebar[data-sheet-state="peek"] #sb-peek-summary { display: flex; }
+  }
 
   .sb-top { flex-shrink: 0; border-bottom: 0.5px solid var(--br); }
   .sb-top-upper { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px 8px; gap: 6px; }
@@ -1276,9 +1320,18 @@
 </div>
 
 <div id="sidebar">
-  <div class="sb-handle-row">
-    <div class="sb-handle"></div>
-    <button class="ghost-btn" id="sb-min-btn" aria-label="Minimise sidebar"><i class="ti ti-chevron-up"></i></button>
+  <div class="sb-handle-row" id="sb-handle-row">
+    <div class="sb-handle" id="sb-handle"></div>
+    <button class="ghost-btn" id="sb-min-btn" aria-label="Resize sheet"><i class="ti ti-chevron-up"></i></button>
+  </div>
+
+  <!-- Tablet/mobile only (see CSS) — the sheet's peek-state content, station
+       name + short teaser. Populated by updateSheetPeekSummary(), called
+       from rebuildSidebarContent() so it always matches whatever is
+       currently mounted in #sb-content-block. -->
+  <div id="sb-peek-summary">
+    <span id="sb-peek-title"></span>
+    <span id="sb-peek-teaser"></span>
   </div>
 
   <div class="sb-top">
@@ -5209,6 +5262,15 @@
   }
 
   function renderSelectionChrome() {
+    // Tablet/mobile only — auto-snap the sheet to peek on a FRESH selection
+    // (maximises map visibility once you've picked something) and back to
+    // half when it's cleared, matching desktop's always-visible sidebar
+    // default. Compared against the class's state before this call (not
+    // just "type !== 'none'") so a re-render of the SAME still-open
+    // selection — departure-board polling, background JSON arriving late —
+    // never yanks the sheet back to peek out from under someone who
+    // deliberately dragged it to half/full to read something.
+    var hadSelectionForSheet = sidebarEl.classList.contains('has-selection');
     savedToggleBtn.setAttribute('aria-pressed', String(selection.type === 'saved'));
     // Task 2, extended Phase 6, extended Section 5 (2026-08-05): the shared
     // magenta highlight layer serves a named-route selection, a live
@@ -5221,9 +5283,11 @@
       sidebarEl.classList.remove('has-selection');
       selTitleEl.textContent = '';
       starBtn.style.display = 'none';
+      if (window.innerWidth <= 768 && hadSelectionForSheet && typeof setSheetState === 'function') setSheetState('half');
       return;
     }
     sidebarEl.classList.add('has-selection');
+    if (window.innerWidth <= 768 && !hadSelectionForSheet && typeof setSheetState === 'function') setSheetState('peek');
     if (type === 'station') {
       selTitleEl.textContent = selectedStationName;
       starBtn.style.display = '';
@@ -6136,6 +6200,35 @@
     // path" — one call regardless of which branch above actually rendered
     // it, rather than repeating this at each call site.
     applyMarquee('sv-list', contentBlock.querySelectorAll('.sv-name'));
+    updateSheetPeekSummary();
+  }
+
+  // Tablet/mobile only — the sheet's peek state (see CSS) shows just a
+  // title + one-line teaser instead of the full content block. The content
+  // model here is a bullet/field list per selection type (db-field, db-hint,
+  // news-item, sv-name…), not a single teaser sentence anywhere, so this is
+  // a best-effort scrape of whatever just got rendered rather than a proper
+  // per-type teaser string — flagged in the report as a first-pass hack, not
+  // a content-model fix. Selector order is priority, not markup order:
+  // .news-title (live default), .db-hint (route/operator/heritage panels
+  // with no fields yet, and the history/database defaults), .db-value (the
+  // common station/route/operator field case), .sv-name (saved/stopping-
+  // station lists) — first match wins.
+  function deriveSheetTeaser() {
+    var row = contentBlock.querySelector('.news-title, .db-hint, .db-value, .sv-name');
+    var text = row ? row.textContent.replace(/\s+/g, ' ').trim() : '';
+    if (!text) text = 'Tap to view details';
+    if (text.length > 88) text = text.slice(0, 85).replace(/\s+\S*$/, '') + '…';
+    return text;
+  }
+  function updateSheetPeekSummary() {
+    var titleEl = document.getElementById('sb-peek-title');
+    var teaserEl = document.getElementById('sb-peek-teaser');
+    if (!titleEl || !teaserEl) return;
+    var hasSelection = sidebarEl.classList.contains('has-selection');
+    titleEl.textContent = hasSelection ? selTitleEl.textContent :
+      (mode === 'database' ? 'Database' : (mode === 'history' ? 'History' : 'Live updates'));
+    teaserEl.textContent = deriveSheetTeaser();
   }
 
   function playEntranceStagger(mySeq) {
@@ -9545,15 +9638,17 @@
   enableDragToScroll(modeCapsuleScrollEl);
 
   // ── Floating cluster stacking ─────────────────────────────────────────────
-  // A fixed CSS top offset can't track the sidebar's height since it varies
-  // with content (station selected vs the empty default state, collapsed vs
-  // expanded, etc.) — on mobile especially, where the sidebar is capped at
-  // 35vh but often renders much shorter. This measures actual rendered
-  // positions instead, live, via ResizeObserver, so the stack always sits
-  // flush regardless of how tall the sidebar currently is.
-  // Desktop: region-jump below the sidebar, control-cluster below that.
-  // Mobile/tablet-portrait (region-jump hidden, see CSS): search-pill below
-  // the sidebar, mode-capsule below the pill, control-cluster below that.
+  // A fixed CSS top offset can't track a variable-height neighbour, so this
+  // measures actual rendered positions live via ResizeObserver instead.
+  // Desktop: #sidebar is a left column (unaffected by any of this — its own
+  // media query handles it), region-jump sits below the nav bar, and
+  // control-cluster stacks below region-jump.
+  // Mobile/tablet-portrait (region-jump hidden, see CSS): #sidebar is now a
+  // BOTTOM-anchored sheet (2026-08-06), no longer above this stack at all —
+  // search-pill anchors directly off the nav bar, mode-capsule stacks below
+  // the pill, control-cluster below that. None of this depends on sidebarEl
+  // any more (see regionJumpFlyToPadding() for where the sheet's height
+  // still matters — the map's bottom camera padding).
   var regionJumpEl = document.getElementById('region-jump');
   var controlClusterEl = document.getElementById('control-cluster');
   var searchPillEl = document.getElementById('search-pill');
@@ -9564,7 +9659,15 @@
     var jumpVisible = getComputedStyle(regionJumpEl).display !== 'none';
     if (mobile) {
       regionJumpEl.style.top = ''; // hidden at this breakpoint — search-pill/mode-capsule take its slot
-      searchPillEl.style.top = (sidebarEl.getBoundingClientRect().bottom + 10) + 'px';
+      // #sidebar is now a bottom-anchored sheet (2026-08-06), not a top card
+      // — it no longer sits ABOVE this stack, so anchoring off its rect (as
+      // this used to) would read its now-irrelevant bottom edge (≈ viewport
+      // height) and push everything off-screen. Anchor off the nav bar
+      // directly instead, the same base offset #region-jump/#control-cluster
+      // already use as their CSS default on desktop. --nav-h is read live
+      // rather than hardcoded so this can't drift from the CSS value.
+      var navH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--nav-h')) || 72;
+      searchPillEl.style.top = (navH + 10) + 'px';
       modeCapsuleEl.style.top = (searchPillEl.getBoundingClientRect().bottom + 10) + 'px';
       controlClusterEl.style.top = (modeCapsuleEl.getBoundingClientRect().bottom + 10) + 'px';
     } else if (jumpVisible) {
@@ -9575,12 +9678,110 @@
       controlClusterEl.style.top = ''; // desktop, region-jump hidden by some future rule — CSS default
     }
   }
-  new ResizeObserver(positionFloatingClusters).observe(sidebarEl);
+  // No observer on sidebarEl any more — positionFloatingClusters() doesn't
+  // read it in either branch now (see comment above); keeping it would fire
+  // this on every frame of a sheet drag for no reason (wireSheet() below
+  // calls regionJumpFlyToPadding() itself when the sheet's height matters).
   new ResizeObserver(positionFloatingClusters).observe(regionJumpEl);
   new ResizeObserver(positionFloatingClusters).observe(searchPillEl);
   new ResizeObserver(positionFloatingClusters).observe(modeCapsuleEl);
   window.addEventListener('resize', positionFloatingClusters);
   positionFloatingClusters();
+
+  // ── Bottom sheet: 3 snap states, drag-to-resize + tap-to-cycle ────────────
+  // (tablet/mobile only — see CSS; no-ops at desktop widths below.)
+  // No existing gesture code to build on for the drag itself: the map's own
+  // "reverse colour-reveal" lock/highlight system (CLAUDE.md) is a hover/
+  // click feature on vector-tile line layers, unrelated to touch gestures;
+  // and enableDragToScroll() (region-jump/mode-capsule) is strictly
+  // horizontal (scrollLeft-based, dx = clientX - startX) with no vertical
+  // branch anywhere in the file. This mirrors its general PointerEvent
+  // conventions (capture only once a real drag is detected past a small
+  // threshold, so an ordinary tap is never disturbed; swallow the resulting
+  // click so a drag can't also fire tap-to-cycle) rather than reusing either
+  // — the gesture itself (track a height, snap to one of 3 states, refresh
+  // map padding on settle) has no equivalent to adapt.
+  var SHEET_STATES = ['peek', 'half', 'full'];
+  var SHEET_VH = { peek: 14, half: 45, full: 88 }; // starting points — see report re: tuning against real content
+  var sheetState = 'half'; // overridden below once initial selection state is known
+
+  function setSheetState(state, opts) {
+    opts = opts || {};
+    sheetState = state;
+    sidebarEl.dataset.sheetState = state;
+    sidebarEl.style.height = SHEET_VH[state] + 'vh';
+    updateSheetPeekSummary();
+    // Sticky padding (see regionJumpFlyToPadding()'s own comment) — only
+    // re-set on a settled state change, not per drag frame, so a live drag
+    // doesn't fight the map with an easeTo() on every pointermove.
+    if (!opts.silent) map.easeTo({ padding: regionJumpFlyToPadding(), duration: 250 });
+  }
+  function cycleSheetState() {
+    setSheetState(SHEET_STATES[(SHEET_STATES.indexOf(sheetState) + 1) % SHEET_STATES.length]);
+  }
+  function nearestSheetState(vh) {
+    var best = SHEET_STATES[0], bestDist = Infinity;
+    SHEET_STATES.forEach(function (s) {
+      var d = Math.abs(SHEET_VH[s] - vh);
+      if (d < bestDist) { bestDist = d; best = s; }
+    });
+    return best;
+  }
+
+  (function wireSheet() {
+    var handle = document.getElementById('sb-handle-row');
+    var down = false, dragging = false, moved = false, startY = 0, startHeightPx = 0, pointerId = null, threshold = 6;
+    handle.addEventListener('pointerdown', function (e) {
+      if (window.innerWidth > 768) return;
+      down = true; dragging = false; moved = false;
+      startY = e.clientY;
+      startHeightPx = sidebarEl.getBoundingClientRect().height;
+      pointerId = e.pointerId;
+    });
+    handle.addEventListener('pointermove', function (e) {
+      if (!down) return;
+      var dy = e.clientY - startY;
+      if (!dragging && Math.abs(dy) > threshold) {
+        dragging = true;
+        moved = true;
+        sidebarEl.classList.add('sheet-dragging'); // drop the CSS transition so height tracks 1:1 with no lag
+        try { handle.setPointerCapture(pointerId); } catch (err) {}
+      }
+      if (dragging) {
+        var newHeightPx = startHeightPx - dy; // dragging up (negative dy) grows the sheet
+        var vh = Math.max(8, Math.min(90, (newHeightPx / window.innerHeight) * 100));
+        sidebarEl.style.height = vh + 'vh';
+      }
+    });
+    function endDrag() {
+      if (!down) return;
+      down = false;
+      if (!dragging) return;
+      dragging = false;
+      sidebarEl.classList.remove('sheet-dragging'); // re-enable the transition so the snap eases in
+      var vh = (sidebarEl.getBoundingClientRect().height / window.innerHeight) * 100;
+      setSheetState(nearestSheetState(vh)); // nearest-by-distance snap — no release-velocity weighting yet, see report
+    }
+    handle.addEventListener('pointerup', endDrag);
+    handle.addEventListener('pointercancel', endDrag);
+    // #sb-min-btn (inside this row) gets no listener of its own — a tap
+    // there bubbles up to this same click handler, so the drag bar and the
+    // button are one gesture surface instead of two independently-wired
+    // ones that could drift out of sync.
+    handle.addEventListener('click', function (e) {
+      if (moved) { e.preventDefault(); e.stopPropagation(); return; } // a real drag must not also cycle
+      if (window.innerWidth > 768) return;
+      cycleSheetState();
+    });
+    // Sets data-sheet-state="half" to match sheetState's own initial value
+    // (the CSS default height, 45vh, already matches — see that rule's
+    // comment — so this doesn't move anything, just makes the attribute
+    // exist for the peek-hide/full-icon-rotation CSS rules to read).
+    // Silent: the map's own initial jumpTo() already computes padding
+    // against this same 45vh resting height, so re-easing here would just
+    // be a redundant no-op camera move at page load.
+    if (window.innerWidth <= 768) setSheetState(sheetState, { silent: true });
+  })();
 
   // ── Search (single station, and from/to) ──────────────────────────────────
   var searchBtn = document.getElementById('sb-search-btn');
@@ -9617,6 +9818,11 @@
   // exact same handler as the desktop search icon rather than duplicating
   // its open/close logic, so the two can never drift out of sync.
   document.getElementById('search-pill').addEventListener('click', function () {
+    // #sb-search-panel lives inside .sb-top, which is hidden at the sheet's
+    // peek state (2026-08-06) — without this, searchBtn.click() would open
+    // the panel with no visible effect until the sheet is separately
+    // dragged/tapped up.
+    if (window.innerWidth <= 768 && sheetState === 'peek') setSheetState('half');
     searchBtn.click();
   });
   // Explicit close (far right of the mode-tabs row) — same end state as
@@ -10053,11 +10259,6 @@
     if (e.key !== 'Enter') return;
     var picked = operatorPick || searchOperators(operatorInput.value, 1)[0];
     if (picked) submitOperatorPick(picked);
-  });
-
-  // ── Sidebar minimise (tablet/mobile only — see CSS) ───────────────────────
-  document.getElementById('sb-min-btn').addEventListener('click', function () {
-    sidebarEl.classList.toggle('collapsed');
   });
 
   // ── Filters (client-side categories over incidents) ──────────────────────
