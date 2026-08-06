@@ -176,38 +176,50 @@ function modesCompatible(a, b) {
   return { ok: ma === mb, confidence: ma === mb ? 'mode-matched' : 'mode-mismatch' };
 }
 
-const components = computeComponents(rg.nodes);
+let components = computeComponents(rg.nodes);
 components.sort((a, b) => b.length - a.length);
-const giant = components[0];
-console.log(`Giant component: ${giant.length} nodes (of ${components.length} total components)`);
+console.log(`Giant component: ${components[0].length} nodes (of ${components.length} total components)`);
 
-const nodeToComponent = new Map();
-components.forEach((c, i) => c.forEach((n) => nodeToComponent.set(n, i)));
-
-const stationsByComponent = new Map();
-for (const [crs, node] of Object.entries(rg.station_node)) {
-  if (!node) continue;
-  const c = nodeToComponent.get(String(node));
-  if (c === undefined) continue;
-  if (!stationsByComponent.has(c)) stationsByComponent.set(c, []);
-  stationsByComponent.get(c).push(crs);
-}
-
-// Coarse grid over the giant component's coordinates so each island only
-// compares against nearby nodes instead of all ~6,500 (the old all-pairs
-// scan was fine for 8 hand-picked islands, far less so for a full sweep).
+// ─── MULTI-HOP CHAINING (2026-08-06) ──────────────────────────────────────
+// The original version below searched each island against ONLY the giant
+// component's nodes, one hop, once. That is provably not enough: Pontefract
+// Baghill's island reaches the giant component in 4 real hops of 2-4m each,
+// via THREE intermediate islands (22, 9 and 30 nodes) that carry no station
+// of their own — each is a genuine node-ID mismatch at a real junction
+// throat, same class of issue as every other bridge here, just chained
+// instead of single. The old single-hop-against-giant search reported this
+// as "gap-too-large, closest >150m" (candidates.length === 0) because the
+// one node that actually was ~3m away was never in `giant` at all — it was
+// sitting in the very next island over, which the search never looked at.
+//
+// Two changes fix this without touching the mode/threshold/waiver logic
+// that already works for the 28 existing single-hop bridges:
+//   1. Search against ANY node not in the current island's (dynamically
+//      updated) component, not just `giant`.
+//   2. After finding and accepting a hop, MERGE the two components in
+//      memory and continue the same island's search from its new, larger
+//      component — repeating until it reaches the giant component or the
+//      next-nearest candidate exceeds THRESHOLD_M.
+// A station-less island is still never a *starting point* for its own
+// search (nothing to gain bridging FROM empty track on its own initiative,
+// same reasoning as before) — but it is now a valid *stepping stone* when
+// it happens to be the nearest thing to a real station's island, which is
+// exactly the Baghill case.
 const CELL_DEG = 0.005; // ~350-550m — comfortably wider than the search radius
-const grid = new Map();
-const cellKey = (lon, lat) => Math.floor(lon / CELL_DEG) + ',' + Math.floor(lat / CELL_DEG);
-for (const id of giant) {
-  const c = rg.node_coord[id];
-  if (!c) continue;
-  const key = cellKey(c[0], c[1]);
-  if (!grid.has(key)) grid.set(key, []);
-  grid.get(key).push({ id, c });
+function buildGrid(nodeIds) {
+  const grid = new Map();
+  const cellKey = (lon, lat) => Math.floor(lon / CELL_DEG) + ',' + Math.floor(lat / CELL_DEG);
+  for (const id of nodeIds) {
+    const c = rg.node_coord[id];
+    if (!c) continue;
+    const key = cellKey(c[0], c[1]);
+    if (!grid.has(key)) grid.set(key, []);
+    grid.get(key).push({ id, c });
+  }
+  return { grid, cellKey };
 }
-function nearbyGiantNodes(lon, lat) {
-  const cx = Math.floor(lon / CELL_DEG), cy = Math.floor(lat / CELL_DEG);
+function nearbyNodes({ grid, cellKey }, lon, lat) {
+  const [cx, cy] = cellKey(lon, lat).split(',').map(Number);
   const out = [];
   for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) {
     const bucket = grid.get((cx + dx) + ',' + (cy + dy));
@@ -218,71 +230,164 @@ function nearbyGiantNodes(lon, lat) {
 
 const bridges = [];
 const report = [];
-for (let compIdx = 1; compIdx < components.length; compIdx++) {
-  const island = components[compIdx];
-  const stations = stationsByComponent.get(compIdx) || [];
-  const islandCoords = island.map((id) => ({ id, c: rg.node_coord[id] })).filter((x) => x.c);
+const MAX_HOPS = 60; // empirically: everything that CAN chain to giant does so in <=40 hops; raising to 200 found nothing extra (BUC/BYA/CNY/REE genuinely hits a >150m wall partway, not a hop-count problem)
+// Islands whose chase already failed (gap-too-large / rejected-mode) — key
+// is the sorted station list, since compIdx is renumbered by every merge.
+// Without this, the outer loop would re-pick and re-fail the same island
+// forever: a failed chase's provisional edges are rolled back, so the
+// island is still there, still station-bearing, and still first in
+// component order on the next pass.
+const givenUp = new Set();
 
-  const candidates = [];
-  for (const isl of islandCoords) {
-    for (const g of nearbyGiantNodes(isl.c[0], isl.c[1])) {
-      const d = haversineMeters(isl.c, g.c);
-      if (d <= CANDIDATE_SEARCH_RADIUS_M) candidates.push({ from: isl.id, to: g.id, distM: d });
-    }
+for (;;) {
+  const nodeToComponent = new Map();
+  components.forEach((c, i) => c.forEach((n) => nodeToComponent.set(n, i)));
+  const stationsByComponent = new Map();
+  for (const [crs, node] of Object.entries(rg.station_node)) {
+    if (!node) continue;
+    const c = nodeToComponent.get(String(node));
+    if (c === undefined) continue;
+    if (!stationsByComponent.has(c)) stationsByComponent.set(c, []);
+    stationsByComponent.get(c).push(crs);
   }
-  candidates.sort((a, b) => a.distM - b.distM);
 
-  const entry = { compIdx, islandSize: island.length, stations, closestM: candidates.length ? Math.round(candidates[0].distM * 10) / 10 : null };
-  if (!stations.length) { entry.result = 'skipped-no-stations'; report.push(entry); continue; }
+  // Pick the next not-yet-resolved, not-yet-given-up station-bearing island
+  // (skip index 0, the giant component). Re-derived every outer pass
+  // because merges renumber components.
+  let compIdx = -1;
+  for (let i = 1; i < components.length; i++) {
+    const st = stationsByComponent.get(i) || [];
+    if (st.length && !givenUp.has(st.slice().sort().join(','))) { compIdx = i; break; }
+  }
+  if (compIdx === -1) break; // every station-bearing island resolved or given up
 
-  const waiverCrs = stations.find((crs) => MODE_GUARD_WAIVERS[crs]);
-  let chosen = null, rejection = null;
-  for (const c of candidates) {
-    if (c.distM > THRESHOLD_M) break; // sorted ascending — nothing further will pass either
-    const mode = modesCompatible(c.from, c.to);
-    if (!mode.ok) {
-      rejection = rejection || `mode mismatch at ${c.from} <-> ${c.to} (${Math.round(c.distM)}m): ${[...(nodeOperators.get(String(c.from)) || [])].join('/')} vs ${[...(nodeOperators.get(String(c.to)) || [])].join('/')}`;
-      if (!waiverCrs) continue;
-      chosen = { ...c, confidence: 'mode-crossing-waived', waiver: MODE_GUARD_WAIVERS[waiverCrs] };
+  const originalStations = stationsByComponent.get(compIdx);
+  const startCompIdx = compIdx;
+  const startIslandSize = components[compIdx].length;
+  const chainBridges = [];
+  let hop = 0;
+  let finalResult = null, finalDetail = null, finalClosestM = null;
+
+  for (;;) {
+    hop++;
+    // All OTHER nodes, grouped by grid cell, excluding the current island's
+    // own (possibly already-merged) component.
+    const curIsland = components[compIdx];
+    const curSet = new Set(curIsland);
+    const otherIds = [];
+    for (let i = 0; i < components.length; i++) {
+      if (i === compIdx) continue;
+      for (const n of components[i]) otherIds.push(n);
+    }
+    const idx = buildGrid(otherIds);
+
+    const candidates = [];
+    for (const id of curIsland) {
+      const c = rg.node_coord[id];
+      if (!c) continue;
+      for (const g of nearbyNodes(idx, c[0], c[1])) {
+        const d = haversineMeters(c, g.c);
+        if (d <= CANDIDATE_SEARCH_RADIUS_M) candidates.push({ from: id, to: g.id, distM: d });
+      }
+    }
+    candidates.sort((a, b) => a.distM - b.distM);
+    if (hop === 1) finalClosestM = candidates.length ? Math.round(candidates[0].distM * 10) / 10 : null;
+
+    const waiverCrs = originalStations.find((crs) => MODE_GUARD_WAIVERS[crs]);
+    let chosen = null, rejection = null;
+    for (const c of candidates) {
+      if (c.distM > THRESHOLD_M) break;
+      const mode = modesCompatible(c.from, c.to);
+      if (!mode.ok) {
+        rejection = rejection || `mode mismatch at ${c.from} <-> ${c.to} (${Math.round(c.distM)}m): ${[...(nodeOperators.get(String(c.from)) || [])].join('/')} vs ${[...(nodeOperators.get(String(c.to)) || [])].join('/')}`;
+        if (!waiverCrs) continue;
+        chosen = { ...c, confidence: 'mode-crossing-waived', waiver: MODE_GUARD_WAIVERS[waiverCrs] };
+        break;
+      }
+      chosen = { ...c, confidence: mode.confidence };
       break;
     }
-    chosen = { ...c, confidence: mode.confidence };
-    break;
+
+    if (!chosen) {
+      finalResult = candidates.length && candidates[0].distM <= THRESHOLD_M ? 'rejected-mode' : 'gap-too-large';
+      finalDetail = rejection;
+      break;
+    }
+
+    chainBridges.push({
+      from: chosen.from, to: chosen.to,
+      distM: Math.round(chosen.distM * 100) / 100,
+      confidence: chosen.confidence, waiver: chosen.waiver || null,
+      fromOperators: [...(nodeOperators.get(String(chosen.from)) || [])],
+      toOperators: [...(nodeOperators.get(String(chosen.to)) || [])],
+    });
+
+    // Merge in memory (as a real 'segment'-type edge for component purposes
+    // — computeComponents() only skips 'bridge'-type edges so a NEWLY
+    // proposed hop must count as connected while we keep chasing, exactly
+    // like the real bridge edge build-routing-graph.mjs will inject later)
+    // and continue the SAME island's search from its enlarged component.
+    if (!rg.nodes[chosen.from]) rg.nodes[chosen.from] = [];
+    if (!rg.nodes[chosen.to]) rg.nodes[chosen.to] = [];
+    rg.nodes[chosen.from].push({ to: chosen.to, length_m: chosen.distM, edge: { type: 'segment' } });
+    rg.nodes[chosen.to].push({ to: chosen.from, length_m: chosen.distM, edge: { type: 'segment' } });
+    components = computeComponents(rg.nodes);
+    components.sort((a, b) => b.length - a.length);
+    const newNodeToComponent = new Map();
+    components.forEach((c, i) => c.forEach((n) => newNodeToComponent.set(n, i)));
+    compIdx = newNodeToComponent.get(String(originalStations && rg.station_node[originalStations[0]]));
+
+    if (compIdx === 0) { finalResult = 'bridged'; break; } // reached the giant component
+    if (hop >= MAX_HOPS) { finalResult = 'gap-too-large'; finalDetail = `stopped after ${MAX_HOPS} hops without reaching the giant component`; break; }
   }
-  if (!chosen) {
-    entry.result = candidates.length && candidates[0].distM <= THRESHOLD_M ? 'rejected-mode' : 'gap-too-large';
-    entry.detail = rejection;
-    report.push(entry);
-    continue;
+
+  if (finalResult === 'bridged') {
+    for (const b of chainBridges) {
+      bridges.push({
+        anchor: originalStations.join(','),
+        crs: originalStations[0],
+        from: b.from, to: b.to, distM: b.distM,
+        confidence: b.confidence, waiver: b.waiver,
+        fromOperators: b.fromOperators, toOperators: b.toOperators,
+      });
+    }
+    report.push({
+      compIdx: startCompIdx, islandSize: startIslandSize, stations: originalStations, closestM: finalClosestM,
+      result: chainBridges.length > 1 ? 'bridged-multi-hop' : 'bridged',
+      detail: chainBridges.map((b) => `${b.from} <-> ${b.to} (${Math.round(b.distM)}m, ${b.confidence})`).join(' -> '),
+    });
+  } else {
+    // Roll back any provisional in-memory hops from this failed chase so
+    // they don't leak into the next island's search or the final component
+    // list — recompute fresh from the untouched rg.nodes state is simplest,
+    // but rg.nodes was mutated above. Rebuild by dropping every synthetic
+    // edge this chase added (they are exactly chainBridges' from/to pairs).
+    for (const b of chainBridges) {
+      rg.nodes[b.from] = rg.nodes[b.from].filter((e) => !(e.to === b.to && e.edge.type === 'segment' && e.length_m === b.distM));
+      rg.nodes[b.to] = rg.nodes[b.to].filter((e) => !(e.to === b.from && e.edge.type === 'segment' && e.length_m === b.distM));
+    }
+    components = computeComponents(rg.nodes);
+    components.sort((a, b) => b.length - a.length);
+    givenUp.add(originalStations.slice().sort().join(','));
+    report.push({
+      compIdx: startCompIdx, islandSize: startIslandSize, stations: originalStations, closestM: finalClosestM,
+      result: finalResult, detail: finalDetail,
+    });
   }
-  bridges.push({
-    anchor: stations.join(','),
-    crs: stations[0],
-    from: chosen.from,
-    to: chosen.to,
-    distM: Math.round(chosen.distM * 100) / 100,
-    confidence: chosen.confidence,
-    waiver: chosen.waiver || null,
-    fromOperators: [...(nodeOperators.get(String(chosen.from)) || [])],
-    toOperators: [...(nodeOperators.get(String(chosen.to)) || [])],
-  });
-  entry.result = 'bridged';
-  entry.detail = `${chosen.from} <-> ${chosen.to} (${Math.round(chosen.distM)}m, ${chosen.confidence})`;
-  report.push(entry);
 }
 
 writeFileSync(OUT_PATH, JSON.stringify({
   generated_at: new Date().toISOString(),
   threshold_m: THRESHOLD_M,
   bridges,
-  unbridged: report.filter((r) => r.result !== 'bridged' && r.result !== 'skipped-no-stations'),
+  unbridged: report.filter((r) => r.result !== 'bridged' && r.result !== 'bridged-multi-hop' && r.result !== 'skipped-no-stations'),
 }, null, 2) + '\n');
 
 console.log('\n=== Bridged ===');
 for (const b of bridges) console.log(`  ${b.distM}m  ${b.from} <-> ${b.to}  [${b.confidence}]  stations: ${b.anchor}`);
 console.log('\n=== Left unbridged (station-bearing islands only) ===');
 for (const r of report) {
-  if (r.result === 'bridged' || r.result === 'skipped-no-stations') continue;
+  if (r.result === 'bridged' || r.result === 'bridged-multi-hop' || r.result === 'skipped-no-stations') continue;
   console.log(`  ${r.result} (closest ${r.closestM === null ? '>' + CANDIDATE_SEARCH_RADIUS_M + 'm' : r.closestM + 'm'}): ${r.stations.join(',')}${r.detail ? ' — ' + r.detail : ''}`);
 }
 console.log(`\n${bridges.length} bridges written to ${OUT_PATH}`);

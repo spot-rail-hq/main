@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-06T17:09:55.321Z",
+  "generated_at": "2026-08-06T19:07:22.114Z",
   "threshold_m": 150,
   "bridges": [
     {
@@ -80,6 +80,352 @@
       ]
     },
     {
+      "anchor": "HEL,RWC,SNI,WBD",
+      "crs": "HEL",
+      "from": "1574767564",
+      "to": "2137444280",
+      "distM": 3.34,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "NT"
+      ],
+      "toOperators": [
+        "NT"
+      ]
+    },
+    {
+      "anchor": "HEL,RWC,SNI,WBD",
+      "crs": "HEL",
+      "from": "2137444294",
+      "to": "1878060354",
+      "distM": 2.58,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "NT"
+      ],
+      "toOperators": [
+        "NT"
+      ]
+    },
+    {
+      "anchor": "HEL,RWC,SNI,WBD",
+      "crs": "HEL",
+      "from": "8602363842",
+      "to": "2724999960",
+      "distM": 2.97,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "NT"
+      ],
+      "toOperators": [
+        "NT"
+      ]
+    },
+    {
+      "anchor": "HEL,RWC,SNI,WBD",
+      "crs": "HEL",
+      "from": "2137383162",
+      "to": "1879030738",
+      "distM": 2.97,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "NT"
+      ],
+      "toOperators": [
+        "NT"
+      ]
+    },
+    {
+      "anchor": "HEL,RWC,SNI,WBD",
+      "crs": "HEL",
+      "from": "2137383155",
+      "to": "6843835100",
+      "distM": 3.4,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "NT"
+      ],
+      "toOperators": [
+        "NT"
+      ]
+    },
+    {
+      "anchor": "HEL,RWC,SNI,WBD",
+      "crs": "HEL",
+      "from": "2137444276",
+      "to": "1878019292",
+      "distM": 3.45,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "NT"
+      ],
+      "toOperators": [
+        "NT"
+      ]
+    },
+    {
+      "anchor": "HEL,RWC,SNI,WBD",
+      "crs": "HEL",
+      "from": "415718",
+      "to": "2074640670",
+      "distM": 3.48,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "NT"
+      ],
+      "toOperators": [
+        "NT"
+      ]
+    },
+    {
+      "anchor": "ALN,BLB,BUU,NFA,SMN,SOF",
+      "crs": "ALN",
+      "from": "1041072303",
+      "to": "316985204",
+      "distM": 3.93,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "LE"
+      ],
+      "toOperators": [
+        "LE"
+      ]
+    },
+    {
+      "anchor": "ALN,BLB,BUU,NFA,SMN,SOF",
+      "crs": "ALN",
+      "from": "1210780532",
+      "to": "2940653346",
+      "distM": 2.22,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "LE"
+      ],
+      "toOperators": [
+        "LE"
+      ]
+    },
+    {
+      "anchor": "ALN,BLB,BUU,NFA,SMN,SOF",
+      "crs": "ALN",
+      "from": "1880213805",
+      "to": "2940653232",
+      "distM": 3.34,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "LE"
+      ],
+      "toOperators": [
+        "LE"
+      ]
+    },
+    {
+      "anchor": "ALN,BLB,BUU,NFA,SMN,SOF",
+      "crs": "ALN",
+      "from": "1763628419",
+      "to": "1422495041",
+      "distM": 3.41,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "LE"
+      ],
+      "toOperators": [
+        "LE"
+      ]
+    },
+    {
+      "anchor": "ALN,BLB,BUU,NFA,SMN,SOF",
+      "crs": "ALN",
+      "from": "2940653352",
+      "to": "1763628414",
+      "distM": 3.41,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "LE"
+      ],
+      "toOperators": [
+        "LE"
+      ]
+    },
+    {
+      "anchor": "ALN,BLB,BUU,NFA,SMN,SOF",
+      "crs": "ALN",
+      "from": "1584212469",
+      "to": "1422495058",
+      "distM": 3.41,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "LE"
+      ],
+      "toOperators": [
+        "LE"
+      ]
+    },
+    {
+      "anchor": "ALN,BLB,BUU,NFA,SMN,SOF",
+      "crs": "ALN",
+      "from": "1544844295",
+      "to": "2940653067",
+      "distM": 3.61,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "LE"
+      ],
+      "toOperators": [
+        "LE"
+      ]
+    },
+    {
+      "anchor": "ALN,BLB,BUU,NFA,SMN,SOF",
+      "crs": "ALN",
+      "from": "316985204",
+      "to": "2940653029",
+      "distM": 3.61,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "LE"
+      ],
+      "toOperators": [
+        "LE"
+      ]
+    },
+    {
+      "anchor": "ALN,BLB,BUU,NFA,SMN,SOF",
+      "crs": "ALN",
+      "from": "316985207",
+      "to": "2940653028",
+      "distM": 3.61,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "LE"
+      ],
+      "toOperators": [
+        "LE"
+      ]
+    },
+    {
+      "anchor": "ALN,BLB,BUU,NFA,SMN,SOF",
+      "crs": "ALN",
+      "from": "2940652659",
+      "to": "1562515100",
+      "distM": 3.41,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "LE"
+      ],
+      "toOperators": [
+        "LE"
+      ]
+    },
+    {
+      "anchor": "ALN,BLB,BUU,NFA,SMN,SOF",
+      "crs": "ALN",
+      "from": "29715689",
+      "to": "2940653009",
+      "distM": 1.77,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "LE"
+      ],
+      "toOperators": [
+        "LE"
+      ]
+    },
+    {
+      "anchor": "ALN,BLB,BUU,NFA,SMN,SOF",
+      "crs": "ALN",
+      "from": "1097234472",
+      "to": "2940652854",
+      "distM": 2.35,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "LE"
+      ],
+      "toOperators": [
+        "LE"
+      ]
+    },
+    {
+      "anchor": "ALN,BLB,BUU,NFA,SMN,SOF",
+      "crs": "ALN",
+      "from": "1097234398",
+      "to": "2940652658",
+      "distM": 2.35,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "LE"
+      ],
+      "toOperators": [
+        "LE"
+      ]
+    },
+    {
+      "anchor": "ALN,BLB,BUU,NFA,SMN,SOF",
+      "crs": "ALN",
+      "from": "1756740195",
+      "to": "2940653209",
+      "distM": 4.66,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "LE"
+      ],
+      "toOperators": [
+        "LE"
+      ]
+    },
+    {
+      "anchor": "ALN,BLB,BUU,NFA,SMN,SOF",
+      "crs": "ALN",
+      "from": "1422495078",
+      "to": "3909808794",
+      "distM": 30.17,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "LE"
+      ],
+      "toOperators": [
+        "XR"
+      ]
+    },
+    {
+      "anchor": "ALN,BLB,BUU,NFA,SMN,SOF",
+      "crs": "ALN",
+      "from": "32861739",
+      "to": "1597005716",
+      "distM": 36.18,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "XR",
+        "LE"
+      ],
+      "toOperators": [
+        "LE"
+      ]
+    },
+    {
       "anchor": "BUE,CWC,SUY",
       "crs": "BUE",
       "from": "7151086637",
@@ -95,26 +441,193 @@
       ]
     },
     {
-      "anchor": "SHC",
-      "crs": "SHC",
-      "from": "415718",
-      "to": "2074640670",
-      "distM": 3.48,
+      "anchor": "HPQ,MIS,WRB",
+      "crs": "HPQ",
+      "from": "1791640145",
+      "to": "1791640141",
+      "distM": 2.96,
       "confidence": "mode-matched",
       "waiver": null,
       "fromOperators": [
-        "NT"
+        "LE"
       ],
       "toOperators": [
-        "NT"
+        "LE"
+      ]
+    },
+    {
+      "anchor": "HPQ,MIS,WRB",
+      "crs": "HPQ",
+      "from": "364905178",
+      "to": "2393234090",
+      "distM": 3.34,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "LE"
+      ],
+      "toOperators": [
+        "LE"
+      ]
+    },
+    {
+      "anchor": "HPQ,MIS,WRB",
+      "crs": "HPQ",
+      "from": "419668099",
+      "to": "2393199950",
+      "distM": 3.34,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "LE"
+      ],
+      "toOperators": [
+        "LE"
+      ]
+    },
+    {
+      "anchor": "HPQ,MIS,WRB",
+      "crs": "HPQ",
+      "from": "339830778",
+      "to": "2393234062",
+      "distM": 3.34,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "LE"
+      ],
+      "toOperators": [
+        "LE"
+      ]
+    },
+    {
+      "anchor": "HPQ,MIS,WRB",
+      "crs": "HPQ",
+      "from": "1119453399",
+      "to": "2393234074",
+      "distM": 3.34,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "LE"
+      ],
+      "toOperators": [
+        "LE"
+      ]
+    },
+    {
+      "anchor": "HPQ,MIS,WRB",
+      "crs": "HPQ",
+      "from": "8229464449",
+      "to": "2393259514",
+      "distM": 3.53,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "LE"
+      ],
+      "toOperators": [
+        "LE"
+      ]
+    },
+    {
+      "anchor": "HPQ,MIS,WRB",
+      "crs": "HPQ",
+      "from": "413334849",
+      "to": "2393199957",
+      "distM": 3.61,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "LE"
+      ],
+      "toOperators": [
+        "LE"
+      ]
+    },
+    {
+      "anchor": "HPQ,MIS,WRB",
+      "crs": "HPQ",
+      "from": "553368653",
+      "to": "2393222850",
+      "distM": 3.92,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "LE"
+      ],
+      "toOperators": [
+        "LE"
+      ]
+    },
+    {
+      "anchor": "HPQ,MIS,WRB",
+      "crs": "HPQ",
+      "from": "553368661",
+      "to": "2393222857",
+      "distM": 5.3,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "LE"
+      ],
+      "toOperators": [
+        "LE"
+      ]
+    },
+    {
+      "anchor": "HPQ,MIS,WRB",
+      "crs": "HPQ",
+      "from": "160442587",
+      "to": "2393199954",
+      "distM": 17.17,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "LE"
+      ],
+      "toOperators": [
+        "LE"
+      ]
+    },
+    {
+      "anchor": "HPQ,MIS,WRB",
+      "crs": "HPQ",
+      "from": "1791640227",
+      "to": "S:MNG",
+      "distM": 138.53,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "LE"
+      ],
+      "toOperators": [
+        "LE"
       ]
     },
     {
       "anchor": "BXB,HFE,RYH,RYN,SMT,WAR",
       "crs": "BXB",
-      "from": "1637962120",
-      "to": "1236166333",
-      "distM": 4.1,
+      "from": "17051585",
+      "to": "1637312521",
+      "distM": 3.41,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "LE",
+        "SX"
+      ],
+      "toOperators": [
+        "LE",
+        "SX"
+      ]
+    },
+    {
+      "anchor": "BXB,HFE,RYH,RYN,SMT,WAR",
+      "crs": "BXB",
+      "from": "1637312604",
+      "to": "17280222",
+      "distM": 3.92,
       "confidence": "mode-matched",
       "waiver": null,
       "fromOperators": [
@@ -175,22 +688,6 @@
       ]
     },
     {
-      "anchor": "CTH,GDP,GMY,HRO,IFD,SRA,SVK",
-      "crs": "CTH",
-      "from": "32861739",
-      "to": "1597005716",
-      "distM": 36.18,
-      "confidence": "mode-matched",
-      "waiver": null,
-      "fromOperators": [
-        "XR",
-        "LE"
-      ],
-      "toOperators": [
-        "LE"
-      ]
-    },
-    {
       "anchor": "ASP,DLS,FLM,HRR,MRY,PRN,WGT,WKG,WTH",
       "crs": "ASP",
       "from": "2464424116",
@@ -221,6 +718,51 @@
       ],
       "toOperators": [
         "GW"
+      ]
+    },
+    {
+      "anchor": "HHB",
+      "crs": "HHB",
+      "from": "30691930",
+      "to": "9004404432",
+      "distM": 19.61,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "NT"
+      ],
+      "toOperators": [
+        "NT"
+      ]
+    },
+    {
+      "anchor": "HHB",
+      "crs": "HHB",
+      "from": "30691930",
+      "to": "1637164851",
+      "distM": 23.08,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "NT"
+      ],
+      "toOperators": [
+        "NT"
+      ]
+    },
+    {
+      "anchor": "HHB",
+      "crs": "HHB",
+      "from": "S:MCM",
+      "to": "5443775652",
+      "distM": 24.76,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "NT"
+      ],
+      "toOperators": [
+        "NT"
       ]
     },
     {
@@ -285,6 +827,68 @@
       ]
     },
     {
+      "anchor": "PFR",
+      "crs": "PFR",
+      "from": "2511338211",
+      "to": "649638305",
+      "distM": 3.45,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "NT"
+      ],
+      "toOperators": [
+        "NT"
+      ]
+    },
+    {
+      "anchor": "PFR",
+      "crs": "PFR",
+      "from": "2137521244",
+      "to": "2137521228",
+      "distM": 2.86,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "NT"
+      ],
+      "toOperators": [
+        "NT"
+      ]
+    },
+    {
+      "anchor": "PFR",
+      "crs": "PFR",
+      "from": "1580063327",
+      "to": "5311956637",
+      "distM": 2.97,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "NT"
+      ],
+      "toOperators": [
+        "NT"
+      ]
+    },
+    {
+      "anchor": "PFR",
+      "crs": "PFR",
+      "from": "3193195602",
+      "to": "3193195606",
+      "distM": 2.32,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "NT",
+        "TP",
+        "XC"
+      ],
+      "toOperators": [
+        "TP"
+      ]
+    },
+    {
       "anchor": "BNC,BRF,NEL",
       "crs": "BNC",
       "from": "1813227008",
@@ -316,21 +920,6 @@
       ]
     },
     {
-      "anchor": "MCM",
-      "crs": "MCM",
-      "from": "S:MCM",
-      "to": "5443775652",
-      "distM": 24.76,
-      "confidence": "mode-matched",
-      "waiver": null,
-      "fromOperators": [
-        "NT"
-      ],
-      "toOperators": [
-        "NT"
-      ]
-    },
-    {
       "anchor": "LYP,LYT",
       "crs": "LYP",
       "from": "8931055356",
@@ -359,6 +948,21 @@
       ],
       "toOperators": [
         "GW"
+      ]
+    },
+    {
+      "anchor": "PNS",
+      "crs": "PNS",
+      "from": "27446079",
+      "to": "2733340237",
+      "distM": 33.82,
+      "confidence": "mode-matched",
+      "waiver": null,
+      "fromOperators": [
+        "NT"
+      ],
+      "toOperators": [
+        "NT"
       ]
     },
     {
@@ -422,78 +1026,49 @@
       ]
     },
     {
-      "anchor": "HWN",
-      "crs": "HWN",
-      "from": "1637312604",
-      "to": "17280222",
-      "distM": 3.92,
+      "anchor": "CNE",
+      "crs": "CNE",
+      "from": "2106100431",
+      "to": "29768914",
+      "distM": 144.77,
       "confidence": "mode-matched",
       "waiver": null,
       "fromOperators": [
-        "LE",
-        "SX"
+        "NT"
       ],
       "toOperators": [
-        "LE",
-        "SX"
+        "NT"
       ]
     }
   ],
   "unbridged": [
     {
-      "compIdx": 21,
+      "compIdx": 16,
       "islandSize": 44,
       "stations": [
         "BLD"
       ],
-      "closestM": null,
+      "closestM": 2.8,
       "result": "gap-too-large",
       "detail": null
     },
     {
-      "compIdx": 23,
-      "islandSize": 37,
+      "compIdx": 2,
+      "islandSize": 87,
       "stations": [
-        "HEL",
-        "RWC",
-        "SNI",
-        "WBD"
+        "BEY",
+        "BLD",
+        "BUW",
+        "GSY",
+        "ILK",
+        "MNN"
       ],
       "closestM": null,
       "result": "gap-too-large",
       "detail": null
     },
     {
-      "compIdx": 27,
-      "islandSize": 34,
-      "stations": [
-        "ALN",
-        "BLB",
-        "BUU",
-        "NFA",
-        "SMN",
-        "SOF"
-      ],
-      "closestM": null,
-      "result": "gap-too-large",
-      "detail": null
-    },
-    {
-      "compIdx": 28,
-      "islandSize": 32,
-      "stations": [
-        "FEA",
-        "GLH",
-        "KNO",
-        "PFM",
-        "POT"
-      ],
-      "closestM": null,
-      "result": "gap-too-large",
-      "detail": null
-    },
-    {
-      "compIdx": 33,
+      "compIdx": 24,
       "islandSize": 29,
       "stations": [
         "BUY",
@@ -504,39 +1079,31 @@
         "PNL",
         "WET"
       ],
-      "closestM": null,
+      "closestM": 4.2,
       "result": "gap-too-large",
       "detail": null
     },
     {
-      "compIdx": 38,
-      "islandSize": 27,
+      "compIdx": 9,
+      "islandSize": 54,
       "stations": [
-        "HOC",
-        "PRL",
-        "RFD",
-        "RLG",
-        "SIA",
-        "SOV"
+        "BUY",
+        "CTL",
+        "HBP",
+        "HDY",
+        "HGT",
+        "HRS",
+        "KNA",
+        "PNL",
+        "SBE",
+        "WET"
       ],
       "closestM": null,
       "result": "gap-too-large",
       "detail": null
     },
     {
-      "compIdx": 39,
-      "islandSize": 27,
-      "stations": [
-        "HPQ",
-        "MIS",
-        "WRB"
-      ],
-      "closestM": null,
-      "result": "gap-too-large",
-      "detail": null
-    },
-    {
-      "compIdx": 44,
+      "compIdx": 33,
       "islandSize": 25,
       "stations": [
         "AFV",
@@ -552,7 +1119,7 @@
       "detail": null
     },
     {
-      "compIdx": 70,
+      "compIdx": 58,
       "islandSize": 17,
       "stations": [
         "BUC",
@@ -560,12 +1127,29 @@
         "CNY",
         "REE"
       ],
+      "closestM": 2.9,
+      "result": "gap-too-large",
+      "detail": null
+    },
+    {
+      "compIdx": 8,
+      "islandSize": 59,
+      "stations": [
+        "ACL",
+        "BUC",
+        "BYA",
+        "CNY",
+        "HAD",
+        "LGD",
+        "REE",
+        "SYT"
+      ],
       "closestM": null,
       "result": "gap-too-large",
       "detail": null
     },
     {
-      "compIdx": 78,
+      "compIdx": 65,
       "islandSize": 16,
       "stations": [
         "BDN",
@@ -577,33 +1161,12 @@
         "SAN",
         "SHN"
       ],
-      "closestM": null,
+      "closestM": 126.2,
       "result": "gap-too-large",
       "detail": null
     },
     {
-      "compIdx": 82,
-      "islandSize": 14,
-      "stations": [
-        "BIC",
-        "WIC"
-      ],
-      "closestM": null,
-      "result": "gap-too-large",
-      "detail": null
-    },
-    {
-      "compIdx": 86,
-      "islandSize": 13,
-      "stations": [
-        "CTL"
-      ],
-      "closestM": null,
-      "result": "gap-too-large",
-      "detail": null
-    },
-    {
-      "compIdx": 95,
+      "compIdx": 76,
       "islandSize": 12,
       "stations": [
         "ZZT"
@@ -613,19 +1176,7 @@
       "detail": null
     },
     {
-      "compIdx": 97,
-      "islandSize": 11,
-      "stations": [
-        "BUW",
-        "GSY",
-        "MNN"
-      ],
-      "closestM": null,
-      "result": "gap-too-large",
-      "detail": null
-    },
-    {
-      "compIdx": 106,
+      "compIdx": 84,
       "islandSize": 11,
       "stations": [
         "CMR",
@@ -636,33 +1187,40 @@
         "SAH",
         "WRT"
       ],
+      "closestM": 14.9,
+      "result": "gap-too-large",
+      "detail": null
+    },
+    {
+      "compIdx": 20,
+      "islandSize": 39,
+      "stations": [
+        "CMR",
+        "GNT",
+        "HXM",
+        "NWA",
+        "RNR",
+        "SAH",
+        "SHM",
+        "WRN",
+        "WRT"
+      ],
       "closestM": null,
       "result": "gap-too-large",
       "detail": null
     },
     {
-      "compIdx": 107,
+      "compIdx": 83,
       "islandSize": 10,
       "stations": [
         "COR"
       ],
-      "closestM": null,
+      "closestM": 3.5,
       "result": "gap-too-large",
       "detail": null
     },
     {
-      "compIdx": 108,
-      "islandSize": 10,
-      "stations": [
-        "DVC",
-        "HWC"
-      ],
-      "closestM": null,
-      "result": "gap-too-large",
-      "detail": null
-    },
-    {
-      "compIdx": 115,
+      "compIdx": 87,
       "islandSize": 9,
       "stations": [
         "BNE",
@@ -670,128 +1228,6 @@
         "FZP",
         "MAI",
         "MLW"
-      ],
-      "closestM": null,
-      "result": "gap-too-large",
-      "detail": null
-    },
-    {
-      "compIdx": 120,
-      "islandSize": 9,
-      "stations": [
-        "BEY",
-        "ILK"
-      ],
-      "closestM": null,
-      "result": "gap-too-large",
-      "detail": null
-    },
-    {
-      "compIdx": 122,
-      "islandSize": 8,
-      "stations": [
-        "HHB"
-      ],
-      "closestM": null,
-      "result": "gap-too-large",
-      "detail": null
-    },
-    {
-      "compIdx": 126,
-      "islandSize": 8,
-      "stations": [
-        "ACL"
-      ],
-      "closestM": null,
-      "result": "gap-too-large",
-      "detail": null
-    },
-    {
-      "compIdx": 139,
-      "islandSize": 7,
-      "stations": [
-        "HAD"
-      ],
-      "closestM": null,
-      "result": "gap-too-large",
-      "detail": null
-    },
-    {
-      "compIdx": 162,
-      "islandSize": 6,
-      "stations": [
-        "PFR"
-      ],
-      "closestM": null,
-      "result": "gap-too-large",
-      "detail": null
-    },
-    {
-      "compIdx": 186,
-      "islandSize": 5,
-      "stations": [
-        "SBE"
-      ],
-      "closestM": null,
-      "result": "gap-too-large",
-      "detail": null
-    },
-    {
-      "compIdx": 187,
-      "islandSize": 5,
-      "stations": [
-        "KNA"
-      ],
-      "closestM": null,
-      "result": "gap-too-large",
-      "detail": null
-    },
-    {
-      "compIdx": 211,
-      "islandSize": 4,
-      "stations": [
-        "SHM",
-        "WRN"
-      ],
-      "closestM": null,
-      "result": "gap-too-large",
-      "detail": null
-    },
-    {
-      "compIdx": 214,
-      "islandSize": 4,
-      "stations": [
-        "SYT"
-      ],
-      "closestM": null,
-      "result": "gap-too-large",
-      "detail": null
-    },
-    {
-      "compIdx": 234,
-      "islandSize": 3,
-      "stations": [
-        "LGD"
-      ],
-      "closestM": null,
-      "result": "gap-too-large",
-      "detail": null
-    },
-    {
-      "compIdx": 244,
-      "islandSize": 3,
-      "stations": [
-        "CNE"
-      ],
-      "closestM": null,
-      "result": "gap-too-large",
-      "detail": null
-    },
-    {
-      "compIdx": 248,
-      "islandSize": 3,
-      "stations": [
-        "DBD"
       ],
       "closestM": null,
       "result": "gap-too-large",
