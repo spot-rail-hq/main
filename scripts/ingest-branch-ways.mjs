@@ -62,14 +62,25 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SEG_PATH = path.join(__dirname, 'output', 'line-segments.json');
 const OVERPASS_URL = process.env.OVERPASS_URL || 'https://overpass-api.de/api/interpreter';
 const DRY = process.argv.includes('--dry-run');
+// Restricts the run to one branch by key, e.g. --only=pontefract_baghill_spur.
+// Exists because the script has no per-branch idempotency guarantee against
+// upstream OSM drift: a plain run can pick up newly-mapped ways in an
+// unrelated branch (verified 2026-08-06 — a dry run surfaced 7 new Askern-
+// branch ways with no connection to the branch actually being worked on).
+// Without this flag, fixing one branch would silently also ingest whatever
+// else changed upstream since the last run.
+const ONLY_ARG = process.argv.find((a) => a.startsWith('--only='));
+const ONLY = ONLY_ARG ? ONLY_ARG.slice('--only='.length) : null;
 
 /**
- * The six branches. `names` are OSM `name` values observed on active track
+ * The branches. `names` are OSM `name` values observed on active track
  * within 600 m of the affected stations (derived from the base tileset, not
  * hand-listed from memory). `bbox` is [S,W,N,E] and exists so a generic name
  * cannot pull in track from elsewhere in the country — "Down Goole" and
  * "Up Doncaster" are exactly the kind of directional running-line name that
- * could plausibly recur.
+ * could plausibly recur. (Originally six — Askern was split out of
+ * `pontefract` 2026-08-04, and `pontefract_baghill_spur` was added
+ * 2026-08-06 using `wayIds` instead of `names`; see that entry below.)
  */
 const BRANCHES = [
   { key: 'wharfedale', op: 'NT', label: 'Wharfedale Line (Leeds/Bradford-Ilkley)',
@@ -120,6 +131,36 @@ const BRANCHES = [
     stations: ['COR'],
     names: ['Kettering North Junction and Melton Mowbray Line'],
     bbox: [52.35, -0.80, 52.60, -0.60] },
+  // WAY-ID SELECTED, not name-matched — the track this branch needs carries
+  // NO `name` tag at all (confirmed via Overpass 2026-08-06: every other way
+  // in a 1km box around Pontefract Baghill is either 'Pontefract Line',
+  // 'Wakefield and Goole Line' or 'Castleford and Pontefract Monkhill Line',
+  // none of which run past Baghill — PFR sits 709m from the nearest of
+  // those). So the `names` mechanism above structurally cannot reach it: it
+  // is a filter over a `name` tag that doesn't exist here. See `wayIds`
+  // handling in the fetch loop below.
+  //
+  // The two ways below (`ref:lor=LN804`, `ref=SMJ2` — Swinton & Knottingley
+  // Joint) are the Up/Down pair running directly past Baghill: verified by
+  // perpendicular distance from PFR (53.69188,-1.30335) to each way's
+  // polyline, not just to a bbox — 243765934 passes 5.7m from the station,
+  // 302911126 passes 9.3m. Both carry usage=branch and no service tag, same
+  // admission criteria as the name-matched branches above.
+  //
+  // NOT INCLUDED: the continuation south of that pair (263248057 ->
+  // 263248089 -> 263248096, and their Down-line counterparts 302911139 ->
+  // 302911122 -> 302911128), which carries on toward Knottingley — all
+  // 108m+ from PFR, not needed to close this station's snap gap, and every
+  // station further down that line (Fitzwilliam, Moorthorpe, South Elmsall)
+  // is already snapped via a *different* line (the Dearne Valley line,
+  // segments 2511/2304/2316) so extending the ingest that far serves no
+  // unsnapped station. Left out deliberately, not overlooked — flagged here
+  // rather than silently ingesting more track than the fix needs.
+  { key: 'pontefract_baghill_spur', op: 'NT',
+    label: 'Pontefract Baghill spur (Swinton & Knottingley Joint, Streethouse Jn – Baghill leg)',
+    stations: ['PFR'],
+    wayIds: [243765934, 302911126],
+    bbox: [53.690, -1.305, 53.701, -1.281] },
 ];
 
 async function overpass(q) {
@@ -170,12 +211,28 @@ async function main() {
   console.log(`Existing graph: ${graph.segments.length} segments, ${existingWays.size} distinct way ids, max id ${maxId}`);
   console.log(`Overpass: ${OVERPASS_URL}${DRY ? '  [DRY RUN — nothing will be written]' : ''}\n`);
 
+  const branches = ONLY ? BRANCHES.filter((b) => b.key === ONLY) : BRANCHES;
+  if (ONLY && branches.length === 0) throw new Error(`--only=${ONLY} matched no branch key`);
+  if (ONLY) console.log(`--only=${ONLY}: restricting run to this branch\n`);
+
   const added = [];
   const report = [];
-  for (const b of BRANCHES) {
-    const [s, w, n, e] = b.bbox;
-    const nameFilter = b.names.map((nm) => `way["railway"="rail"]["name"="${nm}"](${s},${w},${n},${e});`).join('');
-    const q = `[out:json][timeout:120];(${nameFilter});out geom;`;
+  for (const b of branches) {
+    // Two mutually exclusive selectors: `names` (the default — matches any
+    // way tagged with one of these names, scoped by bbox so a generic name
+    // can't pull in track from elsewhere) or `wayIds` (an explicit list,
+    // for track that carries no `name` tag at all and so can never be
+    // reached by the name filter — see the pontefract_baghill_spur branch
+    // above for why this exists). `wayIds` skips the bbox filter in the
+    // query itself since the ids are already exact; `bbox` is kept on the
+    // branch entry purely as a documented sanity check, not queried against.
+    const q = b.wayIds
+      ? `[out:json][timeout:120];way(id:${b.wayIds.join(',')});out geom;`
+      : (() => {
+          const [s, w, n, e] = b.bbox;
+          const nameFilter = b.names.map((nm) => `way["railway"="rail"]["name"="${nm}"](${s},${w},${n},${e});`).join('');
+          return `[out:json][timeout:120];(${nameFilter});out geom;`;
+        })();
     console.log(`[${b.key}] ${b.label} -> ${[].concat(b.op).join('+')}`);
     const data = await overpass(q);
     const ways = (data.elements || []).filter((x) => x.type === 'way');
@@ -209,7 +266,7 @@ async function main() {
       existingWays.add(way.id);
       kept++; addedKm += len / 1000;
     }
-    console.log(`    ${ways.length} ways matched by name | kept ${kept} (${addedKm.toFixed(1)} km)` +
+    console.log(`    ${ways.length} ways matched ${b.wayIds ? 'by id' : 'by name'} | kept ${kept} (${addedKm.toFixed(1)} km)` +
       ` | dropped: ${dropService} service, ${dropNoUsage} no-usage, ${dropDup} already in graph`);
     report.push({ ...b, matched: ways.length, kept, km: addedKm, dropService, dropNoUsage, dropDup });
   }
@@ -219,10 +276,17 @@ async function main() {
 
   graph.segments.push(...added);
   graph.segment_count = graph.segments.length;
+  // Merge by key rather than replace outright — with --only, `report` covers
+  // just the branches actually run this time, and a plain overwrite would
+  // erase the record of every other branch's prior ingestion even though
+  // their segments are still sitting in graph.segments untouched.
+  const prevBranches = graph.branch_ingest?.branches || [];
+  const thisRun = report.map((r) => ({ key: r.key, operator: r.op, segments: r.kept, km: +r.km.toFixed(1) }));
+  const thisRunKeys = new Set(thisRun.map((r) => r.key));
   graph.branch_ingest = {
     generated_at: new Date().toISOString(),
     note: 'Way-level ingestion for branches with no OSM route relation. Attribution is inferred — see operator_precision.',
-    branches: report.map((r) => ({ key: r.key, operator: r.op, segments: r.kept, km: +r.km.toFixed(1) })),
+    branches: [...prevBranches.filter((r) => !thisRunKeys.has(r.key)), ...thisRun],
   };
   writeFileSync(SEG_PATH, JSON.stringify(graph));
   console.log(`Written: ${SEG_PATH} (${graph.segments.length} segments)`);

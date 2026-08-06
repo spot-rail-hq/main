@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-08-05T15:55:29.717Z",
+  "generated_at": "2026-08-06T07:12:45.848Z",
   "tolerance_m": 200,
   "station_count": 3443,
-  "snapped_count": 3378,
-  "unsnapped_count": 65,
+  "snapped_count": 3379,
+  "unsnapped_count": 64,
   "results": [
     {
       "crs": "AAP",
@@ -38412,20 +38412,20 @@
       "name": "Pontefract Baghill Rail Station",
       "lat": 53.69188164743,
       "lon": -1.30335277828,
-      "snapped": false,
-      "distance_m": 709.2,
-      "segment_id": 8678,
+      "snapped": true,
+      "distance_m": 5.6,
+      "segment_id": 8861,
       "snap_tier": "mode",
       "snap_operators": [
         "NT"
       ],
-      "nearest_distance_m": 709.2,
+      "nearest_distance_m": 5.6,
       "snap_point": [
-        -1.308237,
-        53.697596
+        -1.303286,
+        53.69185
       ],
-      "edge_index": 0,
-      "edge_t": 0.967776
+      "edge_index": 1,
+      "edge_t": 0.922334
     },
     {
       "crs": "PFY",
