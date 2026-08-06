@@ -147,20 +147,50 @@ const BRANCHES = [
   // 302911126 passes 9.3m. Both carry usage=branch and no service tag, same
   // admission criteria as the name-matched branches above.
   //
-  // NOT INCLUDED: the continuation south of that pair (263248057 ->
-  // 263248089 -> 263248096, and their Down-line counterparts 302911139 ->
-  // 302911122 -> 302911128), which carries on toward Knottingley — all
-  // 108m+ from PFR, not needed to close this station's snap gap, and every
-  // station further down that line (Fitzwilliam, Moorthorpe, South Elmsall)
-  // is already snapped via a *different* line (the Dearne Valley line,
-  // segments 2511/2304/2316) so extending the ingest that far serves no
-  // unsnapped station. Left out deliberately, not overlooked — flagged here
-  // rather than silently ingesting more track than the fix needs.
+  // CORRECTED 2026-08-06 — the note this replaces had the connector ways'
+  // direction backwards and its "already snapped via a different line, no
+  // fix needed" conclusion was wrong. Re-derived from live Overpass geometry
+  // and OSM relation membership, not carried forward:
+  //
+  // 263248057 -> 263248089 -> 263248096 (and Down-line counterpart
+  // 302911139 -> 302911122 -> 302911128) run SOUTH from PFR, not toward
+  // Knottingley — 263248057's first node is the same point as 243765934's
+  // south end (53.69107,-1.30425), confirmed by Overpass, not just bbox
+  // proximity. All six carry ref:lor=LN804/ref=SMJ2, same as the original
+  // pair, and — critically — are members of OSM relation 282107 ("Dearne
+  // Valley Line", route=railway). So is segment 2304 (35 of its 37 ways),
+  // which is what Moorthorpe (MRP) is already snapped to: Baghill and
+  // Moorthorpe are the same named OSM route, not "a different line" as
+  // previously recorded. Northern's own current service confirms it's a
+  // real, live passenger corridor, not just an OSM tagging artifact: 2023/24
+  // station-to-station journey counts show 353 Baghill<->Moorthorpe and 290
+  // Baghill<->Swinton journeys (northernrailway.co.uk / national rail
+  // station data, checked 2026-08-06) — op:'NT' below is confirmed by that,
+  // not just inherited by assumption.
+  //
+  // Adding these six still does NOT fully connect segment 8861 to anything
+  // else already in the graph — the chain continues past 263248096's end
+  // (263248086 -> 263248066, not included below) and stays 4.1-5.5km short
+  // of segment 2304 near Moorthorpe. Closing that fully means ingesting the
+  // rest of relation 282107 southbound, which is separate, larger, un-scoped
+  // work — these six only fix the immediate join at Baghill itself.
+  //
+  // NORTH (Knottingley/Ferrybridge direction) was investigated with the same
+  // rigor and NOT extended, for two independent reasons: (1) the equivalent
+  // chain there (243765938/243765937/177364259/177364258 up-line,
+  // 50944898/50944927/203754994 down-line — also relation-282107 members)
+  // traced out to where it stays ~150-190m short of the existing WAG1
+  // "Pontefract Line" track near Knottingley, i.e. it doesn't actually close
+  // that gap the way the south chain closes this one; and (2) Northern's own
+  // station page states the short curves north of PFR near Ferrybridge that
+  // would carry this "are now only in use for freight and diverted passenger
+  // services" — not regular NT service, so tagging that direction NT would
+  // misattribute freight-only track even if it did connect.
   { key: 'pontefract_baghill_spur', op: 'NT',
     label: 'Pontefract Baghill spur (Swinton & Knottingley Joint, Streethouse Jn – Baghill leg)',
     stations: ['PFR'],
-    wayIds: [243765934, 302911126],
-    bbox: [53.690, -1.305, 53.701, -1.281] },
+    wayIds: [243765934, 302911126, 263248057, 263248089, 263248096, 302911139, 302911122, 302911128],
+    bbox: [53.649, -1.320, 53.701, -1.281] },
 ];
 
 async function overpass(q) {

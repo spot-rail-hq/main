@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-06T09:19:50.679Z",
+  "generated_at": "2026-08-06T14:01:48.807Z",
   "threshold_m": 150,
   "bridges": [
     {
@@ -608,7 +608,7 @@
       "compIdx": 156,
       "islandSize": 5,
       "stations": [
-        "SBE"
+        "PFR"
       ],
       "closestM": null,
       "result": "gap-too-large",
@@ -618,6 +618,16 @@
       "compIdx": 157,
       "islandSize": 5,
       "stations": [
+        "SBE"
+      ],
+      "closestM": null,
+      "result": "gap-too-large",
+      "detail": null
+    },
+    {
+      "compIdx": 158,
+      "islandSize": 5,
+      "stations": [
         "KNA"
       ],
       "closestM": null,
@@ -625,7 +635,7 @@
       "detail": null
     },
     {
-      "compIdx": 180,
+      "compIdx": 182,
       "islandSize": 4,
       "stations": [
         "SHM",
@@ -636,7 +646,7 @@
       "detail": null
     },
     {
-      "compIdx": 199,
+      "compIdx": 201,
       "islandSize": 3,
       "stations": [
         "CNE"
@@ -646,17 +656,7 @@
       "detail": null
     },
     {
-      "compIdx": 203,
-      "islandSize": 3,
-      "stations": [
-        "PFR"
-      ],
-      "closestM": null,
-      "result": "gap-too-large",
-      "detail": null
-    },
-    {
-      "compIdx": 204,
+      "compIdx": 205,
       "islandSize": 3,
       "stations": [
         "DBD"
