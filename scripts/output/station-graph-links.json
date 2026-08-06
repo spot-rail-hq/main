@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-06T16:43:35.470Z",
+  "generated_at": "2026-08-06T17:09:04.484Z",
   "tolerance_m": 200,
   "station_count": 3443,
   "snapped_count": 3407,
@@ -2551,7 +2551,7 @@
       "lon": -1.18035620719,
       "snapped": true,
       "distance_m": 1.6,
-      "segment_id": 2542,
+      "segment_id": 9327,
       "snap_tier": "operator",
       "snap_operators": [
         "GR"
@@ -2561,7 +2561,7 @@
         -1.180337,
         53.572329
       ],
-      "edge_index": 103,
+      "edge_index": 31,
       "edge_t": 0.24654
     },
     {
@@ -7903,17 +7903,18 @@
       "lon": -1.31154602347,
       "snapped": true,
       "distance_m": 0.6,
-      "segment_id": 2304,
+      "segment_id": 9325,
       "snap_tier": "operator",
       "snap_operators": [
-        "XC"
+        "XC",
+        "NT"
       ],
       "nearest_distance_m": 0.6,
       "snap_point": [
         -1.311537,
         53.518947
       ],
-      "edge_index": 115,
+      "edge_index": 51,
       "edge_t": 0.594939
     },
     {
@@ -8995,10 +8996,11 @@
       "lon": -1.15094847577,
       "snapped": true,
       "distance_m": 1.9,
-      "segment_id": 2316,
+      "segment_id": 9324,
       "snap_tier": "operator",
       "snap_operators": [
-        "GR"
+        "GR",
+        "NT"
       ],
       "nearest_distance_m": 1.9,
       "snap_point": [
@@ -21298,17 +21300,18 @@
       "lon": -1.312807649,
       "snapped": true,
       "distance_m": 0.4,
-      "segment_id": 2304,
+      "segment_id": 9325,
       "snap_tier": "operator",
       "snap_operators": [
-        "XC"
+        "XC",
+        "NT"
       ],
       "nearest_distance_m": 0.4,
       "snap_point": [
         -1.312814,
         53.53419
       ],
-      "edge_index": 87,
+      "edge_index": 23,
       "edge_t": 0.667677
     },
     {
@@ -34501,7 +34504,8 @@
       "segment_id": 2304,
       "snap_tier": "operator",
       "snap_operators": [
-        "XC"
+        "XC",
+        "NT"
       ],
       "nearest_distance_m": 4,
       "snap_point": [
@@ -44314,14 +44318,15 @@
       "segment_id": 2316,
       "snap_tier": "operator",
       "snap_operators": [
-        "GR"
+        "GR",
+        "NT"
       ],
       "nearest_distance_m": 11.7,
       "snap_point": [
         -1.284793,
         53.594706
       ],
-      "edge_index": 173,
+      "edge_index": 67,
       "edge_t": 0.934731
     },
     {
@@ -49527,17 +49532,18 @@
       "lon": -1.30878362182,
       "snapped": true,
       "distance_m": 11.6,
-      "segment_id": 2304,
+      "segment_id": 9325,
       "snap_tier": "operator",
       "snap_operators": [
-        "XC"
+        "XC",
+        "NT"
       ],
       "nearest_distance_m": 11.6,
       "snap_point": [
         -1.308613,
         53.545019
       ],
-      "edge_index": 72,
+      "edge_index": 8,
       "edge_t": 0.886104
     },
     {

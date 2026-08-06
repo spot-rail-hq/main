@@ -400,6 +400,28 @@ const BRANCHES = [
       846260099, 80501631, 846260098, 846260101, 427324696, 179391534, 510836024, 511074780,
     ],
     bbox: [51.890, -1.150, 52.005, -0.725] },
+  // Closes the south gap flagged (but deliberately not closed) in the
+  // pontefract_baghill_spur branch above: user confirmed via Northern's own
+  // March 2026 network map that Baghill -> Moorthorpe -> South Elmsall is a
+  // real served route (all three appear on it), matching the 353
+  // Baghill<->Moorthorpe / 290 Baghill<->Swinton 2023/24 journey counts
+  // already on record. BFS-verified: EXACT shared node (0m) between this
+  // chain's south end and segment 2304 (Moorthorpe, currently XC only —
+  // fixed separately via attribute-by-calling-points.mjs, since this script
+  // only adds NEW geometry and silently no-ops on ways already in the
+  // graph, so it can't add an operator to an existing segment). 34 new
+  // ways, 26 already in graph, 0 service-tagged.
+  { key: 'baghill_moorthorpe_link', op: 'NT',
+    label: 'Baghill spur south continuation to Moorthorpe (SMJ2, South Kirkby Junction, Doncaster and Leeds Line)',
+    stations: [],
+    wayIds: [
+      263248086, 263248066, 263248085, 263248068, 263248054, 263248059, 263248048,
+      3693556, 4836660, 263248083, 318574360, 318574324, 263248050, 263248062, 263248095,
+      302911137, 42203691, 302911123, 302911136, 302911115, 302911113, 302911120,
+      302911133, 318574270, 318574377, 302911117, 302911132, 302911119, 302911131,
+      302911114, 302911135, 302911118, 302911130, 302911124,
+    ],
+    bbox: [53.590, -1.330, 53.690, -1.290] },
 ];
 
 async function overpass(q) {

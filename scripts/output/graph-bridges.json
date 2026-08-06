@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-06T16:44:05.020Z",
+  "generated_at": "2026-08-06T17:09:55.321Z",
   "threshold_m": 150,
   "bridges": [
     {
@@ -552,7 +552,7 @@
       "detail": null
     },
     {
-      "compIdx": 69,
+      "compIdx": 70,
       "islandSize": 17,
       "stations": [
         "BUC",
@@ -565,7 +565,7 @@
       "detail": null
     },
     {
-      "compIdx": 77,
+      "compIdx": 78,
       "islandSize": 16,
       "stations": [
         "BDN",
@@ -582,7 +582,7 @@
       "detail": null
     },
     {
-      "compIdx": 81,
+      "compIdx": 82,
       "islandSize": 14,
       "stations": [
         "BIC",
@@ -593,7 +593,7 @@
       "detail": null
     },
     {
-      "compIdx": 85,
+      "compIdx": 86,
       "islandSize": 13,
       "stations": [
         "CTL"
@@ -603,7 +603,7 @@
       "detail": null
     },
     {
-      "compIdx": 94,
+      "compIdx": 95,
       "islandSize": 12,
       "stations": [
         "ZZT"
@@ -613,7 +613,7 @@
       "detail": null
     },
     {
-      "compIdx": 96,
+      "compIdx": 97,
       "islandSize": 11,
       "stations": [
         "BUW",
@@ -625,7 +625,7 @@
       "detail": null
     },
     {
-      "compIdx": 105,
+      "compIdx": 106,
       "islandSize": 11,
       "stations": [
         "CMR",
@@ -641,7 +641,7 @@
       "detail": null
     },
     {
-      "compIdx": 106,
+      "compIdx": 107,
       "islandSize": 10,
       "stations": [
         "COR"
@@ -651,7 +651,7 @@
       "detail": null
     },
     {
-      "compIdx": 107,
+      "compIdx": 108,
       "islandSize": 10,
       "stations": [
         "DVC",
@@ -662,7 +662,7 @@
       "detail": null
     },
     {
-      "compIdx": 114,
+      "compIdx": 115,
       "islandSize": 9,
       "stations": [
         "BNE",
@@ -676,7 +676,7 @@
       "detail": null
     },
     {
-      "compIdx": 119,
+      "compIdx": 120,
       "islandSize": 9,
       "stations": [
         "BEY",
@@ -687,7 +687,7 @@
       "detail": null
     },
     {
-      "compIdx": 121,
+      "compIdx": 122,
       "islandSize": 8,
       "stations": [
         "HHB"
@@ -697,7 +697,7 @@
       "detail": null
     },
     {
-      "compIdx": 125,
+      "compIdx": 126,
       "islandSize": 8,
       "stations": [
         "ACL"
@@ -707,7 +707,7 @@
       "detail": null
     },
     {
-      "compIdx": 138,
+      "compIdx": 139,
       "islandSize": 7,
       "stations": [
         "HAD"
@@ -717,7 +717,7 @@
       "detail": null
     },
     {
-      "compIdx": 161,
+      "compIdx": 162,
       "islandSize": 6,
       "stations": [
         "PFR"
@@ -727,7 +727,7 @@
       "detail": null
     },
     {
-      "compIdx": 185,
+      "compIdx": 186,
       "islandSize": 5,
       "stations": [
         "SBE"
@@ -737,7 +737,7 @@
       "detail": null
     },
     {
-      "compIdx": 186,
+      "compIdx": 187,
       "islandSize": 5,
       "stations": [
         "KNA"
@@ -768,7 +768,7 @@
       "detail": null
     },
     {
-      "compIdx": 232,
+      "compIdx": 234,
       "islandSize": 3,
       "stations": [
         "LGD"
@@ -778,7 +778,7 @@
       "detail": null
     },
     {
-      "compIdx": 242,
+      "compIdx": 244,
       "islandSize": 3,
       "stations": [
         "CNE"
@@ -788,7 +788,7 @@
       "detail": null
     },
     {
-      "compIdx": 246,
+      "compIdx": 248,
       "islandSize": 3,
       "stations": [
         "DBD"

@@ -65,6 +65,14 @@ const PATTERNS = [
       ['HUL', 'CGM', 'BEV'],
     ],
   },
+  {
+    op: 'NT',
+    label: 'Northern (Pontefract Baghill - Moorthorpe - South Elmsall)',
+    source: 'Northern\'s own March 2026 network map (user-supplied PDF, checked 2026-08-06): Pontefract Baghill, Moorthorpe and South Elmsall all appear as served stations. Matches existing 2023/24 station-to-station journey data already on record (353 Baghill<->Moorthorpe, 290 Baghill<->Swinton). Segment 2304 (Moorthorpe) carried XC only and segment 2316 (South Elmsall) carried GR only before this — the track was already in the graph, just missing the NT attribution, same shape of gap as Hull Trains above.',
+    legs: [
+      ['PFR', 'MRP', 'SES'],
+    ],
+  },
 ];
 
 const graph = JSON.parse(readFileSync(SEG_PATH, 'utf8'));
