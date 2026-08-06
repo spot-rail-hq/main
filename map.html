@@ -702,56 +702,61 @@
   .dep-status.delayed { color: var(--a); }
   .dep-status.cancelled { color: var(--m); }
   .dep-status.scheduled { color: var(--ink); }
-  /* Marquee — applied by applyDepartureMarquees() only to cells whose text
-     actually overflows its column (measured post-render, scrollWidth vs
-     clientWidth); a cell that fits stays plain ellipsis-truncated text,
-     never gets this markup at all. Two back-to-back copies of the text in
-     .dep-cell-track, translated exactly -50% — since both copies are
-     pixel-identical, -50% always lands the second copy exactly where the
-     first started, so the loop can restart at 0% with no visible seam,
-     regardless of how long the text is (no per-cell distance to compute).
-     transform-only animation, so this never triggers layout — row height
-     and column widths are untouched, just like the ellipsis case it
-     replaces.
+  .dep-empty { font-size: 15px; color: var(--ink); padding: 6px 0; }
+  /* ── Marquee (shared utility, see applyMarquee() in JS) ────────────────────
+     Generalised from the departure board (2026-08-05) — same mechanism now
+     used anywhere a station/route/operator name can overflow its container:
+     the sidebar selection title, "stations along this path"/saved/stopping-
+     station list rows, the selected-entity filter chip, and the departure
+     board cells this started on. applyMarquee() only touches an element
+     whose text actually overflows (measured post-render, scrollWidth vs
+     clientWidth); an element that fits is left alone — plain ellipsis-
+     truncated text, exactly as if this feature didn't exist for it.
+     Two back-to-back copies of the text in .marquee-track, translated
+     exactly -50% — since both copies are pixel-identical, -50% always lands
+     the second copy exactly where the first started, so the loop can
+     restart at 0% with no visible seam, regardless of how long the text is
+     (no per-element distance to compute). transform-only animation, so this
+     never triggers layout — the container's height/width are untouched,
+     just like the ellipsis case it replaces.
 
-     Hold-scroll-hold, not a continuous crawl: 2s static at the start (so a
+     Hold-scroll-hold, not a continuous crawl: static at the start (so a
      reader who just glanced over actually gets to read it before it moves),
-     then a linear scroll, then 2s static once it's back at the visual start
+     then a linear scroll, then static once it's back at the visual start
      (the -50% point, which — same duplicate-copy trick — is pixel-identical
      to 0%) before looping. The hold/scroll split is a % of the total
-     duration and that % depends on each cell's own scroll distance, which
-     @keyframes can't take from a CSS custom property (keyframe selectors
-     must be static percentages) — so applyDepartureMarquees() writes a
-     small, uniquely-named @keyframes rule per marqueeing cell instead of
-     reusing one shared one. --dep-marquee-name/-duration are custom
-     properties, not animation set directly inline, so the
-     prefers-reduced-motion override below (same specificity, later in the
-     stylesheet) still wins when it applies. */
-  .dep-cell-marquee { text-overflow: clip; }
-  .dep-cell-track {
+     duration and that % depends on each element's own scroll distance,
+     which @keyframes can't take from a CSS custom property (keyframe
+     selectors must be static percentages) — so applyMarquee() writes a
+     small, uniquely-named @keyframes rule per marqueeing element instead of
+     reusing one shared one. --marquee-name/-duration are custom properties,
+     not animation set directly inline, so the prefers-reduced-motion
+     override below (same specificity, later in the stylesheet) still wins
+     when it applies. */
+  .marquee-el { text-overflow: clip; }
+  .marquee-track {
     display: inline-flex; white-space: nowrap;
-    animation-name: var(--dep-marquee-name, dep-marquee-scroll-fallback);
-    animation-duration: var(--dep-marquee-duration, 8s);
+    animation-name: var(--marquee-name, marquee-scroll-fallback);
+    animation-duration: var(--marquee-duration, 8s);
     animation-timing-function: linear;
     animation-iteration-count: infinite;
   }
-  .dep-cell-track .dep-cell-text { padding-right: 28px; }
-  /* Only reached if a track's --dep-marquee-name custom property is somehow
-     unset — applyDepartureMarquees() always sets a real per-cell rule, so
-     this is a safety net, not the normal path. */
-  @keyframes dep-marquee-scroll-fallback { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  .marquee-track .marquee-text { padding-right: 28px; }
+  /* Only reached if a track's --marquee-name custom property is somehow
+     unset — applyMarquee() always sets a real per-element rule, so this is
+     a safety net, not the normal path. */
+  @keyframes marquee-scroll-fallback { from { transform: translateX(0); } to { transform: translateX(-50%); } }
   /* Readable, not a moving target: hovering (mouse) or focusing (keyboard —
-     applyDepartureMarquees() gives a marqueeing cell tabindex="0" precisely
-     so this is reachable) freezes it in place. */
-  .dep-cell-marquee:hover .dep-cell-track, .dep-cell-marquee:focus .dep-cell-track { animation-play-state: paused; }
+     applyMarquee() gives a marqueeing element tabindex="0" precisely so
+     this is reachable) freezes it in place. */
+  .marquee-el:hover .marquee-track, .marquee-el:focus .marquee-track { animation-play-state: paused; }
   @media (prefers-reduced-motion: reduce) {
-    /* Belt-and-braces: applyDepartureMarquees() already checks this and skips
-       building the marquee structure at all when it's set, leaving plain
-       ellipsis-truncated text instead — this rule only matters if that check
-       is ever bypassed (e.g. the media query changes after render). */
-    .dep-cell-track { animation: none; }
+    /* Belt-and-braces: applyMarquee() already checks this and skips building
+       the marquee structure at all when it's set, leaving plain ellipsis-
+       truncated text instead — this rule only matters if that check is ever
+       bypassed (e.g. the media query changes after render). */
+    .marquee-track { animation: none; }
   }
-  .dep-empty { font-size: 15px; color: var(--ink); padding: 6px 0; }
   body.mode-database #sb-dep-board { display: none !important; }
 
   /* Sticks the "Live updates" label + filters to the top of the scroll area so
@@ -1331,9 +1336,11 @@
 
   <!-- Attribution bar. Content is BUILT AT RUNTIME from data/attribution.json
        (see renderAttributionBar) — never hardcoded, so adding a source to that
-       file updates the bar with no code change. Collapsed shows MANDATORY
-       credits only; expanding adds the COURTESY ones. The static text below is
-       a pre-JS fallback only and is replaced on load. -->
+       file updates the bar with no code change. Collapsed shows just the word
+       "Attribution" (2026-08-05 — was every MANDATORY credit joined together,
+       see renderAttributionBar's comment); expanding lists every source,
+       mandatory and courtesy alike. The static text below is a pre-JS
+       fallback only and is replaced on load. -->
   <!-- BODY FIRST, TOGGLE LAST (2026-08-04). The toggle used to come first and
        the body expanded BELOW it, which moved the control every time it was
        used: expand, and the arrow you just clicked is no longer under the
@@ -1344,7 +1351,7 @@
     <div class="sb-attrib-body" id="sb-attrib-body" hidden></div>
     <button type="button" class="sb-attrib-toggle" id="sb-attrib-toggle" aria-expanded="false"
             aria-controls="sb-attrib-body" aria-label="Data sources and attribution">
-      <span class="sb-attrib-summary" id="sb-attrib-summary">© SpotRail HQ</span>
+      <span class="sb-attrib-summary" id="sb-attrib-summary">Attribution</span>
       <i class="ti ti-chevron-up sb-attrib-chev"></i>
     </button>
   </div>
@@ -2323,151 +2330,254 @@
       actual <= expectedLengthM * EDGE_LENGTH_MAX_RATIO + EDGE_LENGTH_SLACK_M;
   }
 
-  function resolveFromToGeometry(edges) {
-    var coordsOut = [];
-    for (var i = 0; i < edges.length; i++) {
-      var info = edges[i].edge;
-      if (info.type === 'bridge') {
-        // Coordinate-proximity bridge edge (build-graph-bridges.mjs) — no
-        // segment_id/tile geometry backs it by construction (there's no
-        // mapped way for the gap itself), so skip straight to the same
-        // bounded-gap straight-line fallback used for a missing tile
-        // feature below, without ever querying the tile source for it.
-        if (edges[i].length_m !== undefined && edges[i].length_m <= MAX_BRIDGEABLE_GAP_M) continue;
-        return null;
-      }
-      var feats = map.querySourceFeatures('operator-vector', {
-        sourceLayer: 'operators',
-        // MATCHES A MERGED CHAIN, not a single segment. build-operator-tiles-
-        // geojson.mjs now concatenates segments that share an operator, a lane
-        // offset and an endpoint into one continuous LineString, so that
-        // `line-offset` is computed along an unbroken polyline and stops
-        // leaving wedge gaps at every bend (1,992 such joins before the merge,
-        // 161 after). A chain therefore covers several segment ids and carries
-        // them as a comma-delimited string with LEADING AND TRAILING COMMAS —
-        // ",12,13," — and the delimiters are load-bearing: matching a bare "1"
-        // would also hit ",21,". Vector tiles cannot hold arrays, which is why
-        // this is a string rather than a list.
-        //
-        // Returning a LONGER line than this edge is harmless: the code below
-        // already cuts it down to the edge's own stretch using from_coord/
-        // to_coord, which it had to do anyway for segments split at a station.
-        filter: ['in', ',' + info.segment_id + ',', ['get', 'segment_ids']],
-      });
-      var full = feats.length ? mergeTileClippedFragments(feats) : null;
-      if (!full) {
-        if (edges[i].length_m !== undefined && edges[i].length_m <= MAX_BRIDGEABLE_GAP_M) continue; // bridge with a straight line to the next resolvable point, see comment above
-        return null; // a real gap, not a negligible one — caller should retry, not silently draw a misleading shortcut
-      }
-      // Cut the segment down to this edge's own stretch, oriented
-      // edges[i].from -> edges[i].to. A 'partial' sub-edge carries its two
-      // cut points; a whole 'segment' edge is bounded by its end nodes'
-      // coordinates, which node_coord holds exactly (they ARE the segment's
-      // first/last coordinate).
-      var fromCoord, toCoord;
-      if (info.type === 'partial') {
-        // from_coord/to_coord are in the order the SEGMENT was split, which
-        // has nothing to do with which way this path happens to traverse the
-        // edge — every graph edge is undirected and Dijkstra uses whichever
-        // direction it likes. Orient against the traversal's own start node
-        // (node_coord holds a station node's attachment point, i.e. exactly
-        // one of these two cut points) so consecutive edges join up instead
-        // of each being drawn backwards and joined by a long straight line
-        // shooting back across the route.
-        fromCoord = info.from_coord; toCoord = info.to_coord;
-        var travFrom = routingGraph.node_coord[edges[i].from];
-        if (travFrom && coordDist(travFrom, toCoord) < coordDist(travFrom, fromCoord)) {
-          fromCoord = info.to_coord; toCoord = info.from_coord;
-        }
-      } else {
-        fromCoord = routingGraph.node_coord[edges[i].from];
-        toCoord = routingGraph.node_coord[edges[i].to];
-      }
-      var slice = cutLineBetween(full, fromCoord, toCoord);
-      if (!slice) {
-        if (edges[i].length_m !== undefined && edges[i].length_m <= MAX_BRIDGEABLE_GAP_M) continue; // same bounded-gap allowance as a missing feature
-        return null;
-      }
-      if (slice.length < 2) continue;
-      // Reject an implausible result rather than drawing it — the tiles this
-      // edge needs aren't all loaded yet (see edgeGeometryIsPlausible).
-      if (!edgeGeometryIsPlausible(slice, edges[i].length_m)) {
-        if (edges[i].length_m !== undefined && edges[i].length_m <= MAX_BRIDGEABLE_GAP_M) continue;
-        return null;
-      }
-      if (coordsOut.length && coordsOut[coordsOut.length - 1][0] === slice[0][0] && coordsOut[coordsOut.length - 1][1] === slice[0][1]) {
-        coordsOut.push.apply(coordsOut, slice.slice(1));
-      } else {
-        coordsOut.push.apply(coordsOut, slice);
-      }
-    }
-    return coordsOut.length >= 2 ? coordsOut : null;
-  }
+  // ── From/To geometry resolution — graceful per-edge, never draws nothing ──
+  // REDESIGNED (investigation below) after three related bugs turned out to
+  // share one root cause: the old resolveFromToGeometry() required EVERY
+  // edge in the path to resolve real tile geometry, returning null for the
+  // WHOLE path — drawing NOTHING — the moment even one edge couldn't. Fine
+  // for a short route where that's rare; increasingly likely to actually
+  // happen the longer/lower-zoom a route is, because:
+  //   1. NO HIGHLIGHT AT ALL on a long route (reported: Manchester
+  //      Piccadilly->Marylebone, 44 stations/312.9km — vs. Solihull-
+  //      >Marylebone, 20 stations, which worked fine). Measured directly
+  //      against the real graph: Manchester->Marylebone is 150 edges, 60 of
+  //      them 300m-3000m long — too long for the MAX_BRIDGEABLE_GAP_M
+  //      skip-silently allowance, but easily short/thin enough for
+  //      tippecanoe to drop from the tiles at the extreme-low zoom a
+  //      country-spanning bbox forces flyToBoundsZoomedOut to (clamped at
+  //      OPERATOR_TILES_MIN_ZOOM=5 — this is real, standard, documented
+  //      tippecanoe low-zoom behaviour, not a loading race, so the old
+  //      retry-10-times-then-give-up loop could never have helped: with
+  //      150 chances for even one edge to be the unlucky one, failure was
+  //      close to certain). Once it gave up, NOTHING would ever try again —
+  //      see point 3.
+  //   2. HIGH-ZOOM REFINE STOPPING AFTER ONE PASS: zoomed in far enough
+  //      that the WHOLE route no longer fits in currently-loaded tiles, an
+  //      all-or-nothing resolve of the FULL path can never succeed again —
+  //      most of a long route's edges are simply off-screen. Requiring
+  //      100% success to update anything meant refinement could only ever
+  //      work for however much of the route still fit in view, which
+  //      shrinks every time the user zooms in further.
+  //   3. DISAPPEARING ON A REPEAT SEARCH / BACK-FORWARD: investigated two
+  //      specific hypotheses (a no-op "same as before" dedup guard; a
+  //      history-restore path that repopulates the panel but skips the
+  //      geometry draw) and ruled BOTH out directly — grepped the whole
+  //      file for any equality/dedup check near the draw path (none exist)
+  //      and traced restoreStateFromUrl()'s fromto branch, which calls the
+  //      exact same selectFromTo() a fresh search does, full resolve
+  //      included. The real mechanism: MapLibre's tile cache is not
+  //      guaranteed to still hold what a PREVIOUS search happened to load
+  //      (evicted by memory pressure, or simply never requested again if
+  //      the user panned away in between) — so a second/restored search of
+  //      the same pair is really a COLD resolve, just as exposed to the
+  //      same "one unlucky edge blanks everything, retries can't fix a
+  //      genuinely-dropped tile feature" failure mode as point 1, only
+  //      probabilistic rather than near-certain (a much shorter, mostly-
+  //      short-edge route usually survives it; it isn't guaranteed to).
+  //
+  // Fix: resolve PER EDGE, cache whatever resolves for real, and NEVER
+  // return "nothing" for the whole path. An edge that resolves live gets
+  // real track geometry, cached. An edge that fails right now but has
+  // real geometry cached from an earlier resolve (e.g. it's off-screen at
+  // the current zoom/pan, not actually gone) reuses that. Only an edge
+  // that has NEVER once resolved falls back to a straight line between its
+  // own endpoints (routingGraph.node_coord — shipped client-side, zero tile
+  // dependency, always available) — which is why this can't fail: every
+  // edge produces SOME geometry, so the path always draws something, and
+  // upgrades edge-by-edge to full track detail as more tiles load in,
+  // rather than being all-or-nothing.
 
-  // Shared by the initial resolve in selectFromTo() and the zoom-triggered
-  // re-resolve below (scheduleFromToGeometryRefine) — same bounded retry
-  // either way, since both are waiting on the same thing: tiles for the
-  // edges in question actually being loaded at the map's CURRENT zoom.
-  // mySeq is the selectionSeq value at the moment this was kicked off — the
-  // same stale-response guard loadDepartureBoard/tryResolveGeometry already
-  // use elsewhere in this file, so a selection change (or a second refine
-  // superseding this one) during the retry loop drops the result instead of
-  // clobbering something newer.
-  var MAX_GEOMETRY_ATTEMPTS = 10;
-  function resolveFromToGeometryWithRetry(edges, mySeq, onResolved) {
+  // Resolves ONE edge. Three distinct outcomes:
+  //  - a coords array: real tile geometry, oriented edge.from -> edge.to.
+  //  - FROMTO_EDGE_BRIDGEABLE: not available right now, but negligible
+  //    (<= MAX_BRIDGEABLE_GAP_M) — skip entirely, the previous edge's end
+  //    joins straight to the next edge's start with no visible gap. Kept
+  //    distinct from the graceful straight-line fallback below on purpose:
+  //    those two only look similar at a glance. This one means "too small
+  //    to matter, draw nothing here"; that one means "real gap, draw an
+  //    explicit approximation because we don't have the curve yet."
+  //  - null: a real, non-negligible resolution failure. The caller decides
+  //    what to do with it (see resolveFromToGeometryGraceful).
+  var FROMTO_EDGE_BRIDGEABLE = 'bridgeable-skip';
+  function resolveOneFromToEdgeGeometry(edge) {
+    var info = edge.edge;
+    var bridgeableOk = edge.length_m !== undefined && edge.length_m <= MAX_BRIDGEABLE_GAP_M;
+    if (info.type === 'bridge') {
+      // Coordinate-proximity bridge edge (build-graph-bridges.mjs) — no
+      // segment_id/tile geometry backs it by construction (there's no
+      // mapped way for the gap itself).
+      return bridgeableOk ? FROMTO_EDGE_BRIDGEABLE : null;
+    }
+    var feats = map.querySourceFeatures('operator-vector', {
+      sourceLayer: 'operators',
+      // MATCHES A MERGED CHAIN, not a single segment. build-operator-tiles-
+      // geojson.mjs now concatenates segments that share an operator, a lane
+      // offset and an endpoint into one continuous LineString, so that
+      // `line-offset` is computed along an unbroken polyline and stops
+      // leaving wedge gaps at every bend (1,992 such joins before the merge,
+      // 161 after). A chain therefore covers several segment ids and carries
+      // them as a comma-delimited string with LEADING AND TRAILING COMMAS —
+      // ",12,13," — and the delimiters are load-bearing: matching a bare "1"
+      // would also hit ",21,". Vector tiles cannot hold arrays, which is why
+      // this is a string rather than a list.
+      //
+      // Returning a LONGER line than this edge is harmless: the code below
+      // already cuts it down to the edge's own stretch using from_coord/
+      // to_coord, which it had to do anyway for segments split at a station.
+      filter: ['in', ',' + info.segment_id + ',', ['get', 'segment_ids']],
+    });
+    var full = feats.length ? mergeTileClippedFragments(feats) : null;
+    if (!full) return bridgeableOk ? FROMTO_EDGE_BRIDGEABLE : null;
+    // Cut the segment down to this edge's own stretch, oriented
+    // edge.from -> edge.to. A 'partial' sub-edge carries its two cut
+    // points; a whole 'segment' edge is bounded by its end nodes'
+    // coordinates, which node_coord holds exactly (they ARE the segment's
+    // first/last coordinate).
+    var fromCoord, toCoord;
+    if (info.type === 'partial') {
+      // from_coord/to_coord are in the order the SEGMENT was split, which
+      // has nothing to do with which way this path happens to traverse the
+      // edge — every graph edge is undirected and Dijkstra uses whichever
+      // direction it likes. Orient against the traversal's own start node
+      // (node_coord holds a station node's attachment point, i.e. exactly
+      // one of these two cut points) so consecutive edges join up instead
+      // of each being drawn backwards and joined by a long straight line
+      // shooting back across the route.
+      fromCoord = info.from_coord; toCoord = info.to_coord;
+      var travFrom = routingGraph.node_coord[edge.from];
+      if (travFrom && coordDist(travFrom, toCoord) < coordDist(travFrom, fromCoord)) {
+        fromCoord = info.to_coord; toCoord = info.from_coord;
+      }
+    } else {
+      fromCoord = routingGraph.node_coord[edge.from];
+      toCoord = routingGraph.node_coord[edge.to];
+    }
+    var slice = cutLineBetween(full, fromCoord, toCoord);
+    if (!slice || slice.length < 2) return bridgeableOk ? FROMTO_EDGE_BRIDGEABLE : null;
+    // Reject an implausible result rather than drawing it — the tiles this
+    // edge needs aren't all loaded yet (see edgeGeometryIsPlausible).
+    if (!edgeGeometryIsPlausible(slice, edge.length_m)) return bridgeableOk ? FROMTO_EDGE_BRIDGEABLE : null;
+    return slice;
+  }
+  function appendFromToEdgeCoords(coordsOut, slice) {
+    if (!slice || slice.length < 2) return;
+    if (coordsOut.length && coordsOut[coordsOut.length - 1][0] === slice[0][0] && coordsOut[coordsOut.length - 1][1] === slice[0][1]) {
+      coordsOut.push.apply(coordsOut, slice.slice(1));
+    } else {
+      coordsOut.push.apply(coordsOut, slice);
+    }
+  }
+  // `cache` is keyed by edge identity (from|to) and lives on the
+  // selection's fromToPath object (selectFromTo() starts a fresh one per
+  // search) — every edge that has EVER resolved to real geometry during
+  // this selection's lifetime keeps that geometry, even on a later call
+  // where it can't currently be re-verified (its tiles simply aren't
+  // loaded for the current view). Returns unresolvedCount so callers can
+  // tell "fully real" apart from "still has straight-line placeholders,
+  // worth polling a bit more" without a second pass over the edges.
+  function resolveFromToGeometryGraceful(edges, cache) {
+    var coordsOut = [];
+    var unresolvedCount = 0;
+    for (var i = 0; i < edges.length; i++) {
+      var e = edges[i];
+      var key = e.from + '|' + e.to;
+      var result = resolveOneFromToEdgeGeometry(e);
+      if (result === FROMTO_EDGE_BRIDGEABLE) continue; // negligible gap, draw nothing, neighbours join across it
+      if (result) {
+        cache[key] = result;
+        appendFromToEdgeCoords(coordsOut, result);
+        continue;
+      }
+      if (cache[key]) {
+        appendFromToEdgeCoords(coordsOut, cache[key]); // real geometry from an earlier resolve — not re-confirmable right now, still correct
+        continue;
+      }
+      // Never once resolved — the only geometry guaranteed available with
+      // zero tile dependency: a straight line between this edge's own
+      // endpoints. Self-limiting in practice: a long never-resolved edge
+      // is exactly the kind that's only ever showing at a zoom/pan where
+      // its true curve is imperceptible anyway (either not zoomed in on
+      // it, or — the moment the user DOES look at it closely enough for
+      // the deviation to matter — that's also the moment its tiles become
+      // resolvable and this straight line gets replaced by the real one).
+      var a = routingGraph.node_coord[e.from], b = routingGraph.node_coord[e.to];
+      if (a && b) appendFromToEdgeCoords(coordsOut, [a, b]);
+      unresolvedCount++;
+    }
+    return { coords: coordsOut.length >= 2 ? coordsOut : null, unresolvedCount: unresolvedCount };
+  }
+  // Runs a few times, a short interval apart, right after a fresh
+  // selection — catches the common case where most tiles finish loading
+  // within a second or two of the fitBounds camera settling, so the
+  // highlight visibly firms up from its initial straight-line-heavy first
+  // draw without the user needing to touch zoom at all. Stops early once
+  // every edge has resolved to real geometry (unresolvedCount === 0) —
+  // after that, only a further zoom-in (scheduleFromToGeometryRefine,
+  // below) has anything left to improve.
+  var FROMTO_SETTLE_ATTEMPTS = 6, FROMTO_SETTLE_INTERVAL_MS = 400;
+  function settleFromToGeometry(fp, mySeq) {
     var attempts = 0;
     function attempt() {
       if (mySeq !== selectionSeq) return;
       attempts++;
-      var coords = resolveFromToGeometry(edges);
-      if (!coords) {
-        if (attempts < MAX_GEOMETRY_ATTEMPTS) setTimeout(attempt, 400);
-        return; // give up quietly — see tryResolveGeometry's original comment on why this doesn't retry forever
+      var res = resolveFromToGeometryGraceful(fp.edges, fp.edgeGeometryCache);
+      fp.lastAttemptZoom = map.getZoom();
+      if (res.coords) {
+        fp.renderCoords = res.coords;
+        renderFromToPolylineGeometry();
       }
-      onResolved(coords);
+      if (res.unresolvedCount > 0 && attempts < FROMTO_SETTLE_ATTEMPTS) setTimeout(attempt, FROMTO_SETTLE_INTERVAL_MS);
     }
     attempt();
   }
   // Re-resolves the CURRENT from/to highlight's geometry after the user
-  // zooms in further than whatever zoom it was last drawn at — fixes the
-  // highlight staying frozen at the low-zoom, tippecanoe-simplified detail
-  // level it was first resolved at (flyToBoundsZoomedOut deliberately lands
-  // zoomed OUT — see FROMTO_ZOOM_OUT — so a long route's first resolve is
-  // often quite coarse), while the real track drawn alongside it keeps
-  // refining per-zoom as normal. Debounced on zoomend rather than firing
-  // per zoom frame — a scroll-wheel zoom or a few button taps in quick
-  // succession should settle once, not requery tiles after every tick.
+  // zooms in further than whatever zoom it was last ATTEMPTED at — fixes
+  // the highlight staying frozen at the low-zoom, tippecanoe-simplified
+  // detail level it was first resolved at (flyToBoundsZoomedOut
+  // deliberately lands zoomed OUT — see FROMTO_ZOOM_OUT — so a long
+  // route's first resolve is often quite coarse), while the real track
+  // drawn alongside it keeps refining per-zoom as normal. Debounced on
+  // zoomend rather than firing per zoom frame — a scroll-wheel zoom or a
+  // few button taps in quick succession should settle once, not requery
+  // tiles after every tick.
   //
-  // Only refines on the way IN (FROMTO_REFINE_MIN_ZOOM_DELTA gate below) —
-  // zooming back out never needs a redraw: the already-resolved geometry is
-  // real, full-precision track, just rendered at a zoom that doesn't need
-  // all of its detail. There's no equivalent staleness the other direction.
+  // Gated on the last zoom an ATTEMPT was made at, not the last zoom
+  // something successfully drew — gating on success meant a route that
+  // failed to resolve AT ALL at the initial extreme-low-zoom fit could
+  // never recover even after the user zoomed in (nothing had ever
+  // succeeded, so the gate never opened). Now every meaningful zoom-in
+  // re-attempts regardless of whether previous attempts fully resolved,
+  // which is also what lets this keep refining at successive zoom levels
+  // instead of stopping after one pass — see the redesign note above.
+  //
+  // Only refines on the way IN — zooming back out never needs a redraw:
+  // the already-resolved geometry is real, full-precision track (or a
+  // straight-line placeholder no less accurate than it was a moment ago),
+  // just rendered at a zoom that doesn't need all of its detail. There's
+  // no equivalent staleness the other direction.
   var FROMTO_REFINE_MIN_ZOOM_DELTA = 1, FROMTO_REFINE_DEBOUNCE_MS = 400;
   var fromToZoomRefineTimer = null;
   function scheduleFromToGeometryRefine() {
     if (fromToZoomRefineTimer) clearTimeout(fromToZoomRefineTimer);
     fromToZoomRefineTimer = setTimeout(function () {
       fromToZoomRefineTimer = null;
-      if (selection.type !== 'fromto' || !selection.fromToPath || !selection.fromToPath.found) return;
-      var fp = selection.fromToPath;
-      // renderedAtZoom unset means selectFromTo()'s OWN initial resolve
-      // hasn't completed yet (it's on its own setTimeout/retry right now) —
-      // this only re-resolves an ALREADY-drawn highlight, so let that first
-      // draw own itself rather than racing it with a redundant second
-      // resolveFromToGeometryWithRetry call for the same edges.
-      if (fp.renderedAtZoom == null) return;
-      if (map.getZoom() <= fp.renderedAtZoom + FROMTO_REFINE_MIN_ZOOM_DELTA) return; // not meaningfully more detail available than what's already drawn
-      var mySeq = selectionSeq;
-      resolveFromToGeometryWithRetry(fp.edges, mySeq, function (coords) {
-        // selection.fromToPath !== fp: a NEWER from/to selection replaced
-        // this one while the retry loop was waiting on tiles — mySeq alone
-        // wouldn't catch that if, improbably, selectionSeq had wrapped back
-        // to the same value, so check both.
-        if (mySeq !== selectionSeq || selection.type !== 'fromto' || selection.fromToPath !== fp) return;
-        fp.renderCoords = coords;
-        fp.renderedAtZoom = map.getZoom(); // the zoom AT RESOLUTION, not the zoom that triggered this — the user may have kept zooming during the retry wait
+      // activeFromToPath(), not a direct selection.type check — Section 5:
+      // this has to keep refining a route locked-visible behind a station
+      // panel too, not just while the from/to panel itself is showing.
+      var fp = activeFromToPath();
+      if (!fp || !fp.found) return;
+      if (fp.lastAttemptZoom != null && map.getZoom() <= fp.lastAttemptZoom + FROMTO_REFINE_MIN_ZOOM_DELTA) return; // not meaningfully more detail available than what's already been tried
+      if (!fp.edgeGeometryCache) fp.edgeGeometryCache = {}; // belt and braces — selectFromTo() always sets this, but this handler outlives any one selection
+      // No mySeq/staleness guard needed here: resolveFromToGeometryGraceful
+      // is fully synchronous (no tile fetch, just querySourceFeatures
+      // against whatever's already loaded), so there is no async gap in
+      // which `selection`/`fp` could change out from under this call.
+      var res = resolveFromToGeometryGraceful(fp.edges, fp.edgeGeometryCache);
+      fp.lastAttemptZoom = map.getZoom();
+      if (res.coords) {
+        fp.renderCoords = res.coords;
         renderFromToPolylineGeometry();
-      });
+      }
     }, FROMTO_REFINE_DEBOUNCE_MS);
   }
   // NOT registered here — `map` doesn't exist yet at this point in the
@@ -4917,87 +5027,129 @@
         '</div>';
     }).join('');
   }
+  // ── Shared marquee utility ─────────────────────────────────────────────
+  // Generalised 2026-08-05 from the departure board (its original and still
+  // primary use) into applyMarquee(), reusable anywhere a station/route/
+  // operator name can overflow its container — see the call sites at the
+  // sidebar selection title, the "stations along this path"/saved/stopping-
+  // station list rows, and the selected-entity filter chip, in addition to
+  // the departure board below.
+  //
   // Speed the marquee SCROLLS at (the moving portion only, not the holds
-  // either side of it) — a longer destination name should take
-  // proportionally longer to read, not race past at the same speed a short
-  // one crawls at. 60px/s is a comfortable reading pace at this font-size;
-  // MIN keeps a barely-overflowing cell from looking twitchy at the low end.
-  var DEP_MARQUEE_PX_PER_SEC = 60, DEP_MARQUEE_MIN_SCROLL_S = 3;
+  // either side of it) — a longer name should take proportionally longer
+  // to read, not race past at the same speed a short one crawls at.
+  // Tuned up considerably from the first pass (60px/s, 3s floor — reported
+  // as feeling too slow) to 130px/s with a 1s floor. Not blind-verified:
+  // faster risks the opposite problem (unreadable), and that tradeoff needs
+  // an actual look, not a guess — worth Aaron's visual confirmation, and
+  // these are the two constants to hand-tune if it needs adjusting either
+  // way.
+  var MARQUEE_PX_PER_SEC = 130, MARQUEE_MIN_SCROLL_S = 1;
   // Static at the start, and again once the loop is back at its visual
   // start, so the text is actually readable before/after it moves rather
-  // than starting to scroll the instant it appears.
-  var DEP_MARQUEE_HOLD_S = 2;
-  // One shared <style> holding one dynamically-generated @keyframes rule per
-  // currently-marqueeing cell (unique name per cell, since each cell's
-  // hold/scroll percentage split depends on ITS OWN scroll distance — see
-  // the CSS comment on .dep-cell-track for why this can't just be a shared
-  // rule driven by a custom property). Rebuilt from scratch on every
-  // applyDepartureMarquees() call so stale rules from a previous board
-  // render never accumulate.
-  var depMarqueeStyleEl = null, depMarqueeUid = 0;
-  function depMarqueeStylesheet() {
-    if (!depMarqueeStyleEl) {
-      depMarqueeStyleEl = document.createElement('style');
-      depMarqueeStyleEl.id = 'dep-marquee-keyframes';
-      document.head.appendChild(depMarqueeStyleEl);
+  // than starting to scroll the instant it appears. (Separate, deliberate
+  // request from the speed tuning above — left as 2s.)
+  var MARQUEE_HOLD_S = 2;
+  // One shared <style> holding one dynamically-generated @keyframes rule
+  // per currently-marqueeing element (unique name per element, since each
+  // one's hold/scroll percentage split depends on ITS OWN scroll distance —
+  // see the CSS comment on .marquee-track for why this can't just be a
+  // shared rule driven by a custom property).
+  //
+  // Multiple INDEPENDENT call sites share this one stylesheet (the
+  // departure board polls on its own timer; the sidebar title changes on
+  // selection; list rows rebuild on panel changes) — naively overwriting
+  // the whole stylesheet on every call would delete whichever OTHER
+  // group's rules were already active (e.g. updating the departure board
+  // would break the sidebar title's still-running marquee). Naively
+  // APPENDING forever would leak indefinitely instead. So: rule text is
+  // keyed by name in marqueeRuleText (shared, all groups), and
+  // marqueeGroupNames tracks which names belong to which caller-supplied
+  // groupKey — a call replaces only ITS OWN group's previous names before
+  // the stylesheet is rebuilt from whatever remains across all groups.
+  var marqueeStyleEl = null, marqueeUid = 0;
+  var marqueeRuleText = {}, marqueeGroupNames = {};
+  function marqueeStylesheet() {
+    if (!marqueeStyleEl) {
+      marqueeStyleEl = document.createElement('style');
+      marqueeStyleEl.id = 'marquee-keyframes';
+      document.head.appendChild(marqueeStyleEl);
     }
-    return depMarqueeStyleEl;
+    return marqueeStyleEl;
   }
-  // Upgrades whichever .dep-dest/.dep-plat/.dep-status cells actually
-  // overflow their column (scrollWidth > clientWidth, measured post-render —
-  // this needs real layout, so it can't be decided from the string data
-  // alone) into a looping marquee; a cell that fits is left exactly as
-  // departureRowsHtml() rendered it; plain ellipsis-truncated text, same as
-  // before this feature existed.
-  function applyDepartureMarquees(container) {
-    if (!container) return;
-    // Reduced motion: skip the marquee upgrade entirely rather than build it
-    // and rely on the CSS `animation: none` fallback to neutralise it — that
-    // would leave the text hard-clipped with no ellipsis. Not upgrading at
-    // all keeps the plain, already-readable ellipsis truncation instead.
-    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    var cells = container.querySelectorAll('.dep-dest, .dep-plat, .dep-status');
-    var keyframeRules = [];
-    Array.prototype.forEach.call(cells, function (cell) {
-      if (cell.scrollWidth <= cell.clientWidth + 1) return; // fits — leave alone
-      var text = cell.textContent;
-      cell.textContent = '';
-      cell.classList.add('dep-cell-marquee');
-      cell.title = text;
-      cell.tabIndex = 0; // reachable by keyboard, so :focus can pause it (see CSS)
-      var track = document.createElement('span');
-      track.className = 'dep-cell-track';
-      // Two identical copies back-to-back — see the CSS comment on
-      // .dep-cell-track for why this is what makes a seamless loop possible
-      // without measuring an exact scroll distance per cell.
-      for (var i = 0; i < 2; i++) {
-        var span = document.createElement('span');
-        span.className = 'dep-cell-text';
-        span.textContent = text;
-        if (i === 1) span.setAttribute('aria-hidden', 'true'); // the visual-loop copy, not real content
-        track.appendChild(span);
+  // Upgrades whichever of `elements` actually overflow their container
+  // (scrollWidth > clientWidth, measured post-render — this needs real
+  // layout, so it can't be decided from the string data alone) into a
+  // looping marquee; an element that fits is left exactly as rendered,
+  // plain ellipsis-truncated text, same as before this feature existed.
+  // `groupKey` is a stable string identifying the caller (e.g. 'dep-board',
+  // 'sb-title') — see the stylesheet-sharing comment above for why it's
+  // required rather than optional.
+  function applyMarquee(groupKey, elements) {
+    // Deferred a frame: overflow measurement (scrollWidth/clientWidth) needs
+    // real layout, and some callers (e.g. selectStation() calling
+    // renderSelectionChrome() before expandSidebarIfCollapsed()) can still
+    // have the sidebar mid-expand — collapsed, or measured before a
+    // just-triggered expand has been laid out — at the moment they call
+    // this. rAF runs after the browser has committed whatever layout
+    // changes happened earlier in the same synchronous turn, so this always
+    // measures the settled state regardless of call order. `elements` is a
+    // static NodeList/array snapshot (querySelectorAll, not a live list),
+    // so it stays valid to read a frame later even if the DOM has moved on
+    // — worst case a stale element reads as 0-width and is skipped, not an
+    // error.
+    requestAnimationFrame(function () {
+      (marqueeGroupNames[groupKey] || []).forEach(function (name) { delete marqueeRuleText[name]; });
+      var names = [];
+      // Reduced motion: skip the marquee upgrade entirely rather than build
+      // it and rely on the CSS `animation: none` fallback to neutralise it
+      // — that would leave the text hard-clipped with no ellipsis. Not
+      // upgrading at all keeps the plain, already-readable ellipsis
+      // truncation instead.
+      var reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!reducedMotion) {
+        Array.prototype.forEach.call(elements, function (el) {
+          if (!el || el.scrollWidth <= el.clientWidth + 1) return; // missing, or fits — leave alone
+          var text = el.textContent;
+          el.textContent = '';
+          el.classList.add('marquee-el');
+          el.title = text;
+          el.tabIndex = 0; // reachable by keyboard, so :focus can pause it (see CSS)
+          var track = document.createElement('span');
+          track.className = 'marquee-track';
+          // Two identical copies back-to-back — see the CSS comment on
+          // .marquee-track for why this is what makes a seamless loop
+          // possible without measuring an exact scroll distance per element.
+          for (var i = 0; i < 2; i++) {
+            var span = document.createElement('span');
+            span.className = 'marquee-text';
+            span.textContent = text;
+            if (i === 1) span.setAttribute('aria-hidden', 'true'); // the visual-loop copy, not real content
+            track.appendChild(span);
+          }
+          el.appendChild(track);
+          var singleCopyWidth = track.scrollWidth / 2;
+          var scrollS = Math.max(MARQUEE_MIN_SCROLL_S, singleCopyWidth / MARQUEE_PX_PER_SEC);
+          var totalS = MARQUEE_HOLD_S * 2 + scrollS;
+          var holdEndPct = (MARQUEE_HOLD_S / totalS * 100).toFixed(3);
+          var scrollEndPct = ((MARQUEE_HOLD_S + scrollS) / totalS * 100).toFixed(3);
+          var name = 'marquee-' + (marqueeUid++);
+          marqueeRuleText[name] = '@keyframes ' + name + ' { 0%, ' + holdEndPct + '% { transform: translateX(0); } ' +
+            scrollEndPct + '%, 100% { transform: translateX(-50%); } }';
+          names.push(name);
+          track.style.setProperty('--marquee-name', name);
+          track.style.setProperty('--marquee-duration', totalS.toFixed(2) + 's');
+        });
       }
-      cell.appendChild(track);
-      var singleCopyWidth = track.scrollWidth / 2;
-      var scrollS = Math.max(DEP_MARQUEE_MIN_SCROLL_S, singleCopyWidth / DEP_MARQUEE_PX_PER_SEC);
-      var totalS = DEP_MARQUEE_HOLD_S * 2 + scrollS;
-      var holdEndPct = (DEP_MARQUEE_HOLD_S / totalS * 100).toFixed(3);
-      var scrollEndPct = ((DEP_MARQUEE_HOLD_S + scrollS) / totalS * 100).toFixed(3);
-      var name = 'dep-marquee-' + (depMarqueeUid++);
-      keyframeRules.push(
-        '@keyframes ' + name + ' { 0%, ' + holdEndPct + '% { transform: translateX(0); } ' +
-        scrollEndPct + '%, 100% { transform: translateX(-50%); } }'
-      );
-      track.style.setProperty('--dep-marquee-name', name);
-      track.style.setProperty('--dep-marquee-duration', totalS.toFixed(2) + 's');
+      marqueeGroupNames[groupKey] = names;
+      marqueeStylesheet().textContent = Object.keys(marqueeRuleText).map(function (n) { return marqueeRuleText[n]; }).join('\n');
     });
-    depMarqueeStylesheet().textContent = keyframeRules.join('\n');
   }
   function renderDepartureRows(rows) {
     var container = document.getElementById('sb-dep-rows');
     if (!container) return;
     container.innerHTML = departureRowsHtml(rows);
-    applyDepartureMarquees(container);
+    applyMarquee('dep-board', container.querySelectorAll('.dep-dest, .dep-plat, .dep-status'));
   }
 
   // ── Sidebar selection state (station / from-to / saved-list / none) ──────
@@ -5017,10 +5169,12 @@
 
   function renderSelectionChrome() {
     savedToggleBtn.setAttribute('aria-pressed', String(selection.type === 'saved'));
-    // Task 2, extended Phase 6: the shared magenta highlight layer now
-    // serves both a named-route selection AND a from/to graph-pathfinding
-    // result — only clear it when NEITHER applies, not just "not a route".
-    if (selection.type !== 'route' && selection.type !== 'fromto') clearRoutePolyline();
+    // Task 2, extended Phase 6, extended Section 5 (2026-08-05): the shared
+    // magenta highlight layer serves a named-route selection, a live
+    // from/to panel, AND — now — a from/to route LOCKED after navigating
+    // away to a station via its path list (activeFromToPath(), see its
+    // comment). Only clear it when none of the three applies.
+    if (selection.type !== 'route' && !activeFromToPath()) clearRoutePolyline();
     var type = effectiveSelectionType();
     if (type === 'none') {
       sidebarEl.classList.remove('has-selection');
@@ -5073,6 +5227,12 @@
       selTitleEl.textContent = (selection.station && selection.station.name) || 'Station';
       starBtn.style.display = 'none';
     }
+    // History mode's title deliberately WRAPS instead of truncating (see
+    // body.mode-history .sb-selection-title's CSS) — marqueeing would fight
+    // that, and every type reachable while mode==='history' (histop/
+    // histline/histstation) already gets that treatment, so this is a mode
+    // check, not a per-type one.
+    if (mode !== 'history') applyMarquee('sb-title', [selTitleEl]);
   }
 
   // ── Sidebar content build + animated transition (#14) ────────────────────
@@ -5930,6 +6090,11 @@
       renderNews();
       injectSchemaJsonLd(null); // departure board / from-to / live-default views describe no single entity
     }
+    // .sv-name covers every station-name list this panel can show — saved
+    // stations, a route's stopping stations, and "stations along this
+    // path" — one call regardless of which branch above actually rendered
+    // it, rather than repeating this at each call site.
+    applyMarquee('sv-list', contentBlock.querySelectorAll('.sv-name'));
   }
 
   function playEntranceStagger(mySeq) {
@@ -6278,7 +6443,13 @@
     // pair). A fresh selection should always start with a clean highlight —
     // either the new pair's real path replaces it once resolved, or (no
     // route found) it just stays hidden, never a stale previous route.
+    // Same reasoning extends to lockedFromToPath (Section 5): a fresh
+    // search drops whatever the PREVIOUS search left locked, even though
+    // activeFromToPath() would already prefer selection.fromToPath the
+    // instant selection.type flips to 'fromto' a few lines up — explicit
+    // here rather than relying on that precedence alone.
     clearRoutePolyline();
+    lockedFromToPath = null;
     clearOperatorHighlight(); // a locked operator-lines highlight from a previous Database selection doesn't belong to this fromto search either — see clearOperatorHighlight()'s comment
     expandSidebarIfCollapsed();
     animateSidebarTransition();
@@ -6315,6 +6486,11 @@
         rebuildSidebarContent(); // now showing the real found/no-route result instead of 'loading' — in EITHER mode; Database's panel is built entirely from this result, so skipping it there left it stuck on "Finding route…"
       }
       if (!result.found) return;
+      result.edgeGeometryCache = {}; // fresh per search — see resolveFromToGeometryGraceful's comment
+      // Section 5: this is what activeFromToPath() falls back to once the
+      // user navigates away from the 'fromto' panel to a station reached
+      // via its path list — see the comment on lockedFromToPath.
+      lockedFromToPath = result;
 
       // Extend the camera to the WHOLE resolved path, not just the two
       // endpoints — a curvy real route can run outside their straight-line
@@ -6340,25 +6516,16 @@
       // MapLibre's 'idle' only fires on a TRANSITION into the idle state —
       // if the map happens to already be idle at the moment this is
       // registered (a real, observed race), it never fires again and the
-      // geometry lookup never even gets attempted. Separately,
-      // resolveFromToGeometry() can legitimately need more than one 'idle'
-      // cycle to succeed for a long path: most of a 93-edge path's tiles
-      // loaded after the first idle, but at least one segment's tile
-      // genuinely hadn't yet (confirmed directly — querySourceFeatures
-      // returned real matches for 4 of 5 sampled edges after one idle
-      // pass, zero for the 5th). Fixed with a bounded setTimeout retry loop
-      // instead of relying on 'idle' semantics at all — simpler to reason
-      // about, and immune to the "already idle" pitfall. Shared with
-      // scheduleFromToGeometryRefine's later zoom-triggered re-resolves —
-      // see resolveFromToGeometryWithRetry.
+      // geometry lookup never even gets attempted. A bounded settle loop
+      // (settleFromToGeometry) sidesteps 'idle' semantics entirely instead —
+      // simpler to reason about, and immune to the "already idle" pitfall.
+      // Draws a first pass (real geometry where tiles are already loaded,
+      // straight-line placeholders elsewhere — see the redesign note above
+      // resolveOneFromToEdgeGeometry) then polls a few more times as more
+      // tiles come in; scheduleFromToGeometryRefine picks up anything still
+      // outstanding once the user zooms in further.
       setTimeout(function () {
-        resolveFromToGeometryWithRetry(result.edges, mySeq, function (coords) {
-          selection.fromToPath.renderCoords = coords;
-          // The zoom this was actually resolved at — scheduleFromToGeometryRefine
-          // reads this to decide whether a later zoom-in is worth re-querying for.
-          selection.fromToPath.renderedAtZoom = map.getZoom();
-          renderFromToPolylineGeometry();
-        });
+        settleFromToGeometry(result, mySeq);
       }, 400); // let the fitBounds camera move start before the first attempt
     });
   }
@@ -6369,6 +6536,12 @@
     selectedStationId = null;
     selectedStationName = null;
     selection = { type: 'none' };
+    // Explicit clear resets a locked From/To route too (Section 5) — without
+    // this, renderSelectionChrome()'s clearRoutePolyline() guard would see
+    // activeFromToPath() still return the lock and skip clearing, so the
+    // Clear button would silently fail to clear a route reached via a
+    // station's path list.
+    lockedFromToPath = null;
     renderSelectionChrome();
     animateSidebarTransition();
     setSelectedStationPoints([]);
@@ -6390,6 +6563,13 @@
   function selectRoute(id) {
     ++selectionSeq;
     selection = { type: 'route', id: id, fallbackName: (routesContent[id] && routesContent[id].name) || id };
+    // A named route takes over the same magenta layer a locked From/To
+    // route (Section 5) would otherwise keep re-asserting — drawRoutePolyline()
+    // below overwrites the visible line immediately either way, but without
+    // this a later zoom (scheduleFromToGeometryRefine, gated on
+    // activeFromToPath(), not selection.type) would still see the stale lock
+    // and redraw the OLD from/to path over this one.
+    lockedFromToPath = null;
     renderSelectionChrome();
     expandSidebarIfCollapsed();
     animateSidebarTransition();
@@ -6810,14 +6990,44 @@
     return coords;
   }
 
+  // Section 5 (2026-08-05): a resolved From/To route now SURVIVES clicking
+  // through to a station via the "stations along this path" list —
+  // selectStation() sets selection = {type:'none'} (station is implied by
+  // selectedStationId, not its own selection.type — see the comment on
+  // those vars), which used to blank the route because every check that
+  // decides whether to keep the magenta line drawn tested
+  // `selection.type === 'fromto'` directly. Fixed the same way
+  // lockedOperatorHighlight/lockedHeritageSlug already keep a highlight
+  // alive independently of what the sidebar panel is currently showing:
+  // a separate variable, not folded into `selection`, cleared only by
+  // things that actually conflict with it (a fresh From/To search,
+  // picking a named route — which reuses this exact same magenta layer —
+  // or an explicit Clear). Deliberately NOT cleared by selectOperator()/
+  // selectHeritageRailway() in this pass — narrower scope than a full
+  // "when should ANY locked route ever go away" policy, which is a
+  // reasonable follow-up if it turns out to matter, not guessed at here.
+  var lockedFromToPath = null;
+  // The one thing to ask "is there a From/To route that should currently
+  // be shown" — `selection.fromToPath` while the panel itself is showing
+  // it, `lockedFromToPath` for everywhere else (a station reached via its
+  // path list, a mode round-trip through History, etc.). Every place that
+  // used to test `selection.type === 'fromto'` for this purpose now goes
+  // through here instead, so there is exactly one definition of "active"
+  // rather than the two independently-maintained checks drifting apart.
+  function activeFromToPath() {
+    return selection.type === 'fromto' ? selection.fromToPath : lockedFromToPath;
+  }
+
   // Phase 6 — redraws the From/To path from its CACHED resolved geometry
-  // (selection.fromToPath.renderCoords, computed once in selectFromTo()'s
-  // async resolution flow below). Called on theme toggle re-apply, same
-  // pattern as renderRoutePolylineGeometry — never recomputes Dijkstra or
-  // refetches tile geometry, just redraws what was already resolved.
+  // (computed once in selectFromTo()'s async resolution flow below, or by
+  // scheduleFromToGeometryRefine() later). Called on theme toggle re-apply,
+  // same pattern as renderRoutePolylineGeometry — never recomputes
+  // Dijkstra or refetches tile geometry, just redraws what was already
+  // resolved.
   function renderFromToPolylineGeometry() {
-    if (selection.type !== 'fromto' || !selection.fromToPath || !selection.fromToPath.renderCoords) return;
-    drawMagentaHighlightGeometry(selection.fromToPath.renderCoords);
+    var fp = activeFromToPath();
+    if (!fp || !fp.renderCoords) return;
+    drawMagentaHighlightGeometry(fp.renderCoords);
   }
 
   // User-initiated selection — draws the geometry AND flies the camera to
@@ -7110,8 +7320,17 @@
         jump.classList.remove('invalid');
         setHistoryYear(y, { source: 'jump' });
       };
+      // Select-on-focus + Escape (Section 8, 2026-08-05) — the same shared
+      // functions wireAutocomplete()'s fields use, kept here rather than in
+      // the generic .field-clear wiring so every keydown behaviour for this
+      // field lives in the one function that owns the rest of it (Enter).
+      wireSelectAllOnFocus(jump);
       jump.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter') { e.preventDefault(); commit(); }
+        if (e.key === 'Enter') { e.preventDefault(); commit(); return; }
+        if (e.key === 'Escape') {
+          if (jump.value) { jump.value = ''; jump.classList.remove('invalid'); jump.dispatchEvent(new Event('input', { bubbles: true })); return; }
+          escapeClearNextThing(); // already empty — defer to the shared blurred-Esc chain, same as wireAutocomplete()'s stage 3
+        }
       });
       jump.addEventListener('blur', commit);
       jump.addEventListener('input', function () { jump.classList.remove('invalid'); });
@@ -7687,7 +7906,10 @@
     // clearRoutePolyline() says "there is no route to show". A blanket restore
     // would resurrect a route the user had already cleared. So it is restored
     // only when a selection that owns a path is actually live.
-    if (selection.type === 'fromto' || selection.type === 'route') {
+    // activeFromToPath() rather than selection.type === 'fromto' directly
+    // (Section 5) — a route locked-visible behind a station panel must
+    // come back too, not just a live from/to panel.
+    if (selection.type === 'route' || activeFromToPath()) {
       ids.push(ROUTE_LAYER_ID, ROUTE_HIT_LAYER_ID);
     }
     ids.forEach(function (id) {
@@ -7916,28 +8138,22 @@
     if (!summaryEl || !bodyEl) return;
     var sources = (attributionManifest && attributionManifest.sources) || [];
     if (!sources.length) return; // keep the static pre-JS fallback text
-    // COLLAPSED BAR credits only what is CURRENTLY ON SCREEN, using each
-    // source's own `layer_scope` from the manifest — not a hardcoded list and
-    // not string-matching on file paths. This is the manifest's own stated
-    // rule ("every entry where attribution === MANDATORY and the layer is
-    // visible") and it exists because crediting all six mandatory sources
-    // unconditionally measured 336 characters — about five wrapped lines and
-    // ~86px of permanent sidebar chrome, which visibly squeezed the Live
-    // tab's 50/50 departure/news panes on a short viewport.
-    //
-    // The EXPANDED state always lists every source regardless of scope, so
-    // nothing is ever unreachable — only deferred by one tap.
-    function scopeVisible(scope) {
-      if (!scope || scope === 'always') return true;
-      if (scope === 'orm') return !!ormVisible;
-      if (scope === 'historical') return mode === 'history' && historyYear < HISTORY_MODERN_FROM;
-      if (scope === 'modern') return mode !== 'history' || historyYear >= HISTORY_MODERN_FROM;
-      return true;
-    }
-    var mandatory = sources.filter(function (s) { return s.attribution === 'MANDATORY'; });
-    var courtesy = sources.filter(function (s) { return s.attribution !== 'MANDATORY'; });
-    var visibleMandatory = mandatory.filter(function (s) { return scopeVisible(s.layer_scope); });
-    summaryEl.textContent = visibleMandatory.map(function (s) { return s.attribution_string; }).join(' · ');
+    // COLLAPSED BAR is just the word "Attribution" (2026-08-05 request —
+    // was every MANDATORY credit joined together, e.g. all six sources
+    // unconditionally measured 336 characters, about five wrapped lines and
+    // ~86px of permanent sidebar chrome, visibly squeezing the Live tab's
+    // 50/50 departure/news panes on a short viewport). Minimising permanent
+    // footprint (mobile especially, now that the sidebar has several
+    // stacked sections) won out over crediting sources before the user
+    // expands to read them — worth flagging plainly: every source is still
+    // listed, mandatory and courtesy alike, in the EXPANDED body below,
+    // completely unconditionally (nothing has ever been scope-filtered
+    // there — see its own comment) — the credits themselves haven't
+    // changed, only that reaching them now always needs the one tap the
+    // expanded state already guaranteed. If that one tap needs to not be
+    // needed for legal reasons, that's a real, separate call to make, not
+    // something to assume either way here.
+    summaryEl.textContent = 'Attribution';
     function rowHtml(s) {
       var lic = s.licence_url
         ? '<a class="db-link" href="' + escapeAttr(s.licence_url) + '" target="_blank" rel="noopener">' + escapeAttr(s.licence_label || s.licence_code || '') + '</a>'
@@ -7948,6 +8164,8 @@
         '<span class="sb-attrib-tag">' + escapeAttr(s.attribution === 'MANDATORY' ? 'required' : 'courtesy') + '</span>' +
         '</div>';
     }
+    var mandatory = sources.filter(function (s) { return s.attribution === 'MANDATORY'; });
+    var courtesy = sources.filter(function (s) { return s.attribution !== 'MANDATORY'; });
     bodyEl.innerHTML = mandatory.concat(courtesy).map(rowHtml).join('');
   }
 
@@ -8741,10 +8959,15 @@
   tabDb.addEventListener('click', function () { setMode('database'); });
   tabHistory.addEventListener('click', function () { setMode('history'); });
   SLIDER_INSTANCES.forEach(wireSliderInstance);
-  // Standalone clear (×) buttons declared in markup (the Jump-to fields).
+  // Standalone clear (×) buttons declared in markup (the Jump-to field).
   // Search fields get theirs injected by wireAutocomplete instead — same
   // class, same behaviour, different origin because those fields are wired
-  // through one shared function and these are not.
+  // through one shared function and this one is not. Select-on-focus and
+  // Escape are NOT wired here any more (2026-08-05) — both moved into
+  // wireSliderInstance(), which already owns every other keydown behaviour
+  // for this field (Enter-commits), so all of it lives in one place rather
+  // than being split across two. This block now only owns the visible ×
+  // button itself.
   Array.prototype.forEach.call(document.querySelectorAll('.field-clear[data-clear-for]'), function (btn) {
     var input = document.getElementById(btn.dataset.clearFor);
     if (!input) return;
@@ -8757,11 +8980,6 @@
       input.focus();
     });
     input.addEventListener('input', sync);
-    input.addEventListener('keydown', function (e) {
-      // Same two-stage convention as the search fields. These have no
-      // dropdown, so Escape goes straight to stage two: clear the field.
-      if (e.key === 'Escape') { input.value = ''; input.classList.remove('invalid'); sync(); }
-    });
     sync();
   });
 
@@ -8930,7 +9148,20 @@
   // right. A flat, symmetric number here is genuinely just the "zoom out a
   // bit more" breathing room the sidebar offset itself doesn't need to be
   // part of.
-  var FROMTO_FIT_PADDING = 100;
+  // 70, not 100 (2026-08-05) — reported (with a Solihull->Marylebone
+  // screenshot) that a resolved route was sitting as a small diagonal
+  // strip with a lot of unused map around it. Some of that is inherent to
+  // fitting an axis-aligned bbox around DIAGONAL content (a SW-NE line's
+  // bbox has two empty corners no amount of padding/zoom tuning removes —
+  // that would need rotating the map bearing to the route's own angle,
+  // a much bigger change than "tighten the fit"), but 100 was adding real,
+  // avoidable margin on top of that. Scoped to the From/To bounds fit only
+  // — see FROMTO_ZOOM_OUT below for the other half of this tightening, and
+  // its own note on why that value doesn't get pushed as far back down as
+  // this one might otherwise suggest. Station-only flows
+  // (flyToAndSelectStation's flat zoom:10) are untouched — they never read
+  // this constant.
+  var FROMTO_FIT_PADDING = 70;
   // 2026-07-22 request: Destination (From/To) results should land noticeably
   // more zoomed out than fitBounds' own tightest-fit zoom — everywhere else
   // (route/operator selection) is fine as-is, so this is a separate helper
@@ -8966,6 +9197,15 @@
   // 0.905, comfortably inside edgeGeometryIsPlausible()'s 0.5 floor — so z5
   // geometry is faithful enough for the resolver, and the floor does not need
   // to be raised above the tileset's own minimum.
+  //
+  // NOT sufficient on its own for every route, though (found 2026-08-05,
+  // Manchester Piccadilly->Marylebone: 150 edges, still landed at this exact
+  // floor, still drew nothing). One sampled z5 tile having a good ratio says
+  // z5 geometry CAN be faithful, not that all ~150 of a long route's edges
+  // will resolve there — the old all-or-nothing resolver only needed ONE of
+  // them to fail. resolveFromToGeometryGraceful() (see its comment) is the
+  // real backstop now; this floor still matters for keeping MOST
+  // searches out of the worst of it, it's just not load-bearing alone any more.
   var OPERATOR_TILES_MIN_ZOOM = 5;
   // `padding` here is the flat symmetric breathing-room number (60 for an
   // operator network, 100 for a From/To path) — NOT chrome dimensions.
@@ -9019,9 +9259,18 @@
     if (maxZoom !== undefined) z = Math.min(z, maxZoom);
     map.flyTo({ center: cam.center, zoom: Math.max(OPERATOR_TILES_MIN_ZOOM, z), duration: duration });
   }
-  // 3, not 2 (2026-08-04) — one further level out. Reported across the board:
-  // every fly landed with the subject almost touching the viewport edge.
-  var FROMTO_ZOOM_OUT = 3;
+  // 2, not 3 (2026-08-05, reverting the 2026-08-04 change directly above
+  // this comment) — 3 fixed the too-tight complaint that motivated it but
+  // over-corrected: the NEXT report was too much empty space around a
+  // resolved route (see FROMTO_FIT_PADDING's note, same investigation).
+  // Landing back on the pre-08-04 value rather than a new untested number,
+  // since 2 is already known to behave reasonably for the short/close-
+  // together case that 3 was solving for — the risk this reintroduces
+  // that old "almost touching the edge" complaint for SOME pair is real
+  // and worth Aaron re-checking visually alongside the long-diagonal case
+  // this change targets, since neither can be confirmed without a browser
+  // here.
+  var FROMTO_ZOOM_OUT = 2;
 
   // 2026-07-22 request: searching for an OPERATOR (not clicking one on the
   // map, and not a region chip — both of those already have their own
@@ -9289,6 +9538,79 @@
   // every search field on the site (station, from, to, operator, and the
   // mobile floating search bar all call this), so fixing it here covers all
   // of them at once rather than needing a per-field patch.
+  // ── Shared search-input behaviour (Section 8, 2026-08-05) ─────────────────
+  // ONE implementation, used by every text input site-wide, so select-on-
+  // focus and Escape semantics can't drift apart per-field over time (which
+  // had already started happening — wireAutocomplete()'s own two-stage
+  // Escape and the separate .field-clear[data-clear-for] handler further
+  // down were two independently-maintained implementations of a similar
+  // idea before this). Full inventory, investigated before writing any of
+  // this: sb-search-input/sb-from-input/sb-to-input/sb-operator-input/
+  // mobile-search-input (all five go through wireAutocomplete(), below) and
+  // hs-jump-sidebar (the History slider's Jump-to field — no dropdown, so
+  // wired directly further down instead, but through these same two
+  // functions). The History range slider (hs-range-sidebar, type="range")
+  // is not a text field and was checked and excluded — select-on-focus and
+  // Escape-clears-text have no meaning for it.
+  //
+  // Standard fix for a well-known browser quirk: calling .select() from a
+  // 'focus' handler works for TAB-focus but is silently undone by a
+  // FOCUSING CLICK's own mouseup, whose default action re-collapses the
+  // selection to wherever the click landed. justFocused is true for
+  // exactly the one mouseup immediately following a focusing click or tab,
+  // so a second click while already focused still positions the cursor
+  // normally (not force-selected every time) — matching ordinary text-field
+  // behaviour once the address-bar-style "fresh focus" moment has passed.
+  function wireSelectAllOnFocus(input) {
+    var justFocused = false;
+    input.addEventListener('focus', function () {
+      justFocused = true;
+      if (input.value) input.select();
+    });
+    input.addEventListener('mouseup', function (e) {
+      if (justFocused) { e.preventDefault(); justFocused = false; }
+    });
+  }
+  // The BLURRED-Escape chain (spec behaviours 3-4) — reached either from
+  // the document-level listener below (nothing focused at all) or from a
+  // field's OWN Escape handler falling through because its field was
+  // already empty. Field handlers call this directly rather than just
+  // letting the keydown bubble to the document listener below, because
+  // that listener explicitly ignores Escape while a field is focused (see
+  // its own comment) — needed so a NON-empty field's Escape (stage 2 —
+  // clear the field, stay focused) never ALSO triggers this chain for the
+  // same keypress; the field-level "already empty" case has to opt back in
+  // explicitly rather than relying on the general bubble path. Ordered by
+  // specificity and not hardcoded to exactly two presses, so it
+  // generalises to whatever happens to be open rather than assuming a
+  // fixed sequence:
+  //   1. A real search result showing (station/route/operator/heritage/
+  //      from-to/history-entity panel, its map highlight, distance, path
+  //      list, etc.) -> clearSelection(). Also covers the saved/starred
+  //      view (selection.type 'saved') the same call — the two can never
+  //      be open simultaneously (selection is one object), so there is
+  //      nothing to sequence between them; whichever is open is what
+  //      clears.
+  //   2. Otherwise, the search panel (the Station/Destination/Operator
+  //      input UI itself) is open -> close it.
+  //   3. Nothing left.
+  // Never touches input text at any point — that is the field-level
+  // handler's job alone, and only for the ONE field currently focused.
+  function escapeClearNextThing() {
+    if (effectiveSelectionType() !== 'none') { clearSelection(); return; }
+    var panel = document.getElementById('sb-search-panel');
+    if (panel && panel.classList.contains('open')) { panel.classList.remove('open'); return; }
+  }
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    var active = document.activeElement;
+    // Blurred case only — a focused field handles its own Escape (see
+    // wireAutocomplete()'s handler and hs-jump's, both of which fall
+    // through to escapeClearNextThing() directly when appropriate).
+    if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) return;
+    escapeClearNextThing();
+  });
+
   function wireAutocomplete(inputEl, dropdownEl, onPick, searchFn) {
     searchFn = searchFn || searchStations;
     var currentMatches = [];
@@ -9397,28 +9719,44 @@
       renderDropdown();
       syncClearButton();
     });
-    // Clicking the field positions the cursor and does NOT select-all or
-    // clear — standard behaviour, so an existing query stays editable. This
-    // is a deliberate no-op note rather than code: nothing here overrides the
-    // browser default, and nothing should be added that does.
+    // REVERSED 2026-08-05 (was: "Clicking the field positions the cursor and
+    // does NOT select-all or clear — standard behaviour... nothing should be
+    // added that does"). Explicit request, not an oversight: every search-
+    // style field now selects its existing text on focus, browser-address-
+    // bar style, so the next keystroke replaces it outright. See
+    // wireSelectAllOnFocus's own comment for the click-vs-tab handling this
+    // needs.
+    wireSelectAllOnFocus(inputEl);
     syncClearButton();
     inputEl.addEventListener('keydown', function (e) {
-      // TWO-STAGE ESCAPE. Investigated first (Phase 2B): this handler already
-      // existed and did stage one only — Escape closed the dropdown and
-      // nothing else, so a user who wanted to start a new search had to
-      // backspace the old query out by hand. That is the bug being fixed.
+      // THREE-STAGE ESCAPE (extended 2026-08-05 — was two). Investigated
+      // first (Phase 2B): this handler used to do stage one only — Escape
+      // closed the dropdown and nothing else, so a user who wanted to start
+      // a new search had to backspace the old query out by hand. Stage two
+      // fixed that. Stage three is new: once there's neither a dropdown NOR
+      // any text left to clear, Escape now falls through to the SAME
+      // site-wide blurred-Esc chain a click-away-and-press-Escape would hit
+      // (escapeClearNextThing() — see its own comment) instead of doing
+      // nothing. This is what lets a user standing in an already-empty
+      // field press Escape again to dismiss the current result, rather than
+      // needing to click out of the field first.
       //
       // Stage 1: a dropdown is open -> close it, leave the text alone.
-      // Stage 2: no dropdown open -> clear the text AND the underlying search
-      //          state, so no stale results survive under an empty field.
+      // Stage 2: no dropdown open, field has text -> clear the text AND the
+      //          underlying search state, so no stale results survive under
+      //          an empty field. Field stays focused.
+      // Stage 3: no dropdown, no text -> nothing left at the field level;
+      //          defer to escapeClearNextThing().
       //
-      // Careful not to double-handle: this returns after stage one, so a
-      // single keypress can never do both. The dropdown's open state is the
-      // discriminator, which is also what the user sees, so the two stages
-      // match what is on screen rather than an invisible internal flag.
+      // Careful not to double-handle: every branch returns, so a single
+      // keypress can never do more than one stage. The dropdown's open
+      // state and the field's own value are both directly what the user
+      // sees, so these stages match the screen rather than an invisible
+      // internal flag.
       if (e.key === 'Escape') {
         if (dropdownEl.classList.contains('open')) { closeDropdown(); return; }
-        clearField();
+        if (inputEl.value) { clearField(); return; }
+        escapeClearNextThing();
         return;
       }
       if (e.key === 'ArrowDown') {
@@ -9733,6 +10071,11 @@
       var key = f.toLowerCase();
       return '<button class="filter-chip' + (key === activeFilter ? ' active' : '') + '" data-filter="' + key + '">' + f + '</button>';
     }).join('');
+    // The entity chip's max-width:160px is exactly the kind of container a
+    // long station/route name can overflow — groupKey scoped to this
+    // containerId so a from/to search's chip and any other filter row on
+    // the page don't clobber each other's marquee.
+    if (entityCtx) applyMarquee('filter-chip-entity-' + containerId, [el.querySelector('.filter-chip-entity')]);
     enableWheelToHorizontalScroll(el);
     enableDragToScroll(el);
     if (el.parentElement && el.parentElement.classList.contains('scroll-fade')) {
