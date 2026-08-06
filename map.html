@@ -393,23 +393,42 @@
      Floating home for the same .sb-top-tabs buttons the desktop sidebar
      uses (relocateModeTabs() moves the real DOM node in here — no separate
      copy, so active/inactive state and setMode()/URL logic can't drift out
-     of sync). Same outer-card/inner-scroll split as #region-jump, reusing
-     its scroll-fade + drag/wheel scroll pattern as a safety net for a
-     viewport too narrow for all three tabs. */
-  #mode-capsule { display: none; position: absolute; left: 10px; right: 10px; z-index: 55;
-    background: var(--sf); border: 0.5px solid var(--brh); border-radius: 16px; overflow: hidden;
-    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); padding: 6px 0; }
-  #mode-capsule .scroll-fade { flex: 1; min-width: 0; }
-  #mode-capsule-scroll { display: flex; align-items: center; gap: 4px; overflow-x: auto; scrollbar-width: none; padding: 0 10px; }
+     of sync). Boxless (2026-08-07) — the shared background/border/blur card
+     was dropped; each tab already carries its own active-state pill
+     background (.header-tab.db-on etc, var(--t)), so only the INACTIVE
+     labels have no background of their own once the card is gone. The
+     drag/wheel-scroll safety net (enableDragToScroll/enableWheelToHorizontal
+     Scroll, still wired below) stays functionally in place for a viewport
+     too narrow for all three, but the scroll-FADE overlay is dropped along
+     with the box — a fade-to-var(--sf) gradient makes no sense with no
+     var(--sf) card behind it to fade into. */
+  #mode-capsule { display: none; position: absolute; left: 10px; right: 10px; z-index: 55; }
+  #mode-capsule-scroll { display: flex; align-items: center; justify-content: center; gap: 4px; overflow-x: auto; scrollbar-width: none; }
   #mode-capsule-scroll::-webkit-scrollbar { display: none; }
+  /* Legibility insurance for the now-boxless INACTIVE labels — CLAUDE.md's
+     own text describes the map as dark-themed throughout, but the code
+     actually ships a real light basemap too (STADIA_STYLE_NAMES.light =
+     'alidade_smooth', switched via the theme toggle) so that assumption
+     doesn't hold; this is cheap and inert against a dark tile, visible
+     insurance against a light one. Scoped to this boxless mobile context
+     only — the desktop sidebar's own .header-tab instances already sit on
+     #sidebar's solid background and don't need it. */
+  #mode-capsule-scroll .header-tab:not(.db-on):not(.live-on):not(.history-on) {
+    text-shadow: 0 1px 3px rgba(0,0,0,0.65);
+  }
   @media (max-width: 768px) { #mode-capsule { display: block; } }
 
   /* ── Map control consolidation (tablet/mobile only) ───────────────────────
      Desktop keeps all 7 buttons in their original DOM order and none of this
      applies — #controls-more-btn stays display:none there so nothing about
      the desktop stack changes. On mobile, zoom/layers/labels/heritage default
-     hidden behind the toggle; my-location + reset-bearing stay always
-     visible, matching their existing DOM position (last two). */
+     hidden behind the toggle. Visual order (2026-08-07) is CSS `order` only,
+     scoped to this media query — DOM order is untouched so desktop's own
+     rendering (which ignores `order` here entirely, since this block never
+     applies there) can't drift from it. my-location/reset-bearing first,
+     controls-more-btn last regardless of expanded state — the show/hide
+     rules just below key off #control-cluster.expanded + each button's own
+     id, nothing positional, so reordering doesn't touch that logic at all. */
   #controls-more-btn { display: none; }
   @media (max-width: 768px) {
     #controls-more-btn { display: inline-flex; }
@@ -419,6 +438,14 @@
     #control-cluster.expanded #layers-btn,
     #control-cluster.expanded #labels-btn,
     #control-cluster.expanded #heritage-btn { display: inline-flex; }
+    #my-location { order: 1; }
+    #reset-bearing { order: 2; }
+    #zoom-in { order: 3; }
+    #zoom-out { order: 4; }
+    #layers-btn { order: 5; }
+    #labels-btn { order: 6; }
+    #heritage-btn { order: 7; }
+    #controls-more-btn { order: 8; }
   }
 
   /* ── Cookie consent (compact) ─────────────────────────────────── */
@@ -434,11 +461,17 @@
 
   /* ── Mobile search pill (tablet/mobile only) ──────────────────────────────
      Retired the old bottom-pinned #mobile-search input bar (2026-08-06) in
-     favour of a single top pill that opens the same #sb-search-panel the
+     favour of a single pill that opens the same #sb-search-panel the
      desktop search icon (#sb-search-btn) already uses — one search surface
      on mobile instead of three (this pill, the sidebar's own search icon,
-     and the old bottom bar). See #region-jump for the bar this replaces. */
-  #search-pill { display: none; position: absolute; left: 10px; right: 10px; z-index: 55;
+     and the old bottom bar). See #region-jump for the bar this replaces.
+     Moved (2026-08-07) from the top nav-anchored stack to float just above
+     the bottom sheet instead — position is `bottom`, not `top`, now, set by
+     positionSearchPillAboveSheet(). z-index raised above #sidebar's (70) so
+     it stays visible in front of the sheet once dragged past this fixed
+     point, rather than getting covered by it — see that function's comment
+     for why this is fixed rather than drag-tracking. */
+  #search-pill { display: none; position: absolute; left: 10px; right: 10px; z-index: 75;
     align-items: center; gap: 8px; padding: 12px 14px; text-align: left;
     background: var(--sf); border: 0.5px solid var(--brh); border-radius: 16px;
     backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
@@ -478,10 +511,13 @@
      unlike the desktop column) with only the top corners rounded, matching
      the native bottom-sheet convention the drag handle/snap-states below
      imply. 45vh below is just the pre-JS/no-script fallback (matches the
-     'half' state, see SHEET_VH) — setSheetState() sets inline style.height
-     directly once JS runs, which wins over this. .sheet-dragging drops the
-     transition during an active pointer drag so it tracks 1:1 with no lag,
-     re-enabled the moment the drag ends so a snap settles smoothly. */
+     'half' state, see SHEET_PCT) — setSheetState() sets inline style.height
+     as a JS-computed PIXEL value once JS runs (2026-08-07 — was 'vh' before,
+     see setSheetState()'s own comment for why that was a real bug, not just
+     a style preference), which wins over this either way. .sheet-dragging
+     drops the transition during an active pointer drag so it tracks 1:1
+     with no lag, re-enabled the moment the drag ends so a snap settles
+     smoothly. */
   @media (max-width: 768px) {
     #sidebar { top: auto; bottom: 0; left: 0; right: 0;
       height: 45vh; max-height: 90vh; min-height: 10vh;
@@ -491,7 +527,14 @@
   }
 
   .sb-handle-row { display: none; align-items: center; justify-content: center; position: relative; padding: 8px 0 4px; flex-shrink: 0; touch-action: none; }
-  @media (max-width: 768px) { .sb-handle-row { display: flex; } }
+  @media (max-width: 768px) {
+    /* min-height 44px (2026-08-07) — standard minimum touch-target size;
+       the visible bar (.sb-handle) stays its original thin 2.5px, just
+       centred in a taller invisible hit area. wireSheet() already listens
+       on this whole row rather than just the thin bar, so this is purely
+       about giving a touch somewhere to land, not a JS change. */
+    .sb-handle-row { display: flex; min-height: 44px; }
+  }
   .sb-handle { width: 28px; height: 2.5px; border-radius: 2px; background: rgba(154,164,178,0.3); }
   /* #sb-min-btn was the old binary collapse toggle (mobile-only — the row
      it's in is display:none on desktop, so nothing here ever applied there).
@@ -501,7 +544,10 @@
      "collapsed" to toggle back to. The rotate-on-full echoes its old
      rotate-when-collapsed semantics: the arrow points the direction another
      tap will move the sheet. */
-  #sb-min-btn { position: absolute; right: 12px; top: 6px; font-size: 13.5px; }
+  /* top:50%/translateY (was a fixed top:6px) so it stays vertically centred
+     now that .sb-handle-row's height varies (44px min-height on mobile vs.
+     its old fixed ~30px) rather than being tuned to one specific height. */
+  #sb-min-btn { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 13.5px; }
   #sb-min-btn i { transition: transform 0.2s; }
   #sidebar[data-sheet-state="full"] #sb-min-btn i { transform: rotate(180deg); }
 
@@ -944,6 +990,34 @@
   .sb-attrib-lic { color: var(--ink); }
   .sb-attrib-tag { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink); }
 
+  /* Mobile-only alternate trigger (2026-08-07) — swaps the text+chevron for
+     a single centred "i" icon; the button's CLICK behaviour branches in JS
+     (see wireAttributionBar()) rather than here, opening #attrib-sheet
+     instead of the inline expand this button still does on desktop. */
+  .sb-attrib-info-icon { display: none; }
+  @media (max-width: 768px) {
+    .sb-attrib-summary, .sb-attrib-chev { display: none; }
+    .sb-attrib-info-icon { display: block; font-size: 15px; }
+    .sb-attrib-toggle { justify-content: center; }
+  }
+
+  /* ── Attribution full-sheet (tablet/mobile only) ──────────────────────────
+     Simple full-screen takeover — NOT the draggable sheet, no shared code
+     with wireSheet(). z-index 200 is deliberately above everything else on
+     the page including the site nav (z-index 100) — a "full-height slide-up
+     panel" should cover the nav too, not sit under it. */
+  #attrib-sheet { display: none; position: fixed; inset: 0; z-index: 200;
+    background: var(--bg); flex-direction: column; }
+  #attrib-sheet.open { display: flex; }
+  .attrib-sheet-header { display: flex; align-items: center; gap: 10px; padding: 14px 16px;
+    border-bottom: 0.5px solid var(--br); flex-shrink: 0; }
+  .attrib-sheet-title { font-family: var(--font-display); font-size: 17px; font-weight: 600; color: var(--ink-primary); }
+  .attrib-sheet-body { flex: 1; overflow-y: auto; padding: 4px 16px 16px; }
+  /* #sb-attrib-body is reparented in here on open — its own CSS (max-height:
+     40vh, meant for the small inline-expand case) would otherwise cap it
+     inside a container that's supposed to use the full available height. */
+  .attrib-sheet-body .sb-attrib-body { max-height: none; overflow-y: visible; padding: 12px 0 0; }
+
   /* ── History-mode year slider (two instances, one state) ────────────────
      Only the sidebar instance remains (#sb-history-slider); the map-canvas one
      was removed. .hist-slider is kept as the shared class so the styling stays
@@ -1312,11 +1386,11 @@
 </button>
 
 <!-- Tablet/mobile only — floating home for the mode tabs, which JS moves
-     here from .sb-top-upper at this breakpoint (see relocateModeTabs()). -->
+     here from .sb-top-upper at this breakpoint (see relocateModeTabs()).
+     No .scroll-fade wrapper (2026-08-07, see CSS) — boxless now, so there's
+     no card background left for that fade to blend into. -->
 <div id="mode-capsule">
-  <div class="scroll-fade">
-    <div id="mode-capsule-scroll"></div>
-  </div>
+  <div id="mode-capsule-scroll"></div>
 </div>
 
 <div id="sidebar">
@@ -1445,12 +1519,33 @@
        corner and the same spot toggles it open and shut. -->
   <div id="sb-attribution" class="sb-attrib">
     <div class="sb-attrib-body" id="sb-attrib-body" hidden></div>
+    <!-- ti-info-circle (2026-08-07) — mobile-only alternate trigger icon,
+         see CSS. Desktop keeps the summary text + chevron exactly as before
+         and never renders this. -->
     <button type="button" class="sb-attrib-toggle" id="sb-attrib-toggle" aria-expanded="false"
             aria-controls="sb-attrib-body" aria-label="Data sources and attribution">
       <span class="sb-attrib-summary" id="sb-attrib-summary">Attribution</span>
       <i class="ti ti-chevron-up sb-attrib-chev"></i>
+      <i class="ti ti-info-circle sb-attrib-info-icon" aria-hidden="true"></i>
     </button>
   </div>
+</div>
+
+<!-- Tablet/mobile only — full-height slide-up attribution panel (2026-08-07).
+     No existing modal/overlay component in the codebase to reuse (only
+     .nav-scrim, a dimming backdrop for the nav-burger menu — different
+     shape/purpose, a scrim behind a side panel rather than a full takeover),
+     so this is a new, simple, NON-draggable overlay — deliberately doesn't
+     share any code with wireSheet() below. #sb-attrib-body (populated by the
+     existing, untouched renderAttributionBar()) is reparented in here on
+     open and back to its home in #sb-attribution on close, the same
+     no-duplicate-logic convention .sb-top-tabs/#mode-capsule already use. -->
+<div id="attrib-sheet">
+  <div class="attrib-sheet-header">
+    <button type="button" class="ghost-btn" id="attrib-sheet-close" aria-label="Close attribution"><i class="ti ti-arrow-left"></i></button>
+    <span class="attrib-sheet-title">Attribution</span>
+  </div>
+  <div class="attrib-sheet-body" id="attrib-sheet-body"></div>
 </div>
 
 <!-- The bottom-of-map year slider (instance A) was removed 2026-07-26 on request:
@@ -8307,7 +8402,34 @@
     var toggle = document.getElementById('sb-attrib-toggle');
     var body = document.getElementById('sb-attrib-body');
     if (!toggle || !body) return;
+    // #sb-attrib-body's static home — first child of #sb-attribution, before
+    // the toggle button (see the BODY-FIRST-TOGGLE-LAST comment on the HTML)
+    // — captured once so the mobile full-sheet path (below) can reparent it
+    // out on open and put it back exactly where it started on close, the
+    // same convention .sb-top-tabs/relocateModeTabs() already uses.
+    var bodyHomeParent = body.parentNode;
+    var bodyHomeNextSibling = body.nextSibling;
+    var attribSheetEl = document.getElementById('attrib-sheet');
+    var attribSheetBodyEl = document.getElementById('attrib-sheet-body');
+
+    function openAttributionSheet() {
+      renderAttributionBar(); // refresh — the inline path always re-renders on open too, see below
+      body.hidden = false; // the inline path's own hidden/shown state doesn't apply once this is in the full sheet
+      attribSheetBodyEl.appendChild(body);
+      attribSheetEl.classList.add('open');
+    }
+    function closeAttributionSheet() {
+      attribSheetEl.classList.remove('open');
+      body.hidden = true;
+      bodyHomeParent.insertBefore(body, bodyHomeNextSibling);
+    }
+    document.getElementById('attrib-sheet-close').addEventListener('click', closeAttributionSheet);
+
     toggle.addEventListener('click', function () {
+      // Mobile/tablet-portrait (2026-08-07): full-sheet instead of the
+      // inline expand below — desktop's own behaviour is otherwise
+      // completely untouched.
+      if (window.innerWidth <= 768) { openAttributionSheet(); return; }
       var open = toggle.getAttribute('aria-expanded') === 'true';
       toggle.setAttribute('aria-expanded', String(!open));
       body.hidden = open;
@@ -9633,7 +9755,9 @@
       tabsHomeParent.insertBefore(tabsEl, tabsHomeNextSibling);
     }
   }
-  wireScrollFade(document.querySelector('#mode-capsule .scroll-fade'), modeCapsuleScrollEl);
+  // No wireScrollFade() here (2026-08-07) — #mode-capsule dropped its
+  // background card, and .scroll-fade with it (see CSS); the drag/wheel
+  // scroll safety net below is unaffected, still fully wired.
   enableWheelToHorizontalScroll(modeCapsuleScrollEl);
   enableDragToScroll(modeCapsuleScrollEl);
 
@@ -9645,10 +9769,12 @@
   // control-cluster stacks below region-jump.
   // Mobile/tablet-portrait (region-jump hidden, see CSS): #sidebar is now a
   // BOTTOM-anchored sheet (2026-08-06), no longer above this stack at all —
-  // search-pill anchors directly off the nav bar, mode-capsule stacks below
-  // the pill, control-cluster below that. None of this depends on sidebarEl
-  // any more (see regionJumpFlyToPadding() for where the sheet's height
-  // still matters — the map's bottom camera padding).
+  // mode-capsule anchors directly off the nav bar, control-cluster below
+  // that. search-pill is NOT part of this chain any more (2026-08-07) — it
+  // moved to float above the sheet instead, at a fixed position independent
+  // of both this stack and the sheet's live drag height; see
+  // positionSearchPillAboveSheet() further down, defined alongside the sheet
+  // state machine it actually depends on (SHEET_PCT.peek).
   var regionJumpEl = document.getElementById('region-jump');
   var controlClusterEl = document.getElementById('control-cluster');
   var searchPillEl = document.getElementById('search-pill');
@@ -9658,7 +9784,7 @@
     var mobile = window.innerWidth <= 768;
     var jumpVisible = getComputedStyle(regionJumpEl).display !== 'none';
     if (mobile) {
-      regionJumpEl.style.top = ''; // hidden at this breakpoint — search-pill/mode-capsule take its slot
+      regionJumpEl.style.top = ''; // hidden at this breakpoint — mode-capsule takes its slot
       // #sidebar is now a bottom-anchored sheet (2026-08-06), not a top card
       // — it no longer sits ABOVE this stack, so anchoring off its rect (as
       // this used to) would read its now-irrelevant bottom edge (≈ viewport
@@ -9667,8 +9793,7 @@
       // already use as their CSS default on desktop. --nav-h is read live
       // rather than hardcoded so this can't drift from the CSS value.
       var navH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--nav-h')) || 72;
-      searchPillEl.style.top = (navH + 10) + 'px';
-      modeCapsuleEl.style.top = (searchPillEl.getBoundingClientRect().bottom + 10) + 'px';
+      modeCapsuleEl.style.top = (navH + 10) + 'px';
       controlClusterEl.style.top = (modeCapsuleEl.getBoundingClientRect().bottom + 10) + 'px';
     } else if (jumpVisible) {
       regionJumpEl.style.top = ''; // desktop — CSS default applies. (jumpVisible is now effectively always true on desktop — region-jump used to be Database-mode-hidden via CSS, no longer is, per 2026-07-22 — kept as a guard in case a future mode hides it again)
@@ -9678,12 +9803,12 @@
       controlClusterEl.style.top = ''; // desktop, region-jump hidden by some future rule — CSS default
     }
   }
-  // No observer on sidebarEl any more — positionFloatingClusters() doesn't
-  // read it in either branch now (see comment above); keeping it would fire
-  // this on every frame of a sheet drag for no reason (wireSheet() below
-  // calls regionJumpFlyToPadding() itself when the sheet's height matters).
+  // No observer on sidebarEl or searchPillEl here — this function doesn't
+  // read either any more (search-pill's own position is independent, see
+  // above; sidebarEl never mattered to this function post-2026-08-06).
+  // Observing sidebarEl specifically would fire this on every frame of a
+  // sheet drag for no reason.
   new ResizeObserver(positionFloatingClusters).observe(regionJumpEl);
-  new ResizeObserver(positionFloatingClusters).observe(searchPillEl);
   new ResizeObserver(positionFloatingClusters).observe(modeCapsuleEl);
   window.addEventListener('resize', positionFloatingClusters);
   positionFloatingClusters();
@@ -9701,15 +9826,36 @@
   // click so a drag can't also fire tap-to-cycle) rather than reusing either
   // — the gesture itself (track a height, snap to one of 3 states, refresh
   // map padding on settle) has no equivalent to adapt.
+  // 2026-08-07 bugfix: this used to clamp live drag to a hardcoded [8,90]
+  // range (not the real peek/full bounds) and apply the settled height via
+  // a CSS 'vh' string, while the live-drag math computed its percentage from
+  // window.innerHeight — two different references for "100%". Mobile Safari/
+  // Chrome resolve 'vh' against the LARGEST viewport (toolbar collapsed),
+  // which can be taller than window.innerHeight's CURRENT value (toolbar
+  // showing) — worse, a drag gesture itself commonly triggers the toolbar to
+  // auto-hide mid-gesture, so the two references could disagree by a
+  // growing amount over the course of one drag. Combined with the wrong
+  // clamp bounds, this let the sheet balloon well past 100% of the visible
+  // viewport. #sidebar has no pointer-events restriction and sits at
+  // z-index:70, above the map canvas — so an oversized sheet silently
+  // intercepted every pointer event over whatever it covered, even the
+  // sparse/background-only areas, which is what presented as "the map
+  // stops responding." Root cause is the same for both symptoms: fixed by
+  // computing height in PIXELS from window.innerHeight throughout (drag AND
+  // settle), never through the 'vh' unit, and clamping every pointermove
+  // against the real peek/full bounds, not just at release.
   var SHEET_STATES = ['peek', 'half', 'full'];
-  var SHEET_VH = { peek: 14, half: 45, full: 88 }; // starting points — see report re: tuning against real content
+  var SHEET_PCT = { peek: 25, half: 45, full: 88 }; // starting points — see report re: tuning against real content
   var sheetState = 'half'; // overridden below once initial selection state is known
 
+  function sheetHeightPx(pct) {
+    return Math.round(window.innerHeight * pct / 100);
+  }
   function setSheetState(state, opts) {
     opts = opts || {};
     sheetState = state;
     sidebarEl.dataset.sheetState = state;
-    sidebarEl.style.height = SHEET_VH[state] + 'vh';
+    sidebarEl.style.height = sheetHeightPx(SHEET_PCT[state]) + 'px';
     updateSheetPeekSummary();
     // Sticky padding (see regionJumpFlyToPadding()'s own comment) — only
     // re-set on a settled state change, not per drag frame, so a live drag
@@ -9719,10 +9865,10 @@
   function cycleSheetState() {
     setSheetState(SHEET_STATES[(SHEET_STATES.indexOf(sheetState) + 1) % SHEET_STATES.length]);
   }
-  function nearestSheetState(vh) {
+  function nearestSheetState(px) {
     var best = SHEET_STATES[0], bestDist = Infinity;
     SHEET_STATES.forEach(function (s) {
-      var d = Math.abs(SHEET_VH[s] - vh);
+      var d = Math.abs(sheetHeightPx(SHEET_PCT[s]) - px);
       if (d < bestDist) { bestDist = d; best = s; }
     });
     return best;
@@ -9731,12 +9877,15 @@
   (function wireSheet() {
     var handle = document.getElementById('sb-handle-row');
     var down = false, dragging = false, moved = false, startY = 0, startHeightPx = 0, pointerId = null, threshold = 6;
+    var minPx = 0, maxPx = 0; // recomputed on every drag start, not just once, so a resize between drags can't leave stale bounds
     handle.addEventListener('pointerdown', function (e) {
       if (window.innerWidth > 768) return;
       down = true; dragging = false; moved = false;
       startY = e.clientY;
       startHeightPx = sidebarEl.getBoundingClientRect().height;
       pointerId = e.pointerId;
+      minPx = sheetHeightPx(SHEET_PCT.peek);
+      maxPx = sheetHeightPx(SHEET_PCT.full);
     });
     handle.addEventListener('pointermove', function (e) {
       if (!down) return;
@@ -9749,18 +9898,25 @@
       }
       if (dragging) {
         var newHeightPx = startHeightPx - dy; // dragging up (negative dy) grows the sheet
-        var vh = Math.max(8, Math.min(90, (newHeightPx / window.innerHeight) * 100));
-        sidebarEl.style.height = vh + 'vh';
+        newHeightPx = Math.max(minPx, Math.min(maxPx, newHeightPx)); // clamp on EVERY move, not just at release — this is the bug A/B fix
+        sidebarEl.style.height = newHeightPx + 'px';
       }
     });
     function endDrag() {
       if (!down) return;
       down = false;
+      // Defensive explicit release (belt-and-suspenders alongside the
+      // continuous clamp above) — pointerup/pointercancel on a captured
+      // element auto-release per spec, but this couldn't be verified live
+      // (no browser in this environment), so release it by hand too rather
+      // than rely solely on the implicit path for a bug that manifested as
+      // "the map stops receiving pointer events at all" after a drag.
+      try { if (pointerId != null) handle.releasePointerCapture(pointerId); } catch (err) {}
       if (!dragging) return;
       dragging = false;
       sidebarEl.classList.remove('sheet-dragging'); // re-enable the transition so the snap eases in
-      var vh = (sidebarEl.getBoundingClientRect().height / window.innerHeight) * 100;
-      setSheetState(nearestSheetState(vh)); // nearest-by-distance snap — no release-velocity weighting yet, see report
+      var px = sidebarEl.getBoundingClientRect().height;
+      setSheetState(nearestSheetState(px)); // nearest-by-distance snap — no release-velocity weighting yet, see report
     }
     handle.addEventListener('pointerup', endDrag);
     handle.addEventListener('pointercancel', endDrag);
@@ -9782,6 +9938,26 @@
     // be a redundant no-op camera move at page load.
     if (window.innerWidth <= 768) setSheetState(sheetState, { silent: true });
   })();
+
+  // ── Search pill: fixed above the sheet's peek edge (2026-08-07) ───────────
+  // Deliberately does NOT track the sheet's live drag/settled height (unlike
+  // #region-jump/mode-capsule/control-cluster above, which measure a
+  // neighbour's actual rendered rect) — the brief explicitly wants a pill
+  // that stays visually distinct and stationary, not fused to the sheet's
+  // header the way region-jump/mode-capsule are fused to the nav bar. Fixed
+  // at SHEET_PCT.peek (in pixels, same window.innerHeight-based computation
+  // setSheetState() itself uses — see its bugfix comment for why this can't
+  // go through the CSS 'vh' unit) plus a gap, so it sits just clear of the
+  // sheet's peek-state top edge and stays there even while the sheet is
+  // dragged past it to half/full — it needs a z-index ABOVE #sidebar's (70)
+  // for exactly that reason, so it renders in front rather than getting
+  // covered once the sheet grows taller than this fixed point.
+  function positionSearchPillAboveSheet() {
+    if (window.innerWidth > 768) { searchPillEl.style.bottom = ''; return; } // desktop: CSS default (hidden) applies
+    searchPillEl.style.bottom = (sheetHeightPx(SHEET_PCT.peek) + 10) + 'px';
+  }
+  window.addEventListener('resize', positionSearchPillAboveSheet); // orientation change etc — NOT wired to sheet drag/state
+  positionSearchPillAboveSheet();
 
   // ── Search (single station, and from/to) ──────────────────────────────────
   var searchBtn = document.getElementById('sb-search-btn');
