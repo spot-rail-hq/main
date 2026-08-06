@@ -389,6 +389,38 @@
     #region-jump { left: 10px; right: 10px; max-width: none; }
   }
 
+  /* ── Mode capsule (tablet/mobile only) ────────────────────────────────────
+     Floating home for the same .sb-top-tabs buttons the desktop sidebar
+     uses (relocateModeTabs() moves the real DOM node in here — no separate
+     copy, so active/inactive state and setMode()/URL logic can't drift out
+     of sync). Same outer-card/inner-scroll split as #region-jump, reusing
+     its scroll-fade + drag/wheel scroll pattern as a safety net for a
+     viewport too narrow for all three tabs. */
+  #mode-capsule { display: none; position: absolute; left: 10px; right: 10px; z-index: 55;
+    background: var(--sf); border: 0.5px solid var(--brh); border-radius: 16px; overflow: hidden;
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); padding: 6px 0; }
+  #mode-capsule .scroll-fade { flex: 1; min-width: 0; }
+  #mode-capsule-scroll { display: flex; align-items: center; gap: 4px; overflow-x: auto; scrollbar-width: none; padding: 0 10px; }
+  #mode-capsule-scroll::-webkit-scrollbar { display: none; }
+  @media (max-width: 768px) { #mode-capsule { display: block; } }
+
+  /* ── Map control consolidation (tablet/mobile only) ───────────────────────
+     Desktop keeps all 7 buttons in their original DOM order and none of this
+     applies — #controls-more-btn stays display:none there so nothing about
+     the desktop stack changes. On mobile, zoom/layers/labels/heritage default
+     hidden behind the toggle; my-location + reset-bearing stay always
+     visible, matching their existing DOM position (last two). */
+  #controls-more-btn { display: none; }
+  @media (max-width: 768px) {
+    #controls-more-btn { display: inline-flex; }
+    #zoom-in, #zoom-out, #layers-btn, #labels-btn, #heritage-btn { display: none; }
+    #control-cluster.expanded #zoom-in,
+    #control-cluster.expanded #zoom-out,
+    #control-cluster.expanded #layers-btn,
+    #control-cluster.expanded #labels-btn,
+    #control-cluster.expanded #heritage-btn { display: inline-flex; }
+  }
+
   /* ── Cookie consent (compact) ─────────────────────────────────── */
   #cookie-consent { position: absolute; bottom: 10px; z-index: 90; width: min(280px, calc(100vw - 20px));
     left: 10px; padding: 12px; display: none; border-radius: 16px; }
@@ -400,23 +432,24 @@
   #cookie-consent .cc-accept { background: var(--t); color: #07090C; font-weight: 600; }
   #cookie-consent .cc-reject { border: 0.5px solid var(--brh); color: var(--ink); }
 
-  /* ── Mobile floating search bar (tablet/mobile only) ─────────────────────
-     Independent of the top sidebar entirely — its own element, always
-     visible in Live mode regardless of whether the sidebar is collapsed.
-     Simpler cousin of the history panel's floating-card treatment: just a
-     search icon + input, no other controls. Hidden in Database mode since it
-     would otherwise fight the legend/history stack for the same bottom
-     strip (same convention #region-jump already uses). ─────────────────── */
-  #mobile-search { display: none; position: absolute; left: 10px; right: 10px; bottom: 14px; z-index: 56;
-    background: var(--sf); border: 0.5px solid var(--brh); border-radius: 12px;
+  /* ── Mobile search pill (tablet/mobile only) ──────────────────────────────
+     Retired the old bottom-pinned #mobile-search input bar (2026-08-06) in
+     favour of a single top pill that opens the same #sb-search-panel the
+     desktop search icon (#sb-search-btn) already uses — one search surface
+     on mobile instead of three (this pill, the sidebar's own search icon,
+     and the old bottom bar). See #region-jump for the bar this replaces. */
+  #search-pill { display: none; position: absolute; left: 10px; right: 10px; z-index: 55;
+    align-items: center; gap: 8px; padding: 12px 14px; text-align: left;
+    background: var(--sf); border: 0.5px solid var(--brh); border-radius: 16px;
     backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-    align-items: center; gap: 6px; padding: 0 6px 0 14px; }
-  #mobile-search > i { font-size: 17px; color: var(--ink); flex-shrink: 0; }
-  #mobile-search .sb-ac-wrap { flex: 1; min-width: 0; }
-  #mobile-search-input { width: 100%; background: transparent; border: none; color: var(--ink-primary); font-size: 16px; padding: 13px 4px; }
-  #mobile-search-input::placeholder { color: var(--ink); }
-  body.mode-database #mobile-search { display: none !important; }
-  @media (max-width: 768px) { #mobile-search { display: flex; } }
+    font-family: inherit; font-size: inherit; box-sizing: border-box; }
+  #search-pill i { font-size: 16px; color: var(--ink); flex-shrink: 0; }
+  #search-pill span { flex: 1; min-width: 0; font-family: var(--font-body); font-size: 15px; color: var(--ink-mute);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  @media (max-width: 768px) {
+    #search-pill { display: flex; }
+    #region-jump { display: none; }
+  }
 
   /* ── Sidebar (desktop) / bottom sheet (tablet+mobile) ────────────────────
      Persistent, non-modal — the map stays interactive alongside it. Always
@@ -1209,6 +1242,10 @@
          attributes from the flag on wiring, this markup just matches its
          default so the control does not flash a pressed state before then. -->
     <button class="icon-btn" id="heritage-btn" aria-label="Highlight all heritage railways" aria-pressed="false" data-tooltip="Highlight All Heritage Railways"><i class="ti ti-steam"></i></button>
+    <!-- Tablet/mobile only (see CSS) — reveals the 5 buttons above, which
+         default hidden at that breakpoint. Never shown on desktop, where
+         all 7 buttons stay visible as before. -->
+    <button class="icon-btn" id="controls-more-btn" aria-label="More map controls" aria-expanded="false" data-tooltip="More Controls"><i class="ti ti-dots"></i></button>
     <button class="icon-btn" id="my-location" aria-label="Find my location" data-tooltip="My Location"><i class="ti ti-current-location"></i></button>
     <button class="icon-btn" id="reset-bearing" aria-label="Reset map orientation" data-tooltip="Reset North"><i class="ti ti-navigation" id="reset-bearing-icon"></i></button>
   </div>
@@ -1222,13 +1259,19 @@
   </div>
 </div>
 
-<!-- Tablet/mobile only — floating search bar, independent of the top
-     sidebar's own show/hide state (see #mobile-search in CSS). -->
-<div id="mobile-search">
+<!-- Tablet/mobile only — replaces #region-jump in that layout (see CSS).
+     Opens the sidebar's existing #sb-search-panel via #sb-search-btn rather
+     than its own search flow. -->
+<button id="search-pill" aria-label="Search stations, lines, operators">
   <i class="ti ti-search"></i>
-  <div class="sb-ac-wrap">
-    <input id="mobile-search-input" type="text" placeholder="Search stations…" aria-label="Search stations" autocomplete="off" />
-    <div class="sb-ac-list dropup" id="sb-ac-mobile"></div>
+  <span>Search stations, lines, operators</span>
+</button>
+
+<!-- Tablet/mobile only — floating home for the mode tabs, which JS moves
+     here from .sb-top-upper at this breakpoint (see relocateModeTabs()). -->
+<div id="mode-capsule">
+  <div class="scroll-fade">
+    <div id="mode-capsule-scroll"></div>
   </div>
 </div>
 
@@ -9067,6 +9110,16 @@
     map.easeTo({ pitch: 0, bearing: 0 });
   });
 
+  // Tablet/mobile only (see CSS) — expands the control cluster in place to
+  // reveal zoom-in/zoom-out/layers-btn/labels-btn/heritage-btn, which default
+  // hidden at that breakpoint. No-op on desktop: .expanded has no matching
+  // CSS rule there, and #controls-more-btn itself is display:none.
+  document.getElementById('controls-more-btn').addEventListener('click', function () {
+    var expanded = controlClusterEl.classList.toggle('expanded');
+    this.setAttribute('aria-expanded', String(expanded));
+    positionFloatingClusters();
+  });
+
   // ── Region jump ───────────────────────────────────────────────────────────
   // On desktop, plain flyTo({center}) centers the target in the FULL window
   // width — but the sidebar covers the left portion of that, so the point
@@ -9102,11 +9155,14 @@
   var MAP_FIT_MARGIN = 24; // small uniform breathing gap so lines never touch an edge
   function regionJumpFlyToPadding() {
     var pad = { left: MAP_FIT_MARGIN, top: MAP_FIT_MARGIN, right: MAP_FIT_MARGIN, bottom: MAP_FIT_MARGIN };
-    // The Jump-to bar floats over the top of the canvas in BOTH layouts, so its
-    // bottom edge is the real top of the usable area either way.
-    if (regionJumpEl) {
-      var rj = regionJumpEl.getBoundingClientRect();
-      if (rj.height) pad.top = rj.bottom + MAP_FIT_MARGIN;
+    // Whichever full-width bar is the lowest of the top-floating stack eats
+    // from the top — region-jump on desktop, or the mode-capsule (the lower
+    // of the search-pill/mode-capsule pair it replaces) on mobile/tablet-
+    // portrait, where region-jump itself is hidden (see CSS).
+    var topChromeEl = (window.innerWidth <= 768 && modeCapsuleEl) ? modeCapsuleEl : regionJumpEl;
+    if (topChromeEl) {
+      var tc = topChromeEl.getBoundingClientRect();
+      if (tc.height) pad.top = tc.bottom + MAP_FIT_MARGIN;
     }
     var sb = sidebarEl && sidebarEl.getBoundingClientRect();
     if (sb && sb.width && sb.height) {
@@ -9465,34 +9521,64 @@
   }
   wireScrollFade(document.querySelector('#region-jump .scroll-fade'), document.getElementById('rj-scroll'));
 
-  // ── Floating cluster stacking (region-jump below the sidebar, the zoom/
-  // layers/location column below region-jump) ──────────────────────────────
+  // ── Mode capsule relocation (tablet/mobile only) ─────────────────────────
+  // Moves the REAL .sb-top-tabs node (Database/Live/History) between the
+  // sidebar and the floating #mode-capsule below the search pill, rather
+  // than building a second set of buttons — setMode() keeps toggling the
+  // exact same elements it always has, so active state and the URL
+  // round-trip can't drift out of sync between two copies. Reparenting a
+  // node preserves its listeners, so no rewiring is needed either side.
+  var tabsEl = document.querySelector('.sb-top-tabs');
+  var tabsHomeParent = tabsEl.parentNode; // .sb-top-upper, on desktop
+  var tabsHomeNextSibling = tabsEl.nextSibling; // restores original order
+  var modeCapsuleScrollEl = document.getElementById('mode-capsule-scroll');
+  function relocateModeTabs() {
+    var mobile = window.innerWidth <= 768;
+    if (mobile) {
+      if (tabsEl.parentNode !== modeCapsuleScrollEl) modeCapsuleScrollEl.appendChild(tabsEl);
+    } else if (tabsEl.parentNode !== tabsHomeParent) {
+      tabsHomeParent.insertBefore(tabsEl, tabsHomeNextSibling);
+    }
+  }
+  wireScrollFade(document.querySelector('#mode-capsule .scroll-fade'), modeCapsuleScrollEl);
+  enableWheelToHorizontalScroll(modeCapsuleScrollEl);
+  enableDragToScroll(modeCapsuleScrollEl);
+
+  // ── Floating cluster stacking ─────────────────────────────────────────────
   // A fixed CSS top offset can't track the sidebar's height since it varies
   // with content (station selected vs the empty default state, collapsed vs
   // expanded, etc.) — on mobile especially, where the sidebar is capped at
   // 35vh but often renders much shorter. This measures actual rendered
   // positions instead, live, via ResizeObserver, so the stack always sits
   // flush regardless of how tall the sidebar currently is.
+  // Desktop: region-jump below the sidebar, control-cluster below that.
+  // Mobile/tablet-portrait (region-jump hidden, see CSS): search-pill below
+  // the sidebar, mode-capsule below the pill, control-cluster below that.
   var regionJumpEl = document.getElementById('region-jump');
   var controlClusterEl = document.getElementById('control-cluster');
+  var searchPillEl = document.getElementById('search-pill');
+  var modeCapsuleEl = document.getElementById('mode-capsule');
   function positionFloatingClusters() {
+    relocateModeTabs();
     var mobile = window.innerWidth <= 768;
     var jumpVisible = getComputedStyle(regionJumpEl).display !== 'none';
-    if (mobile && jumpVisible) {
-      regionJumpEl.style.top = (sidebarEl.getBoundingClientRect().bottom + 10) + 'px';
-    } else {
-      regionJumpEl.style.top = ''; // desktop — CSS default applies. (jumpVisible is now effectively always true — region-jump used to be Database-mode-hidden via CSS, no longer is, per 2026-07-22 — kept as a guard in case a future mode/breakpoint hides it again)
-    }
-    if (jumpVisible) {
+    if (mobile) {
+      regionJumpEl.style.top = ''; // hidden at this breakpoint — search-pill/mode-capsule take its slot
+      searchPillEl.style.top = (sidebarEl.getBoundingClientRect().bottom + 10) + 'px';
+      modeCapsuleEl.style.top = (searchPillEl.getBoundingClientRect().bottom + 10) + 'px';
+      controlClusterEl.style.top = (modeCapsuleEl.getBoundingClientRect().bottom + 10) + 'px';
+    } else if (jumpVisible) {
+      regionJumpEl.style.top = ''; // desktop — CSS default applies. (jumpVisible is now effectively always true on desktop — region-jump used to be Database-mode-hidden via CSS, no longer is, per 2026-07-22 — kept as a guard in case a future mode hides it again)
       controlClusterEl.style.top = (regionJumpEl.getBoundingClientRect().bottom + 10) + 'px';
-    } else if (mobile) {
-      controlClusterEl.style.top = (sidebarEl.getBoundingClientRect().bottom + 10) + 'px';
     } else {
-      controlClusterEl.style.top = ''; // desktop — CSS default applies
+      regionJumpEl.style.top = '';
+      controlClusterEl.style.top = ''; // desktop, region-jump hidden by some future rule — CSS default
     }
   }
   new ResizeObserver(positionFloatingClusters).observe(sidebarEl);
   new ResizeObserver(positionFloatingClusters).observe(regionJumpEl);
+  new ResizeObserver(positionFloatingClusters).observe(searchPillEl);
+  new ResizeObserver(positionFloatingClusters).observe(modeCapsuleEl);
   window.addEventListener('resize', positionFloatingClusters);
   positionFloatingClusters();
 
@@ -9527,6 +9613,12 @@
     searchPanel.classList.toggle('open', opening);
     if (opening) setSearchMode(searchMode);
   });
+  // Mobile search pill (tablet/mobile only, see CSS) — delegates to the
+  // exact same handler as the desktop search icon rather than duplicating
+  // its open/close logic, so the two can never drift out of sync.
+  document.getElementById('search-pill').addEventListener('click', function () {
+    searchBtn.click();
+  });
   // Explicit close (far right of the mode-tabs row) — same end state as
   // clicking the search icon again while open, just a more discoverable
   // affordance than expecting the user to re-find that icon.
@@ -9547,9 +9639,9 @@
   // selection), plus the WAI-ARIA combobox roles (role="combobox" on the
   // input, role="listbox"/"option" on the list/items, aria-activedescendant
   // tracking the highlight) — this one function is literally shared by
-  // every search field on the site (station, from, to, operator, and the
-  // mobile floating search bar all call this), so fixing it here covers all
-  // of them at once rather than needing a per-field patch.
+  // every search field on the site (station, from, to, and operator all
+  // call this), so fixing it here covers all of them at once rather than
+  // needing a per-field patch.
   // ── Shared search-input behaviour (Section 8, 2026-08-05) ─────────────────
   // ONE implementation, used by every text input site-wide, so select-on-
   // focus and Escape semantics can't drift apart per-field over time (which
@@ -9557,8 +9649,10 @@
   // Escape and the separate .field-clear[data-clear-for] handler further
   // down were two independently-maintained implementations of a similar
   // idea before this). Full inventory, investigated before writing any of
-  // this: sb-search-input/sb-from-input/sb-to-input/sb-operator-input/
-  // mobile-search-input (all five go through wireAutocomplete(), below) and
+  // this: sb-search-input/sb-from-input/sb-to-input/sb-operator-input
+  // (all four go through wireAutocomplete(), below — the fifth field this
+  // once covered, mobile-search-input, was retired 2026-08-06 in favour of
+  // the mobile search pill opening #sb-search-panel) and
   // hs-jump-sidebar (the History slider's Jump-to field — no dropdown, so
   // wired directly further down instead, but through these same two
   // functions). The History range slider (hs-range-sidebar, type="range")
@@ -9814,20 +9908,6 @@
   searchInput.addEventListener('keydown', function (e) {
     if (e.key !== 'Enter') return;
     var picked = stationPick || searchStations(searchInput.value, 1)[0];
-    if (picked) submitStationPick(picked);
-  });
-
-  // Mobile floating search bar — same station-pick behavior as the desktop
-  // station field, just its own input/dropdown/pick-state.
-  var mobileSearchInput = document.getElementById('mobile-search-input');
-  var mobileStationPick = null;
-  wireAutocomplete(mobileSearchInput, document.getElementById('sb-ac-mobile'), function (picked) {
-    mobileStationPick = picked;
-    if (picked) submitStationPick(picked);
-  });
-  mobileSearchInput.addEventListener('keydown', function (e) {
-    if (e.key !== 'Enter') return;
-    var picked = mobileStationPick || searchStations(mobileSearchInput.value, 1)[0];
     if (picked) submitStationPick(picked);
   });
 
