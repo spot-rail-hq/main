@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-05T15:55:30.255Z",
+  "generated_at": "2026-08-06T09:19:50.679Z",
   "threshold_m": 150,
   "bridges": [
     {
@@ -647,6 +647,16 @@
     },
     {
       "compIdx": 203,
+      "islandSize": 3,
+      "stations": [
+        "PFR"
+      ],
+      "closestM": null,
+      "result": "gap-too-large",
+      "detail": null
+    },
+    {
+      "compIdx": 204,
       "islandSize": 3,
       "stations": [
         "DBD"
