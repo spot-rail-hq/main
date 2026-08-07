@@ -301,6 +301,25 @@
      same way. Widening this to the token is a design call, flagged for Aaron
      rather than taken here. */
   :root[data-theme="light"] .header-tab { color: #6B7687; }
+  /* First-ever switch into History mode does a real one-time synchronous
+     batch of map.addSource/addLayer calls (ensureHistoryLayers(), guarded by
+     historyLayersEverAdded) — a few hundred ms on a slow device, unavoidable
+     since MapLibre has to compile those layers regardless. This spinner is
+     purely so that cost READS as "loading", not "frozen" — the click handler
+     (tabHistory listener) adds .tab-loading synchronously, then defers the
+     actual heavy call two rAFs later so the browser gets a real paint of this
+     state first. currentColor, not a fixed hex, so it inherits whichever of
+     the active/inactive text colors above is in play — the tab is already
+     turquoise/history-on by the time this shows (setMode() flips that class
+     before doing any of the heavy work), so in practice this only ever draws
+     against the active-tab colors, but currentColor keeps it correct either
+     way without a second rule. Reuses db-refresh-btn's own spin keyframe
+     rather than declaring a second identical @keyframes rule. */
+  .header-tab.tab-loading { padding-right: 24px; position: relative; }
+  .header-tab.tab-loading::after { content: ''; position: absolute; right: 10px; top: 50%;
+    width: 9px; height: 9px; margin-top: -4.5px; border-radius: 50%;
+    border: 1.5px solid currentColor; border-top-color: transparent; opacity: 0.75;
+    animation: db-refresh-spin 0.6s linear infinite; }
   /* Predecessor/successor chip with no content record behind it — rendered
      visibly disabled rather than suppressed, so a real historical relationship
      ("the LMS succeeded the Caledonian Railway") still shows even before that
@@ -394,26 +413,27 @@
      uses (relocateModeTabs() moves the real DOM node in here — no separate
      copy, so active/inactive state and setMode()/URL logic can't drift out
      of sync). Boxless (2026-08-07) — the shared background/border/blur card
-     was dropped; each tab already carries its own active-state pill
-     background (.header-tab.db-on etc, var(--t)), so only the INACTIVE
-     labels have no background of their own once the card is gone. The
-     drag/wheel-scroll safety net (enableDragToScroll/enableWheelToHorizontal
-     Scroll, still wired below) stays functionally in place for a viewport
-     too narrow for all three, but the scroll-FADE overlay is dropped along
-     with the box — a fade-to-var(--sf) gradient makes no sense with no
-     var(--sf) card behind it to fade into. */
+     was dropped, since each tab already carries its own active-state pill
+     background (.header-tab.db-on etc, var(--t)) — but that left the
+     INACTIVE labels with nothing behind them at all, floating directly over
+     the map with only a text-shadow for legibility, which read as unreadable
+     against busy map tiles. Fixed (later the same day) by giving each
+     INACTIVE tab its own solid pill background instead — same var(--sf)
+     surface the removed shared card used, just scoped PER-BUTTON rather than
+     one container behind all three, so a narrow single-tab viewport doesn't
+     imply the other two are part of one connected shape. The scroll-FADE
+     overlay stays dropped regardless: the gaps between pills are still
+     transparent map, not a continuous surface, so a fade-to-var(--sf) at the
+     scroll edges still has nothing to fade into. */
   #mode-capsule { display: none; position: absolute; left: 10px; right: 10px; z-index: 55; }
   #mode-capsule-scroll { display: flex; align-items: center; justify-content: center; gap: 4px; overflow-x: auto; scrollbar-width: none; }
   #mode-capsule-scroll::-webkit-scrollbar { display: none; }
-  /* Legibility insurance for the now-boxless INACTIVE labels — CLAUDE.md's
-     own text describes the map as dark-themed throughout, but the code
-     actually ships a real light basemap too (STADIA_STYLE_NAMES.light =
-     'alidade_smooth', switched via the theme toggle) so that assumption
-     doesn't hold; this is cheap and inert against a dark tile, visible
-     insurance against a light one. Scoped to this boxless mobile context
-     only — the desktop sidebar's own .header-tab instances already sit on
-     #sidebar's solid background and don't need it. */
   #mode-capsule-scroll .header-tab:not(.db-on):not(.live-on):not(.history-on) {
+    background: var(--sf); border: 0.5px solid var(--brh);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    /* Kept alongside the new background, not superseded by it — var(--sf) is
+       rgba(14,18,24,0.96), not fully opaque, so the shadow is still doing
+       real work against a bright basemap showing faintly through. */
     text-shadow: 0 1px 3px rgba(0,0,0,0.65);
   }
   @media (max-width: 768px) { #mode-capsule { display: block; } }
@@ -459,28 +479,13 @@
   #cookie-consent .cc-accept { background: var(--t); color: #07090C; font-weight: 600; }
   #cookie-consent .cc-reject { border: 0.5px solid var(--brh); color: var(--ink); }
 
-  /* ── Mobile search pill (tablet/mobile only) ──────────────────────────────
-     Retired the old bottom-pinned #mobile-search input bar (2026-08-06) in
-     favour of a single pill that opens the same #sb-search-panel the
-     desktop search icon (#sb-search-btn) already uses — one search surface
-     on mobile instead of three (this pill, the sidebar's own search icon,
-     and the old bottom bar). See #region-jump for the bar this replaces.
-     Moved (2026-08-07) from the top nav-anchored stack to float just above
-     the bottom sheet instead — position is `bottom`, not `top`, now, set by
-     positionSearchPillAboveSheet(). z-index raised above #sidebar's (70) so
-     it stays visible in front of the sheet once dragged past this fixed
-     point, rather than getting covered by it — see that function's comment
-     for why this is fixed rather than drag-tracking. */
-  #search-pill { display: none; position: absolute; left: 10px; right: 10px; z-index: 75;
-    align-items: center; gap: 8px; padding: 12px 14px; text-align: left;
-    background: var(--sf); border: 0.5px solid var(--brh); border-radius: 16px;
-    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-    font-family: inherit; font-size: inherit; box-sizing: border-box; }
-  #search-pill i { font-size: 16px; color: var(--ink); flex-shrink: 0; }
-  #search-pill span { flex: 1; min-width: 0; font-family: var(--font-body); font-size: 15px; color: var(--ink-mute);
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* #mobile-search / the floating #search-pill that replaced it are both gone
+     (2026-08-07) — the sidebar's own #sb-search-panel is now shown by default
+     whenever nothing is selected (see renderSelectionChrome()), on mobile and
+     desktop alike, so a dedicated "tap to reveal search" affordance has
+     nothing left to do. #region-jump stays hidden on mobile regardless —
+     mode-capsule takes its slot at this breakpoint, unrelated to search. */
   @media (max-width: 768px) {
-    #search-pill { display: flex; }
     #region-jump { display: none; }
   }
 
@@ -565,7 +570,13 @@
   #sb-peek-teaser { font-family: var(--font-body); font-size: 13px; color: var(--ink); line-height: 1.4;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   @media (max-width: 768px) {
-    #sb-search-btn { display: none; } /* redundant with #search-pill, which delegates to this button's own click handler */
+    /* #sb-search-btn used to be hidden here (redundant with #search-pill,
+       which delegated to its click handler). The pill's gone (2026-08-07,
+       see #region-jump's own comment) and the search panel is open by
+       default whenever nothing's selected — but this icon is still the only
+       way to reopen search WHILE something is selected (the panel auto-
+       closes on selection, see renderSelectionChrome()), on mobile same as
+       desktop, so it stays visible rather than silently losing that path. */
     #sidebar[data-sheet-state="peek"] .sb-top,
     #sidebar[data-sheet-state="peek"] .sb-hist-slider,
     #sidebar[data-sheet-state="peek"] .sb-selection,
@@ -991,14 +1002,31 @@
   .sb-attrib-tag { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink); }
 
   /* Mobile-only alternate trigger (2026-08-07) — swaps the text+chevron for
-     a single centred "i" icon; the button's CLICK behaviour branches in JS
-     (see wireAttributionBar()) rather than here, opening #attrib-sheet
-     instead of the inline expand this button still does on desktop. */
+     a single "i" icon; the button's CLICK behaviour branches in JS (see
+     wireAttributionBar()) rather than here, opening #attrib-sheet instead of
+     the inline expand this button still does on desktop. */
   .sb-attrib-info-icon { display: none; }
   @media (max-width: 768px) {
     .sb-attrib-summary, .sb-attrib-chev { display: none; }
     .sb-attrib-info-icon { display: block; font-size: 15px; }
-    .sb-attrib-toggle { justify-content: center; }
+    /* Moved from centred-in-a-full-width-bar to floating over the bottom-
+       right corner of the sheet's CONTENT area (2026-08-07) — same element,
+       same id, same click handler, only position changes (the overlay it
+       opens is untouched, see #attrib-sheet). position:absolute pulls
+       #sb-attribution out of #sidebar's flex column entirely, so #sb-body's
+       flex:1 reclaims the vertical space the bar used to reserve, and this
+       icon sits pinned over what is now the content area's own bottom-right
+       corner instead of spanning the sheet's full width. #sidebar (already
+       position:absolute) is the containing block. No background/border of
+       its own needed — #sidebar already has a solid var(--sf) surface behind
+       it, unlike the mode-capsule tabs above which float directly over the
+       map. The peek-state hide rule (#sidebar[data-sheet-state="peek"]
+       #sb-attribution) still applies unchanged; display:none wins regardless
+       of position. */
+    #sb-attribution { position: absolute; right: 4px; bottom: 4px; left: auto; top: auto;
+      width: auto; border-top: none; background: transparent; z-index: 5; }
+    #sb-attribution::before { content: none; } /* no longer a bar sitting below scrolling content — nothing to fade under */
+    .sb-attrib-toggle { width: auto; padding: 10px; justify-content: center; }
   }
 
   /* ── Attribution full-sheet (tablet/mobile only) ──────────────────────────
@@ -1377,14 +1405,6 @@
   </div>
 </div>
 
-<!-- Tablet/mobile only — replaces #region-jump in that layout (see CSS).
-     Opens the sidebar's existing #sb-search-panel via #sb-search-btn rather
-     than its own search flow. -->
-<button id="search-pill" aria-label="Search stations, lines, operators">
-  <i class="ti ti-search"></i>
-  <span>Search stations, lines, operators</span>
-</button>
-
 <!-- Tablet/mobile only — floating home for the mode tabs, which JS moves
      here from .sb-top-upper at this breakpoint (see relocateModeTabs()).
      No .scroll-fade wrapper (2026-08-07, see CSS) — boxless now, so there's
@@ -1423,7 +1443,7 @@
       </div>
     </div>
     <div class="sb-top-lower">
-      <div class="sb-search-panel" id="sb-search-panel">
+      <div class="sb-search-panel open" id="sb-search-panel">
         <div class="sb-search-modes" id="sb-search-modes">
           <button class="sb-search-mode-tab active" id="sb-mode-station" data-mode="station">Station</button>
           <button class="sb-search-mode-tab" id="sb-mode-fromto" data-mode="fromto">Destination</button>
@@ -5379,9 +5399,22 @@
       selTitleEl.textContent = '';
       starBtn.style.display = 'none';
       if (window.innerWidth <= 768 && hadSelectionForSheet && typeof setSheetState === 'function') setSheetState('half');
+      // Search panel becomes the sheet's resting-state content (2026-08-07) —
+      // shown by default whenever nothing's selected, desktop and mobile
+      // alike, rather than requiring a click to reveal it. Always resets to
+      // the Station tab on the way back in, same as a fresh page load — see
+      // setSearchMode/searchMode's own comment for why referencing them here
+      // (declared later in this same script) is safe.
+      searchPanel.classList.add('open');
+      setSearchMode('station');
       return;
     }
     sidebarEl.classList.add('has-selection');
+    // A real selection gets the sheet to itself — the search panel closes so
+    // it doesn't sit above the entity content competing for space. Reopening
+    // it (searchBtn) still works while a selection is showing; see that
+    // handler's own comment.
+    searchPanel.classList.remove('open');
     if (window.innerWidth <= 768 && !hadSelectionForSheet && typeof setSheetState === 'function') setSheetState('peek');
     if (type === 'station') {
       selTitleEl.textContent = selectedStationName;
@@ -9213,7 +9246,31 @@
   }
   tabLive.addEventListener('click', function () { setMode('live'); });
   tabDb.addEventListener('click', function () { setMode('database'); });
-  tabHistory.addEventListener('click', function () { setMode('history'); });
+  // History's first-ever activation is the one mode switch with real
+  // synchronous cost (ensureHistoryLayers(), called from inside setMode()) —
+  // Live/Database have no equivalent because their layers are added once
+  // upfront in addMapLayers() at page load, not lazily on tab switch. Only
+  // this branch gets the loading treatment; a plain setMode() call is still
+  // correct (and instant) for both the historyLayersEverAdded===true case and
+  // for every other caller of setMode('history') (URL restore, heritage/
+  // operator selection, etc.) — those aren't a user-perceived "tap and wait",
+  // so they're left exactly as before rather than wrapped defensively.
+  tabHistory.addEventListener('click', function () {
+    if (mode === 'history' || historyLayersEverAdded) { setMode('history'); return; }
+    // Add the spinner BEFORE deferring anything, so it's on the element from
+    // the very next paint. Two nested rAFs (not one, not a setTimeout(...,0))
+    // is the reliable way to guarantee that paint actually happens before the
+    // heavy synchronous call below runs — a single rAF can still land in the
+    // same frame as this click on some browsers, which would make the
+    // spinner invisible right up until the freeze it's meant to explain.
+    tabHistory.classList.add('tab-loading');
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        tabHistory.classList.remove('tab-loading');
+        setMode('history');
+      });
+    });
+  });
   SLIDER_INSTANCES.forEach(wireSliderInstance);
   // Standalone clear (×) buttons declared in markup (the Jump-to field).
   // Search fields get theirs injected by wireAutocomplete instead — same
@@ -9371,9 +9428,8 @@
   function regionJumpFlyToPadding() {
     var pad = { left: MAP_FIT_MARGIN, top: MAP_FIT_MARGIN, right: MAP_FIT_MARGIN, bottom: MAP_FIT_MARGIN };
     // Whichever full-width bar is the lowest of the top-floating stack eats
-    // from the top — region-jump on desktop, or the mode-capsule (the lower
-    // of the search-pill/mode-capsule pair it replaces) on mobile/tablet-
-    // portrait, where region-jump itself is hidden (see CSS).
+    // from the top — region-jump on desktop, or mode-capsule on mobile/
+    // tablet-portrait, where region-jump itself is hidden (see CSS).
     var topChromeEl = (window.innerWidth <= 768 && modeCapsuleEl) ? modeCapsuleEl : regionJumpEl;
     if (topChromeEl) {
       var tc = topChromeEl.getBoundingClientRect();
@@ -9770,14 +9826,9 @@
   // Mobile/tablet-portrait (region-jump hidden, see CSS): #sidebar is now a
   // BOTTOM-anchored sheet (2026-08-06), no longer above this stack at all —
   // mode-capsule anchors directly off the nav bar, control-cluster below
-  // that. search-pill is NOT part of this chain any more (2026-08-07) — it
-  // moved to float above the sheet instead, at a fixed position independent
-  // of both this stack and the sheet's live drag height; see
-  // positionSearchPillAboveSheet() further down, defined alongside the sheet
-  // state machine it actually depends on (SHEET_PCT.peek).
+  // that.
   var regionJumpEl = document.getElementById('region-jump');
   var controlClusterEl = document.getElementById('control-cluster');
-  var searchPillEl = document.getElementById('search-pill');
   var modeCapsuleEl = document.getElementById('mode-capsule');
   function positionFloatingClusters() {
     relocateModeTabs();
@@ -9803,11 +9854,11 @@
       controlClusterEl.style.top = ''; // desktop, region-jump hidden by some future rule — CSS default
     }
   }
-  // No observer on sidebarEl or searchPillEl here — this function doesn't
-  // read either any more (search-pill's own position is independent, see
-  // above; sidebarEl never mattered to this function post-2026-08-06).
-  // Observing sidebarEl specifically would fire this on every frame of a
-  // sheet drag for no reason.
+  // No observer on sidebarEl here — this function doesn't read it (never
+  // mattered to this function post-2026-08-06), and observing it would fire
+  // on every frame of a sheet drag for no reason. setSheetState() re-runs
+  // this explicitly on settle instead (see its own comment) — cheap, and
+  // only on a real state change, not per drag frame.
   new ResizeObserver(positionFloatingClusters).observe(regionJumpEl);
   new ResizeObserver(positionFloatingClusters).observe(modeCapsuleEl);
   window.addEventListener('resize', positionFloatingClusters);
@@ -9857,6 +9908,15 @@
     sidebarEl.dataset.sheetState = state;
     sidebarEl.style.height = sheetHeightPx(SHEET_PCT[state]) + 'px';
     updateSheetPeekSummary();
+    // Re-anchor the floating chrome (mode-capsule/control-cluster) on every
+    // settled state change — not per drag frame (positionFloatingClusters()
+    // isn't wired to pointermove at all, only resize/ResizeObserver/here), so
+    // a live drag doesn't pay for layout reads on every tick, but the capsule
+    // still self-corrects on drag-end/tap-to-cycle rather than only ever
+    // recovering from an unrelated window resize. positionFloatingClusters()
+    // is defined above this function and already called once at load, so
+    // this is a cheap idempotent re-run, not a new dependency.
+    positionFloatingClusters();
     // Sticky padding (see regionJumpFlyToPadding()'s own comment) — only
     // re-set on a settled state change, not per drag frame, so a live drag
     // doesn't fight the map with an easeTo() on every pointermove.
@@ -9939,26 +9999,6 @@
     if (window.innerWidth <= 768) setSheetState(sheetState, { silent: true });
   })();
 
-  // ── Search pill: fixed above the sheet's peek edge (2026-08-07) ───────────
-  // Deliberately does NOT track the sheet's live drag/settled height (unlike
-  // #region-jump/mode-capsule/control-cluster above, which measure a
-  // neighbour's actual rendered rect) — the brief explicitly wants a pill
-  // that stays visually distinct and stationary, not fused to the sheet's
-  // header the way region-jump/mode-capsule are fused to the nav bar. Fixed
-  // at SHEET_PCT.peek (in pixels, same window.innerHeight-based computation
-  // setSheetState() itself uses — see its bugfix comment for why this can't
-  // go through the CSS 'vh' unit) plus a gap, so it sits just clear of the
-  // sheet's peek-state top edge and stays there even while the sheet is
-  // dragged past it to half/full — it needs a z-index ABOVE #sidebar's (70)
-  // for exactly that reason, so it renders in front rather than getting
-  // covered once the sheet grows taller than this fixed point.
-  function positionSearchPillAboveSheet() {
-    if (window.innerWidth > 768) { searchPillEl.style.bottom = ''; return; } // desktop: CSS default (hidden) applies
-    searchPillEl.style.bottom = (sheetHeightPx(SHEET_PCT.peek) + 10) + 'px';
-  }
-  window.addEventListener('resize', positionSearchPillAboveSheet); // orientation change etc — NOT wired to sheet drag/state
-  positionSearchPillAboveSheet();
-
   // ── Search (single station, and from/to) ──────────────────────────────────
   var searchBtn = document.getElementById('sb-search-btn');
   var searchInput = document.getElementById('sb-search-input');
@@ -9985,21 +10025,18 @@
   document.getElementById('sb-mode-fromto').addEventListener('click', function () { setSearchMode('fromto'); });
   document.getElementById('sb-mode-operator').addEventListener('click', function () { setSearchMode('operator'); });
 
+  // Manual toggle — only meaningful while a selection is showing (the panel
+  // auto-opens/closes with selection state otherwise, see
+  // renderSelectionChrome()); this lets a station/route/operator view stay
+  // open while still reachable to start a new search. #sb-search-btn lives
+  // inside .sb-top, which is hidden at the sheet's peek state (2026-08-06),
+  // so there's no equivalent "reachable even collapsed" case left to guard
+  // for now that the floating search pill (which WAS reachable at peek) is
+  // gone — see #region-jump's CSS comment.
   searchBtn.addEventListener('click', function () {
     var opening = !searchPanel.classList.contains('open');
     searchPanel.classList.toggle('open', opening);
     if (opening) setSearchMode(searchMode);
-  });
-  // Mobile search pill (tablet/mobile only, see CSS) — delegates to the
-  // exact same handler as the desktop search icon rather than duplicating
-  // its open/close logic, so the two can never drift out of sync.
-  document.getElementById('search-pill').addEventListener('click', function () {
-    // #sb-search-panel lives inside .sb-top, which is hidden at the sheet's
-    // peek state (2026-08-06) — without this, searchBtn.click() would open
-    // the panel with no visible effect until the sheet is separately
-    // dragged/tapped up.
-    if (window.innerWidth <= 768 && sheetState === 'peek') setSheetState('half');
-    searchBtn.click();
   });
   // Explicit close (far right of the mode-tabs row) — same end state as
   // clicking the search icon again while open, just a more discoverable
