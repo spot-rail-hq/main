@@ -401,22 +401,6 @@
     #region-jump { left: var(--sidebar-edge); max-width: calc(100vw - var(--sidebar-edge) - 20px); }
     #control-cluster { left: var(--sidebar-edge); }
   }
-  /* Mobile/tablet-portrait only: #mode-capsule and #control-cluster both need
-     z-index ABOVE #sidebar's (70), not below it (55, their shared desktop
-     default). #sidebar is a tall bottom sheet here (up to 88vh at its
-     'full' state, see SHEET_PCT), and its top edge can rise higher on screen
-     than these two — with the old lower z-index, the sheet rendered OVER
-     them once it got tall enough, covering the mode tabs and making them
-     untappable ("can't change the tab") even though their own top/left never
-     moved. This is the exact same class of bug already diagnosed once before
-     for .icon-btn's hover tooltip (see that rule's own 2026-07-21 comment) —
-     same 55-vs-70 gap, different element this time. 80 is comfortably above
-     #sidebar's 70 with room to spare. Scoped to mobile only: on desktop
-     #control-cluster sits beside the sidebar, never under it, so there's
-     nothing to fix there and no reason to disturb its stacking. */
-  @media (max-width: 768px) {
-    #mode-capsule, #control-cluster { z-index: 80; }
-  }
   /* Tablet/mobile: region-jump spans edge-to-edge like the sidebar above it
      (JS sets its top to sit right below the sidebar, with a gap); the icon
      cluster stays a compact, inset-left column below *that*. */
@@ -459,6 +443,29 @@
        base inset + a gap, so the tab row never starts underneath the icon
        column. */
     #mode-capsule { display: block; left: 46px; }
+  }
+  /* Mobile/tablet-portrait only: #mode-capsule and #control-cluster both need
+     z-index ABOVE #sidebar's (70), not below it (55, their shared desktop
+     default) — #sidebar is a tall bottom sheet here (up to 88vh at its
+     'full' state, see SHEET_PCT), and its top edge can rise higher on screen
+     than these two, so the sheet painted OVER them once it got tall enough,
+     covering the mode tabs and making them untappable. Same class of bug as
+     .icon-btn's hover tooltip (2026-07-21 comment on that rule).
+     2026-08-07 RECURRENCE, root-caused by loading the live site directly and
+     reading its rendered CSS: a same-specificity single-ID selector was
+     placed HERE once before too, but as one combined rule
+     `#mode-capsule, #control-cluster { z-index: 80; }` positioned BETWEEN the
+     two base rules above — after #control-cluster's (so it won, correctly),
+     but BEFORE #mode-capsule's own base rule (so the base rule's z-index:55,
+     coming later, won instead). Confirmed live: getComputedStyle showed
+     #control-cluster at 80 and #mode-capsule stuck at 55, on the SAME page
+     load — not a stacking-context or viewport issue, a plain cascade-order
+     mistake that happened to fix one of the two elements and silently leave
+     the other broken. Fixed by moving this rule to after BOTH base rules
+     (mode-capsule's is the later of the two) instead of between them, so it
+     can never again depend on which element's base rule happens to sit where. */
+  @media (max-width: 768px) {
+    #mode-capsule, #control-cluster { z-index: 80; }
   }
 
   /* ── Map control consolidation (tablet/mobile only) ───────────────────────
@@ -5458,9 +5465,12 @@
       // alike, rather than requiring a click to reveal it. Always resets to
       // the Station tab on the way back in, same as a fresh page load — see
       // setSearchMode/searchMode's own comment for why referencing them here
-      // (declared later in this same script) is safe.
+      // (declared later in this same script) is safe. skipFocus: this fires
+      // on every return to the resting state, not just an explicit tap — see
+      // setSearchMode()'s own comment for why forcing focus here popped the
+      // keyboard over the map with no user action involved.
       searchPanel.classList.add('open');
-      setSearchMode('station');
+      setSearchMode('station', { skipFocus: true });
       return;
     }
     sidebarEl.classList.add('has-selection');
@@ -9210,7 +9220,9 @@
     // with no visible field. setSearchMode/searchMode are declared later in
     // this same script but that's fine — both are only ever called after
     // the whole script has parsed (user interaction), never during it.
-    if (mode === 'live' && searchMode === 'operator') setSearchMode('station');
+    // skipFocus: this is a defensive state cleanup triggered by a TAB switch,
+    // not a request to type — see setSearchMode()'s own comment.
+    if (mode === 'live' && searchMode === 'operator') setSearchMode('station', { skipFocus: true });
     // The sidebar is top-anchored on every breakpoint now, so it no longer
     // competes with the bottom-anchored Database-mode legend/history stack —
     // no auto-collapse needed here any more (it used to, back when the
@@ -10084,6 +10096,20 @@
       startY = e.clientY;
       startHeightPx = sidebarEl.getBoundingClientRect().height;
       pointerId = e.pointerId;
+      // 2026-08-07 bugfix: was a flat 6px regardless of input type. A real
+      // finger's contact point commonly shifts several px between touch
+      // start and end even for an intended, stationary tap — enableDragToScroll()
+      // elsewhere in this file already documents exactly this (touch gets
+      // more slack than mouse: 10px vs 5px there) and this gesture never
+      // matched it. A too-tight threshold on a real touchscreen means an
+      // ordinary tap on a now-correctly-hit mode-tab/button (see the
+      // z-index fix above) can still misclassify as a drag from jitter
+      // alone — dragging becomes true, the pointer gets captured, and the
+      // browser suppresses the synthesized click afterward, so the tap that
+      // was supposed to switch tabs does nothing instead. Matched to the
+      // same 10px/5px split used elsewhere rather than inventing a third
+      // number.
+      threshold = e.pointerType === 'mouse' ? 6 : 10;
       minPx = sheetHeightPx(SHEET_PCT.peek);
       maxPx = sheetHeightPx(SHEET_PCT.full);
     }
@@ -10159,7 +10185,18 @@
   var operatorInput = document.getElementById('sb-operator-input');
   var searchMode = 'station';
 
-  function setSearchMode(m) {
+  // skipFocus (2026-08-07 bugfix): setSearchMode() used to focus its field
+  // UNCONDITIONALLY, which was correct for its original callers (a user
+  // tapping a Station/Destination/Operator tab, or the search icon, clearly
+  // means to type next) but wrong for its two PROGRAMMATIC callers —
+  // renderSelectionChrome()'s type==='none' branch (opens the panel as the
+  // sheet's resting content, not because anyone asked to type) and
+  // setMode()'s defensive station-mode reset (dropping an invalid Operator
+  // search on leaving Database, not a request to type either). Either one
+  // running while the page is just sitting at rest force-focused the input
+  // and popped the mobile keyboard over the map with no tap involved.
+  function setSearchMode(m, opts) {
+    opts = opts || {};
     searchMode = m;
     document.getElementById('sb-mode-station').classList.toggle('active', m === 'station');
     document.getElementById('sb-mode-fromto').classList.toggle('active', m === 'fromto');
@@ -10167,6 +10204,7 @@
     stationFieldWrap.classList.toggle('open', m === 'station');
     fromToRow.classList.toggle('open', m === 'fromto');
     operatorFieldWrap.classList.toggle('open', m === 'operator');
+    if (opts.skipFocus) return;
     if (m === 'station') searchInput.focus(); else if (m === 'fromto') fromInput.focus(); else operatorInput.focus();
   }
   document.getElementById('sb-mode-station').addEventListener('click', function () { setSearchMode('station'); });
