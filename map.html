@@ -401,6 +401,22 @@
     #region-jump { left: var(--sidebar-edge); max-width: calc(100vw - var(--sidebar-edge) - 20px); }
     #control-cluster { left: var(--sidebar-edge); }
   }
+  /* Mobile/tablet-portrait only: #mode-capsule and #control-cluster both need
+     z-index ABOVE #sidebar's (70), not below it (55, their shared desktop
+     default). #sidebar is a tall bottom sheet here (up to 88vh at its
+     'full' state, see SHEET_PCT), and its top edge can rise higher on screen
+     than these two — with the old lower z-index, the sheet rendered OVER
+     them once it got tall enough, covering the mode tabs and making them
+     untappable ("can't change the tab") even though their own top/left never
+     moved. This is the exact same class of bug already diagnosed once before
+     for .icon-btn's hover tooltip (see that rule's own 2026-07-21 comment) —
+     same 55-vs-70 gap, different element this time. 80 is comfortably above
+     #sidebar's 70 with room to spare. Scoped to mobile only: on desktop
+     #control-cluster sits beside the sidebar, never under it, so there's
+     nothing to fix there and no reason to disturb its stacking. */
+  @media (max-width: 768px) {
+    #mode-capsule, #control-cluster { z-index: 80; }
+  }
   /* Tablet/mobile: region-jump spans edge-to-edge like the sidebar above it
      (JS sets its top to sit right below the sidebar, with a gap); the icon
      cluster stays a compact, inset-left column below *that*. */
@@ -436,7 +452,14 @@
        real work against a bright basemap showing faintly through. */
     text-shadow: 0 1px 3px rgba(0,0,0,0.65);
   }
-  @media (max-width: 768px) { #mode-capsule { display: block; } }
+  @media (max-width: 768px) {
+    /* left widened from 10px to clear #control-cluster (now top-aligned
+       beside it instead of stacked below, per the mockup — see
+       positionFloatingClusters()'s own comment) — 26px icon width + 10px
+       base inset + a gap, so the tab row never starts underneath the icon
+       column. */
+    #mode-capsule { display: block; left: 46px; }
+  }
 
   /* ── Map control consolidation (tablet/mobile only) ───────────────────────
      Desktop keeps all 7 buttons in their original DOM order and none of this
@@ -531,7 +554,22 @@
     #sidebar.sheet-dragging { transition: none; }
   }
 
-  .sb-handle-row { display: none; align-items: center; justify-content: center; position: relative; padding: 8px 0 4px; flex-shrink: 0; touch-action: none; }
+  /* 2026-08-07: dropped the dedicated expand/collapse chevron (#sb-min-btn)
+     that used to sit in this row — researched against Apple Maps/Google
+     Maps' own bottom-sheet convention (NN/g's bottom-sheet guidelines and
+     several iOS/Android implementation write-ups agree: a single grab handle
+     is the whole affordance, doing double duty as the drag target AND the
+     tap-to-cycle target; neither ships a second dedicated button next to it).
+     wireSheet() already listens on the whole ROW, not just the thin bar
+     (see its own comment), so a plain tap anywhere in this row still cycles
+     sheet state exactly as the old button did — nothing was lost, just the
+     redundant second target. This row is also now home to the back/forward/
+     saved/search icons, reparented in from .sb-top-actions on mobile only
+     (see relocateSheetTopActions()) — back/forward flow first, then the
+     handle (centred via margin:auto on .sb-handle itself, not
+     justify-content, so it stays visually centred regardless of how wide
+     the two icon groups either side of it are), then saved/search. */
+  .sb-handle-row { display: none; align-items: center; position: relative; padding: 8px 12px 4px; flex-shrink: 0; gap: 6px; touch-action: none; }
   @media (max-width: 768px) {
     /* min-height 44px (2026-08-07) — standard minimum touch-target size;
        the visible bar (.sb-handle) stays its original thin 2.5px, just
@@ -540,21 +578,7 @@
        about giving a touch somewhere to land, not a JS change. */
     .sb-handle-row { display: flex; min-height: 44px; }
   }
-  .sb-handle { width: 28px; height: 2.5px; border-radius: 2px; background: rgba(154,164,178,0.3); }
-  /* #sb-min-btn was the old binary collapse toggle (mobile-only — the row
-     it's in is display:none on desktop, so nothing here ever applied there).
-     Repurposed as a second, larger tap target for the same tap-to-cycle the
-     handle bar itself supports (wireSheet() below) rather than kept as a
-     separate collapsed/expanded state — a 3-state sheet has no single
-     "collapsed" to toggle back to. The rotate-on-full echoes its old
-     rotate-when-collapsed semantics: the arrow points the direction another
-     tap will move the sheet. */
-  /* top:50%/translateY (was a fixed top:6px) so it stays vertically centred
-     now that .sb-handle-row's height varies (44px min-height on mobile vs.
-     its old fixed ~30px) rather than being tuned to one specific height. */
-  #sb-min-btn { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 13.5px; }
-  #sb-min-btn i { transition: transform 0.2s; }
-  #sidebar[data-sheet-state="full"] #sb-min-btn i { transform: rotate(180deg); }
+  .sb-handle { width: 28px; height: 2.5px; border-radius: 2px; background: rgba(154,164,178,0.3); margin: 0 auto; }
 
   /* Peek state (2026-08-06) — station name + short teaser only; everything
      else in the sheet (utility row, selection chrome, full content, footer
@@ -583,6 +607,18 @@
     #sidebar[data-sheet-state="peek"] #sb-body,
     #sidebar[data-sheet-state="peek"] #sb-attribution { display: none !important; }
     #sidebar[data-sheet-state="peek"] #sb-peek-summary { display: flex; }
+    /* 2026-08-07: with nothing selected, peek used to show just a redundant
+       "Database"/"Live updates"/"History" title — redundant because the
+       mode-capsule tabs floating above the sheet already say which mode is
+       active. Per the mockup, show the search panel there instead (the ONLY
+       thing left in .sb-top on mobile — .sb-top-upper is display:none there
+       now, see its own rule, since both the mode-tabs and the back/forward/
+       saved/search row that used to live in it are relocated elsewhere on
+       mobile), same as at half/full height. #sb-peek-summary's title+teaser
+       stays exactly as before for an ACTUAL selection — still useful there,
+       this only touches the empty/resting case. */
+    #sidebar[data-sheet-state="peek"]:not(.has-selection) .sb-top { display: block !important; }
+    #sidebar[data-sheet-state="peek"]:not(.has-selection) #sb-peek-summary { display: none !important; }
   }
 
   .sb-top { flex-shrink: 0; border-bottom: 0.5px solid var(--br); }
@@ -590,6 +626,25 @@
   .sb-top-tabs { display: flex; gap: 4px; }
   .sb-top-actions { display: flex; align-items: center; gap: 6px; }
   .sb-top-lower { padding: 0 16px 14px; }
+  @media (max-width: 768px) {
+    /* Same touch-action:none .sb-handle-row already carries (2026-08-07) —
+       wireSheet() now listens for a press-and-drag on this whole header too
+       (see its own comment), and without this a touch drag starting here
+       would fight the browser's native scroll/pan gesture recognition
+       instead of driving the sheet. Restored to normal on the actual text
+       fields immediately below, since a blanket touch-action:none on an
+       ancestor can suppress a descendant's own text-selection/cursor
+       touch handling unless it opts back in explicitly. */
+    .sb-top { touch-action: none; }
+    .sb-search-field { touch-action: manipulation; }
+    /* Both of .sb-top-upper's children are relocated away from it on mobile
+       now — .sb-top-tabs into #mode-capsule (relocateModeTabs()) and
+       .sb-top-actions's back/forward/saved/search into #sb-handle-row
+       (relocateSheetTopActions()) — so on mobile this row is always empty.
+       Left in flow it would just be dead padding between the handle row and
+       the search panel; hidden here rather than left to render nothing. */
+    .sb-top-upper { display: none; }
+  }
   /* Search panel — hidden until the search icon is tapped. Tab toggle is
      mono/uppercase text (no pill background), matching Search_bar.png rather
      than the filter-chip pill style used elsewhere. */
@@ -1416,7 +1471,6 @@
 <div id="sidebar">
   <div class="sb-handle-row" id="sb-handle-row">
     <div class="sb-handle" id="sb-handle"></div>
-    <button class="ghost-btn" id="sb-min-btn" aria-label="Resize sheet"><i class="ti ti-chevron-up"></i></button>
   </div>
 
   <!-- Tablet/mobile only (see CSS) — the sheet's peek-state content, station
@@ -9435,15 +9489,38 @@
       var tc = topChromeEl.getBoundingClientRect();
       if (tc.height) pad.top = tc.bottom + MAP_FIT_MARGIN;
     }
-    var sb = sidebarEl && sidebarEl.getBoundingClientRect();
-    if (sb && sb.width && sb.height) {
-      if (window.innerWidth <= 768) {
-        // Mobile: the sidebar is a bottom sheet spanning the full width, so it
-        // eats from the BOTTOM, not the left.
-        pad.bottom = Math.max(pad.bottom, window.innerHeight - sb.top + MAP_FIT_MARGIN);
-      } else {
-        pad.left = Math.max(pad.left, sb.right + MAP_FIT_MARGIN);
-      }
+    if (window.innerWidth <= 768) {
+      // Mobile: the sidebar is a bottom sheet spanning the full width, so it
+      // eats from the BOTTOM, not the left.
+      //
+      // 2026-08-07 bugfix: this used to read sidebarEl.getBoundingClientRect()
+      // — but #sidebar has `transition: height 0.28s`, and setSheetState()
+      // calls this (via map.easeTo) in the SAME synchronous tick as setting
+      // sidebarEl.style.height to the new target. A getBoundingClientRect()
+      // forced-reflow made at elapsed-time-ZERO of a transition returns the
+      // geometry as it stood BEFORE the change — the transition hasn't
+      // advanced a frame yet, and forcing the reflow early doesn't fast-
+      // forward it, since no wall-clock time has passed either way. So every
+      // single state change computed padding one state behind, and because
+      // map.easeTo(padding) is sticky (see the long comment below) and
+      // re-fires on every settle, repeated drags compounded a moving-target
+      // camera chase against geometry that was always stale by exactly one
+      // step — reported as the map panning to/showing blank tiles ("the map
+      // disappears") after a few drags, plus the wasted forced-reflow itself.
+      // Fixed by computing the sheet's current top edge ANALYTICALLY instead
+      // — sheetState/SHEET_PCT (declared further down this same script, safe
+      // to reference here for the same already-past-parse reason
+      // regionJumpFlyToPadding() itself is safe to call from map.jumpTo()
+      // above) are updated synchronously by setSheetState() before it calls
+      // easeTo, so this is always correct, and for every OTHER caller of this
+      // function it's exactly what sidebarEl's rect would have read anyway
+      // (nothing else ever sets sidebarEl.style.height except setSheetState()
+      // and the live-drag pointermove handler, which never triggers a
+      // padding easeTo — see wireSheet()). No DOM read needed at all.
+      pad.bottom = Math.max(pad.bottom, sheetHeightPx(SHEET_PCT[sheetState]) + MAP_FIT_MARGIN);
+    } else {
+      var sb = sidebarEl && sidebarEl.getBoundingClientRect();
+      if (sb && sb.width && sb.height) pad.left = Math.max(pad.left, sb.right + MAP_FIT_MARGIN);
     }
     // MapLibre throws if padding exceeds the canvas, which a collapsed/animating
     // sidebar or a very small window can produce. Clamp to half each axis so a
@@ -9817,6 +9894,41 @@
   enableWheelToHorizontalScroll(modeCapsuleScrollEl);
   enableDragToScroll(modeCapsuleScrollEl);
 
+  // ── Sheet top-actions relocation (tablet/mobile only) ────────────────────
+  // Same reparent-the-real-node convention as relocateModeTabs() just above
+  // — back/forward/saved/search move into #sb-handle-row on mobile (per
+  // mockup: back, forward, THEN the handle, THEN saved, search — replacing
+  // the now-removed #sb-min-btn, see that rule's own CSS comment) and back
+  // into .sb-top-actions in their original order on desktop. Moved
+  // individually rather than as one wrapping element because the handle has
+  // to sit BETWEEN the two pairs, not before or after both — .sb-top-actions
+  // itself is left in the DOM as the desktop home/restore target, just empty
+  // on mobile while its children live in the handle row instead.
+  var backBtn = document.getElementById('sb-back-btn');
+  var forwardBtn = document.getElementById('sb-forward-btn');
+  // savedToggleBtn already declared above (renderSelectionChrome() section)
+  // — reused here rather than redeclared, same DOM node either way.
+  var searchBtnEl = document.getElementById('sb-search-btn');
+  var topActionsEl = document.querySelector('.sb-top-actions');
+  var handleRowEl = document.getElementById('sb-handle-row');
+  var handleEl = document.getElementById('sb-handle');
+  function relocateSheetTopActions() {
+    var mobile = window.innerWidth <= 768;
+    if (mobile) {
+      if (backBtn.parentNode !== handleRowEl) {
+        handleRowEl.insertBefore(backBtn, handleEl);
+        handleRowEl.insertBefore(forwardBtn, handleEl);
+        handleRowEl.appendChild(savedToggleBtn);
+        handleRowEl.appendChild(searchBtnEl);
+      }
+    } else if (backBtn.parentNode !== topActionsEl) {
+      topActionsEl.appendChild(backBtn);
+      topActionsEl.appendChild(forwardBtn);
+      topActionsEl.appendChild(savedToggleBtn);
+      topActionsEl.appendChild(searchBtnEl);
+    }
+  }
+
   // ── Floating cluster stacking ─────────────────────────────────────────────
   // A fixed CSS top offset can't track a variable-height neighbour, so this
   // measures actual rendered positions live via ResizeObserver instead.
@@ -9825,13 +9937,20 @@
   // control-cluster stacks below region-jump.
   // Mobile/tablet-portrait (region-jump hidden, see CSS): #sidebar is now a
   // BOTTOM-anchored sheet (2026-08-06), no longer above this stack at all —
-  // mode-capsule anchors directly off the nav bar, control-cluster below
-  // that.
+  // mode-capsule anchors directly off the nav bar. control-cluster now sits
+  // BESIDE it, top-aligned, not stacked below (2026-08-07, per mockup) — the
+  // icon column reads as part of the same header band as the tabs rather
+  // than a second row underneath. Its CSS default (top: calc(var(--nav-h) +
+  // 10px), same formula as mode-capsule's own JS-computed top just below) is
+  // already exactly this, so mobile can use the same '' reset desktop's
+  // jumpVisible branch already does, rather than recomputing the identical
+  // value redundantly off modeCapsuleEl's rect.
   var regionJumpEl = document.getElementById('region-jump');
   var controlClusterEl = document.getElementById('control-cluster');
   var modeCapsuleEl = document.getElementById('mode-capsule');
   function positionFloatingClusters() {
     relocateModeTabs();
+    relocateSheetTopActions();
     var mobile = window.innerWidth <= 768;
     var jumpVisible = getComputedStyle(regionJumpEl).display !== 'none';
     if (mobile) {
@@ -9845,7 +9964,7 @@
       // rather than hardcoded so this can't drift from the CSS value.
       var navH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--nav-h')) || 72;
       modeCapsuleEl.style.top = (navH + 10) + 'px';
-      controlClusterEl.style.top = (modeCapsuleEl.getBoundingClientRect().bottom + 10) + 'px';
+      controlClusterEl.style.top = ''; // CSS default — same navH+10 formula, see comment above
     } else if (jumpVisible) {
       regionJumpEl.style.top = ''; // desktop — CSS default applies. (jumpVisible is now effectively always true on desktop — region-jump used to be Database-mode-hidden via CSS, no longer is, per 2026-07-22 — kept as a guard in case a future mode hides it again)
       controlClusterEl.style.top = (regionJumpEl.getBoundingClientRect().bottom + 10) + 'px';
@@ -9917,9 +10036,11 @@
     // is defined above this function and already called once at load, so
     // this is a cheap idempotent re-run, not a new dependency.
     positionFloatingClusters();
-    // Sticky padding (see regionJumpFlyToPadding()'s own comment) — only
-    // re-set on a settled state change, not per drag frame, so a live drag
-    // doesn't fight the map with an easeTo() on every pointermove.
+    // Sticky padding (see regionJumpFlyToPadding()'s own comment, including
+    // its 2026-08-07 bugfix note, for why that function computes the mobile
+    // sheet's padding from sheetState/SHEET_PCT rather than a DOM read) —
+    // only re-set on a settled state change, not per drag frame, so a live
+    // drag doesn't fight the map with an easeTo() on every pointermove.
     if (!opts.silent) map.easeTo({ padding: regionJumpFlyToPadding(), duration: 250 });
   }
   function cycleSheetState() {
@@ -9935,33 +10056,52 @@
   }
 
   (function wireSheet() {
-    var handle = document.getElementById('sb-handle-row');
-    var down = false, dragging = false, moved = false, startY = 0, startHeightPx = 0, pointerId = null, threshold = 6;
+    // 2026-08-07: extended from #sb-handle-row alone to the whole header
+    // area (#sb-handle-row + .sb-top, which holds the mode-tabs/back/
+    // forward/saved/search row AND the search panel) — Apple Maps lets you
+    // press-and-drag the sheet from anywhere in its header, including the
+    // search bar, not just a thin grab handle. Both surfaces share the same
+    // down/dragging/moved state via closure, so a drag starting on either
+    // behaves identically; which one gets pointer capture is whichever
+    // received the pointerdown (activeSurface).
+    var handleRowEl = document.getElementById('sb-handle-row');
+    var topEl = document.querySelector('.sb-top');
+    var surfaces = [handleRowEl, topEl];
+    var down = false, dragging = false, moved = false, startY = 0, startHeightPx = 0, pointerId = null, threshold = 6, activeSurface = null;
     var minPx = 0, maxPx = 0; // recomputed on every drag start, not just once, so a resize between drags can't leave stale bounds
-    handle.addEventListener('pointerdown', function (e) {
+    function onPointerDown(e) {
       if (window.innerWidth > 768) return;
+      // Real text fields and the autocomplete dropdown opt out of STARTING a
+      // drag — a live <input> needs its own cursor-placement/selection
+      // gestures left alone, and .sb-ac-list rows select on mousedown (see
+      // that code's own comment), which a captured pointer would break.
+      // Everything else in the header (buttons, labels, padding, the
+      // search-mode tabs) is fair game, matching the Apple Maps behaviour
+      // this was asked to match.
+      if (e.target.closest('input, .sb-ac-list')) return;
       down = true; dragging = false; moved = false;
+      activeSurface = this;
       startY = e.clientY;
       startHeightPx = sidebarEl.getBoundingClientRect().height;
       pointerId = e.pointerId;
       minPx = sheetHeightPx(SHEET_PCT.peek);
       maxPx = sheetHeightPx(SHEET_PCT.full);
-    });
-    handle.addEventListener('pointermove', function (e) {
+    }
+    function onPointerMove(e) {
       if (!down) return;
       var dy = e.clientY - startY;
       if (!dragging && Math.abs(dy) > threshold) {
         dragging = true;
         moved = true;
         sidebarEl.classList.add('sheet-dragging'); // drop the CSS transition so height tracks 1:1 with no lag
-        try { handle.setPointerCapture(pointerId); } catch (err) {}
+        try { activeSurface.setPointerCapture(pointerId); } catch (err) {}
       }
       if (dragging) {
         var newHeightPx = startHeightPx - dy; // dragging up (negative dy) grows the sheet
         newHeightPx = Math.max(minPx, Math.min(maxPx, newHeightPx)); // clamp on EVERY move, not just at release — this is the bug A/B fix
         sidebarEl.style.height = newHeightPx + 'px';
       }
-    });
+    }
     function endDrag() {
       if (!down) return;
       down = false;
@@ -9971,23 +10111,31 @@
       // (no browser in this environment), so release it by hand too rather
       // than rely solely on the implicit path for a bug that manifested as
       // "the map stops receiving pointer events at all" after a drag.
-      try { if (pointerId != null) handle.releasePointerCapture(pointerId); } catch (err) {}
+      try { if (pointerId != null && activeSurface) activeSurface.releasePointerCapture(pointerId); } catch (err) {}
       if (!dragging) return;
       dragging = false;
       sidebarEl.classList.remove('sheet-dragging'); // re-enable the transition so the snap eases in
       var px = sidebarEl.getBoundingClientRect().height;
       setSheetState(nearestSheetState(px)); // nearest-by-distance snap — no release-velocity weighting yet, see report
     }
-    handle.addEventListener('pointerup', endDrag);
-    handle.addEventListener('pointercancel', endDrag);
-    // #sb-min-btn (inside this row) gets no listener of its own — a tap
-    // there bubbles up to this same click handler, so the drag bar and the
-    // button are one gesture surface instead of two independently-wired
-    // ones that could drift out of sync.
-    handle.addEventListener('click', function (e) {
+    function onClick(e) {
       if (moved) { e.preventDefault(); e.stopPropagation(); return; } // a real drag must not also cycle
       if (window.innerWidth > 768) return;
+      // A tap on any real control living in this header (back/forward/
+      // saved/search, a search-mode tab, the search-panel close ×, …) must
+      // fire ONLY that control's own action, not also cycle the sheet.
+      // #sb-min-btn (removed 2026-08-07) used to be the one deliberate
+      // exception, sharing this same click on purpose — every button living
+      // in this header now has its own distinct job, so none of them should.
+      if (e.target.closest('button')) return;
       cycleSheetState();
+    }
+    surfaces.forEach(function (el) {
+      el.addEventListener('pointerdown', onPointerDown);
+      el.addEventListener('pointermove', onPointerMove);
+      el.addEventListener('pointerup', endDrag);
+      el.addEventListener('pointercancel', endDrag);
+      el.addEventListener('click', onClick);
     });
     // Sets data-sheet-state="half" to match sheetState's own initial value
     // (the CSS default height, 45vh, already matches — see that rule's
