@@ -93,9 +93,12 @@ const BRANCHES = [
     bbox: [53.90, -1.62, 54.06, -1.35] },
   { key: 'pontefract', op: 'NT', label: 'Pontefract / Knottingley / Goole',
     stations: ['SHC', 'PFM', 'POT', 'KNO', 'FEA', 'RWC', 'GLH', 'PFR'],
+    // 'Down Doncaster'/'Up Doncaster' REMOVED 2026-08-12 — see the
+    // 'askern_doncaster_throat' entry below for why they were here and why
+    // they were wrong.
     names: ['Pontefract Line', 'Wakefield and Goole Line',
       'Castleford and Pontefract Monkhill Line',
-      'Down Goole', 'Up Goole', 'Down Doncaster', 'Up Doncaster'],
+      'Down Goole', 'Up Goole'],
     bbox: [53.63, -1.55, 53.76, -0.90] },
   // SPLIT OUT OF `pontefract` 2026-08-04, after external verification. The
   // Askern branch was originally swept up by the Pontefract name list and
@@ -112,13 +115,58 @@ const BRANCHES = [
   // requires the hand-set Heritage colour to be re-verified by hand whenever
   // that happens. Out of scope here; flagged instead of forced.
   //
-  // The short `Down Doncaster` / `Up Doncaster` ways stay with `pontefract`
-  // above: all three are sub-kilometre and sit at Knottingley itself
-  // (53.703-53.706), i.e. the junction throat, not the branch corridor.
+  // The short `Down Doncaster` / `Up Doncaster` ways were originally left with
+  // `pontefract` here (all three are sub-kilometre and sit at Knottingley
+  // itself, 53.703-53.706, i.e. the junction throat) — flagged then as
+  // unconfirmed, not decided. See `askern_doncaster_throat` below: now
+  // confirmed and moved.
   { key: 'askern', op: ['GC', 'GR'], label: 'Askern branch (Knottingley-Shaftholme, freight-primary)',
     stations: [],
     names: ['Knottingley West Junction and Shaftholme Junction Line'],
     bbox: [53.55, -1.40, 53.76, -1.00] },
+  // RESOLVES the `askern` flag above. CONFIRMED 2026-08-12 via live Overpass
+  // (not inferred): all three ways carry ref=KWS / ref:elr=KWS /
+  // railway:traffic_mode=freight / usage=main — the EXACT tag signature
+  // shared by all 22 ways currently carrying the 'Knottingley West Junction
+  // and Shaftholme Junction Line' name above (same ref:elr=KWS, same
+  // traffic_mode=freight), and unlike the genuine Pontefract-Goole passenger
+  // corridor (Down/Up Goole, ref=WAG1, no railway:traffic_mode tag at all —
+  // queried the same day for contrast). 3698003 ('Down Doncaster') is
+  // additionally tagged passenger=no explicitly. All three are members of
+  // ONLY ONE route relation: 11040448 'Knottingley - Shaftholme Line'
+  // (route=railway, operator=Network Rail, from 'Knottingley West Junction'
+  // to 'Shaftholme Junction') — an infrastructure relation, not a
+  // route=train passenger relation; no passenger route relation membership
+  // was found for any of the three. The 'Doncaster' in their name is the
+  // direction signal itself: these are the Askern corridor's own running
+  // lines through the throat, named for where they lead (Shaftholme
+  // Jn/Doncaster), directionally distinct from 'Down Goole'/'Up Goole' which
+  // lead the other way, toward the actual NT-served Pontefract-Goole
+  // passenger continuation. No scheduled Northern service was found calling
+  // over this pair — consistent with the freight-primary characterization
+  // above, not diversionary-only.
+  //
+  // WAY-ID SELECTED (not folded into `askern`'s own `names` list above)
+  // because the two selectors are mutually exclusive per branch entry (see
+  // the fetch loop below) and askern's existing name-matched query must be
+  // left untouched. Also because this line has genuinely been getting more
+  // finely re-named in OSM: two of these three way ids (203748595,
+  // 548427963) already carry `ingest_branch: 'askern'` in the committed
+  // graph today — they matched askern's own name filter at THEIR ingest
+  // time, before an upstream OSM edit split/renamed them from
+  // 'Knottingley West Junction and Shaftholme Junction Line' to
+  // 'Up Doncaster'. Only 3698003 ('Down Doncaster', segment 8635) is
+  // currently wrong in the graph, carrying NT alongside GC/GR — a name-based
+  // fix could not have self-healed that even before this edit, since the
+  // script never touches a way_id already present (see the header). Listed
+  // here as an explicit trio, idempotently, so a from-scratch rebuild lands
+  // all three the same way regardless of whatever OSM's `name` tag on them
+  // says by then.
+  { key: 'askern_doncaster_throat', op: ['GC', 'GR'],
+    label: 'Askern branch — Knottingley junction throat (Down/Up Doncaster)',
+    stations: [],
+    wayIds: [3698003, 203748595, 548427963],
+    bbox: [53.702, -1.266, 53.707, -1.249] },
   { key: 'south_fylde', op: 'NT', label: 'South Fylde (Preston-Blackpool South)',
     stations: ['LTM', 'AFV', 'MOS'],
     names: ['South Fylde Community Railway Line', 'Preston and Wyre Joint Railway'],
