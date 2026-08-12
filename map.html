@@ -3119,33 +3119,77 @@
   // hosted. Re-run after every map.setStyle() (theme switch) since setStyle
   // wipes all sources/layers from the old style.
   // Sea/ocean name labels ("North Sea"/"Nordsee"/"Noordzee"...) come from the
-  // Stadia style's water_name source-layer. Checked the raw style JSON:
-  // water_name_ocean (point, class=ocean) is definitely sea/ocean names;
-  // water_name_line (LineString, no class filter) is very likely also sea/ocean
-  // names since this schema's only other water_name class is "lake" and lakes
-  // aren't stored as line geometry. water_name_nonocean (class != ocean — lake
-  // names like Windermere) is left alone deliberately — never touched by
-  // either this list or the toggle below, so it keeps the base style's own
-  // default visibility regardless of the label toggle's state.
+  // Stadia style's water_name source-layer. water_name_ocean (point,
+  // class=ocean) is major named oceans (Atlantic, Pacific, ...) — genuinely
+  // toggled by layer id below. water_name_line (LineString, no class filter)
+  // is the same kind of name in line-geometry form.
+  //
+  // CORRECTED 2026-08-12 (previous note here was wrong): water_name_nonocean
+  // is NOT just lake names — its filter is only `class != 'ocean'`, and
+  // checked live against the real Stadia tiles (this environment has no key
+  // to do that locally, done against the production site instead): that
+  // catch-all also carries a THIRD class, "sea" — North Sea, Irish Sea,
+  // Kattegat, Norwegian Sea, "Inner Seas off the West Coast of Scotland" all
+  // came back class=sea, all inside water_name_nonocean, none inside
+  // water_name_ocean. Real lakes (Loch Lomond, Loch Awe, ...) are class=lake
+  // in the same layer — plus two coastal features (Solway Firth, Morecambe
+  // Bay) that this schema also files under class=lake despite the name,
+  // left alone since they're not what was reported broken. So one style-
+  // provided layer holds two populations this toggle needs to treat
+  // differently: sea names (toggle with labels, per the bug below) and lake
+  // names (stay always visible, deliberately never part of this toggle).
+  // setLayoutProperty('visibility',...) can't split a single layer that way
+  // — see applyNonoceanSeaLabelVisibility() below for the setFilter()-based
+  // fix, verified live against production (Norwegian Sea/North Sea/Irish
+  // Sea/Kattegat hide, Loch Lomond/Loch Awe/Loch Long/Loch Striven stay).
+  //
   // KNOWN LIMITATION (not solved here): non-UK place labels (country/city names
   // outside GB) are not filtered out — the style's place_country/place_city/etc
-  // layers carry no iso_a2 (or similar) property to filter on, and this could
-  // not be confirmed against the live vector tiles (no Stadia API key or
-  // browser available in this environment to inspect actual tile data). This
-  // is now independent of the railway layer itself (which IS real GB-only
-  // data, per Task 3) — it's specifically about Stadia's own basemap labels.
+  // layers carry no iso_a2 (or similar) property to filter on. This is
+  // independent of the railway layer itself (which IS real GB-only data, per
+  // Task 3) — it's specifically about Stadia's own basemap labels.
   //
-  // BUG FIX (2026-08-12): these two layers used to be unconditionally forced
-  // to visibility:'none' every time addMapLayers() ran (a standalone
-  // hideOceanLabels(), permanently hiding them regardless of the "Show map
-  // labels" toggle's state — reported as "sea/ocean names don't hide/show
-  // with place names, they just never show at all"). Folded into
+  // BUG FIX (2026-08-12, first pass): water_name_ocean/water_name_line used
+  // to be unconditionally forced to visibility:'none' every time
+  // addMapLayers() ran (a standalone hideOceanLabels(), permanently hiding
+  // them regardless of the "Show map labels" toggle's state). Folded into
   // applyBaseLabelVisibility() below instead, by LAYER ID rather than
-  // source-layer (both water_name_ocean and water_name_line share their
-  // source-layer with water_name_nonocean, which must stay untouched — see
-  // above), so ocean labels now track baseLabelsVisible exactly like place
-  // and road labels do.
+  // source-layer (both share their source-layer with water_name_nonocean,
+  // which needs different handling — see above), so these two now track
+  // baseLabelsVisible exactly like place and road labels do. This alone
+  // turned out NOT to fix the reported bug, because the sea names the report
+  // named (North Sea, Irish Sea, English Channel) don't live in these two
+  // layers at all — see the water_name_nonocean fix directly below.
   var OCEAN_LABEL_LAYERS = ['water_name_ocean', 'water_name_line'];
+
+  // water_name_nonocean's own filter, captured live (not hardcoded) the
+  // first time it's needed, so it's always Stadia's actual shipped filter to
+  // restore exactly — same "don't hardcode something that could drift"
+  // reasoning as BASE_LABEL_SOURCE_LAYERS below. null until first captured.
+  var nonoceanOriginalFilter = null;
+  var NONOCEAN_LABEL_LAYER = 'water_name_nonocean';
+  // Rewrites water_name_nonocean's filter to also exclude class='sea' when
+  // labels should be hidden, restoring the original (unmodified) filter
+  // otherwise — leaves class='lake' (and the two lake-classed coastal
+  // features noted above) untouched and always visible either way. Modern
+  // expression syntax throughout (['geometry-type'] / ['get','class'], not
+  // legacy $type/!in) — confirmed live that MIXING legacy filter arrays
+  // inside a new ['all', ...] combinator silently no-ops (setFilter()
+  // accepted it without error, but queryRenderedFeatures showed the sea
+  // features were still there) — this is why the ORIGINAL filter is
+  // rebuilt in modern syntax here rather than reused verbatim inside a
+  // wrapping combinator.
+  function applyNonoceanSeaLabelVisibility() {
+    if (!map.getLayer(NONOCEAN_LABEL_LAYER)) return;
+    if (nonoceanOriginalFilter === null) {
+      nonoceanOriginalFilter = map.getFilter(NONOCEAN_LABEL_LAYER) ||
+        ['all', ['==', ['geometry-type'], 'Point'], ['!=', ['get', 'class'], 'ocean']];
+    }
+    var filter = baseLabelsVisible
+      ? nonoceanOriginalFilter
+      : ['all', ['==', ['geometry-type'], 'Point'], ['!=', ['get', 'class'], 'ocean'], ['!=', ['get', 'class'], 'sea']];
+    try { map.setFilter(NONOCEAN_LABEL_LAYER, filter); } catch (e) {}
+  }
 
   // ── "Show map labels" toggle (2026-07-27) ─────────────────────────────────
   // Hides the BASE STYLE's place labels (countries, states, cities, towns,
@@ -3174,9 +3218,10 @@
   // aerodrome_label — POIs and airports are not what was asked for.
   //
   // OCEAN LABELS TARGETED BY LAYER ID instead (OCEAN_LABEL_LAYERS, defined
-  // above) — they don't share a source-layer with place/transportation_name,
-  // and matching by their own source-layer ('water_name') would also sweep in
-  // water_name_nonocean (lake names), which is explicitly out of scope here.
+  // above) — they don't share a source-layer with place/transportation_name.
+  // water_name_nonocean's sea-vs-lake split needs its own function (see
+  // applyNonoceanSeaLabelVisibility() above) since it's one layer covering
+  // both, not a plain visibility toggle.
   var BASE_LABEL_SOURCE_LAYERS = ['place', 'transportation_name'];
   var baseLabelsVisible = true;
   function applyBaseLabelVisibility() {
@@ -3194,6 +3239,7 @@
         try { map.setLayoutProperty(id, 'visibility', baseLabelsVisible ? 'visible' : 'none'); } catch (e) {}
       }
     });
+    applyNonoceanSeaLabelVisibility();
     var btn = document.getElementById('labels-btn');
     if (btn) {
       btn.setAttribute('aria-pressed', String(baseLabelsVisible));
