@@ -1063,14 +1063,20 @@
   .sb-attrib-lic { color: var(--ink); }
   .sb-attrib-tag { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink); }
 
-  /* Mobile-only alternate trigger (2026-08-07) — swaps the text+chevron for
-     a single "i" icon; the button's CLICK behaviour branches in JS (see
-     wireAttributionBar()) rather than here, opening #attrib-sheet instead of
-     the inline expand this button still does on desktop. */
-  .sb-attrib-info-icon { display: none; }
+  /* Universal "i" icon trigger (2026-08-07, extended to desktop/tablet
+     2026-08-12) — swaps the text+chevron for a single "i" icon at every
+     width, not just mobile. The button's CLICK behaviour still branches in
+     JS on window.innerWidth (see wireAttributionBar()), completely
+     independently of this display swap: narrow/portrait widths open
+     #attrib-sheet (full-height takeover — there's no room for an inline
+     expand without covering the content), desktop and horizontal tablet
+     keep the inline expand below the bar, sized to content (max-height:
+     40vh, scrollable) rather than the full sidebar height — that content-
+     sized behaviour was already correct pre-2026-08-12, only the trigger's
+     appearance changes here, not its behaviour or the bar's own layout. */
+  .sb-attrib-summary, .sb-attrib-chev { display: none; }
+  .sb-attrib-info-icon { display: block; font-size: 15px; }
   @media (max-width: 768px) {
-    .sb-attrib-summary, .sb-attrib-chev { display: none; }
-    .sb-attrib-info-icon { display: block; font-size: 15px; }
     /* Moved from centred-in-a-full-width-bar to floating over the bottom-
        right corner of the sheet's CONTENT area (2026-08-07) — same element,
        same id, same click handler, only position changes (the overlay it
@@ -1084,7 +1090,9 @@
        it, unlike the mode-capsule tabs above which float directly over the
        map. The peek-state hide rule (#sidebar[data-sheet-state="peek"]
        #sb-attribution) still applies unchanged; display:none wins regardless
-       of position. */
+       of position. Desktop/tablet deliberately keeps the full-width bar
+       (border-top, part of the sidebar's flex column) — only mobile floats
+       the icon over the content this way. */
     #sb-attribution { position: absolute; right: 4px; bottom: 4px; left: auto; top: auto;
       width: auto; border-top: none; background: transparent; z-index: 5; }
     #sb-attribution::before { content: none; } /* no longer a bar sitting below scrolling content — nothing to fade under */
