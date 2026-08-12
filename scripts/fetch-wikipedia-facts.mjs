@@ -190,8 +190,45 @@ function loadStationsRolloutJob() {
   });
 }
 
+// Non-CRS stations (Underground/DLR/tram/metro — 632 of them, keyed by ATCO
+// code in station-list.json, not CRS) — 2026-08 pass. Mirrors
+// loadStationsRolloutJob()'s "needs it" filtering in SPIRIT, but is kept as
+// its own function rather than folded into that one: it reads a different
+// source list (station-list.json's non-CRS rows, not the CRS-only Wikipedia
+// coverage report, which has no concept of these), and "already processed"
+// only needs to check `_wikipedia.fetched_at` (not fullPassAttempted/
+// incremental-fields state) because managed_by/location are permanently out
+// of scope for this kind — see isNonCrsStation in processEntry() — so
+// there's never anything incremental left to re-request.
+// PRECONDITION: each ATCO key must already exist in stations-content.json
+// with at least {name, mode} before this runs — see the 2026-08-12 one-off
+// seed step (not part of this script; a plain station-list.json -> new-keys
+// merge, run once). A row with no matching seeded entry is silently
+// excluded rather than processed under a bad name (the bare ATCO code is not
+// a station name) — re-run the seed step if the count looks short.
+function loadNonCrsStationsJob() {
+  const stationList = JSON.parse(readFileSync(path.join(ROOT, 'station-list.json'), 'utf8'));
+  const stationsContent = JSON.parse(readFileSync(FILES.stations, 'utf8'));
+  return stationList
+    .filter((s) => !s.crs && s.mode !== 'heritage') // heritage railways are non-CRS too but are a separate content family (fetch-heritage-wikidata.mjs), not this pass's concern
+    .map((s) => s.atco)
+    .filter((atco) => {
+      const existing = stationsContent[atco];
+      if (!existing || !existing.name) return false;
+      return !(existing._wikipedia && existing._wikipedia.fetched_at);
+    });
+}
+
+// ONLY_NON_CRS_STATIONS=1 (2026-08 pass): restricts JOBS.stations to just
+// the non-CRS batch, bypassing loadStationsRolloutJob() (the CRS-only
+// rollout) entirely for this run — a stronger guarantee than "the CRS job
+// list happens to already be empty/idempotent": with this set, the CRS
+// pipeline is not touched or iterated at all. Default (unset) behaviour is
+// byte-identical to before this pass — CRS rollout only.
+const ONLY_NON_CRS_STATIONS = !!process.env.ONLY_NON_CRS_STATIONS;
+
 const JOBS = {
-  stations: loadStationsRolloutJob(),
+  stations: ONLY_NON_CRS_STATIONS ? loadNonCrsStationsJob() : loadStationsRolloutJob(),
   routes: [],
   // Empty by default — see git history for the 2026-07-19 one-off runs this
   // scoped: GW/AW (wikipedia_title pointing at a wrong/broader entity's
@@ -252,6 +289,11 @@ function normalizeTitle(s) {
     .toLowerCase()
     .replace(/\(.*?\)/g, '')
     .replace(/\brail(?:way)? station\b/g, '')
+    // Non-CRS transit suffixes (2026-08) — safe no-op for CRS titles, which
+    // never contain these substrings. Needed so e.g. "St Paul's tram stop"
+    // normalizes the same as its station-list.json name "St Paul's" for the
+    // full-text-search exact-match check in resolveWikipediaTitle() below.
+    .replace(/\b(tube station|dlr station|metro station|subway station|tram stop|tram station|underground station)\b/g, '')
     .replace(/[^a-z0-9]+/g, ' ')
     .trim();
 }
@@ -268,6 +310,40 @@ const TITLE_CANDIDATE_PATTERNS = {
   operators: (name) => [name, `${name} (train operating company)`],
 };
 
+// Non-CRS stations (Underground/DLR/tram/metro, 2026-08 pass) — Wikipedia's
+// naming convention for these isn't "X railway station" at all: Underground
+// articles are "X tube station", DLR "X DLR station", trams/metro/subway
+// vary by suffix. A 40-station scoping sample found the STATIONS pattern
+// above (railway station / station / bare name) doesn't just miss for these
+// — it confidently resolves to a WRONG real article for a meaningful share
+// of stops: a same-named unrelated historic National Rail station
+// (Addiscombe, Haymarket, Bridge Street, Albert Street all have a real
+// "X railway station" article that is NOT the tram/metro stop), a same-named
+// unrelated place/landmark (Abraham Moss the community centre, Anchorsholme
+// the suburb), or the parent network/line article itself (Digbeth High
+// Street -> "West Midlands Metro"). So non-CRS stations get their OWN
+// candidate set — mode-specific suffix ONLY, no generic "railway
+// station"/bare-name fallback — and the full-text-search fallback below
+// additionally requires the hit's title to end in one of these suffixes
+// before trusting it, even on an exact normalized-name match: a same-named
+// unrelated article passes that name check too, which is exactly how the
+// false positives above happened.
+const NON_CRS_MODE_SUFFIXES = {
+  underground: ['tube station', 'Underground station'],
+  dlr: ['DLR station'],
+  metro: ['Metro station'],
+  subway: ['subway station'],
+  tram: ['tram stop', 'tram station'],
+};
+const ALL_TRANSIT_SUFFIXES = [].concat(...Object.values(NON_CRS_MODE_SUFFIXES));
+function looksLikeTransitStopTitle(title) {
+  return ALL_TRANSIT_SUFFIXES.some((suffix) => title.endsWith(suffix));
+}
+function nonCrsCandidates(name, mode) {
+  const suffixes = NON_CRS_MODE_SUFFIXES[mode] || ALL_TRANSIT_SUFFIXES;
+  return suffixes.map((suffix) => `${name} ${suffix}`);
+}
+
 // Two-pass resolution, cheapest/most-reliable first:
 //  1. Direct page lookup per candidate title — Wikipedia's own redirect
 //     handling (fetchWikipediaText already sets redirects=1) means this
@@ -281,14 +357,27 @@ const TITLE_CANDIDATE_PATTERNS = {
 //     (a different-but-similar station, a disambiguation page, etc.) is a
 //     genuine ambiguity, not a confident resolution, so it's flagged for
 //     manual review instead of guessed at.
-async function resolveWikipediaTitle(kind, name) {
-  const candidates = TITLE_CANDIDATE_PATTERNS[kind](name);
+async function resolveWikipediaTitle(kind, name, mode) {
+  const isNonCrsStation = kind === 'stations' && !!mode;
+  const candidates = isNonCrsStation ? nonCrsCandidates(name, mode) : TITLE_CANDIDATE_PATTERNS[kind](name);
   const normalizedName = normalizeTitle(name);
 
   for (const candidate of candidates) {
     const page = await fetchWikipediaText(candidate);
     await sleep(300);
-    if (page && !page.isDisambiguation) return { title: page.title, method: `direct:"${candidate}"` };
+    if (!page || page.isDisambiguation) continue;
+    // Bug found live 2026-08-12: fetchWikipediaText follows redirects
+    // (redirects=1), and a mode-suffixed candidate like "Bispham tram stop"
+    // can itself be a REAL REDIRECT to an aggregate page ("List of Blackpool
+    // Tramway tram stops") rather than a missing page — so it passes the
+    // isDisambiguation check and was being accepted as if it were a
+    // dedicated article, then Claude extracted plausible-looking but
+    // unverifiable per-stop facts out of the list article. Same guard as the
+    // search-fallback below (looksLikeTransitStopTitle), applied here too —
+    // a redirect TARGET that doesn't itself look like a transit-stop title
+    // is a miss, not a resolution; try the next candidate instead.
+    if (isNonCrsStation && !looksLikeTransitStopTitle(page.title)) continue;
+    return { title: page.title, method: `direct:"${candidate}"` };
   }
 
   const searchUrl = `${WIKI_API}?action=query&list=search&srsearch=${encodeURIComponent(candidates[0])}&format=json&srlimit=5`;
@@ -299,7 +388,15 @@ async function resolveWikipediaTitle(kind, name) {
   if (!results.length) {
     return { ambiguous: true, notes: `No Wikipedia page found for "${name}" — tried: ${candidates.join(', ')}` };
   }
-  const strongMatch = results.find((r) => normalizeTitle(r.title) === normalizedName);
+  const strongMatch = results.find((r) => {
+    if (normalizeTitle(r.title) !== normalizedName) return false;
+    // Non-CRS only: reject a same-named unrelated article even on an exact
+    // name match — see this file's NON_CRS_MODE_SUFFIXES note for why an
+    // exact name match alone isn't good enough here (Anchorsholme the
+    // suburb vs. the never-written "Anchorsholme tram stop").
+    if (isNonCrsStation && !looksLikeTransitStopTitle(r.title)) return false;
+    return true;
+  });
   if (strongMatch) {
     const page = await fetchWikipediaText(strongMatch.title);
     if (page && !page.isDisambiguation) return { title: page.title, method: 'search-exact' };
@@ -440,7 +537,7 @@ async function processEntry(kind, key, content, report) {
   let resolvedTitle = null; // only set when THIS run auto-resolved it, for the report/log line below
 
   if (!title) {
-    const resolution = await resolveWikipediaTitle(kind, (entry && entry.name) || key);
+    const resolution = await resolveWikipediaTitle(kind, (entry && entry.name) || key, entry && entry.mode);
     if (resolution.ambiguous) {
       console.log(`  ${key}: no wikipedia_title set, and couldn't confidently resolve one — ${resolution.notes}`);
       report.push({ key, status: 'needs-review', notes: resolution.notes });
@@ -483,7 +580,15 @@ async function processEntry(kind, key, content, report) {
   // on EVERY pass, not just the second one — a first-time pass still asks
   // for the core fields (headline/opened_year/notable_features) as before,
   // just never re-asks for an incremental field this station already has.
-  const missingIncremental = stationMissingIncrementalFields(entry || {}); // STATION_INCREMENTAL_FIELDS keys genuinely still needed — NOT already present, NOT already attempted
+  // Non-CRS stations (2026-08): managed_by/location are OUT OF SCOPE for
+  // this pass (they're OSM-node/geocoding-sourced for CRS stations — see
+  // fetch-station-addresses.mjs/fetch-osm-facts.mjs, neither extended to
+  // ATCO keys) — forced to [] rather than run through
+  // stationMissingIncrementalFields(), which would otherwise flag both as
+  // "still needed" on every future run forever, since they can never be
+  // satisfied. Zero effect on CRS entries, which never carry `.mode`.
+  const isNonCrsStation = kind === 'stations' && !!(entry && entry.mode);
+  const missingIncremental = isNonCrsStation ? [] : stationMissingIncrementalFields(entry || {}); // STATION_INCREMENTAL_FIELDS keys genuinely still needed — NOT already present, NOT already attempted
   let requestedIncrementalFields = kind === 'stations' ? missingIncremental : [];
   let fieldsOverride;
   if (kind === 'stations' && entry && entry.notable_features && entry.notable_features.length) {

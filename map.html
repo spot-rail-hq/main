@@ -5855,14 +5855,42 @@
   //                           lat/lon Google Map link, not a Place ID — closed
   //                           stations have no Place ID and the panel should
   //                           not switch link styles depending on the station)
-  // Network / Mode / coordinates only. CRS, platforms and managed-by are OMITTED
-  // rather than printed as "Not available" three times over — none of them can
-  // ever be populated for a station that has no CRS to key stations-content.json
-  // by, so a placeholder would advertise a permanent gap as a temporary one.
+  // CRS, platforms and managed-by are OMITTED rather than printed as "Not
+  // available" three times over — none of them can ever be populated for a
+  // station that has no CRS to key stations-content.json by (managed_by is
+  // also just out of scope for this pass — see the 2026-08 non-CRS pass
+  // notes), so a placeholder would advertise a permanent gap as a temporary
+  // one. Location is the same story, so it's never rendered here either.
+  //
+  // 2026-08 non-CRS content pass: stationsContent is now ALSO keyed by ATCO
+  // code for these 632 stations (headline/notable_features/photo/
+  // wikipedia_title/_google.placeId — see stations-content.json's own
+  // notes) — every row has a seeded {name, mode} entry at minimum, so `s` is
+  // never itself falsy here, unlike the CRS path's `if (!s) return
+  // dbComingSoonHtml(...)`. hasContent gates between the two visual states:
+  // a station with real enrichment gets the same headline/photo/notable-
+  // features/links treatment as a CRS station (same helpers, same order —
+  // dbHeadlineHtml/dbPhotoBlockHtml/notableFeaturesHtml/dbBottomLinksHtml
+  // are all shared, unmodified); one with none (Wikipedia coverage sweep
+  // found real per-stop articles for ~72% of these 632 — the rest is
+  // genuine source-material absence, not a bug, see project notes) falls
+  // back to exactly the original bare Network/Mode/Coordinates-only fields,
+  // unchanged — never a photo placeholder or empty sections for a station
+  // that has nothing to show.
   function nonCrsDatabaseHtml(row) {
-    return dbFieldHtml('Network', escapeAttr(row.network)) +
+    var s = stationsContent[row.atco] || {};
+    var baseFields = dbFieldHtml('Network', escapeAttr(row.network)) +
       dbFieldHtml('Mode', escapeAttr(MODE_LABELS[row.mode] || row.mode)) +
       dbFieldHtml('Coordinates', escapeAttr(row.lat.toFixed(5) + ', ' + row.lon.toFixed(5)));
+    var hasContent = !!(s.headline || s.photo || s.wikipedia_title || (s._google && s._google.placeId));
+    if (!hasContent) return baseFields;
+    var html = dbHeadlineHtml(s.headline);
+    html += dbPhotoBlockHtml(s.photo, s.name || row.name);
+    html += baseFields;
+    html += dbFieldHtml('Year opened', s.opened_year);
+    html += notableFeaturesHtml(s.notable_features);
+    html += dbBottomLinksHtml(s, [row.lon, row.lat]);
+    return html;
   }
   function stationDatabaseSkeletonHtml(opts) {
     opts = opts || {};

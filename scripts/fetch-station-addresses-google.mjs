@@ -163,7 +163,14 @@ async function main() {
   const limit = parseLimitArg();
   const content = loadJson(STATIONS_PATH);
   const stations = loadJson(STATION_LIST_PATH);
-  const byCrs = new Map(stations.map((s) => [s.crs, s]));
+  // s.crs || s.atco (2026-08-12): same fix as fetch-station-place-ids.mjs —
+  // non-CRS stations have s.crs === null, which previously collapsed them
+  // all onto one Map entry. No-op for CRS stations (s.crs always truthy).
+  // location/address for non-CRS stations is deliberately out of scope for
+  // the 2026-08 non-CRS content pass (see stations-content.json's _notes) —
+  // this fix just keeps both join sites consistent; it is not, by itself, a
+  // decision to run this script against ATCO keys.
+  const byCrs = new Map(stations.map((s) => [s.crs || s.atco, s]));
   let keys = Object.keys(content).filter((k) => k !== '_notes' && !hasPostcode(content[k].location));
   const totalEligible = keys.length;
   if (limit) keys = keys.slice(0, limit);

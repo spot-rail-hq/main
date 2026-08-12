@@ -150,7 +150,14 @@ async function main() {
   }
   const content = loadJson(STATIONS_PATH);
   const stations = loadJson(STATION_LIST_PATH);
-  const byCrs = new Map(stations.map((s) => [s.crs, s]));
+  // s.crs || s.atco (2026-08-12): non-CRS stations (tram/Underground/DLR/
+  // metro, 632 of them) have s.crs === null, which previously collapsed all
+  // of them onto a single Map entry keyed by the literal value null — every
+  // lookup for one of their ATCO-keyed stations-content.json entries missed,
+  // read as "no coordinates in station-list.json" and skipped. No-op for
+  // CRS stations: s.crs is always truthy for them, so the fallback never
+  // fires and the join key is unchanged.
+  const byCrs = new Map(stations.map((s) => [s.crs || s.atco, s]));
   const keys = Object.keys(content).filter((k) => k !== '_notes');
   const report = [];
   console.log(`Fetching Google Place IDs for ${keys.length} stations...`);

@@ -109,7 +109,15 @@ function extractExternalHref(html) {
 // ".../commons/thumb/9/91/Coventry_railway_station_(new)_2022-10-12.jpg/330px-...jpg"
 // -> "Coventry_railway_station_(new)_2022-10-12.jpg"
 function extractCommonsFilename(url) {
-  const m = url.match(/\/commons\/(?:thumb\/)?[0-9a-f]\/[0-9a-f]{2}\/([^/]+?)(?:\/\d+px-[^/]+)?$/);
+  // 2026-08-12: strip a trailing query string before matching — Wikipedia's
+  // REST summary API now appends UTM tracking params to originalimage/
+  // thumbnail URLs (?utm_source=en.wikipedia.org&utm_campaign=api&...), which
+  // the old regex's trailing $ anchor swallowed into the captured "filename"
+  // (e.g. "Ambergate_railway_station.jpg?utm_source=..."), breaking every
+  // Commons imageinfo lookup for it. Confirmed general (affects CRS entries
+  // too — AMB/DGC/NTL/SWL), not specific to any one batch; a no-op split for
+  // any URL that has no query string, so nothing already-working changes.
+  const m = url.split('?')[0].match(/\/commons\/(?:thumb\/)?[0-9a-f]\/[0-9a-f]{2}\/([^/]+?)(?:\/\d+px-[^/]+)?$/);
   return m ? decodeURIComponent(m[1]) : null;
 }
 
