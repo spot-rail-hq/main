@@ -1063,41 +1063,36 @@
   .sb-attrib-lic { color: var(--ink); }
   .sb-attrib-tag { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink); }
 
-  /* Universal "i" icon trigger (2026-08-07, extended to desktop/tablet
-     2026-08-12) — swaps the text+chevron for a single "i" icon at every
-     width, not just mobile. The button's CLICK behaviour still branches in
-     JS on window.innerWidth (see wireAttributionBar()), completely
-     independently of this display swap: narrow/portrait widths open
-     #attrib-sheet (full-height takeover — there's no room for an inline
-     expand without covering the content), desktop and horizontal tablet
-     keep the inline expand below the bar, sized to content (max-height:
-     40vh, scrollable) rather than the full sidebar height — that content-
-     sized behaviour was already correct pre-2026-08-12, only the trigger's
-     appearance changes here, not its behaviour or the bar's own layout. */
+  /* Universal "i" icon trigger, floating bottom-right corner (2026-08-07
+     mobile-only; extended to desktop/tablet 2026-08-12, then made the
+     floating-corner PLACEMENT itself universal too, same day, per direct
+     request — was still a full-width bordered bar with the icon at its
+     left edge on desktop until then). The button's CLICK behaviour still
+     branches in JS on window.innerWidth (see wireAttributionBar()),
+     completely independently of this display/position: narrow/portrait
+     widths open #attrib-sheet (full-height takeover — there's no room for
+     an inline expand without covering the content), desktop and horizontal
+     tablet keep the inline expand, anchored under the icon, sized to
+     content (max-height: 40vh, scrollable) rather than the full sidebar
+     height.
+     position:absolute pulls #sb-attribution out of #sidebar's flex column
+     entirely, so #sb-body's flex:1 reclaims the vertical space the bar used
+     to reserve, and the icon sits pinned over the content area's bottom-
+     right corner instead of spanning the sidebar's full width. #sidebar
+     (already position:absolute) is the containing block. right/bottom are
+     deliberately the SAME value (4px) — equal distance to both edges, per
+     direct request. No background/border of its own needed — #sidebar
+     already has a solid var(--sf) surface behind it, unlike the mode-
+     capsule tabs above which float directly over the map. The peek-state
+     hide rule (#sidebar[data-sheet-state="peek"] #sb-attribution, mobile-
+     only) still applies unchanged; display:none wins regardless of
+     position. */
   .sb-attrib-summary, .sb-attrib-chev { display: none; }
   .sb-attrib-info-icon { display: block; font-size: 15px; }
-  @media (max-width: 768px) {
-    /* Moved from centred-in-a-full-width-bar to floating over the bottom-
-       right corner of the sheet's CONTENT area (2026-08-07) — same element,
-       same id, same click handler, only position changes (the overlay it
-       opens is untouched, see #attrib-sheet). position:absolute pulls
-       #sb-attribution out of #sidebar's flex column entirely, so #sb-body's
-       flex:1 reclaims the vertical space the bar used to reserve, and this
-       icon sits pinned over what is now the content area's own bottom-right
-       corner instead of spanning the sheet's full width. #sidebar (already
-       position:absolute) is the containing block. No background/border of
-       its own needed — #sidebar already has a solid var(--sf) surface behind
-       it, unlike the mode-capsule tabs above which float directly over the
-       map. The peek-state hide rule (#sidebar[data-sheet-state="peek"]
-       #sb-attribution) still applies unchanged; display:none wins regardless
-       of position. Desktop/tablet deliberately keeps the full-width bar
-       (border-top, part of the sidebar's flex column) — only mobile floats
-       the icon over the content this way. */
-    #sb-attribution { position: absolute; right: 4px; bottom: 4px; left: auto; top: auto;
-      width: auto; border-top: none; background: transparent; z-index: 5; }
-    #sb-attribution::before { content: none; } /* no longer a bar sitting below scrolling content — nothing to fade under */
-    .sb-attrib-toggle { width: auto; padding: 10px; justify-content: center; }
-  }
+  #sb-attribution { position: absolute; right: 4px; bottom: 4px; left: auto; top: auto;
+    width: auto; border-top: none; background: transparent; z-index: 5; }
+  #sb-attribution::before { content: none; } /* no longer a bar sitting below scrolling content — nothing to fade under */
+  .sb-attrib-toggle { width: auto; padding: 10px; justify-content: center; }
 
   /* ── Attribution full-sheet (tablet/mobile only) ──────────────────────────
      Simple full-screen takeover — NOT the draggable sheet, no shared code
@@ -1916,14 +1911,41 @@
     return STATION_STUB;
   }
   // Simple substring match, starts-with results ranked first — no fuzzy
-  // matching, per instruction.
+  // matching, per instruction. Extended 2026-08-12 to also match by CRS
+  // station code (station-list.json's `crs` field — a 3-letter uppercase
+  // string on National Rail stations, `null` on the 815 non-CRS ones
+  // (Underground/DLR/tram/metro/heritage), confirmed both consistent with
+  // no garbage values before this was written). Matching is EXACT/PREFIX
+  // against `crs` only (case-insensitive) — never substring-within-code —
+  // both because the task only asked for exact/prefix and because codes are
+  // always exactly 3 characters, so a query longer than 3 chars can never
+  // prefix-match one anyway; nothing extra needed to bound this.
+  //
+  // KNOWN AMBIGUITY, reported rather than silently resolved: checked
+  // whether any 3-letter CRS code also substring-matches a DIFFERENT
+  // station's name via the existing name search above — 972 of 2,628 codes
+  // do (e.g. "ADD" is Adderley Park's code, and also a substring of
+  // "Paddington", "Addiscombe", "Waddon Marsh" and 12 others). This is not
+  // a rare edge case, it's the norm — 3-letter substrings are common across
+  // ~3,400 station names. Resolved by RANKING, not by suppressing either
+  // path: an exact/prefix CODE match is a strictly stronger, more specific
+  // signal than an incidental name substring, so it's ranked in its own tier
+  // ahead of every name-match tier below. A user who types a real code
+  // always gets that station first; any unrelated name hits the same query
+  // happens to substring-match still appear, just lower in the list, not
+  // mislabeled as if they were a code match.
   function searchStations(query, limit) {
     query = (query || '').trim().toLowerCase();
     if (!query) return [];
     var matches = getStationList().filter(function (s) {
-      return s.name && s.name.toLowerCase().indexOf(query) !== -1;
+      var nameHit = s.name && s.name.toLowerCase().indexOf(query) !== -1;
+      var codeHit = s.crs && s.crs.toLowerCase().indexOf(query) === 0;
+      return nameHit || codeHit;
     });
     matches.sort(function (a, b) {
+      var aCode = a.crs && a.crs.toLowerCase().indexOf(query) === 0 ? 0 : 1;
+      var bCode = b.crs && b.crs.toLowerCase().indexOf(query) === 0 ? 0 : 1;
+      if (aCode !== bCode) return aCode - bCode;
       var aStarts = a.name.toLowerCase().indexOf(query) === 0 ? 0 : 1;
       var bStarts = b.name.toLowerCase().indexOf(query) === 0 ? 0 : 1;
       if (aStarts !== bStarts) return aStarts - bStarts;
@@ -3102,7 +3124,9 @@
   // water_name_line (LineString, no class filter) is very likely also sea/ocean
   // names since this schema's only other water_name class is "lake" and lakes
   // aren't stored as line geometry. water_name_nonocean (class != ocean — lake
-  // names like Windermere) is left alone deliberately.
+  // names like Windermere) is left alone deliberately — never touched by
+  // either this list or the toggle below, so it keeps the base style's own
+  // default visibility regardless of the label toggle's state.
   // KNOWN LIMITATION (not solved here): non-UK place labels (country/city names
   // outside GB) are not filtered out — the style's place_country/place_city/etc
   // layers carry no iso_a2 (or similar) property to filter on, and this could
@@ -3110,26 +3134,30 @@
   // browser available in this environment to inspect actual tile data). This
   // is now independent of the railway layer itself (which IS real GB-only
   // data, per Task 3) — it's specifically about Stadia's own basemap labels.
+  //
+  // BUG FIX (2026-08-12): these two layers used to be unconditionally forced
+  // to visibility:'none' every time addMapLayers() ran (a standalone
+  // hideOceanLabels(), permanently hiding them regardless of the "Show map
+  // labels" toggle's state — reported as "sea/ocean names don't hide/show
+  // with place names, they just never show at all"). Folded into
+  // applyBaseLabelVisibility() below instead, by LAYER ID rather than
+  // source-layer (both water_name_ocean and water_name_line share their
+  // source-layer with water_name_nonocean, which must stay untouched — see
+  // above), so ocean labels now track baseLabelsVisible exactly like place
+  // and road labels do.
   var OCEAN_LABEL_LAYERS = ['water_name_ocean', 'water_name_line'];
-  function hideOceanLabels() {
-    OCEAN_LABEL_LAYERS.forEach(function (id) {
-      if (map.getLayer(id)) {
-        try { map.setLayoutProperty(id, 'visibility', 'none'); } catch (e) {}
-      }
-    });
-  }
 
   // ── "Show map labels" toggle (2026-07-27) ─────────────────────────────────
   // Hides the BASE STYLE's place labels (countries, states, cities, towns,
-  // villages, suburbs) and its road labels and shields, for a clean map focused
-  // on stations and routes. DEFAULT ON — the opposite default to the base-rail
-  // toggle above it, because labels are the normal expectation and their
-  // absence is the deliberate choice.
+  // villages, suburbs), its road labels and shields, and sea/ocean names, for
+  // a clean map focused on stations and routes. DEFAULT ON — the opposite
+  // default to the base-rail toggle above it, because labels are the normal
+  // expectation and their absence is the deliberate choice.
   //
-  // TARGETED BY SOURCE-LAYER, NOT BY LAYER ID. Checked against the live Stadia
-  // style JSON for both themes (alidade_smooth_dark and alidade_smooth, 53
-  // layers each, 24 of them symbol layers): 17 symbol layers draw from the two
-  // source-layers below, identically in both themes —
+  // PLACE/ROAD LABELS TARGETED BY SOURCE-LAYER, NOT BY LAYER ID. Checked
+  // against the live Stadia style JSON for both themes (alidade_smooth_dark
+  // and alidade_smooth, 53 layers each, 24 of them symbol layers): 17 symbol
+  // layers draw from the two source-layers below, identically in both themes —
   //   place                → place-continent, place_country_major,
   //                          place_country_other, place_state, place_capital_gen0,
   //                          place_capital_gen1, place_city_large, place_city,
@@ -3142,9 +3170,13 @@
   // makes this safe: OUR labels (stations-label-*, history-stations-label-*)
   // read from the 'stations' and 'history-vector' sources and can never match,
   // so station names and route tooltips are untouched by design, not by an
-  // exclusion list that could drift. Deliberately NOT included: poi_*,
-  // aerodrome_label, and water_name_* — POIs and airports are not what was
-  // asked for, and the ocean labels are already permanently hidden above.
+  // exclusion list that could drift. Deliberately NOT included: poi_* and
+  // aerodrome_label — POIs and airports are not what was asked for.
+  //
+  // OCEAN LABELS TARGETED BY LAYER ID instead (OCEAN_LABEL_LAYERS, defined
+  // above) — they don't share a source-layer with place/transportation_name,
+  // and matching by their own source-layer ('water_name') would also sweep in
+  // water_name_nonocean (lake names), which is explicitly out of scope here.
   var BASE_LABEL_SOURCE_LAYERS = ['place', 'transportation_name'];
   var baseLabelsVisible = true;
   function applyBaseLabelVisibility() {
@@ -3156,6 +3188,11 @@
       if (l.type !== 'symbol') return;
       if (BASE_LABEL_SOURCE_LAYERS.indexOf(l['source-layer']) === -1) return;
       try { map.setLayoutProperty(l.id, 'visibility', baseLabelsVisible ? 'visible' : 'none'); } catch (e) {}
+    });
+    OCEAN_LABEL_LAYERS.forEach(function (id) {
+      if (map.getLayer(id)) {
+        try { map.setLayoutProperty(id, 'visibility', baseLabelsVisible ? 'visible' : 'none'); } catch (e) {}
+      }
     });
     var btn = document.getElementById('labels-btn');
     if (btn) {
@@ -3897,13 +3934,15 @@
 
   function addMapLayers() {
     greyOutLandcover(currentTheme());
-    hideOceanLabels();
     // MUST be re-applied here, not just on click. map.setStyle() (every theme
-    // toggle) replaces the whole style, and the base label layers come back
-    // from Stadia's JSON with their own default visibility — so without this
-    // line, hidden labels would silently reappear on every theme switch. Same
-    // failure class as the History layers and the ORM overlay, and the reason
-    // this function is the single re-apply point for everything runtime-owned.
+    // toggle) replaces the whole style, and the base label layers (place/road/
+    // ocean alike) come back from Stadia's JSON with their own default
+    // visibility — so without this line, hidden labels would silently
+    // reappear on every theme switch. Same failure class as the History
+    // layers and the ORM overlay, and the reason this function is the single
+    // re-apply point for everything runtime-owned. Ocean labels used to have
+    // their own separate, unconditional hideOceanLabels() call here — folded
+    // into applyBaseLabelVisibility() itself, see that function's comment.
     applyBaseLabelVisibility();
 
     // Guarded with getSource/getLayer checks — belt-and-suspenders alongside
@@ -4689,7 +4728,22 @@
       var labelMinzoom = t.minzoom !== undefined ? t.minzoom : STATION_TIERS[1].minzoom;
       addLayerOnce({
         id: 'stations-label-' + t.id, type: 'symbol', source: 'stations', filter: filter,
-        layout: { 'text-field': ['get', 'name'], 'text-size': 10, 'text-anchor': 'top', 'text-offset': [0, 0.6] },
+        // text-size 10 -> 13 (2026-08-12): was a flat 10 at every zoom, visibly
+        // smaller than the base style's place-name labels (Stadia's
+        // place_town/place_city/etc — zoom-interpolated, e.g. place_town runs
+        // 10.8 at z6 up to 13.0 at z14; place_city runs noticeably larger,
+        // 12.2 up to 18.0). No single value matches every place tier at every
+        // zoom — 13 matches place_town/place_suburb/place_village's own cap
+        // (the tier most individual station towns actually sit at — Pontefract-
+        // scale, not Leeds/place_city_large-scale, which reaches 22 at z14 and
+        // would be a much larger jump). Checked live for collision in a dense
+        // area (central London) and a sparse one before landing on this value
+        // — see project notes; MapLibre's own symbol collision detection
+        // (text-allow-overlap/text-ignore-placement are NOT set here, so it's
+        // active) already hides an overlapping label rather than rendering
+        // garbled overlapping text, so the real risk at this size is fewer
+        // simultaneous labels in the densest clusters, not visual collision.
+        layout: { 'text-field': ['get', 'name'], 'text-size': 13, 'text-anchor': 'top', 'text-offset': [0, 0.6] },
         paint: { 'text-color': c.labelColor, 'text-halo-color': c.labelHalo, 'text-halo-width': 1 },
       }, labelMinzoom);
     });
