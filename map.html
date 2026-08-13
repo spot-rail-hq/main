@@ -1897,6 +1897,39 @@
     return r.json();
   }).then(function (data) {
     stationList = Array.isArray(data) ? data : [];
+    // Strips the "Rail Station"/"Railway Station"/"Metro Station" suffix
+    // that ~2,595 of station-list.json's ~2,637 CRS rows carry in `name`
+    // (e.g. "Doncaster Rail Station") — reusing stripStationNameSuffix()
+    // (declared further down, with the map's own station-label layer, its
+    // original use — forward reference, hoists fine, same pattern already
+    // used elsewhere in this file) rather than a second copy of that regex.
+    // Done ONCE here, mutating each CRS row in place, not per search
+    // keystroke inside getStationList()/searchStations() — this array is
+    // fetched once and read many times.
+    //
+    // WHY HERE, NOT AT EACH DISPLAY SITE. The map's own labels were already
+    // clean (stripStationNameSuffix() was applied when stationsData's
+    // GeoJSON source got built, see tryAddStationsLayer()'s Promise.all
+    // below) — but `stationList` itself, which EVERYTHING ELSE reads
+    // (searchStations(), the sidebar's #sb-selection-title,
+    // getSelectedEntityContext()'s Live-updates entity chip, saved-station
+    // rows added via search rather than a saved-list click), stayed raw.
+    // Reported: the extra length was needlessly triggering the marquee on
+    // the entity chip and selection title. Stripping it here, at the one
+    // place this array is populated, fixes every one of those consumers at
+    // once instead of patching each display site and risking missing one —
+    // matches "keep it consistent, remove it everywhere" rather than
+    // "remove it from these two specific spots".
+    //
+    // Confirmed safe: `name` is used for DISPLAY only everywhere in this
+    // file — every lookup/match (stationIdOf, saved-station identity via
+    // savedIdOf(), route stopping_stations, URL restore) keys on crs/atco/id,
+    // never on the name string. Non-CRS rows are untouched, same as
+    // stripStationNameSuffix()'s existing scoping: they were already cleaned
+    // at the data stage (scripts/fetch-naptan-stops.mjs) with per-network
+    // rules, and this blunter suffix strip would wrongly turn e.g. "Battersea
+    // Power Station" into "Battersea Power" if it ran on them.
+    stationList.forEach(function (s) { if (s.crs) s.name = stripStationNameSuffix(s.name); });
     return stationList;
   }).catch(function (e) {
     console.warn('station-list.json unavailable — autocomplete falls back to loaded map markers/stub', e);
@@ -5064,11 +5097,15 @@
   // Palace Rail Station", "Kintore Railway Station", "Newcastle Airport
   // Metro Station") that /data/stations.geojson's curated names never did
   // ("Birmingham New Street") — confirmed live, 2,599/2,637 entries have
-  // one. Stripped here for the hover-tooltip/marker display only (station-
-  // list.json itself, and search/autocomplete, which read from the same
-  // array, are untouched — a full site-wide name-curation pass is a bigger,
-  // separate job than this marker-tiering one; flagging that gap here
-  // rather than shipping visibly inconsistent hover text between tiers).
+  // one. Originally stripped here for the hover-tooltip/marker display
+  // only, with a flagged gap: station-list.json's own `stationList` array —
+  // which search/autocomplete/the sidebar selection title/the Live-updates
+  // entity chip all read from — stayed raw, so those showed the untrimmed
+  // suffix while the map's own labels didn't. CLOSED 2026-08-17: this same
+  // function is now ALSO called once, up front, on `stationList` itself
+  // (see stationListPromise's `.then()`, where station-list.json is
+  // fetched) — not duplicated there, just reused, so both call sites can
+  // never drift apart on what counts as a suffix to strip.
   // Not perfect on every edge case — e.g. "Minffordd Ffestiniog Railway
   // Station" (a heritage-line interchange) becomes "Minffordd Ffestiniog",
   // not the more minimal "Minffordd", since this is a blunt trailing-suffix
@@ -5738,16 +5775,22 @@
     // it (searchBtn) still works while a selection is showing; see that
     // handler's own comment.
     //
-    // EXCEPTION (2026-08-16): selection.keepSearchOpen, set only by a
-    // History search-driven pick (selectHistoricalStation()'s opts.fromSearch
-    // — see its own comment). Reported: comparing several historical
-    // stations in a row meant re-opening the search panel from scratch after
-    // every single pick, which defeats the point of a multi-period search
-    // feature people are expected to use repeatedly. Every other selection
-    // path (a map click, Live/Database search, saved/route/operator picks)
-    // is untouched — none of them set this flag, so this `if` is a no-op for
-    // them and the panel closes exactly as before.
-    if (!selection.keepSearchOpen) searchPanel.classList.remove('open');
+    // EXCEPTION: searchPanelStaysOpenForNextRender (2026-08-16, widened
+    // 2026-08-17 from a History-only flag to cover every tab/mode). Set by
+    // whichever "picked from search" wrapper is about to call the selector
+    // that leads here — submitStationTabPick()/trySubmitFromTo()/
+    // submitOperatorPick() (Live/Database/History alike), see their own
+    // comments — and consumed (read AND immediately reset) right here, so
+    // only the ONE render that pick causes is affected. Reported first for
+    // History (comparing several historical stations in a row meant
+    // reopening the panel from scratch after every pick) and then again for
+    // Live/Database — same complaint, same fix, no reason to special-case
+    // History once it was clear the annoyance wasn't History-specific.
+    // A plain map click, a saved-list tap, a route/operator chip inside a
+    // detail panel — none of those set the flag, so it's false by default
+    // and the panel closes exactly as before for all of them.
+    if (!searchPanelStaysOpenForNextRender) searchPanel.classList.remove('open');
+    searchPanelStaysOpenForNextRender = false;
     if (window.innerWidth <= 768 && !hadSelectionForSheet && typeof setSheetState === 'function') setSheetState('peek');
     if (type === 'station') {
       selTitleEl.textContent = selectedStationName;
@@ -9380,26 +9423,16 @@
   // guaranteed inside its range regardless of which rule would apply — this
   // option is unreachable from a click in practice, not just unused by it.
   //
-  // `opts.fromSearch` (2026-08-16, opt-in): sets `selection.keepSearchOpen`,
-  // read by renderSelectionChrome() to skip its normal "a real selection
-  // closes the search panel" step (see that function's own comment for why
-  // it exists generally). Reported: picking a historical station from
-  // search closed the whole search panel, same as every other selection
-  // does today — but here that's actively hostile to the actual use case,
-  // which is comparing several stations in a row (that's the whole reason
-  // multi-period search exists). SCOPED TO HISTORY SEARCH ONLY, not a
-  // sitewide behaviour change: Live/Database's existing "selection gets the
-  // sheet to itself" trade-off was never reported as a problem, and a plain
-  // map click (this flag unset) keeps its current close-on-select. A
-  // SEPARATE flag from snapToOpen even though only one caller sets both
-  // together today — they answer different questions (where should the
-  // slider land vs. should the search UI stay reachable) and coupling them
-  // under one name would misdescribe whichever one someone reads it for
-  // next.
+  // Whether the search panel stays open (searchPanelStaysOpenForNextRender)
+  // is handled by the CALLER (selectHistoricalStationFromSearch), not by an
+  // opts flag here — that flag now covers every "picked from search" path
+  // sitewide, not just this one, so it lives with the other wrapper
+  // functions (submitStationTabPick/trySubmitFromTo/submitOperatorPick) that
+  // set it the same way. See searchPanelStaysOpenForNextRender's own comment.
   function selectHistoricalStation(props, coords, opts) {
     opts = opts || {};
     ++selectionSeq;
-    selection = { type: 'histstation', station: props, stationCoords: coords || null, fallbackName: props.name || 'Station', keepSearchOpen: !!opts.fromSearch };
+    selection = { type: 'histstation', station: props, stationCoords: coords || null, fallbackName: props.name || 'Station' };
     // Moving on to a DIFFERENT kind of selection releases the segment lock —
     // the same rule selectStation() follows in the other tabs, where it calls
     // clearOperatorHighlight() for exactly this reason.
@@ -9448,7 +9481,7 @@
   // between the two tabs' "picked from search" moment.
   function selectHistoricalStationFromSearch(entry) {
     if (entry.coords) map.flyTo({ center: entry.coords, zoom: 10, duration: 800 });
-    selectHistoricalStation(entry, entry.coords, { snapToOpen: true, fromSearch: true });
+    selectHistoricalStation(entry, entry.coords, { snapToOpen: true });
   }
 
   // Map interaction inside History mode. Registered once, and every handler
@@ -10744,6 +10777,17 @@
   var operatorFieldWrap = document.getElementById('sb-operator-field-wrap');
   var operatorInput = document.getElementById('sb-operator-input');
   var searchMode = 'station';
+  // Read (and reset) by renderSelectionChrome() — see its own comment for
+  // the full story. Set true here, by each "picked from search" wrapper
+  // below, immediately before it calls the selector that actually triggers
+  // the render; false the rest of the time (a map click, a saved/route/
+  // operator chip elsewhere in a panel, a URL restore) so those keep today's
+  // close-on-select behaviour untouched. `var`, not `let`, matching every
+  // other module-level flag in this file — hoists fine despite
+  // renderSelectionChrome() being defined earlier in the file, since by the
+  // time either function actually RUNS (after a real user action) this line
+  // has long since executed and assigned its initial value.
+  var searchPanelStaysOpenForNextRender = false;
 
   // skipFocus (2026-08-07 bugfix): setSearchMode() used to focus its field
   // UNCONDITIONALLY, which was correct for its original callers (a user
@@ -11078,6 +11122,7 @@
     return mode === 'history' ? searchHistoricalStations(query, limit) : searchStations(query, limit);
   }
   function submitStationTabPick(picked) {
+    searchPanelStaysOpenForNextRender = true; // see its own comment
     if (mode === 'history') { selectHistoricalStationFromSearch(picked); return; }
     submitStationPick(picked);
   }
@@ -11112,7 +11157,7 @@
   function trySubmitFromTo() {
     var f = fromPick || searchNationalRailStations(fromInput.value, 1)[0];
     var t = toPick || searchNationalRailStations(toInput.value, 1)[0];
-    if (f && t) selectFromTo(f, t);
+    if (f && t) { searchPanelStaysOpenForNextRender = true; selectFromTo(f, t); } // see the flag's own comment
   }
   wireAutocomplete(fromInput, document.getElementById('sb-ac-from'), function (picked) {
     fromPick = picked;
@@ -11204,8 +11249,23 @@
     // network extent. Handled BEFORE the mode guard because a heritage pick
     // should work the same from either tab — selectHeritageRailway() switches
     // into Database itself, exactly as the line click path does.
-    if (picked.heritageSlug) { submitHeritagePick(picked.heritageSlug); return; }
+    //
+    // searchPanelStaysOpenForNextRender set right before each call that
+    // actually leads to renderSelectionChrome() (not once at the top of this
+    // function) — the `mode !== 'database'` branch below returns without
+    // selecting anything, and setting it unconditionally first would leak
+    // `true` into whatever unrelated render happens next. KNOWN NARROW GAP,
+    // not chased further: selectHeritageRailway() itself separately skips
+    // its own render when the SAME already-selected railway is re-picked
+    // (see its `alreadySelected` guard) — re-searching and re-picking that
+    // exact railway will still set this flag with nothing to consume it,
+    // leaking `true` onto whatever the next real selection is. Narrow (only
+    // that one repeat-pick shape) and mild (one extra render keeps the panel
+    // open when it should have closed), so left as a known edge case rather
+    // than threading a matching guard through here too.
+    if (picked.heritageSlug) { searchPanelStaysOpenForNextRender = true; submitHeritagePick(picked.heritageSlug); return; }
     if (mode !== 'database') return;
+    searchPanelStaysOpenForNextRender = true;
     selectOperator(picked.code);
     highlightAndFlyToOperator(picked.code, selectionSeq);
   }
