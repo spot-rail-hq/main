@@ -1910,6 +1910,61 @@
     }
     return STATION_STUB;
   }
+
+  // ── Lazy JSON fetch (2026-08-13) ──────────────────────────────────────────
+  // Every fetch above (station-list.json included) is EAGER — a module-level
+  // `var xPromise = fetch(...)` fired unconditionally near page load. This
+  // factory is the first thing in this file that ISN'T: it defers the actual
+  // network request until something calls the function it returns, and
+  // memoizes the PROMISE (not just a "started" boolean) so a second call
+  // made WHILE THE FIRST FETCH IS STILL IN FLIGHT — e.g. entering History
+  // mode and immediately typing a search query — returns that same pending
+  // promise instead of firing a duplicate request or racing it. Once
+  // resolved (or failed — see `fallback`), every later call resolves
+  // immediately from the cached promise.
+  //
+  // Written as a small reusable factory rather than inlined once, on
+  // request: a broader lazy-loading pass across the site is planned
+  // separately, and whatever it defers next should be able to reuse this
+  // exact shape rather than reinventing it. Nothing else in this file has
+  // been converted to it in this pass — only the one new fetch below uses
+  // it, deliberately, per instruction not to touch any existing eager fetch.
+  //
+  // `fallback` on failure (never a rejected promise) matches how every OTHER
+  // JSON fetch in this file already degrades — e.g. station-list.json's own
+  // .catch() above resolves to `[]` rather than throwing, so callers never
+  // need their own try/catch for "the data just isn't there yet/ever".
+  function lazyJsonFetch(url, fallback) {
+    var promise = null;
+    return function () {
+      if (!promise) {
+        promise = fetch(url).then(function (r) {
+          if (!r.ok) throw new Error(url + ' ' + r.status);
+          return r.json();
+        }).catch(function (e) {
+          console.warn(url + ' unavailable', e);
+          return fallback;
+        });
+      }
+      return promise;
+    };
+  }
+
+  // History mode's Station-tab search index — see searchHistoricalStations()
+  // below for what each entry looks like. Triggered from ensureHistoryLayers()
+  // (first entry to History mode), not from page load — see that function.
+  //
+  // wireAutocomplete() calls its searchFn SYNCHRONOUSLY on every keystroke
+  // (same contract searchStations()/getStationList() already have to meet via
+  // `stationList` below) — it has no await/`.then()` handling at all, so a
+  // Promise cannot be the search surface. historicalStationIndex is the
+  // synchronous read side: starts empty, gets populated once the fetch
+  // resolves. A keystroke landing before that resolves just sees no results,
+  // same graceful-empty behaviour `stationList`'s own callers already have
+  // before station-list.json lands.
+  var historicalStationIndex = [];
+  var ensureHistoricalStationIndex = lazyJsonFetch('/data/historical-station-search-index.json', []);
+
   // Simple substring match, starts-with results ranked first — no fuzzy
   // matching, per instruction. Extended 2026-08-12 to also match by CRS
   // station code (station-list.json's `crs` field — a 3-letter uppercase
@@ -1952,6 +2007,59 @@
       return a.name.length - b.name.length;
     });
     return matches.slice(0, limit || 7);
+  }
+
+  // "1846–1960", or "1846–present" for a station whose final period is still
+  // open. historicalPeriodSpan() (declared with selectHistoricalStation()
+  // below — function declarations hoist, so the forward reference is safe)
+  // reads the exact same flattened p1_start/p1_end...p5_end shape this
+  // search index stores, so a result's displayed years and the span that
+  // later drives its slider snap can never disagree.
+  function historicalYearsLabel(entry) {
+    var span = historicalPeriodSpan(entry);
+    if (span.first === undefined) return '';
+    return span.first + '–' + (span.sawOpen ? 'present' : span.last);
+  }
+
+  // History mode's Station-tab search — see historicalStationIndex's own
+  // comment for why this has to read a synchronous array rather than the
+  // fetch promise directly. Matches on `name_lc` (built once, at build time,
+  // in build-historical-search-index.mjs — not recomputed per keystroke),
+  // ranked by MATCH POSITION (a hit at the start of the name ranks first;
+  // "prefix matches first" is just the pos===0 case of this, not a separate
+  // rule), tie-broken by shorter name first — same substring-and-length
+  // shape as searchStations() above, no fuzzy matching, just no CRS-code
+  // tier since this dataset carries no crs in the index.
+  function searchHistoricalStations(query, limit) {
+    query = (query || '').trim().toLowerCase();
+    if (!query) return [];
+    var hits = [];
+    historicalStationIndex.forEach(function (s) {
+      var pos = s.name_lc.indexOf(query);
+      if (pos !== -1) hits.push({ entry: s, pos: pos });
+    });
+    hits.sort(function (a, b) {
+      if (a.pos !== b.pos) return a.pos - b.pos;
+      return a.entry.name.length - b.entry.name.length;
+    });
+    // Each result carries `note` (rendered as the muted second line
+    // wireAutocomplete()'s renderDropdown() already supports generically —
+    // see its own comment) alongside every field the index entry already
+    // has, so the picked object can be handed straight to
+    // selectHistoricalStationFromSearch() with no further lookup.
+    return hits.slice(0, limit || 7).map(function (h) {
+      var s = h.entry;
+      var withNote = {
+        id: s.id, name: s.name, name_lc: s.name_lc, coords: s.coords,
+        note: historicalYearsLabel(s),
+      };
+      for (var i = 1; i <= 5; i++) {
+        if (s['p' + i + '_start'] === undefined) break;
+        withNote['p' + i + '_start'] = s['p' + i + '_start'];
+        if (s['p' + i + '_end'] !== undefined) withNote['p' + i + '_end'] = s['p' + i + '_end'];
+      }
+      return withNote;
+    });
   }
 
   // ── Database content (stations/routes/operators) ──────────────────────────
@@ -8696,8 +8804,27 @@
   // `range` is the MAP-COVERAGE range. `operatedFrom` is optional: the
   // operator's own DATES OF OPERATION start year, used only to stop Rule 2
   // landing on a year the company did not exist in — see below.
-  function applySliderFollow(range, operatedFrom) {
-    if (!range) { activeSpanRange = null; syncSliderInstances(); return; } // RULE 3
+  // `opts.snapTo` (2026-08-13, opt-in, DEFAULT UNCHANGED): every existing
+  // caller (selectHistoricalOperator, selectHistoricalLine, and a plain
+  // selectHistoricalStation map click) depends on RULE 2 landing on the
+  // START of the range, so that stays the default with no third argument at
+  // all — same as before this change, byte-for-byte. History's new station
+  // SEARCH wants the opposite ("snap to the last year it was open"), so it
+  // opts in explicitly:
+  //   - opts.snapTo === 'end'  -> RULE 2 lands on `hi` instead of `spanFrom`.
+  //   - opts.snapTo === 'none' -> RULE 1/activeSpanRange bookkeeping still
+  //     runs, but neither snap fires even when out of range. Needed for a
+  //     currently-open station: there is no "last year it was open" to
+  //     target, and falling back to start-snap would be a DIFFERENT,
+  //     unrequested behaviour (jumping to the station's opening year), not
+  //     "no snap" — see selectHistoricalStation()'s own caller of this.
+  // Returns true iff a snap actually happened (RULE 2 fired), so a caller
+  // can decide whether to show a "slider moved" notice. Existing callers
+  // ignore the return value — a new true/false result on a function that
+  // used to return undefined cannot break anything that never checked it.
+  function applySliderFollow(range, operatedFrom, opts) {
+    opts = opts || {};
+    if (!range) { activeSpanRange = null; syncSliderInstances(); return false; } // RULE 3
     var max = historyMaxYear();
     var lo = range.first_year;
     var hi = range.last_year === null ? max : range.last_year;
@@ -8712,9 +8839,11 @@
     var spanFrom = lo;
     if (typeof operatedFrom === 'number' && operatedFrom > spanFrom && operatedFrom <= hi) spanFrom = operatedFrom;
     activeSpanRange = { first_year: spanFrom, last_year: range.last_year };
-    if (historyYear >= lo && historyYear <= hi) { syncSliderInstances(); return; } // RULE 1
+    if (historyYear >= lo && historyYear <= hi) { syncSliderInstances(); return false; } // RULE 1
+    if (opts.snapTo === 'none') { syncSliderInstances(); return false; } // opt-in no-snap (see header)
 
-    // RULE 2 — land on max(map-coverage start, dates-of-operation start).
+    // RULE 2 — land on max(map-coverage start, dates-of-operation start), OR
+    // (opts.snapTo === 'end') on `hi` instead — see header.
     //
     // Map coverage alone is not enough for a PRE-1923 operator. The coverage
     // figure is clamped to its era band, and the pre1923 band's lower bound is
@@ -8732,8 +8861,10 @@
     //
     // Where dates_of_operation is not populated this falls through to raw map
     // coverage exactly as before — a founding year is never guessed.
-    setHistoryYear(spanFrom, { source: 'follow' }); // same value as the span start, by construction
+    var landOn = (opts.snapTo === 'end') ? hi : spanFrom;
+    setHistoryYear(landOn, { source: 'follow' });
     syncSliderInstances();
+    return true;
   }
 
   // MAP-COVERAGE RANGE for a historical operator, precomputed at build time by
@@ -8961,8 +9092,29 @@
   // Closed-only stations (no crs) keep exactly the layout they had.
   // The mode flag is never touched by any of this: History stays History, and
   // the slider stays on screen and usable.
+  // "Slider moved to 1963 · Tyldesley closed 1963." — set only by
+  // selectHistoricalStation() when opts.snapToEnd actually moved the slider
+  // (Section 4). Reads `selection.snapNotice` directly rather than taking it
+  // as a parameter, same pattern fromToSkeletonHtml() already uses for
+  // selection.fromToPath — every OTHER selection type sets a fresh
+  // `selection` object with no snapNotice key at all, so this can only ever
+  // render for the histstation selection that actually produced it.
+  //
+  // Uses ONE year for both halves ("moved to N" / "closed N") — this data
+  // model has a single end_year per period, not a separate "last year
+  // trains ran" vs. "official closure year" (which can differ by one in
+  // real-world closure records). A worked example given for this feature
+  // used two different years for exactly that reason; flagged rather than
+  // invented a second year this dataset does not have.
+  function historicalSnapNoticeHtml() {
+    var n = selection.snapNotice;
+    if (!n) return '';
+    return '<div class="db-hint hist-snap-notice" data-anim-row>Slider moved to ' + n.toYear + ' · ' +
+      escapeAttr(n.name) + ' closed ' + n.toYear + '.</div>';
+  }
+
   function historicalStationSkeletonHtml(props, coords) {
-    var html = '';
+    var html = historicalSnapNoticeHtml();
     var periods = [];
     try { periods = JSON.parse(props.periods || '[]'); } catch (e) { periods = []; }
     if (!periods.length && props.p1_start !== undefined) {
@@ -9002,12 +9154,43 @@
     });
   }
 
+  // A station/line's span, read from the flattened p1_start/p1_end...p5_end
+  // scalars (`periods` is a JSON STRING in the tiles, not pre-parsed — this
+  // reads the same flattened shape the search index also uses, see
+  // build-historical-search-index.mjs). `first` is the first period's start;
+  // `last` is the LAST period's end IF the station is not currently open;
+  // `sawOpen` is true iff the final period found has no end year at all
+  // (still open today). Extracted 2026-08-13 from selectHistoricalStation()'s
+  // own inline loop — same logic, now also shared by the History search path
+  // below (years label + snap target), so both read a multi-period station's
+  // span identically rather than two copies drifting apart.
+  function historicalPeriodSpan(props) {
+    var first = props.p1_start, last = null, sawOpen = false;
+    for (var i = 1; i <= 5; i++) {
+      if (props['p' + i + '_start'] === undefined) break;
+      if (props['p' + i + '_end'] === undefined) sawOpen = true;
+      else last = props['p' + i + '_end'];
+    }
+    return { first: first, last: last, sawOpen: sawOpen };
+  }
+
   // `coords` is the clicked feature's own [lon, lat] — the historical station
   // properties carry no coordinates of their own, and the panel's Google Map
   // link needs them (see historyStationLinksHtml). Not restored from the URL
   // because histstation is not a serialised selection type; if that ever
   // changes, the link degrades to Wikipedia-only rather than breaking.
-  function selectHistoricalStation(props, coords) {
+  //
+  // `opts.snapToEnd` (2026-08-13, opt-in): used only by the History search
+  // path (selectHistoricalStationFromSearch) to snap the slider to the LAST
+  // year the station was open, instead of applySliderFollow()'s default
+  // start-of-range landing — see that function's own header for why the
+  // default cannot change. A plain map click never passes this: clicking a
+  // marker only ever picks a station the year filter is CURRENTLY showing,
+  // so historyYear is already guaranteed inside its range and RULE 1
+  // (no-op) fires regardless of which snap mode would apply — this option
+  // is unreachable from a click in practice, not just unused by it.
+  function selectHistoricalStation(props, coords, opts) {
+    opts = opts || {};
     ++selectionSeq;
     selection = { type: 'histstation', station: props, stationCoords: coords || null, fallbackName: props.name || 'Station' };
     // Moving on to a DIFFERENT kind of selection releases the segment lock —
@@ -9024,16 +9207,37 @@
     // simply was not passed on. Same call shape as selectStation(), so both
     // tabs drive the one animation rather than History growing its own.
     setSelectedStationPoints(coords ? [{ lon: coords[0], lat: coords[1] }] : []);
-    // A station's span is its first opening to its last closing — read from
-    // the flattened scalars, since `periods` is a JSON string in the tiles.
-    var first = props.p1_start, last = null, sawOpen = false;
-    for (var i = 1; i <= 5; i++) {
-      if (props['p' + i + '_start'] === undefined) break;
-      if (props['p' + i + '_end'] === undefined) sawOpen = true;
-      else last = props['p' + i + '_end'];
-    }
-    applySliderFollow(first !== undefined ? { first_year: first, last_year: sawOpen ? null : last } : null);
+    var span = historicalPeriodSpan(props);
+    var range = span.first !== undefined ? { first_year: span.first, last_year: span.sawOpen ? null : span.last } : null;
+    // A currently-open final period has no "last year it was open" to snap
+    // to — see applySliderFollow()'s 'none' mode. Forcing snapToEnd off here
+    // (rather than letting applySliderFollow fall back to its start-snap
+    // default) is what makes "no snap" actually mean no snap, not "snap
+    // somewhere else instead".
+    var snapMode = opts.snapToEnd ? (span.sawOpen ? 'none' : 'end') : undefined;
+    var didSnap = applySliderFollow(range, undefined, snapMode ? { snapTo: snapMode } : undefined);
+    // Visible notice (Section 4) — only ever set when a search-driven
+    // end-snap actually moved the slider; every other path (a plain click,
+    // or a search pick that needed no snap) clears it, so a stale notice
+    // from a previous selection can never survive onto this one.
+    selection.snapNotice = (snapMode === 'end' && didSnap) ? { toYear: span.last, name: props.name } : null;
     pushHistoryForCurrentState();
+  }
+
+  // Entry point for a History-mode Station-tab search pick (see
+  // searchStationTab() below). `entry` is one of searchHistoricalStations()'s
+  // result objects — already shaped exactly like selectHistoricalStation()'s
+  // own `props` argument (same p1_start/p1_end...p5_end flattened fields, a
+  // `name`), so it's handed straight through as `props` with no lookup or
+  // conversion. `entry.coords` is [lon, lat], same order selectHistoricalStation
+  // itself expects. The only new thing here is the camera move: a map click
+  // never needs one (the user is already looking at whatever they clicked),
+  // but a search pick can jump anywhere on the map, same as submitStationPick()
+  // does for the live Station tab — same zoom/duration, for a consistent feel
+  // between the two tabs' "picked from search" moment.
+  function selectHistoricalStationFromSearch(entry) {
+    if (entry.coords) map.flyTo({ center: entry.coords, zoom: 10, duration: 800 });
+    selectHistoricalStation(entry, entry.coords, { snapToEnd: true });
   }
 
   // Map interaction inside History mode. Registered once, and every handler
@@ -9327,6 +9531,15 @@
       // selections can animate.
       setSelectedStationPoints([]);
       ensureHistoryLayers();
+      // Triggers the fetch (memoized — see lazyJsonFetch, a no-op if already
+      // fetched or in flight) and populates the synchronous read side once it
+      // resolves. Not awaited here — searchHistoricalStations() reads
+      // historicalStationIndex directly (see its own comment for why it has
+      // to be synchronous), so a keystroke landing before this resolves just
+      // sees no results rather than racing or duplicating the request.
+      ensureHistoricalStationIndex().then(function (data) {
+        historicalStationIndex = Array.isArray(data) ? data : [];
+      });
       // Driven off SLIDER_INSTANCES rather than named calls, so removing or
       // re-adding an instance is a one-line change in one place.
       SLIDER_INSTANCES.forEach(renderTicks);
@@ -10642,14 +10855,29 @@
     if (picked.lat != null && picked.lon != null) map.flyTo({ center: [picked.lon, picked.lat], zoom: 10, duration: 800 }); // was 11 — one level out
     selectStation(picked.name, stationIdOf(picked));
   }
+  // Both of these dispatch on `mode`, CHECKED AT CALL TIME — wireAutocomplete
+  // binds its onPick/searchFn callbacks once, at page load, and mode changes
+  // constantly afterward, so a fixed function reference chosen once could
+  // never track it. This is also the actual fix for the reported bug: the
+  // live and historical datasets don't share an id namespace (station-list.json
+  // CRS/ATCO ids vs. the historical index's wikidata QIDs), so a History-mode
+  // search now literally cannot return or select a live-dataset record —
+  // there's nothing to accidentally cross-wire, not just a guard against it.
+  function searchStationTab(query, limit) {
+    return mode === 'history' ? searchHistoricalStations(query, limit) : searchStations(query, limit);
+  }
+  function submitStationTabPick(picked) {
+    if (mode === 'history') { selectHistoricalStationFromSearch(picked); return; }
+    submitStationPick(picked);
+  }
   wireAutocomplete(searchInput, document.getElementById('sb-ac-station'), function (picked) {
     stationPick = picked;
-    if (picked) submitStationPick(picked);
-  });
+    if (picked) submitStationTabPick(picked);
+  }, searchStationTab);
   searchInput.addEventListener('keydown', function (e) {
     if (e.key !== 'Enter') return;
-    var picked = stationPick || searchStations(searchInput.value, 1)[0];
-    if (picked) submitStationPick(picked);
+    var picked = stationPick || searchStationTab(searchInput.value, 1)[0];
+    if (picked) submitStationTabPick(picked);
   });
 
   var fromPick = null, toPick = null;
