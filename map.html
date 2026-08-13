@@ -667,6 +667,22 @@
      mode guard for the other half of this fix (stops the selection from
      ever being created while Live, not just hides the button). */
   body:not(.mode-database) #sb-mode-operator, body:not(.mode-database) #sb-operator-field-wrap { display: none !important; }
+  /* Destination (From/To) has no valid behaviour in History mode — there is
+     no historical routing/pathfinding, only the live one, and this hides it
+     rather than leaving it to silently render live departure-board/news
+     chrome inside the History tab (a confirmed, separate bug from the
+     Station tab's — not fixed here, this only removes the way in). Same
+     pattern as the Operator-tab rule directly above: hidden, not removed,
+     so it's reachable again the instant mode changes. setSearchMode()'s own
+     Live-mode reset (search for "mode === 'live' && searchMode ===
+     'operator'") has no History equivalent yet — if History is ever reached
+     with 'fromto' as the active searchMode (e.g. via a restored URL/back-
+     button rather than a tab click), the tab and its fields are hidden here
+     but searchMode itself stays 'fromto' until something else changes it;
+     not observed to cause a visible problem in testing, flagging rather
+     than adding an unrequested reset for a path that may not be reachable
+     in practice. */
+  body.mode-history #sb-mode-fromto, body.mode-history #sb-fromto-row { display: none !important; }
   /* Explicit close for the search panel itself (2026-07-21 feedback) — the
      search icon in .sb-top-actions already toggles it open/closed, but a
      dedicated X on the mode-tabs row (far right, same treatment as
@@ -8808,20 +8824,25 @@
   // caller (selectHistoricalOperator, selectHistoricalLine, and a plain
   // selectHistoricalStation map click) depends on RULE 2 landing on the
   // START of the range, so that stays the default with no third argument at
-  // all — same as before this change, byte-for-byte. History's new station
-  // SEARCH wants the opposite ("snap to the last year it was open"), so it
-  // opts in explicitly:
-  //   - opts.snapTo === 'end'  -> RULE 2 lands on `hi` instead of `spanFrom`.
-  //   - opts.snapTo === 'none' -> RULE 1/activeSpanRange bookkeeping still
-  //     runs, but neither snap fires even when out of range. Needed for a
-  //     currently-open station: there is no "last year it was open" to
-  //     target, and falling back to start-snap would be a DIFFERENT,
-  //     unrequested behaviour (jumping to the station's opening year), not
-  //     "no snap" — see selectHistoricalStation()'s own caller of this.
-  // Returns true iff a snap actually happened (RULE 2 fired), so a caller
-  // can decide whether to show a "slider moved" notice. Existing callers
-  // ignore the return value — a new true/false result on a function that
-  // used to return undefined cannot break anything that never checked it.
+  // all — same as before this change, byte-for-byte.
+  //
+  // opts.snapTo === 'nearest' (2026-08-14, replaces an earlier 'end'/'none'
+  // pair — removed, nothing calls them any more, see the History search
+  // rule rewrite): the caller has ALREADY computed the exact landing year
+  // via historicalStationSnapYear() and passes it as opts.targetYear (or
+  // null/undefined for "no snap needed"). This BYPASSES RULE 1 below
+  // entirely rather than layering on top of it, because RULE 1 only knows
+  // the OVERALL first-to-last span (`lo`/`hi`) and cannot see gaps between
+  // periods — a multi-period station can have a real closure gap inside
+  // that span that RULE 1 would wrongly wave through as "already open".
+  // The nearest-open-year rule needs true per-period membership, which only
+  // historicalStationSnapYear() computes; this mode just executes its
+  // answer.
+  //
+  // Returns true iff a snap actually happened, so a caller can decide
+  // whether to show a "slider moved" notice. Existing callers ignore the
+  // return value — a new true/false result on a function that used to
+  // return undefined cannot break anything that never checked it.
   function applySliderFollow(range, operatedFrom, opts) {
     opts = opts || {};
     if (!range) { activeSpanRange = null; syncSliderInstances(); return false; } // RULE 3
@@ -8839,11 +8860,17 @@
     var spanFrom = lo;
     if (typeof operatedFrom === 'number' && operatedFrom > spanFrom && operatedFrom <= hi) spanFrom = operatedFrom;
     activeSpanRange = { first_year: spanFrom, last_year: range.last_year };
-    if (historyYear >= lo && historyYear <= hi) { syncSliderInstances(); return false; } // RULE 1
-    if (opts.snapTo === 'none') { syncSliderInstances(); return false; } // opt-in no-snap (see header)
 
-    // RULE 2 — land on max(map-coverage start, dates-of-operation start), OR
-    // (opts.snapTo === 'end') on `hi` instead — see header.
+    if (opts.snapTo === 'nearest') {
+      if (opts.targetYear === null || opts.targetYear === undefined) { syncSliderInstances(); return false; }
+      setHistoryYear(opts.targetYear, { source: 'follow' });
+      syncSliderInstances();
+      return true;
+    }
+
+    if (historyYear >= lo && historyYear <= hi) { syncSliderInstances(); return false; } // RULE 1
+
+    // RULE 2 — land on max(map-coverage start, dates-of-operation start).
     //
     // Map coverage alone is not enough for a PRE-1923 operator. The coverage
     // figure is clamped to its era band, and the pre1923 band's lower bound is
@@ -8861,8 +8888,7 @@
     //
     // Where dates_of_operation is not populated this falls through to raw map
     // coverage exactly as before — a founding year is never guessed.
-    var landOn = (opts.snapTo === 'end') ? hi : spanFrom;
-    setHistoryYear(landOn, { source: 'follow' });
+    setHistoryYear(spanFrom, { source: 'follow' });
     syncSliderInstances();
     return true;
   }
@@ -9092,25 +9118,31 @@
   // Closed-only stations (no crs) keep exactly the layout they had.
   // The mode flag is never touched by any of this: History stays History, and
   // the slider stays on screen and usable.
-  // "Slider moved to 1963 · Tyldesley closed 1963." — set only by
-  // selectHistoricalStation() when opts.snapToEnd actually moved the slider
+  // "Moved to 1964 · Tyldesley operated 1846–1964." — set only by
+  // selectHistoricalStation() when opts.snapToOpen actually moved the slider
   // (Section 4). Reads `selection.snapNotice` directly rather than taking it
   // as a parameter, same pattern fromToSkeletonHtml() already uses for
   // selection.fromToPath — every OTHER selection type sets a fresh
   // `selection` object with no snapNotice key at all, so this can only ever
   // render for the histstation selection that actually produced it.
   //
-  // Uses ONE year for both halves ("moved to N" / "closed N") — this data
-  // model has a single end_year per period, not a separate "last year
-  // trains ran" vs. "official closure year" (which can differ by one in
-  // real-world closure records). A worked example given for this feature
-  // used two different years for exactly that reason; flagged rather than
-  // invented a second year this dataset does not have.
+  // States the year moved TO plus the station's whole operating range,
+  // rather than asserting a second, different "closure year" — this data
+  // model has one end_year per period, not a separate "last year trains
+  // ran" vs. "official closure date" (which can genuinely differ by one in
+  // real-world closure records; an earlier draft of this notice implied
+  // that distinction and this dataset cannot support it). "–present" when
+  // the final period is still open — reachable here even though a snap only
+  // fires when a target year exists, because the STATION can still be
+  // currently open while the SNAP moved to years before either its
+  // reopening or its first opening (e.g. a slider sitting inside an early
+  // closure gap of a station that's open again today).
   function historicalSnapNoticeHtml() {
     var n = selection.snapNotice;
     if (!n) return '';
-    return '<div class="db-hint hist-snap-notice" data-anim-row>Slider moved to ' + n.toYear + ' · ' +
-      escapeAttr(n.name) + ' closed ' + n.toYear + '.</div>';
+    var range = n.firstYear + '–' + (n.stillOpen ? 'present' : n.lastYear);
+    return '<div class="db-hint hist-snap-notice" data-anim-row>Moved to ' + n.toYear + ' · ' +
+      escapeAttr(n.name) + ' operated ' + range + '.</div>';
   }
 
   function historicalStationSkeletonHtml(props, coords) {
@@ -9174,21 +9206,80 @@
     return { first: first, last: last, sawOpen: sawOpen };
   }
 
+  // Snap target for the History station-SEARCH rule (2026-08-14 — REPLACES
+  // an earlier "snap to the last year open, no snap if still open" rule
+  // wholesale, not a patch on it: that rule treated "still open" as a dead
+  // end with nothing to snap to, which was wrong whenever the slider sat
+  // BEFORE the station existed at all — a station that opened in 1990
+  // selected from 1850 needs to snap FORWARD to 1990, not stay put).
+  //
+  // Returns null if `year` already falls inside one of the station's real
+  // open periods (including a still-open final period) — no snap needed.
+  // Otherwise returns the NEAREST year it was actually open:
+  //   - before the first opening -> forward to that period's start.
+  //   - after the final closure (only possible if the final period has
+  //     actually closed) -> back to that period's end.
+  //   - inside a genuine gap between two periods -> whichever boundary is
+  //     nearer; on an EXACT tie, the LATER period's start (never the
+  //     earlier period's end) — checked against the real dataset: 806
+  //     stations have a real (>=2yr) gap between two periods, and 486 of
+  //     those have an even-length gap, so the exact-tie case is common, not
+  //     a rare edge — e.g. Baldragon (periods 1831-1917 and 1919-1955): a
+  //     2-year gap, year 1918 is equidistant from both 1917 and 1919,
+  //     resolves to 1919.
+  //
+  // NOT NECESSARILY A SHORT HOP: gaps are sometimes very long — Mills Hill
+  // closed 1842 and reopened 1985, a 143-year gap. A slider sitting mid-gap
+  // (e.g. 1913) still resolves to "nearest" (1842, 71 years off, vs 1985,
+  // 72 years off) even though neither year is meaningfully close to 1913.
+  // "Nearest" is what was specified; flagging that for a handful of
+  // long-gap stations it can read as an arbitrary pick rather than a
+  // helpful one.
+  function historicalStationSnapYear(props, year) {
+    var periods = [];
+    for (var i = 1; i <= 5; i++) {
+      var s = props['p' + i + '_start'];
+      if (s === undefined) break;
+      var e = props['p' + i + '_end'];
+      periods.push({ start: s, end: e === undefined ? null : e });
+    }
+    if (!periods.length) return null;
+
+    for (var j = 0; j < periods.length; j++) {
+      var p = periods[j];
+      if (year >= p.start && (p.end === null || year <= p.end)) return null; // inside an open period
+    }
+
+    if (year < periods[0].start) return periods[0].start; // before the first opening
+    var lastPeriod = periods[periods.length - 1];
+    if (lastPeriod.end !== null && year > lastPeriod.end) return lastPeriod.end; // after the final closure
+
+    // Otherwise it's a genuine gap between two consecutive periods.
+    for (var k = 0; k < periods.length - 1; k++) {
+      var endOfThis = periods[k].end, startOfNext = periods[k + 1].start;
+      if (endOfThis !== null && year > endOfThis && year < startOfNext) {
+        var distBack = year - endOfThis, distForward = startOfNext - year;
+        return (distForward <= distBack) ? startOfNext : endOfThis; // tie -> later period's start
+      }
+    }
+    return null; // defensive — unreachable given the checks above
+  }
+
   // `coords` is the clicked feature's own [lon, lat] — the historical station
   // properties carry no coordinates of their own, and the panel's Google Map
   // link needs them (see historyStationLinksHtml). Not restored from the URL
   // because histstation is not a serialised selection type; if that ever
   // changes, the link degrades to Wikipedia-only rather than breaking.
   //
-  // `opts.snapToEnd` (2026-08-13, opt-in): used only by the History search
-  // path (selectHistoricalStationFromSearch) to snap the slider to the LAST
-  // year the station was open, instead of applySliderFollow()'s default
-  // start-of-range landing — see that function's own header for why the
-  // default cannot change. A plain map click never passes this: clicking a
-  // marker only ever picks a station the year filter is CURRENTLY showing,
-  // so historyYear is already guaranteed inside its range and RULE 1
-  // (no-op) fires regardless of which snap mode would apply — this option
-  // is unreachable from a click in practice, not just unused by it.
+  // `opts.snapToOpen` (2026-08-14, opt-in): used only by the History search
+  // path (selectHistoricalStationFromSearch) to snap to the nearest year the
+  // station was actually open — see historicalStationSnapYear() — instead
+  // of applySliderFollow()'s default start-of-range landing (see that
+  // function's own header for why the default cannot change). A plain map
+  // click never passes this: clicking a marker only ever picks a station
+  // the year filter is CURRENTLY showing, so historyYear is already
+  // guaranteed inside its range regardless of which rule would apply — this
+  // option is unreachable from a click in practice, not just unused by it.
   function selectHistoricalStation(props, coords, opts) {
     opts = opts || {};
     ++selectionSeq;
@@ -9209,18 +9300,18 @@
     setSelectedStationPoints(coords ? [{ lon: coords[0], lat: coords[1] }] : []);
     var span = historicalPeriodSpan(props);
     var range = span.first !== undefined ? { first_year: span.first, last_year: span.sawOpen ? null : span.last } : null;
-    // A currently-open final period has no "last year it was open" to snap
-    // to — see applySliderFollow()'s 'none' mode. Forcing snapToEnd off here
-    // (rather than letting applySliderFollow fall back to its start-snap
-    // default) is what makes "no snap" actually mean no snap, not "snap
-    // somewhere else instead".
-    var snapMode = opts.snapToEnd ? (span.sawOpen ? 'none' : 'end') : undefined;
-    var didSnap = applySliderFollow(range, undefined, snapMode ? { snapTo: snapMode } : undefined);
-    // Visible notice (Section 4) — only ever set when a search-driven
-    // end-snap actually moved the slider; every other path (a plain click,
-    // or a search pick that needed no snap) clears it, so a stale notice
-    // from a previous selection can never survive onto this one.
-    selection.snapNotice = (snapMode === 'end' && didSnap) ? { toYear: span.last, name: props.name } : null;
+    var targetYear = opts.snapToOpen ? historicalStationSnapYear(props, historyYear) : null;
+    var didSnap = applySliderFollow(range, undefined, opts.snapToOpen ? { snapTo: 'nearest', targetYear: targetYear } : undefined);
+    // Visible notice (Section 2 rewrite) — only ever set when a search-driven
+    // snap actually moved the slider; every other path (a plain click, or a
+    // search pick that needed no snap) clears it, so a stale notice from a
+    // previous selection can never survive onto this one. Carries the whole
+    // operating range (not just the year moved to) so the panel can state
+    // "operated 1846–1964" rather than implying a second, different year the
+    // single-end_year-per-period data model doesn't actually have.
+    selection.snapNotice = (opts.snapToOpen && didSnap)
+      ? { toYear: targetYear, name: props.name, firstYear: span.first, lastYear: span.last, stillOpen: span.sawOpen }
+      : null;
     pushHistoryForCurrentState();
   }
 
@@ -9237,7 +9328,7 @@
   // between the two tabs' "picked from search" moment.
   function selectHistoricalStationFromSearch(entry) {
     if (entry.coords) map.flyTo({ center: entry.coords, zoom: 10, duration: 800 });
-    selectHistoricalStation(entry, entry.coords, { snapToEnd: true });
+    selectHistoricalStation(entry, entry.coords, { snapToOpen: true });
   }
 
   // Map interaction inside History mode. Registered once, and every handler
