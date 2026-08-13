@@ -5756,41 +5756,32 @@
       selTitleEl.textContent = '';
       starBtn.style.display = 'none';
       if (window.innerWidth <= 768 && hadSelectionForSheet && typeof setSheetState === 'function') setSheetState('half');
-      // Search panel becomes the sheet's resting-state content (2026-08-07) —
-      // shown by default whenever nothing's selected, desktop and mobile
-      // alike, rather than requiring a click to reveal it. Always resets to
-      // the Station tab on the way back in, same as a fresh page load — see
-      // setSearchMode/searchMode's own comment for why referencing them here
-      // (declared later in this same script) is safe. skipFocus: this fires
-      // on every return to the resting state, not just an explicit tap — see
-      // setSearchMode()'s own comment for why forcing focus here popped the
-      // keyboard over the map with no user action involved.
-      searchPanel.classList.add('open');
+      // Always resets to the Station tab on the way back to no-selection,
+      // same as a fresh page load — see setSearchMode/searchMode's own
+      // comment for why referencing them here (declared later in this same
+      // script) is safe. skipFocus: this fires on every return to the
+      // resting state, not just an explicit tap — see setSearchMode()'s own
+      // comment for why forcing focus here popped the keyboard over the map
+      // with no user action involved. Search panel VISIBILITY itself is no
+      // longer touched here — see the comment on the other branch below for
+      // why selection state and panel visibility were decoupled entirely.
       setSearchMode('station', { skipFocus: true });
       return;
     }
     sidebarEl.classList.add('has-selection');
-    // A real selection gets the sheet to itself — the search panel closes so
-    // it doesn't sit above the entity content competing for space. Reopening
-    // it (searchBtn) still works while a selection is showing; see that
-    // handler's own comment.
-    //
-    // EXCEPTION: searchPanelStaysOpenForNextRender (2026-08-16, widened
-    // 2026-08-17 from a History-only flag to cover every tab/mode). Set by
-    // whichever "picked from search" wrapper is about to call the selector
-    // that leads here — submitStationTabPick()/trySubmitFromTo()/
-    // submitOperatorPick() (Live/Database/History alike), see their own
-    // comments — and consumed (read AND immediately reset) right here, so
-    // only the ONE render that pick causes is affected. Reported first for
-    // History (comparing several historical stations in a row meant
-    // reopening the panel from scratch after every pick) and then again for
-    // Live/Database — same complaint, same fix, no reason to special-case
-    // History once it was clear the annoyance wasn't History-specific.
-    // A plain map click, a saved-list tap, a route/operator chip inside a
-    // detail panel — none of those set the flag, so it's false by default
-    // and the panel closes exactly as before for all of them.
-    if (!searchPanelStaysOpenForNextRender) searchPanel.classList.remove('open');
-    searchPanelStaysOpenForNextRender = false;
+    // REMOVED 2026-08-18: this branch used to force-close the search panel
+    // on every real selection ("gets the sheet to itself"), with a growing
+    // pile of exceptions for search-driven picks (searchPanelStaysOpenFor-
+    // NextRender, added 2026-08-16/17) that never covered a plain MAP CLICK
+    // on a station or route — reported as "the search bar is still
+    // disappearing" when clicking the map, and separately that switching
+    // tabs didn't bring it back either. Selection state and search-panel
+    // visibility are now fully independent: the panel is either open or
+    // closed per searchPanelManuallyClosed (declared with the rest of the
+    // search wiring below), and NOTHING in this function reads or writes
+    // that flag any more — not a selection, not a tab switch, not Esc (see
+    // escapeClearNextThing()'s own comment). Only the × button and the
+    // magnifying-glass icon can change it now.
     if (window.innerWidth <= 768 && !hadSelectionForSheet && typeof setSheetState === 'function') setSheetState('peek');
     if (type === 'station') {
       selTitleEl.textContent = selectedStationName;
@@ -9422,13 +9413,6 @@
   // the year filter is CURRENTLY showing, so historyYear is already
   // guaranteed inside its range regardless of which rule would apply — this
   // option is unreachable from a click in practice, not just unused by it.
-  //
-  // Whether the search panel stays open (searchPanelStaysOpenForNextRender)
-  // is handled by the CALLER (selectHistoricalStationFromSearch), not by an
-  // opts flag here — that flag now covers every "picked from search" path
-  // sitewide, not just this one, so it lives with the other wrapper
-  // functions (submitStationTabPick/trySubmitFromTo/submitOperatorPick) that
-  // set it the same way. See searchPanelStaysOpenForNextRender's own comment.
   function selectHistoricalStation(props, coords, opts) {
     opts = opts || {};
     ++selectionSeq;
@@ -10777,17 +10761,33 @@
   var operatorFieldWrap = document.getElementById('sb-operator-field-wrap');
   var operatorInput = document.getElementById('sb-operator-input');
   var searchMode = 'station';
-  // Read (and reset) by renderSelectionChrome() — see its own comment for
-  // the full story. Set true here, by each "picked from search" wrapper
-  // below, immediately before it calls the selector that actually triggers
-  // the render; false the rest of the time (a map click, a saved/route/
-  // operator chip elsewhere in a panel, a URL restore) so those keep today's
-  // close-on-select behaviour untouched. `var`, not `let`, matching every
-  // other module-level flag in this file — hoists fine despite
-  // renderSelectionChrome() being defined earlier in the file, since by the
-  // time either function actually RUNS (after a real user action) this line
-  // has long since executed and assigned its initial value.
-  var searchPanelStaysOpenForNextRender = false;
+  // ── Search panel visibility (2026-08-18 redesign) ─────────────────────────
+  // REPLACES searchPanelStaysOpenForNextRender (2026-08-16/17), which tried
+  // to keep the panel open across search-driven picks by exempting them from
+  // renderSelectionChrome()'s close-on-select step — but that only ever
+  // covered SEARCH picks. A plain map click on a station/route still closed
+  // it (reported: "the search bar is still disappearing"), and switching
+  // tabs never reopened it either. The actual want is simpler than a
+  // per-action exception list: the panel should just stay open through
+  // ANYTHING except two explicit user actions, full stop.
+  //
+  // searchPanelManuallyClosed is that whole state, in one boolean.
+  // Selection changes, tab switches, Esc — NONE of them read or write it any
+  // more (renderSelectionChrome() and escapeClearNextThing() were both
+  // edited to stop touching the panel at all; see their own comments).
+  // Exactly two places set it:
+  //   - #sb-search-close-btn (×)      -> true, always.
+  //   - #sb-search-btn (magnifying glass) -> toggles it.
+  // And exactly one thing resets it back to false: a fresh page load/
+  // navigation (it's a plain `var`, so this is automatic — there's no
+  // localStorage/sessionStorage persistence here on purpose, since "reload
+  // the page directly, or navigate away and back" were explicitly named as
+  // the OTHER two ways the panel should reopen, alongside the magnifying
+  // glass — a fresh script execution already gives that for free).
+  var searchPanelManuallyClosed = false;
+  function applySearchPanelVisibility() {
+    searchPanel.classList.toggle('open', !searchPanelManuallyClosed);
+  }
 
   // skipFocus (2026-08-07 bugfix): setSearchMode() used to focus its field
   // UNCONDITIONALLY, which was correct for its original callers (a user
@@ -10815,24 +10815,28 @@
   document.getElementById('sb-mode-fromto').addEventListener('click', function () { setSearchMode('fromto'); });
   document.getElementById('sb-mode-operator').addEventListener('click', function () { setSearchMode('operator'); });
 
-  // Manual toggle — only meaningful while a selection is showing (the panel
-  // auto-opens/closes with selection state otherwise, see
-  // renderSelectionChrome()); this lets a station/route/operator view stay
-  // open while still reachable to start a new search. #sb-search-btn lives
-  // inside .sb-top, which is hidden at the sheet's peek state (2026-08-06),
-  // so there's no equivalent "reachable even collapsed" case left to guard
-  // for now that the floating search pill (which WAS reachable at peek) is
-  // gone — see #region-jump's CSS comment.
+  // One of the two user actions that can ever change
+  // searchPanelManuallyClosed (see its own comment) — toggles it, reading
+  // the FLAG rather than the DOM class as the source of truth for which
+  // direction "toggle" means, even though the two are always in sync (the
+  // flag is the thing every other rule in this file reasons about). #sb-
+  // search-btn lives inside .sb-top, which is hidden at the sheet's peek
+  // state (2026-08-06), so there's no equivalent "reachable even collapsed"
+  // case left to guard for now that the floating search pill (which WAS
+  // reachable at peek) is gone — see #region-jump's CSS comment.
   searchBtn.addEventListener('click', function () {
-    var opening = !searchPanel.classList.contains('open');
-    searchPanel.classList.toggle('open', opening);
+    var opening = searchPanelManuallyClosed;
+    searchPanelManuallyClosed = !searchPanelManuallyClosed;
+    applySearchPanelVisibility();
     if (opening) setSearchMode(searchMode);
   });
-  // Explicit close (far right of the mode-tabs row) — same end state as
-  // clicking the search icon again while open, just a more discoverable
-  // affordance than expecting the user to re-find that icon.
+  // The other of the two — always closes, never toggles. Same end state as
+  // clicking the search icon while open, just a more discoverable
+  // affordance (far right of the mode-tabs row) than expecting the user to
+  // re-find that icon.
   document.getElementById('sb-search-close-btn').addEventListener('click', function () {
-    searchPanel.classList.remove('open');
+    searchPanelManuallyClosed = true;
+    applySearchPanelVisibility();
   });
 
   // ── Autocomplete (shared by every search field — desktop + mobile) ───────
@@ -10886,35 +10890,37 @@
       if (justFocused) { e.preventDefault(); justFocused = false; }
     });
   }
-  // The BLURRED-Escape chain (spec behaviours 3-4) — reached either from
-  // the document-level listener below (nothing focused at all) or from a
-  // field's OWN Escape handler falling through because its field was
-  // already empty. Field handlers call this directly rather than just
-  // letting the keydown bubble to the document listener below, because
-  // that listener explicitly ignores Escape while a field is focused (see
-  // its own comment) — needed so a NON-empty field's Escape (stage 2 —
-  // clear the field, stay focused) never ALSO triggers this chain for the
-  // same keypress; the field-level "already empty" case has to opt back in
-  // explicitly rather than relying on the general bubble path. Ordered by
-  // specificity and not hardcoded to exactly two presses, so it
-  // generalises to whatever happens to be open rather than assuming a
-  // fixed sequence:
-  //   1. A real search result showing (station/route/operator/heritage/
-  //      from-to/history-entity panel, its map highlight, distance, path
-  //      list, etc.) -> clearSelection(). Also covers the saved/starred
-  //      view (selection.type 'saved') the same call — the two can never
-  //      be open simultaneously (selection is one object), so there is
-  //      nothing to sequence between them; whichever is open is what
-  //      clears.
-  //   2. Otherwise, the search panel (the Station/Destination/Operator
-  //      input UI itself) is open -> close it.
-  //   3. Nothing left.
+  // The BLURRED-Escape chain — reached either from the document-level
+  // listener below (nothing focused at all) or from a field's OWN Escape
+  // handler falling through because its field was already empty. Field
+  // handlers call this directly rather than just letting the keydown bubble
+  // to the document listener below, because that listener explicitly
+  // ignores Escape while a field is focused (see its own comment) — needed
+  // so a NON-empty field's Escape (stage 2 — clear the field, stay focused)
+  // never ALSO triggers this chain for the same keypress; the field-level
+  // "already empty" case has to opt back in explicitly rather than relying
+  // on the general bubble path.
+  //
+  // ONE step now, not two: a real search result showing (station/route/
+  // operator/heritage/from-to/history-entity panel, its map highlight,
+  // distance, path list, etc.) -> clearSelection(). Also covers the saved/
+  // starred view (selection.type 'saved') the same call — the two can never
+  // be open simultaneously (selection is one object), so there is nothing
+  // to sequence between them; whichever is open is what clears. Otherwise,
+  // nothing.
+  //
+  // REMOVED 2026-08-18: this used to fall through to a second step closing
+  // the whole search panel if nothing else was open. Explicitly excluded
+  // now — searchPanelManuallyClosed (see its own comment) can only be set by
+  // the × button or the magnifying-glass icon, and Esc closing the panel as
+  // a side effect of clearing an empty field was itself a source of the
+  // panel disappearing unexpectedly, which is what this whole redesign was
+  // for.
+  //
   // Never touches input text at any point — that is the field-level
   // handler's job alone, and only for the ONE field currently focused.
   function escapeClearNextThing() {
-    if (effectiveSelectionType() !== 'none') { clearSelection(); return; }
-    var panel = document.getElementById('sb-search-panel');
-    if (panel && panel.classList.contains('open')) { panel.classList.remove('open'); return; }
+    if (effectiveSelectionType() !== 'none') clearSelection();
   }
   document.addEventListener('keydown', function (e) {
     if (e.key !== 'Escape') return;
@@ -11122,7 +11128,6 @@
     return mode === 'history' ? searchHistoricalStations(query, limit) : searchStations(query, limit);
   }
   function submitStationTabPick(picked) {
-    searchPanelStaysOpenForNextRender = true; // see its own comment
     if (mode === 'history') { selectHistoricalStationFromSearch(picked); return; }
     submitStationPick(picked);
   }
@@ -11157,7 +11162,7 @@
   function trySubmitFromTo() {
     var f = fromPick || searchNationalRailStations(fromInput.value, 1)[0];
     var t = toPick || searchNationalRailStations(toInput.value, 1)[0];
-    if (f && t) { searchPanelStaysOpenForNextRender = true; selectFromTo(f, t); } // see the flag's own comment
+    if (f && t) selectFromTo(f, t);
   }
   wireAutocomplete(fromInput, document.getElementById('sb-ac-from'), function (picked) {
     fromPick = picked;
@@ -11249,23 +11254,8 @@
     // network extent. Handled BEFORE the mode guard because a heritage pick
     // should work the same from either tab — selectHeritageRailway() switches
     // into Database itself, exactly as the line click path does.
-    //
-    // searchPanelStaysOpenForNextRender set right before each call that
-    // actually leads to renderSelectionChrome() (not once at the top of this
-    // function) — the `mode !== 'database'` branch below returns without
-    // selecting anything, and setting it unconditionally first would leak
-    // `true` into whatever unrelated render happens next. KNOWN NARROW GAP,
-    // not chased further: selectHeritageRailway() itself separately skips
-    // its own render when the SAME already-selected railway is re-picked
-    // (see its `alreadySelected` guard) — re-searching and re-picking that
-    // exact railway will still set this flag with nothing to consume it,
-    // leaking `true` onto whatever the next real selection is. Narrow (only
-    // that one repeat-pick shape) and mild (one extra render keeps the panel
-    // open when it should have closed), so left as a known edge case rather
-    // than threading a matching guard through here too.
-    if (picked.heritageSlug) { searchPanelStaysOpenForNextRender = true; submitHeritagePick(picked.heritageSlug); return; }
+    if (picked.heritageSlug) { submitHeritagePick(picked.heritageSlug); return; }
     if (mode !== 'database') return;
-    searchPanelStaysOpenForNextRender = true;
     selectOperator(picked.code);
     highlightAndFlyToOperator(picked.code, selectionSeq);
   }
@@ -11350,8 +11340,17 @@
     }
     if (selectedStationId) {
       var st = selectedStationCrs ? stationsContent[selectedStationCrs.toUpperCase()] : null;
+      // CRS code preferred over the full name (2026-08-18) — matches the
+      // 'fromto' branch just above, which has always shown "DON-YRK" rather
+      // than "Doncaster-York". Reported: a single-station pick's pill was
+      // the odd one out, using the long name where From/To already used the
+      // short code — a real, if minor, inconsistency in how short THIS
+      // specific pill (not the sidebar title, which still shows the full
+      // name) tries to be. Falls back to the full name only for the ~815
+      // non-CRS stops (Underground/DLR/tram/metro/heritage) that have no
+      // CRS code to show at all.
       return {
-        label: selectedStationName || selectedStationCrs,
+        label: selectedStationCrs || selectedStationName,
         operators: (st && st.operators) || [],
         routeKeywords: [],
       };
