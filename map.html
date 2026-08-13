@@ -2026,15 +2026,42 @@
   }
 
   // "1846–1960", or "1846–present" for a station whose final period is still
-  // open. historicalPeriodSpan() (declared with selectHistoricalStation()
-  // below — function declarations hoist, so the forward reference is safe)
-  // reads the exact same flattened p1_start/p1_end...p5_end shape this
-  // search index stores, so a result's displayed years and the span that
-  // later drives its slider snap can never disagree.
+  // open — same first-period-start-to-final-period-end range the dropdown
+  // has always shown. For 2+ periods (2026-08-16), appends a compact
+  // " (breaks)" marker rather than spelling out every period: this is a
+  // DROPDOWN ROW, not the panel or the snap notice, and has far less width
+  // to work with — the sidebar is 400px on desktop and edge-to-edge on
+  // mobile down to ~320px, minus .sb-top-lower's 16px side padding and
+  // .sb-ac-item's own 14px side padding (measured live at both widths, see
+  // the verification note where this was added). A spelled-out span like
+  // the notice's "1831–1917, 1919–1955" risks wrapping onto a second line
+  // under an already-long station name at that width; "(breaks)" does not,
+  // even for the longest realistic case.
+  //
+  // "(breaks)" reuses the EXACT word historicalOperatingRangeLabel()'s
+  // 3+-period branch already uses ("... (with breaks)") — one vocabulary
+  // for "this collapsed number hides a gap" wherever it shows up in this
+  // feature, rather than inventing a second term or a symbol with no
+  // legend to explain it. Applied uniformly to 2-period AND 3+-period
+  // stations here (unlike the notice, which spells 2-period stations out in
+  // full) — the dropdown's only job is to flag that a gap exists before the
+  // user commits to a pick; the sidebar's own Open periods field (fixed
+  // 2026-08-16 to actually read every period instead of just the first —
+  // see historicalStationSkeletonHtml()) is the real source of truth once a
+  // station is selected, which is also why this marker doesn't try to be
+  // more than a flag.
+  //
+  // Reads periods via historicalPeriodList() (declared with
+  // selectHistoricalStation() below — function declarations hoist, so the
+  // forward reference is safe) — the same shared parser the slider-snap
+  // logic and the sidebar panel both use, not a fourth copy of the
+  // p1_start/p1_end...p5_end loop.
   function historicalYearsLabel(entry) {
-    var span = historicalPeriodSpan(entry);
-    if (span.first === undefined) return '';
-    return span.first + '–' + (span.sawOpen ? 'present' : span.last);
+    var periods = historicalPeriodList(entry);
+    if (!periods.length) return '';
+    var finalPeriod = periods[periods.length - 1];
+    var range = periods[0].start + '–' + (finalPeriod.end === null ? 'present' : finalPeriod.end);
+    return periods.length >= 2 ? range + ' (breaks)' : range;
   }
 
   // History mode's Station-tab search — see historicalStationIndex's own
@@ -5710,7 +5737,17 @@
     // it doesn't sit above the entity content competing for space. Reopening
     // it (searchBtn) still works while a selection is showing; see that
     // handler's own comment.
-    searchPanel.classList.remove('open');
+    //
+    // EXCEPTION (2026-08-16): selection.keepSearchOpen, set only by a
+    // History search-driven pick (selectHistoricalStation()'s opts.fromSearch
+    // — see its own comment). Reported: comparing several historical
+    // stations in a row meant re-opening the search panel from scratch after
+    // every single pick, which defeats the point of a multi-period search
+    // feature people are expected to use repeatedly. Every other selection
+    // path (a map click, Live/Database search, saved/route/operator picks)
+    // is untouched — none of them set this flag, so this `if` is a no-op for
+    // them and the panel closes exactly as before.
+    if (!selection.keepSearchOpen) searchPanel.classList.remove('open');
     if (window.innerWidth <= 768 && !hadSelectionForSheet && typeof setSheetState === 'function') setSheetState('peek');
     if (type === 'station') {
       selTitleEl.textContent = selectedStationName;
@@ -9150,8 +9187,23 @@
     var html = historicalSnapNoticeHtml();
     var periods = [];
     try { periods = JSON.parse(props.periods || '[]'); } catch (e) { periods = []; }
-    if (!periods.length && props.p1_start !== undefined) {
-      periods = [{ start_year: props.p1_start, end_year: props.p1_end === undefined ? null : props.p1_end }];
+    // FIXED 2026-08-16 — this fallback used to build a ONE-entry list from
+    // p1_start/p1_end alone, silently dropping p2 onward. That was invisible
+    // as long as every caller either had the real nested `periods` JSON
+    // string (a map click on historical.pmtiles — tippecanoe encodes both
+    // the string AND the flattened scalars, see
+    // build-historical-tiles-geojson.mjs) or was single-period anyway. The
+    // History search index carries ONLY the flattened scalars by design (no
+    // `periods` string — see build-historical-search-index.mjs), so a
+    // search-driven pick of any multi-period station always hit this path —
+    // and for a 2-period station like Baldragon (1831-1917, 1919-1955) the
+    // panel rendered just "1831–1917", quietly erasing the 1917-1919 gap
+    // from the ONE place a user is told to look for it. Now reads every
+    // p1..p5 pair via the shared historicalPeriodList() helper (same one
+    // the slider-snap logic already uses), so this can't drift out of sync
+    // with how many periods a record actually has again.
+    if (!periods.length) {
+      periods = historicalPeriodList(props).map(function (p) { return { start_year: p.start, end_year: p.end }; });
     }
     if (periods.length) {
       html += '<div class="db-field" data-anim-row><div class="db-label">Open periods</div><div class="db-value">' +
@@ -9327,10 +9379,27 @@
   // the year filter is CURRENTLY showing, so historyYear is already
   // guaranteed inside its range regardless of which rule would apply — this
   // option is unreachable from a click in practice, not just unused by it.
+  //
+  // `opts.fromSearch` (2026-08-16, opt-in): sets `selection.keepSearchOpen`,
+  // read by renderSelectionChrome() to skip its normal "a real selection
+  // closes the search panel" step (see that function's own comment for why
+  // it exists generally). Reported: picking a historical station from
+  // search closed the whole search panel, same as every other selection
+  // does today — but here that's actively hostile to the actual use case,
+  // which is comparing several stations in a row (that's the whole reason
+  // multi-period search exists). SCOPED TO HISTORY SEARCH ONLY, not a
+  // sitewide behaviour change: Live/Database's existing "selection gets the
+  // sheet to itself" trade-off was never reported as a problem, and a plain
+  // map click (this flag unset) keeps its current close-on-select. A
+  // SEPARATE flag from snapToOpen even though only one caller sets both
+  // together today — they answer different questions (where should the
+  // slider land vs. should the search UI stay reachable) and coupling them
+  // under one name would misdescribe whichever one someone reads it for
+  // next.
   function selectHistoricalStation(props, coords, opts) {
     opts = opts || {};
     ++selectionSeq;
-    selection = { type: 'histstation', station: props, stationCoords: coords || null, fallbackName: props.name || 'Station' };
+    selection = { type: 'histstation', station: props, stationCoords: coords || null, fallbackName: props.name || 'Station', keepSearchOpen: !!opts.fromSearch };
     // Moving on to a DIFFERENT kind of selection releases the segment lock —
     // the same rule selectStation() follows in the other tabs, where it calls
     // clearOperatorHighlight() for exactly this reason.
@@ -9379,7 +9448,7 @@
   // between the two tabs' "picked from search" moment.
   function selectHistoricalStationFromSearch(entry) {
     if (entry.coords) map.flyTo({ center: entry.coords, zoom: 10, duration: 800 });
-    selectHistoricalStation(entry, entry.coords, { snapToOpen: true });
+    selectHistoricalStation(entry, entry.coords, { snapToOpen: true, fromSearch: true });
   }
 
   // Map interaction inside History mode. Registered once, and every handler
