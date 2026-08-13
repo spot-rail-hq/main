@@ -444,6 +444,56 @@ rest of the database is held to.
 resolve to nothing for related reasons — a sub-class shunter, hauled coaching
 stock (no traction of its own) and Thalys TGV sets (not UK stock).
 
+## Generator safety: read-merge-preserve
+
+Any script whose output file can also hold hand-curated content — a
+correction, a research note, a confirmed placement — must read its own
+prior output before writing, merge against an INVERTED allowlist (the set
+of keys the generator itself writes; anything else on an existing entry is
+preserved, whatever it's called and whenever it was added), and guard the
+write: if anything preserve-worthy would be dropped, abort loudly and
+write nothing rather than overwrite silently. This generalizes patterns
+already used ad hoc elsewhere in this codebase (the rolling-stock overrides
+file's separate-file approach; lane-offsets.json's stage-5 seed-and-charge-
+for-moving-away-from-it behaviour) into one standing rule for this shape of
+problem.
+
+**Why not "preserve fields starting with `_`"?** That naming convention is
+already taken and means the opposite in this codebase: `_wikidata`/
+`_wikipedia`/`_review` on heritage-content.json mean "regenerate me every
+run." Using leading-underscore as a preserve signal would flip that
+meaning for those fields, and would still miss most of what actually needs
+protecting — none of heritage-content.json's own hand-curated fields
+(`established_year` and three siblings) are underscore-prefixed. The
+allowlist has to be "what the generator owns," not a naming convention, or
+it silently misses whatever a future hand-edit adds.
+
+**Segment identity is the hard case.** heritage-content.json and
+data/heritage-railways.json both merge on a stable, hand-given key
+(`slug`). scripts/output/line-segments.json has no equivalent: segment
+`id` is pure assignment order (`segments.length` at push time, so it
+shifts for every segment downstream of any topology change anywhere in the
+country), and even `way_ids` isn't unique (831 of 8448 segments on the
+live file share a way_ids set with another segment, because parallel-
+operator lanes over the same physical way are separate segments). The key
+that works is the segment's own `nodes` array — the exact interior node-ID
+chain between two significant nodes — compared direction-independently:
+collision-free on the live file (8448 distinct keys for 8448 segments)
+because it's the finest granularity the graph-contraction algorithm itself
+operates at. An exact match means "this physical arc is unchanged"; a miss
+is reported as orphaned and left out, never guessed onto whatever segment
+happens to occupy the same index.
+
+**Compliant generators**: `build-heritage-content.mjs` →
+`data/heritage-content.json` (keyed by slug); `build-line-segments.mjs` →
+`scripts/output/line-segments.json` (keyed by node-chain, `ALLOW_ORPHANED_
+SEGMENT_NOTES=1` escape hatch archives anything it can't re-attach rather
+than discarding it); `build-heritage-client-data.mjs` →
+`data/heritage-railways.json` (keyed by slug — `placement_confirmed` is
+itself generator-owned, but once a human sets it `true` the whole
+placement is frozen at the confirmed values, since flipping that field is
+the file's own documented hand-edit path).
+
 ## Parked future ideas (not in scope, don't build without being asked)
 - Full postal-address coverage for `location` across all 2,637 stations,
   regardless of Wikipedia tier — currently `location` only ever populates

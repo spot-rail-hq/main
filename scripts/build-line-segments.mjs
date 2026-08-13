@@ -55,7 +55,7 @@
  * a stats report for review before Phase 3 touches this.
  */
 
-import { writeFileSync, mkdirSync } from 'node:fs';
+import { writeFileSync, mkdirSync, readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { classify, classifyTags, splitTflLine, applyRelationOverride, RELATION_ID_OVERRIDES, heritageOverrideStatus, unmappedHeritageNames } from './lib/operator-classify.mjs';
@@ -80,6 +80,145 @@ const CHECKPOINT_BBOX = process.env.LINE_SEGMENTS_BBOX
 // instead of overwriting the default corridor's output.
 const LABEL = process.env.LINE_SEGMENTS_LABEL || '';
 const OUT_PATH = path.join(OUT_DIR, NATIONAL ? 'line-segments.json' : `line-segments-checkpoint${LABEL ? '-' + LABEL : ''}.json`);
+const ORPHANED_NOTES_PATH = path.join(OUT_DIR, `line-segments-orphaned-annotations-${Date.now()}.json`);
+
+// ─── read-merge-preserve (inverted allowlist) ──────────────────────────────
+// This script has no stable, hand-curated key like heritage-content.json's
+// `slug` — segment `id` is `segments.length` at push time, so it is entirely
+// an artifact of graph-traversal order (Overpass response order → adjacency
+// iteration → significant-node Set iteration), and shifts for every segment
+// downstream of any topology change anywhere in the country. `way_ids` is
+// NOT unique either — confirmed on the live file (2026-08-13): 831 of 8448
+// segments share their way_ids set with at least one other segment, because
+// parallel-operator lanes over the same physical way are separate segments.
+// Even `way_ids + operators` still collides 525 times (a single long way can
+// be split into several same-operator segments by unrelated junctions along
+// its length). The one key that was collision-free on the real file is the
+// segment's own `nodes` array (the exact interior node-ID chain between two
+// significant nodes) — 8448 distinct keys for 8448 segments, zero collisions
+// — compared direction-independently since traversal direction isn't a
+// meaningful part of a segment's identity. This is the finest granularity
+// the algorithm itself operates at, so it's the correct key: an exact match
+// means "the identical physical arc, unchanged," and anything else is a
+// legitimate "this arc doesn't exist in that shape any more," never a guess.
+export const SEGMENT_OWNED_KEYS = new Set([
+  'id', 'nodes', 'coords', 'operators', 'way_ids', 'length_m',
+  'heritage_railways', 'heritage_slug', 'heritage_type', 'heritage_type_secondary', 'heritage_band',
+  'loop',
+]);
+// Everything at the top level this script itself writes. Other pipeline
+// stages (ingest-branch-ways.mjs, split-subbrand-segments.mjs,
+// fill-operator-gaps.mjs, attribute-by-calling-points.mjs) each stamp their
+// own top-level summary block (branch_ingest, subbrand_split, gap_fill,
+// calling_point_attribution) — none of those are reproducible by THIS
+// script, so a bare stage-3 rerun must not erase them even though the
+// documented pipeline expects stages 4+ to be rerun afterward anyway.
+const TOP_LEVEL_OWNED_KEYS = new Set([
+  'generated_at', 'scope', 'bbox', 'relation_count', 'way_count', 'node_count',
+  'edge_count', 'significant_node_count', 'segment_count',
+  'operators_per_segment_histogram', 'tfl_line_split', 'segments',
+]);
+
+export function nodesKey(nodes) {
+  const fwd = nodes.join(',');
+  const rev = [...nodes].reverse().join(',');
+  return fwd < rev ? fwd : rev;
+}
+
+export function foreignFields(obj, ownedKeys) {
+  const out = {};
+  for (const [k, v] of Object.entries(obj)) {
+    if (!ownedKeys.has(k)) out[k] = v;
+  }
+  return out;
+}
+
+function loadExistingOutput() {
+  if (!existsSync(OUT_PATH)) return null;
+  try {
+    return JSON.parse(readFileSync(OUT_PATH, 'utf8'));
+  } catch (err) {
+    throw new Error(`Existing output at ${OUT_PATH} is not valid JSON, refusing to overwrite blind: ${err.message}`);
+  }
+}
+
+// Merges hand-curated / other-pipeline-stage fields from the previous
+// output onto the freshly built segments, matched by nodesKey (NOT id).
+// Returns { mergedSegments, orphaned } — orphaned is every old segment that
+// carried a foreign field but whose exact node-chain no longer exists in
+// this run, so there is nowhere honest to reattach it. Never guesses.
+export function mergeSegmentAnnotations(existingOutput, freshSegments) {
+  if (!existingOutput) return { mergedSegments: freshSegments, orphaned: [] };
+
+  const oldNoted = new Map(); // nodesKey -> old segment (only those with foreign fields)
+  for (const old of existingOutput.segments || []) {
+    const foreign = foreignFields(old, SEGMENT_OWNED_KEYS);
+    if (Object.keys(foreign).length === 0) continue;
+    oldNoted.set(nodesKey(old.nodes), { old, foreign });
+  }
+
+  const consumed = new Set();
+  const mismatches = [];
+  const mergedSegments = freshSegments.map((seg) => {
+    const key = nodesKey(seg.nodes);
+    const hit = oldNoted.get(key);
+    if (!hit) return seg;
+    consumed.add(key);
+    const oldOps = [...hit.old.operators].sort().join(',');
+    const newOps = [...seg.operators].sort().join(',');
+    if (oldOps !== newOps) {
+      mismatches.push({ key, id: seg.id, oldOperators: hit.old.operators, newOperators: seg.operators, foreign: hit.foreign });
+    }
+    return { ...seg, ...hit.foreign };
+  });
+
+  const orphaned = [];
+  for (const [key, hit] of oldNoted) {
+    if (!consumed.has(key)) orphaned.push({ key, oldId: hit.old.id, oldOperators: hit.old.operators, wayIds: hit.old.way_ids, foreign: hit.foreign });
+  }
+
+  if (mismatches.length) {
+    console.warn(`\n⚠ ${mismatches.length} segment(s) matched by exact node-chain but changed operators — preserved fields may now describe a stale situation, review by hand:`);
+    for (const m of mismatches) {
+      console.warn(`  id ${m.id}: operators ${JSON.stringify(m.oldOperators)} -> ${JSON.stringify(m.newOperators)}`);
+      console.warn(`    preserved fields: ${JSON.stringify(m.foreign)}`);
+    }
+  }
+
+  return { mergedSegments, orphaned };
+}
+
+// Fails loudly by default: if this run would silently drop hand-curated or
+// other-pipeline-stage content, abort and write nothing. Set
+// ALLOW_ORPHANED_SEGMENT_NOTES=1 only after manually reviewing the printed
+// diagnostic — it lets the write proceed but still records everything
+// dropped to a side ledger file so nothing vanishes untracked.
+export function assertNoSegmentAnnotationLoss(orphaned, topLevelForeignLost) {
+  if (orphaned.length === 0 && topLevelForeignLost.length === 0) return;
+
+  console.error(`\n✗ SEGMENT ANNOTATION LOSS DETECTED`);
+  if (orphaned.length) {
+    console.error(`${orphaned.length} segment(s) with hand-curated or pipeline-stage fields have no matching node-chain in this run:`);
+    for (const o of orphaned) {
+      console.error(`  old id ${o.oldId} (operators ${JSON.stringify(o.oldOperators)}, way_ids ${JSON.stringify(o.wayIds)}):`);
+      console.error(`    ${JSON.stringify(o.foreign)}`);
+    }
+  }
+  if (topLevelForeignLost.length) {
+    console.error(`${topLevelForeignLost.length} top-level key(s) from the previous output are missing from this run's TOP_LEVEL_OWNED_KEYS carry-forward: ${topLevelForeignLost.join(', ')}`);
+  }
+
+  if (process.env.ALLOW_ORPHANED_SEGMENT_NOTES === '1') {
+    mkdirSync(OUT_DIR, { recursive: true });
+    writeFileSync(ORPHANED_NOTES_PATH, JSON.stringify({ generated_at: new Date().toISOString(), reason: 'no matching node-chain in rebuild', orphaned, topLevelForeignLost }, null, 2) + '\n');
+    console.error(`\nALLOW_ORPHANED_SEGMENT_NOTES=1 set — proceeding anyway. Orphaned content archived to ${ORPHANED_NOTES_PATH}. Re-triage by hand.`);
+    return;
+  }
+
+  console.error(`\nRefusing to write ${OUT_PATH} — this would silently drop the content above.`);
+  console.error(`If this loss is expected (topology genuinely changed here), re-run with ALLOW_ORPHANED_SEGMENT_NOTES=1 after reviewing the diagnostic — dropped content is archived, never just discarded.`);
+  throw new Error('segment annotation loss guard tripped — see diagnostic above');
+}
 
 async function overpassQuery(ql, { retries = 3, timeoutMs = 180000 } = {}) {
   for (let attempt = 1; attempt <= retries; attempt++) {
@@ -626,6 +765,16 @@ async function main() {
   const grSegments = segments.filter((s) => s.operators.includes('GR')).length;
   const gcSegments = segments.filter((s) => s.operators.includes('GC')).length;
 
+  const existingOutput = loadExistingOutput();
+  const { mergedSegments, orphaned } = mergeSegmentAnnotations(existingOutput, segments);
+  const topLevelForeign = existingOutput ? foreignFields(existingOutput, TOP_LEVEL_OWNED_KEYS) : {};
+  // Every foreign top-level key carries forward unconditionally (they're
+  // whole-file summary blocks, not per-segment — there's no "match" concept
+  // for them, only present-or-not), so nothing is ever silently lost here.
+  const topLevelForeignLost = [];
+
+  assertNoSegmentAnnotationLoss(orphaned, topLevelForeignLost);
+
   mkdirSync(OUT_DIR, { recursive: true });
   const output = {
     generated_at: new Date().toISOString(),
@@ -639,9 +788,14 @@ async function main() {
     segment_count: segments.length,
     operators_per_segment_histogram: opCounts,
     tfl_line_split: { split: tflSplitCount, unsplit: tflUnsplitCount },
-    segments,
+    ...topLevelForeign,
+    segments: mergedSegments,
   };
   writeFileSync(OUT_PATH, JSON.stringify(output, null, 2) + '\n');
+  if (existingOutput) {
+    const preservedCount = mergedSegments.filter((s) => Object.keys(foreignFields(s, SEGMENT_OWNED_KEYS)).length > 0).length;
+    console.log(`Preserved hand-curated/pipeline-stage fields on ${preservedCount} segment(s) via node-chain match; ${orphaned.length} orphaned.`);
+  }
 
   console.log('\n=== Report ===');
   console.log(`Relations: ${relations.length} colorable in scope`);
@@ -661,7 +815,9 @@ async function main() {
   console.log(`\nWritten to ${OUT_PATH}`);
 }
 
-main().catch((err) => {
-  console.error('FATAL:', err.message);
-  process.exit(1);
-});
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main().catch((err) => {
+    console.error('FATAL:', err.message);
+    process.exit(1);
+  });
+}
