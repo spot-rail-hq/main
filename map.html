@@ -9118,31 +9118,32 @@
   // Closed-only stations (no crs) keep exactly the layout they had.
   // The mode flag is never touched by any of this: History stays History, and
   // the slider stays on screen and usable.
-  // "Moved to 1964 · Tyldesley operated 1846–1964." — set only by
-  // selectHistoricalStation() when opts.snapToOpen actually moved the slider
-  // (Section 4). Reads `selection.snapNotice` directly rather than taking it
-  // as a parameter, same pattern fromToSkeletonHtml() already uses for
-  // selection.fromToPath — every OTHER selection type sets a fresh
-  // `selection` object with no snapNotice key at all, so this can only ever
-  // render for the histstation selection that actually produced it.
+  // "Moved to 1964 · Tyldesley operated 1846–1964." (single period) or
+  // "Moved to 1919 · Baldragon operated 1831–1917, 1919–1955." (two
+  // periods) — set only by selectHistoricalStation() when opts.snapToOpen
+  // actually moved the slider (Section 4). Reads `selection.snapNotice`
+  // directly rather than taking it as a parameter, same pattern
+  // fromToSkeletonHtml() already uses for selection.fromToPath — every
+  // OTHER selection type sets a fresh `selection` object with no
+  // snapNotice key at all, so this can only ever render for the
+  // histstation selection that actually produced it.
   //
-  // States the year moved TO plus the station's whole operating range,
-  // rather than asserting a second, different "closure year" — this data
-  // model has one end_year per period, not a separate "last year trains
-  // ran" vs. "official closure date" (which can genuinely differ by one in
-  // real-world closure records; an earlier draft of this notice implied
-  // that distinction and this dataset cannot support it). "–present" when
-  // the final period is still open — reachable here even though a snap only
-  // fires when a target year exists, because the STATION can still be
-  // currently open while the SNAP moved to years before either its
-  // reopening or its first opening (e.g. a slider sitting inside an early
-  // closure gap of a station that's open again today).
+  // States the year moved TO plus the station's operating range via
+  // n.rangeLabel (historicalOperatingRangeLabel() — see its own comment for
+  // the single/two/3+-period rule and the 2026-08-15 fix this replaced: a
+  // flat first-to-last span used to silently swallow the exact inter-period
+  // gap a snap had just navigated around, which is actively misleading in
+  // the one place this notice exists to explain that). Never a second,
+  // different "closure year" either — this data model has one end_year per
+  // period, not a separate "last year trains ran" vs. "official closure
+  // date" (which can genuinely differ by one in real-world closure
+  // records; an earlier draft of this notice implied that distinction and
+  // this dataset cannot support it).
   function historicalSnapNoticeHtml() {
     var n = selection.snapNotice;
     if (!n) return '';
-    var range = n.firstYear + '–' + (n.stillOpen ? 'present' : n.lastYear);
     return '<div class="db-hint hist-snap-notice" data-anim-row>Moved to ' + n.toYear + ' · ' +
-      escapeAttr(n.name) + ' operated ' + range + '.</div>';
+      escapeAttr(n.name) + ' operated ' + n.rangeLabel + '.</div>';
   }
 
   function historicalStationSkeletonHtml(props, coords) {
@@ -9186,24 +9187,48 @@
     });
   }
 
-  // A station/line's span, read from the flattened p1_start/p1_end...p5_end
-  // scalars (`periods` is a JSON STRING in the tiles, not pre-parsed — this
-  // reads the same flattened shape the search index also uses, see
-  // build-historical-search-index.mjs). `first` is the first period's start;
-  // `last` is the LAST period's end IF the station is not currently open;
-  // `sawOpen` is true iff the final period found has no end year at all
-  // (still open today). Extracted 2026-08-13 from selectHistoricalStation()'s
-  // own inline loop — same logic, now also shared by the History search path
-  // below (years label + snap target), so both read a multi-period station's
-  // span identically rather than two copies drifting apart.
-  function historicalPeriodSpan(props) {
-    var first = props.p1_start, last = null, sawOpen = false;
+  // Parses a station/line's flattened p1_start/p1_end...p5_end scalars
+  // (`periods` is a JSON STRING in the tiles, not pre-parsed — this reads
+  // the same flattened shape the search index also uses, see
+  // build-historical-search-index.mjs) into an ordered list of
+  // {start, end} — end:null meaning that period is still open (only ever
+  // true of the LAST period; the data has no way to represent a station
+  // that closed, reopened, then had an earlier period retroactively marked
+  // open). Extracted 2026-08-15 as the shared read underneath
+  // historicalPeriodSpan(), historicalStationSnapYear() and
+  // historicalOperatingRangeLabel() below — three different questions
+  // ("what's the first-to-last span", "what year should a snap land on",
+  // "what should the range read as") that all used to carry their own copy
+  // of this exact loop.
+  function historicalPeriodList(props) {
+    var periods = [];
     for (var i = 1; i <= 5; i++) {
-      if (props['p' + i + '_start'] === undefined) break;
-      if (props['p' + i + '_end'] === undefined) sawOpen = true;
-      else last = props['p' + i + '_end'];
+      var s = props['p' + i + '_start'];
+      if (s === undefined) break;
+      var e = props['p' + i + '_end'];
+      periods.push({ start: s, end: e === undefined ? null : e });
     }
-    return { first: first, last: last, sawOpen: sawOpen };
+    return periods;
+  }
+
+  // A station/line's OVERALL span — `first` is the first period's start;
+  // `last` is the LAST CLOSED period's end (i.e. if the final period is
+  // still open, this is the period BEFORE it, or null if there's only the
+  // one open period); `sawOpen` is true iff the final period has no end
+  // year (still open today). This collapses a multi-period station to one
+  // number pair and is right for applySliderFollow()'s RULE 1/3 (does the
+  // slider's year fall ANYWHERE inside this station's whole existence) —
+  // it is NOT what the search-result note or the snap notice display, since
+  // both of those need to show (or navigate around) an inter-period GAP
+  // this collapsed form throws away; see historicalOperatingRangeLabel()
+  // for the display side of that distinction.
+  function historicalPeriodSpan(props) {
+    var periods = historicalPeriodList(props);
+    if (!periods.length) return { first: undefined, last: null, sawOpen: false };
+    var finalPeriod = periods[periods.length - 1];
+    var sawOpen = finalPeriod.end === null;
+    var last = sawOpen ? (periods.length > 1 ? periods[periods.length - 2].end : null) : finalPeriod.end;
+    return { first: periods[0].start, last: last, sawOpen: sawOpen };
   }
 
   // Snap target for the History station-SEARCH rule (2026-08-14 — REPLACES
@@ -9236,13 +9261,7 @@
   // long-gap stations it can read as an arbitrary pick rather than a
   // helpful one.
   function historicalStationSnapYear(props, year) {
-    var periods = [];
-    for (var i = 1; i <= 5; i++) {
-      var s = props['p' + i + '_start'];
-      if (s === undefined) break;
-      var e = props['p' + i + '_end'];
-      periods.push({ start: s, end: e === undefined ? null : e });
-    }
+    var periods = historicalPeriodList(props);
     if (!periods.length) return null;
 
     for (var j = 0; j < periods.length; j++) {
@@ -9263,6 +9282,34 @@
       }
     }
     return null; // defensive — unreachable given the checks above
+  }
+
+  // The "operated ..." half of the snap notice (historicalSnapNoticeHtml()
+  // below). REPLACES a flat first-to-last span ("1831–1955") that silently
+  // collapsed every gap between periods — including the exact gap a snap
+  // just navigated around, which made the notice actively misleading in the
+  // one situation it exists to explain. Three-tier rule (2026-08-15),
+  // checked against the real index (build-historical-search-index.mjs's
+  // 8,884 entries): single period 7,919 (89.2%) — unchanged, one span.
+  // Two periods 880 (9.9%) — both spelled out in full, e.g.
+  // "1831–1917, 1919–1955": with only one gap to show, spelling it out is
+  // still one short clause. Three or more periods 85 (1.0%, of which 77
+  // have exactly 3, 5 have 4, 3 have the dataset's max of 5) — collapsed
+  // back to a first-to-last span with an explicit "(with breaks)"
+  // qualifier: spelling out 3+ periods inline was judged less readable than
+  // the two-period case, but the qualifier is still doing real work — it
+  // stops the collapsed number from silently implying continuous operation,
+  // which is exactly the failure being fixed here, just resolved with a
+  // caveat instead of a full list for this smaller, rarer tier.
+  // "–present" for an open final period is unchanged in every tier.
+  function historicalOperatingRangeLabel(props) {
+    var periods = historicalPeriodList(props);
+    if (!periods.length) return '';
+    function fmt(p) { return p.start + '–' + (p.end === null ? 'present' : p.end); }
+    if (periods.length === 1) return fmt(periods[0]);
+    if (periods.length === 2) return fmt(periods[0]) + ', ' + fmt(periods[1]);
+    var finalPeriod = periods[periods.length - 1];
+    return periods[0].start + '–' + (finalPeriod.end === null ? 'present' : finalPeriod.end) + ' (with breaks)';
   }
 
   // `coords` is the clicked feature's own [lon, lat] — the historical station
@@ -9305,12 +9352,16 @@
     // Visible notice (Section 2 rewrite) — only ever set when a search-driven
     // snap actually moved the slider; every other path (a plain click, or a
     // search pick that needed no snap) clears it, so a stale notice from a
-    // previous selection can never survive onto this one. Carries the whole
-    // operating range (not just the year moved to) so the panel can state
-    // "operated 1846–1964" rather than implying a second, different year the
-    // single-end_year-per-period data model doesn't actually have.
+    // previous selection can never survive onto this one. rangeLabel is
+    // historicalOperatingRangeLabel()'s pre-formatted string, not the raw
+    // span — see that function's own comment for why a multi-period station
+    // needs more than `span` (first/last/sawOpen) can express here: `span`
+    // collapses every period into one first-to-last pair by construction
+    // (that's what applySliderFollow()'s range argument, two lines up,
+    // actually needs), which is exactly the collapse that hid Baldragon's
+    // 1917–1919 gap from the notice before this fix.
     selection.snapNotice = (opts.snapToOpen && didSnap)
-      ? { toYear: targetYear, name: props.name, firstYear: span.first, lastYear: span.last, stillOpen: span.sawOpen }
+      ? { toYear: targetYear, name: props.name, rangeLabel: historicalOperatingRangeLabel(props) }
       : null;
     pushHistoryForCurrentState();
   }
