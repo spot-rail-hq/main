@@ -68,6 +68,103 @@ const ROOT = path.resolve(__dirname, '..');
 const REPORT_PATH = path.join(ROOT, 'scripts', 'output', 'heritage-wikidata-report.json');
 const OUT_PATH = path.join(ROOT, 'heritage-content.json');
 
+// ─── READ-MERGE-PRESERVE (2026-08-19) ──────────────────────────────────────
+// FIXED A REAL BUG: this generator used to build `content` from HERITAGE_META
+// + the wikidata report ALONE and overwrite heritage-content.json wholesale —
+// it never read the file it was about to replace. That silently destroyed any
+// hand-curated field a human (or Claude, doing hand research) had added
+// outside this pipeline — confirmed live: established_year and its three
+// sibling fields (opened_year, heritage_reopened_year, established_year_type,
+// _established_year — added by a separate, manual per-railway research pass,
+// see scratchpad/heritage-established-year-*.md) exist on 50 entries today and
+// would all have been wiped by the next unrelated re-run of this script.
+//
+// GENERATOR_OWNED_KEYS is the complete set of keys buildEntry() itself ever
+// writes — read it straight off that function, don't hand-maintain a second
+// copy. This is deliberately NOT a "preserve" allowlist of hand-curated field
+// names: an allowlist has to be remembered and updated every time someone
+// adds a new hand-curated field, and forgetting is exactly the silent-failure
+// class this fix exists to close (a hand-curated field left off the list
+// would be wiped exactly as before, just for a shorter list of fields).
+// Inverted instead: the generator already has to state its OWN output shape
+// explicitly to build an entry in the first place, so that's the one list
+// that's structurally kept in sync with reality — anything ELSE present on
+// an existing entry, whatever it's called, survives a regen automatically,
+// with no second list to maintain and no way for a newly-added hand-curated
+// field to be silently unprotected.
+//
+// NOT the existing underscore-prefix convention either — checked first and
+// rejected: `_wikidata`/`_wikipedia`/`_review` already use a leading
+// underscore purely as a "this is metadata, not primary content" naming
+// convention, and ARE meant to be regenerated and overwritten every run (that
+// IS their whole purpose — fresh Wikidata resolution results). Treating
+// "starts with underscore" as "preserve, don't touch" would have protected
+// those THREE FIELDS FROM EVER UPDATING AGAIN — backwards. It also would have
+// MISSED three of the four established_year-family fields, which aren't
+// underscore-prefixed at all (only `_established_year` is) — a false
+// negative on the exact fields this fix is for. The underscore prefix means
+// something else in this codebase already; reusing it here would silently
+// fail in both directions at once.
+const GENERATOR_OWNED_KEYS = new Set([
+  'name', 'type', 'intro', 'legal_name', 'type_secondary', 'length_km',
+  'website', 'wikipedia_title', '_wikipedia', '_wikidata', '_review',
+]);
+
+function loadExistingContent() {
+  if (!existsSync(OUT_PATH)) return {};
+  const parsed = JSON.parse(readFileSync(OUT_PATH, 'utf8'));
+  delete parsed._notes;
+  return parsed;
+}
+
+// Everything on `oldEntry` that isn't one of the generator's own keys —
+// hand-curated by definition, regardless of what it's called or whether this
+// generator has ever heard of it.
+function preservedFields(oldEntry) {
+  if (!oldEntry) return {};
+  const preserved = {};
+  for (const [k, v] of Object.entries(oldEntry)) {
+    if (!GENERATOR_OWNED_KEYS.has(k)) preserved[k] = v;
+  }
+  return preserved;
+}
+
+// LOUD GUARD, run right before writing. Defense in depth on top of the merge
+// itself (which is safe by construction — see below) — this project has
+// already shipped two silent-wrong bugs in hand-merged heritage data in the
+// established_year work this generator fix follows, so a re-run that could
+// destroy 50+ entries of manual research gets an explicit, checked assertion
+// rather than trusting the merge logic alone. Compares every PRESERVED field
+// (not generator-owned, non-null/non-empty in the old file) against the same
+// slug+key in the freshly-built output; any populated value that's missing
+// or changed aborts the write with the exact slug and field, before
+// touching disk. Only checks slugs still present in the new output — a
+// railway legitimately removed from HERITAGE_META losing its hand-curated
+// fields with it is an intentional prune, not a bug.
+function assertNoDataLoss(oldContent, newContent) {
+  const problems = [];
+  for (const [slug, oldEntry] of Object.entries(oldContent)) {
+    const newEntry = newContent[slug];
+    if (!newEntry) continue; // slug removed from HERITAGE_META — intentional, not this guard's concern
+    for (const [k, v] of Object.entries(oldEntry)) {
+      if (GENERATOR_OWNED_KEYS.has(k)) continue;
+      if (v === null || v === undefined || v === '') continue;
+      const newV = newEntry[k];
+      if (JSON.stringify(newV) !== JSON.stringify(v)) {
+        problems.push(`${slug}.${k}: had ${JSON.stringify(v)}, would become ${JSON.stringify(newV)}`);
+      }
+    }
+  }
+  if (problems.length) {
+    console.error(`\nABORTING — ${problems.length} hand-curated field(s) would be lost or changed by this write:`);
+    problems.slice(0, 20).forEach((p) => console.error('  ' + p));
+    if (problems.length > 20) console.error(`  ...and ${problems.length - 20} more`);
+    console.error('\nNothing was written. If this is intentional (e.g. a deliberate correction to a');
+    console.error('hand-curated field), edit heritage-content.json directly rather than through this generator.');
+    process.exit(1);
+  }
+}
+
 // Flags that make a row's Wikidata match unsafe to draw ANY content from —
 // the entity may not be this railway. A flagged row still gets an intro
 // sentence (from HERITAGE_META, which is curated and always correct), just
@@ -230,12 +327,23 @@ function main() {
   const bySlug = {};
   for (const r of report.rows || []) bySlug[r.slug] = r;
 
+  // Read BEFORE building — the whole point of this fix. Empty object on a
+  // first-ever run (no file to preserve from yet), same as every other
+  // "read prior output if it exists" pattern in this repo.
+  const existingContent = loadExistingContent();
+
   const content = {};
-  const stats = { total: 0, with_website: 0, with_wikipedia: 0, suppressed: 0, review: 0, with_location: 0 };
+  const stats = { total: 0, with_website: 0, with_wikipedia: 0, suppressed: 0, review: 0, with_location: 0, preserved: 0 };
 
   for (const [name, meta] of Object.entries(HERITAGE_META)) {
     const entry = buildEntry(name, meta, bySlug[meta.slug]);
-    content[meta.slug] = entry;
+    // Preserved (hand-curated) fields first, generator's own fresh fields
+    // second — a generator-owned key always wins on collision (it's meant
+    // to regenerate), and everything else from the prior file rides along
+    // untouched.
+    const preserved = preservedFields(existingContent[meta.slug]);
+    content[meta.slug] = { ...preserved, ...entry };
+    if (Object.keys(preserved).length) stats.preserved++;
     stats.total++;
     if (entry.website) stats.with_website++;
     if (entry.wikipedia_title) stats.with_wikipedia++;
@@ -255,10 +363,18 @@ function main() {
 
   console.log(JSON.stringify(stats, null, 2));
 
+  if (stats.preserved) console.log(`(${stats.preserved} entries carry hand-curated fields preserved from the existing file)`);
+
   if (!write) {
     console.log('\nSAMPLE MODE — nothing written. Re-run with --write to produce heritage-content.json.');
     return;
   }
+
+  // Defense in depth — see assertNoDataLoss()'s own comment. The merge above
+  // is safe by construction, but this checks the actual before/after rather
+  // than trusting that, and refuses to write at all if anything hand-curated
+  // would be lost.
+  assertNoDataLoss(existingContent, content);
 
   const out = {
     _notes:
@@ -271,7 +387,11 @@ function main() {
       'railways or companies; see the generator header for why each of those is omitted. ' +
       'An entry whose _wikidata.suppressed is set was checked and its match REJECTED as the wrong ' +
       'entity — it has no website/Wikipedia link on purpose. _review lists per-entry match ' +
-      'caveats (geo-unconfirmed / no-center / geo-only-title-differs) that a human should sweep.',
+      'caveats (geo-unconfirmed / no-center / geo-only-title-differs) that a human should sweep. ' +
+      'established_year/established_year_type/opened_year/heritage_reopened_year/_established_year ' +
+      'are NOT produced by this generator — they come from a separate, manual per-railway research ' +
+      'pass (see scratchpad/heritage-established-year-*.md) and are READ-MERGE-PRESERVED across ' +
+      'regeneration, not regenerated; see GENERATOR_OWNED_KEYS at the top of this script.',
     ...content,
   };
   writeFileSync(OUT_PATH, JSON.stringify(out, null, 2) + '\n');

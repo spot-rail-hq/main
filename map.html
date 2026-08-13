@@ -6610,6 +6610,23 @@
     // than dropped, since picking one would misdescribe them.
     var types = [c.type || r.type, r.type_secondary].filter(Boolean).map(heritageTypeLabel);
     html += dbFieldHtml('Type', types.join(' · '));
+    // established_year — see heritage-content.json's own _established_year
+    // block for the definition/provenance this renders from: the year first
+    // train ran under preservation, falling back to the original opening
+    // only where "reopening" doesn't apply (a new-build heritage line, or a
+    // funicular/tramway that never closed). Deliberately just the bare
+    // year — established_year_type ('reopened' vs 'opened') and the
+    // original-line/reopening pair this was chosen from
+    // (opened_year/heritage_reopened_year, both retained even though only
+    // one renders) are data-layer provenance, not shown here: the general-
+    // public audience this panel is for doesn't need to know an internal
+    // schema had two competing dates to choose from, the same reasoning
+    // CRS/STANOX/headcodes are kept out of user-facing text elsewhere on
+    // this site. dbFieldHtml() already omits the row entirely for the
+    // ~25% of railways with neither date sourced yet, and for the ones
+    // deliberately left blank because the source was ambiguous rather than
+    // silently guessed — no separate empty-state handling needed here.
+    html += dbFieldHtml('Established', c.established_year ? String(c.established_year) : '');
     // length_km (editorial) and km (generated, measured off the segment graph)
     // are the same quantity from two sources; prefer the editorial one. Suppress
     // 0 entirely — a "0.0 km" row on a no_line railway would contradict the
