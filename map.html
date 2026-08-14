@@ -891,6 +891,15 @@
   .db-franchise-list li:first-child { padding-top: 0; }
   .db-franchise-name { display: block; font-size: 15px; color: var(--ink-primary); font-weight: 500; }
   .db-franchise-dates { display: block; font-size: 13px; color: var(--ink); margin-top: 2px; }
+  /* Ownership status (2026-08-14) — secondary lines under the existing
+     Parent company row (see operatorOwnershipHtml()), same dimmed-text
+     pattern as .db-franchise-dates rather than a new top-of-panel section:
+     "genuinely interesting context... not what someone opened the panel
+     for" per the design note this implements. .db-ownership-future is one
+     step smaller again — the future-transfer line is speculative/announced,
+     not current fact, and reads as the least-weighted of the three. */
+  .db-ownership-line { display: block; font-size: 13px; color: var(--ink); margin-top: 2px; }
+  .db-ownership-future { display: block; font-size: 12px; color: var(--ink); margin-top: 2px; font-style: italic; }
   /* Notable-features list (2026-07-16) — was a single ";"-joined .db-value
      line, unreadable once a station has 7-12 facts (e.g. London Victoria).
      Bulleted list, same visual weight/pattern as .db-franchise-list. */
@@ -6494,6 +6503,82 @@
       : '<span class="db-value">Not available</span>';
     return '<div class="db-field" data-anim-row><div class="db-label">' + label + '</div><div class="db-chip-row">' + chips + '</div></div>';
   }
+  // ── Ownership status (2026-08-14, operators-content.json ownership_status/
+  // ownership_parent) ─────────────────────────────────────────────────────
+  // Machine key -> plain-language primary line, per the design note ("publicly
+  // owned" communicates, "DfT Operator Ltd" doesn't). {via} is interpolated
+  // by ownershipPrimaryLabel() below, not baked in here, since it names a
+  // different authority per entry (Scottish/Welsh Government, TfL, TfGM...).
+  // not_applicable/unverified are deliberately absent — both suppress the
+  // whole ownership line, never render a "we don't know" or "n/a" string.
+  var OWNERSHIP_STATUS_LABELS = {
+    public_dft: 'Publicly owned',
+    devolved_public: 'Publicly owned',
+    public_operating_company: 'Publicly owned',
+    tfl_direct: 'Run directly by',
+    concession: 'Runs under contract to',
+    open_access: 'Independent operator',
+    private_contract: 'Privately owned',
+  };
+  // A sub-brand (SN/TL/GX/GN -> GTR, IL -> SW, SX -> LE) carries
+  // `ownership_parent` instead of its own `ownership_status`, resolved
+  // ONE level here — the data itself never chains a parent's own
+  // ownership_parent further (enforced at population time in
+  // scripts/apply-operator-ownership-status.mjs), so one lookup is enough.
+  function resolveOwnershipStatus(o) {
+    if (!o) return null;
+    if (o.ownership_status) return o.ownership_status;
+    if (o.ownership_parent) {
+      var parent = operatorsContent[o.ownership_parent];
+      return (parent && parent.ownership_status) || null;
+    }
+    return null;
+  }
+  function ownershipPrimaryLabel(os) {
+    var base = OWNERSHIP_STATUS_LABELS[os.status];
+    if (!base) return null; // not_applicable, unverified, or an unrecognised future value — suppress rather than guess
+    if (os.status === 'devolved_public') return base + (os.via ? ' (' + os.via + ')' : '');
+    if (os.status === 'tfl_direct' || os.status === 'concession') return base + ' ' + (os.via || 'a public authority');
+    return base;
+  }
+  // Renders 1-3 stacked lines under the existing Parent company value:
+  // primary status, then a secondary company-name line IF it adds
+  // information the primary line doesn't already carry (skipped when the
+  // only company-name field available just repeats `via`), then an
+  // announced-future-transfer line if one exists. Only `future_transfer.note`
+  // is ever shown to the public — the top-level `note` field is deliberately
+  // NEVER rendered here, since several entries use it for curator-only
+  // research caveats (e.g. WR's flagged-wrong parent_company, GW/CH/XC's
+  // "no exact contract-start date found") that were never written as
+  // public-facing copy and should not leak into the panel.
+  // "DfT Operator"/"DfT Operator (Department for Transport)" is the bare
+  // parent_company value on most already-nationalised entries (GR, SW, SE,
+  // LE, NT, TP, CC, WMR, GTR — checked live). For those, showing it as a
+  // "secondary" line under "Publicly owned" adds nothing (it's the same
+  // fact twice) and appending this function's own ", under DfT Operator"
+  // suffix to it would duplicate the phrase outright. Filtered out here
+  // rather than skipped ad hoc per entry, so a future nationalisation
+  // doesn't need this list updated — it's a pattern match, not a lookup.
+  var BARE_DFT_OPERATOR_RE = /^DfT Operator(\s*\(Department for Transport\))?$/i;
+  function operatorOwnershipHtml(o) {
+    var os = resolveOwnershipStatus(o);
+    if (!os) return '';
+    var primary = ownershipPrimaryLabel(os);
+    if (!primary) return '';
+    var html = '<span class="db-ownership-line">' + escapeAttr(primary) + '</span>';
+    var secondary = o.legal_entity || o.parent_company || '';
+    var secondaryIsRedundant = secondary === os.via ||
+      (os.status === 'public_dft' && BARE_DFT_OPERATOR_RE.test(secondary.trim()));
+    if (secondary && !secondaryIsRedundant) {
+      var mentionsDft = /DfT Operator/i.test(secondary);
+      var suffix = (os.status === 'public_dft' && !mentionsDft) ? ', under DfT Operator' : '';
+      html += '<span class="db-ownership-line">' + escapeAttr(secondary + suffix) + '</span>';
+    }
+    if (os.future_transfer && os.future_transfer.note) {
+      html += '<span class="db-ownership-future">' + escapeAttr(os.future_transfer.note) + '</span>';
+    }
+    return html;
+  }
   // Shown only when the tileset metadata has positively told us this operator
   // has no track — never while that lookup is still in flight, so a slow fetch
   // cannot flash a false "no route data". Same .db-hint degraded-state pattern
@@ -6518,7 +6603,7 @@
     var html = '';
     html += operatorNoTrackNoticeHtml(selection.code);
     html += dbHeadlineHtml(o.headline);
-    html += dbFieldHtml('Parent company', o.parent_company);
+    html += dbFieldHtml('Parent company', (o.parent_company || '') + operatorOwnershipHtml(o));
     html += operatorFranchiseListHtml(o.franchises);
     html += operatorRegionChipsHtml('Main regions', o.regions_served && o.regions_served.main);
     // 2026-07-23: "Other regions" is skipped entirely (not even a "Not

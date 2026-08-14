@@ -475,6 +475,36 @@ around Glasgow (lat ~55.87) and two short fragments near Berkhamsted on the WCML
 — Lumo runs neither. Possibly further classifier folds of the same class as the
 GTS/Elizabeth bug, possibly legitimate OSM tagging of planned services.
 
+**8. Re-verify operator ownership status** (added 2026-08-14 —
+operators-content.json's `ownership_status`/`ownership_parent`, see
+scratchpad/ownership-status-investigation.md). This is unrelated to the OSM
+segment graph above — it rides the same quarterly cadence because a second,
+independently-remembered schedule is a second thing to forget, not because
+it shares a data source. Run:
+
+```bash
+node scripts/check-operator-ownership-staleness.mjs
+```
+
+and review its output — three checks: passed future-transfer dates (an
+announced transfer, e.g. GW's 13 Dec 2026 nationalisation, whose date has
+now arrived; the script does not assume it happened on schedule, only flags
+it for a human to confirm), stale verification (`source.checked_at` older
+than 180 days — catches a QUIET ownership change with no announced date,
+which the future-transfer check cannot by design), and any entry with no
+resolvable ownership data at all. Exit code is always 0; this is a report; a
+clean run prints "none — clean" under all three.
+
+Additionally, spot-check via a fresh web search any entry the script flags
+as stale, prioritising `open_access` and `private_contract` statuses (still
+eligible for a surprise nationalisation announcement) over `public_dft`/
+`devolved_public`/`tfl_direct` (structurally stable, effectively never
+reverse). **Cite only a primary source** — operator/DfT press release,
+gov.uk, or a Wikipedia infobox that itself cites one. A secondary
+tracker/aggregator page was checked live during the 2026-08-14 investigation
+and was already wrong on two transfer dates by several weeks; do not repeat
+that mistake for convenience.
+
 
 ## Task 8 — Heritage railway extraction (2026-07-29)
 

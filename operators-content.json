@@ -1,5 +1,5 @@
 {
-  "_notes": "Keyed by a short operator code (your own convention — GWR, AWC, etc). 2026-07-13: seeded 28 new entries from api/incidents.js's TOC_REGION_TABLE, using that table's own 2-letter ATOC-style codes (VT, GR, XC, ...) as the key — name only, awaiting Wikipedia/manual enrichment like any other entry. RESOLVED: WMR (West Midlands Railway) predates that seed and keeps its own, longer code on purpose — TOC_REGION_TABLE's WM is a real-world ATOC operator code required for matching the live Darwin incident feed in api/incidents.js, not an arbitrary internal choice, so it is NOT changed to WMR for internal consistency; do not add a WM entry here. 2026-07-13 canonicalization pass (see chat): `aliases` (array of strings) is a new manual/curated field — OSM-tagged naming variants (spelling, casing, historical franchise/legal names) that should be treated as the same operator as this entry's `name`; also added to matching stations-content.json entries' `operators` arrays, replacing the variant string with the canonical `name`. `legal_entity` (string) is a separate new manual/curated field for a DIFFERENT real entity behind a brand (e.g. the group company operating it) — deliberately NOT folded into `aliases`/station data, since equating a legal entity with its brand would be wrong, not just imprecise. 2026-07-14: SE (Southeastern)'s wikipedia_title set to \"Southeastern (train operating company)\" — verified live against Wikipedia's API as a real, non-disambiguation page, exact match. GN (Great Northern)'s wikipedia_title set to \"Greater Thameslink Railway\", NOT its own article — bare \"Great Northern\" is a disambiguation page and no \"Great Northern (train operating company)\" article exists; Wikipedia confirms Thameslink Southern Great Northern Ltd, trading as Greater Thameslink Railway (GTR), took over Govia Thameslink Railway's services on 31 May 2026 and runs Gatwick Express/Great Northern/Southern/Thameslink as sub-brands with no separate per-brand articles post-merger, so GTR's article is genuinely the correct/only source for Great Northern content today. This is a deliberate exception to the usual \"wikipedia_title points to the entity's own article\" rule — flagged here so it isn't mistaken for a mis-resolution later. 2026-07-14 follow-up: swept SN/TL/GX/GN (the four Greater Thameslink Railway sub-brands) for stale \"Govia Thameslink Railway\" references. SN's headline/parent_company updated to \"Greater Thameslink Railway\". TL and GX already had it correctly recorded as history (a franchises entry ending 31 May 2026, TL also has the new \"Greater Thameslink Railway\" entry starting then) — left untouched, that's accurate history not a stale current-parent field. GN had no Govia reference to begin with (freshly set this session). NOTE left unresolved: TL's parent_company is \"Govia\" (not \"Govia Thameslink Railway\") — a different, narrower string referring to the private-sector parent group; didn't touch it since it wasn't the string asked about, but it's arguably equally stale post-nationalization and may need its own follow-up. 2026-07-14: \"Southern Railway\" folded into SN/Southern as a 19th alias (added to its `aliases` array; 15 stations' operators arrays updated) — after the membership-checking extraction switch this string reappeared as a genuinely stop-verified (not proximity) OSM tag, always co-occurring with \"Southern\" at the same stations, confirming it's a stale/duplicate relation tag for the same brand rather than the historic 1923–1947 Southern Railway company or proximity noise. By contrast \"Greater Thameslink Railway\" (which also reappeared under membership-checking, co-occurring with Thameslink/Southern/Gatwick Express/Great Northern) was deliberately NOT folded anywhere — it's the real current legal successor entity (GTR, since 31 May 2026) that Southern/Thameslink/Great Northern/Gatwick Express now operate under as sub-brands, confirmed via its own Wikipedia article; equating it with any one sub-brand would be wrong, same reasoning as `legal_entity`. fleet_classes store the EXACT display label as it should appear (not a bare number + assumed 'Class ' prefix) — this covers cases like Manchester Metrolink's M5000 that don't follow the 'Class NN' pattern. 'id' is used to link through to that vehicle's entry on the database page; 'display' is shown verbatim, no reformatting. franchises is the full history; sidebar should show the current one as a simple 'Operating since {start}' line by default, with the full array available as an expandable detail. FIELD OWNERSHIP (see scripts/ for the population scripts): headline/parent_company/franchises are written by scripts/fetch-wikipedia-facts.mjs (Wikipedia, narrative/historical — Claude extracts, never invents; headline is a punchy 8-12 word sentence, not a paragraph; a franchise entry only appears if the article states its dates). schema_jsonld is written by scripts/build-schema-jsonld.mjs (template assembly from the fields above, no new facts, no API calls). 2026-07-14 UI/content pass (mockup-routes.png/mockup-station.png): `stations_operated` is now computed by scripts/compute-operator-stats.mjs — a plain count of stations-content.json entries listing this operator's `name`/`aliases`, i.e. it inherits fetch-osm-facts.mjs's route-relation membership-verification standard rather than being a fresh guess. A genuine 0 (no verified station found — HT/Hull Trains, HX/Heathrow Express, XR/Elizabeth line as of this run) is left unset rather than written as literal 0, since 0 would misleadingly render as \"no stations\" for operators that plainly have real coverage; OSM just doesn't have a stop-verified route relation for them under these names yet. `regions_served` (main/other) and `notable_features` are now written by scripts/fetch-wikipedia-facts.mjs, same grounded-extraction discipline as headline/parent_company/franchises (never invented; omitted if the article doesn't state it) — see that script's header. `fleet_classes` remains manual/curated only — extracting specific class numbers from prose carries a higher hallucination risk than the other fields and needs the structured id/display shape below; not automated in this pass. name/wikipedia_title are manual/curated only. _wikipedia is provenance metadata written by the Wikipedia script (no _osm block here — OSM doesn't own any operator-level field in this design; the OSM-derived operator name lives on the station/route entries that reference it, via their own operator/operators fields). 2026-07-13 follow-up: `sub_brands` (array of strings, on LE/Greater Anglia so far) is a named service brand under this operator that intentionally does NOT get its own operators-content.json entry and is NOT folded into `aliases`/station data — distinct from both a naming variant (aliases) and a different legal entity (legal_entity). `welsh_name` (string, on AW so far) is the official bilingual Welsh-language name — kept as its own field rather than merged into `aliases` because it's a live, still-used official name, not a deprecated/historical variant. REVISED 2026-07-19: AW was renamed from \"Transport for Wales\" to \"Transport for Wales Rail\" and wikipedia_title re-pointed to match — \"Transport for Wales\" (Welsh Government's overall multi-modal transport body) and \"Transport for Wales Rail\" (the actual train operating company, abbr AW in its own Wikipedia infobox) are DIFFERENT real entities with separate Wikipedia articles; the AW entry was previously, incorrectly, sourced from the parent body's article. `welsh_name` updated to \"Trafnidiaeth Cymru Trenau\" (the rail company's own official Welsh name per its infobox's other_name field, more specific than the general org's plain \"Trafnidiaeth Cymru\"); \"Transport for Wales\"/\"Trafnidiaeth Cymru\"/\"Trafnidiaeth Cymru Trenau\" are now all aliases. station-content.json's \"Trafnidiaeth Cymru\" operator tags (238 stations) were renamed to \"Transport for Wales Rail\", same canonicalization precedent as every other alias-folding pass in this file — the earlier \"deliberately left as-is\" call is superseded by this correction. website (added 2026-07-19) is the operator's official corporate website URL, written by scripts/fetch-official-websites.mjs — deterministic, no AI (Wikipedia article title -> connected Wikidata item -> its official-website/P856 claim), NOT fetch-wikipedia-facts.mjs: confirmed live that plain-text article extraction cannot see infobox fields like this at all (0/30 operators extracted via that pathway before this script was built). Provenance under _wikidata (fetched_at, qid) — a separate namespace from _wikipedia. map.html's bottom link row shows this as the leftmost \"Official website\" link, paired with Wikipedia. RESOLVED 2026-07-19 (was flagged as a known gap in the previous note): GW's wikipedia_title was pointing at the HISTORIC 1833-1947 company's article (Q843251, no website claim) — re-pointed to \"Great Western Railway (train operating company)\" and headline/parent_company/franchises/regions_served/notable_features fully re-extracted from the correct source. Same class of bug found and fixed the same day on AW (see welsh_name note above). BOTH GW and AW's franchises/regions_served/fleet_classes were then further corrected by hand from each article's raw infobox wikitext (Special:Export-equivalent, prop=revisions&rvprop=content), NOT scripts/fetch-wikipedia-facts.mjs's normal Claude/prose extraction — confirmed live that Claude's prose-based extraction produces a plausible-looking but WRONG approximation of these two fields specifically: it extracts the company's narrated trading-name history (e.g. \"Great Western Trains\" -> \"First Great Western\" -> ...) as if those were franchises, when the infobox's own `franchise=` parameter actually names the two DfT-designated franchise PERIODS (\"InterCity Great Western\" 1996-2006, \"Greater Western\" 2006-2026) — a different, more official categorization entirely invisible to plain-text extraction. `fleet_classes` (previously empty for every operator — \"not automated in this pass\" per the field's own definition above) was populated for GW/AW only, from the same verified infobox `fleet=` parameter — NOT rolled out to the other 28 operators in this pass; flagged as a good candidate for a dedicated infobox-wikitext extraction script if the same treatment is wanted site-wide, rather than hand-verifying each one. KNOWN DIVERGENCE (not a bug, left as-is both places): GW/AW's Wikipedia-infobox-stated `stationsop` (198 / 248) differs from this file's own `stations_operated` (237 / 64) — the latter is intentionally a live, independently-computed count (scripts/compute-operator-stats.mjs, OSM route-relation membership) rather than a Wikipedia-stated snapshot; the two fields measure different things by design, see that field's own definition above. 2026-07-19 investigation: AW's stations_operated was stuck at 64 (vs Wikipedia's stated 248) even after the Trafnidiaeth Cymru rename above — root cause confirmed live via direct Overpass queries against Cardiff Central/Swansea/Wrexham General's actual route relations: OSM's own operator= tag is near-universally Welsh (\"Trafnidiaeth Cymru\") or the generic English parent name (\"Transport for Wales\") — NEVER literally \"Transport for Wales Rail\" as a raw OSM tag value; that string only exists in this file's own data, from the rename above. The 64 count predated BOTH (a) AW's name/aliases being updated and (b) scripts/compute-operator-stats.mjs being re-run afterward — it was matching only the bare \"Transport for Wales\" alias, silently excluding every Welsh-tagged relation (the overwhelming majority). This is NOT an OSM data-quality gap — OSM's route-relation coverage for Welsh stations is genuinely complete, just tagged in Welsh. Re-ran scripts/compute-operator-stats.mjs after the alias fix: corrected count is 271 (all of NWP/BNG/PMD/HHD and every other spot-checked Welsh station now match correctly). 271 vs Wikipedia's 248 is the same class of divergence as GW's 237-vs-198 (see that note above) — our count is stations verifiably SERVED (a stop-verified route relation passes through), Wikipedia's stationsop figure is stations MANAGED — not re-investigated further per this pass's scope; flagged for the same planned UI clarification. 2026-07-19 follow-up investigation (triggered by GN/Greater Thameslink Railway stationsop looking wrong: 56 vs Wikipedia's 238): confirmed GN's case is NOT a bug — GTR's own infobox literally states \"abbr = GN, GX, SN, TL\", i.e. 238 is a combined total across all four sub-brands, not comparable to any single brand's own count (SN+TL+GX+GN sums to 395, exceeding 238, as expected from stations served by multiple overlapping sub-brands). That prompted a full 30-operator sweep for the SAME general risk class (wikipedia_title pointing at the wrong scope/entity), which found FOUR separate, genuine bugs distinct from GN's: GR (\"LNER\"), SN (\"Southern\"), GC (\"Grand Central\"), and IL (\"Island Line\") all had wikipedia_title pointing at DISAMBIGUATION pages, not real articles — confirmed live via prop=pageprops&ppprop=disambiguation against all 30. Root cause: fetch-wikipedia-facts.mjs only disambiguation-checks a title it auto-resolves itself; an already-set wikipedia_title (however it got there) is trusted as-is and never validated — same root-cause class as the GW/AW wrong-article bugs fixed earlier this session, just a different failure mode (disambiguation vs wrong-but-real article). All four re-pointed to their real, correctly-scoped articles (verified live: each has its own infobox with abbr matching this operator's own key) and fully re-extracted (headline/parent_company/franchises/regions_served/notable_features via Claude from the correct article, website via Wikidata, franchises/regions_served/fleet_classes further corrected by hand from each infobox's raw wikitext, same discipline as GW/AW). GR's notable finding: its old data (headline \"LNER name spans a 1923 railway company and a 2018 operator\", franchises combining BOTH the historic 1923-1947 London and North Eastern Railway AND the modern 2018-present London North Eastern Railway into one list) was a direct symptom of extracting from the disambiguation page's own text, which literally lists both meanings — a clean example of why this bug class matters, not just a cosmetic mismatch. SEPARATE, NOT fixed this pass — flagged as a genuine judgment call rather than a clear bug: TL (Thameslink) and XR (Elizabeth line) both use {{Infobox rail service}} (a ROUTE/SERVICE infobox — locale/line_used/stock fields, no franchise/stationsop/abbr at all) rather than a company infobox; Thameslink's own infobox states its operator as [[Greater Thameslink Railway]], and no dedicated \"Thameslink (brand)\"-style modern company article exists (unlike Southern's) — \"Thameslink (train operating company)\" redirects to a disambiguation page, and the only date-qualified alternative is explicitly the HISTORIC 1997-2006 company. Given no unambiguous single correct company-scoped target exists, TL/XR's current wikipedia_title (the best available service-level article) was left as-is rather than force a guess — flagged for a human decision (accept as best-available, or fold into GN's shared-GTR pattern) rather than silently changed. Confirmed the remaining operators with no abbr/marks param (CH, ME, LD, WR) DO have genuine company-type infoboxes (Infobox rail company / Infobox public transit / Infobox Rail companies / Infobox company respectively), just using a template variant without that specific param — not a scope-mismatch signal, no further action needed. CONCLUSION on \"should we double check all other operators again\": the systematic risk class here is DISAMBIGUATION-PAGE wikipedia_title values specifically (now fully swept and fixed, 0 remaining) — remaining stationsop numeric differences across operators are understood as either the already-documented \"served vs managed\" methodology difference (GW-style) or genuine shared/different-entity scope (GN-style), not further undetected bugs. 2026-07-18 follow-up (resolving the TL/XR judgment call flagged above): confirmed live via Wikipedia's raw infobox wikitext (prop=revisions&rvprop=content, not prose extraction) for both. TL (Thameslink): its {{Infobox rail service}} states operator = [[Greater Thameslink Railway]], cited to a 26 September 2025 DfT announcement, and its predecessor field lists only historic entities (Thameslink train operating company 1997-2006, First Capital Connect, Govia Thameslink Railway 2014-2026) — confirming no modern standalone \"Thameslink\" company article exists, same underlying pattern as GN (a Greater Thameslink Railway sub-brand with no dedicated company-scoped article of its own). Unlike GN, TL's wikipedia_title did not need to change: \"Thameslink\" is a real, non-disambiguation article (about the service/route) and remains the correct best-available target, it was simply never a company infobox to begin with. XR (Elizabeth line): checked independently rather than assumed symmetric, since its operator has changed over time — its infobox states operator = [[GTS Rail Operations]] (under concession from [[TfL]]), cited to a 19 November 2024 TfL press release announcing GTS Rail Operations (a Go-Ahead Group/Tokyo Metro/Sumitomo Corporation joint venture) as the line's new operator, superseding the historic MTR Elizabeth line/MTR Corporation arrangement (already correctly reflected in this entry's own franchises array). XR does NOT match the GN/TL pattern: GTS Rail Operations is a genuine, distinct operating entity under a TfL concession, not a case of a brand with no dedicated article borrowing a shared parent's. No field changes needed for either entry — TL's parent_company/franchises and XR's parent_company already correctly stated GTR and GTS Rail Operations respectively before this check; this note exists purely to close out the flagged judgment call. 2026-07-18 follow-up: standardized TL/SN/GX's parent_company to match GN's phrasing — \"Thameslink Southern Great Northern Limited (Greater Thameslink Railway), owned by DfT Operator\" — confirmed against GTR's own Wikipedia infobox/prose (parent_company = [[DfT Operator]]; prose states GTR \"is a state-owned British train operating company that took over the services of privately-owned operator Govia Thameslink Railway on 31 May 2026\"). TL's parent_company had been stale since the 2026-07-14 sweep (still read \"Govia Thameslink Railway\", the pre-nationalisation private predecessor, contradicting its own franchises array which already correctly listed GTR as current since 31 May 2026) — this was flagged then as needing its own follow-up and is now fixed. SN/GX previously read the bare trade name \"Greater Thameslink Railway\" (correct owner, but missing the state-ownership/DfT Operator detail GN's entry already had) — brought in line for consistency across all four sub-brands, since all four share the exact same current parent entity. 2026-07-18: fleet_classes rollout extended from GW/AW (the only two previously populated, per the earlier note) to all remaining operators except GN and WR, hand-verified from each operator's own Wikipedia infobox raw wikitext (fleet=/stock= parameter, prop=revisions&rvprop=content — same discipline as GW/AW, not scripts/fetch-wikipedia-facts.mjs's prose extraction). WMR and LN share one underlying article (\"West Midlands Trains\", the operating company) whose infobox lists fleet per-brand (a 'West Midlands Railway' list and a separate 'London Northwestern Railway' list under the same fleet= parameter) — split accordingly rather than giving both entries the combined list, matching this file's usual per-entry precision. CH's Class 01/5 (a shunter sub-class) and CH/CS's Mark 5A/Mark 5 carriages are non-'Class N' rolling stock named exactly as the infobox states them, not forced into a 'Class NN' template — same precedent as the M5000 case already noted for this field. ES (Eurostar)'s fleet mixes British Rail-style classes (e300/e320, displayed as \"Class 373 (e300)\"/\"Class 374 (e320)\" since both namings are in real use) with non-British-Rail SNCF/Thalys TGV variants (PBA, PBKA) that have no Class number at all — given their own exact labels rather than invented ones. TWO DELIBERATE EXCEPTIONS, left unset rather than guessed: GN (Great Northern) — its wikipedia_title is GTR's own article (no dedicated Great Northern article exists, see this file's earlier GN note), and GTR's infobox fleet= is a COMBINED list across all four sub-brands (171/377/379/387/700/717) with no per-brand breakdown stated anywhere; assigning that combined list to GN specifically would misattribute rolling stock actually run under the Southern/Thameslink/Gatwick Express brands as if it were Great Northern's own fleet, so it's left unset rather than invented — same 'don't write a misleading number' reasoning already used for the stations_operated field (HT/HX/XR left unset rather than a literal 0). WR (West Coast Railways) — uses a generic {{Infobox company}} (it's a charter/spot-hire operator, not a scheduled TOC), which has no fleet parameter at all; its actual locomotive roster is only ever mentioned in prose and changes over time as a spot-hire business, so there's no single grounded infobox fact to extract. 2026-07-25 metro/light-rail pass: added the 10 tram/metro systems that already render as coloured lines on the map (Manchester Metrolink, Croydon Tramlink, Sheffield Supertram, Docklands Light Railway, West Midlands Metro, Tyne and Wear Metro, Nottingham Express Transit, Blackpool Tramway, Edinburgh Trams, Glasgow Subway) but had no entry here, so clicking one of their lines fell through to map.html's 'content coming soon' state. Keyed by the EXACT string the line tiles carry in their `operators` property (which for the metro bucket is the human-readable canonical name, not a code — see data/operator-colors.json's metro section and map.html's resolveOperatorDisplayName), same convention as the 2026-07-23 TfL-line entries; selectOperator() looks a tile value up in this file directly, so any drift between the two key sets silently re-breaks the panel. Facts were extracted from each system's own Wikipedia article — infobox raw wikitext (prop=revisions&rvprop=content) for the numeric/structured fields, lead prose for the narrative ones — NOT scripts/fetch-wikipedia-facts.mjs, which needs an ANTHROPIC_API_KEY this environment doesn't have; same hand-verified-infobox discipline already used for GW/AW's franchises/fleet_classes. `website` was populated by the normal deterministic route (scripts/fetch-official-websites.mjs, Wikidata P856) — all 10 resolved, as did all 11 tube lines, which had been left without one by the 2026-07-23 pass. NEW FIELD `stations_operated_manual` (boolean, opt-in): marks an entry whose stops are not in stations-content.json at all — that file is the National Rail CRS/NaPTAN database, so tram stops and tube-only stations are out of its scope by construction. scripts/compute-operator-stats.mjs now SKIPS these entirely rather than computing 0 and deleting the curated figure; confirmed live 2026-07-25 that without this flag its next run would have silently wiped every one of the 11 tube lines' hand-set stations_operated (Bakerloo 25, Piccadilly 53, etc.) added two days earlier. Deliberately distinct from the count > 0 gap handling already in that script, which covers HT/HX/XR — real National Rail operators whose stations ARE in the file, just not yet matched by a stop-verified OSM route relation. All 10 also carry `single_region: true` (a single-city tram/metro system has no meaningful 'other regions' question), matching the tube-line precedent. `fleet_classes` ids point at data/site-data.json's Light Rail & Metro rows by their exact column-0 label so the #fleet-{slug} anchor lands; `display` is the real vehicle name from the Wikipedia infobox, which in three cases does NOT match that row label (site-data.json calls Glasgow's Stadler stock and Nottingham's Bombardier/Alstom mixed fleet 'CAF Urbos 3' — a pre-existing labelling error in that file, flagged not fixed, out of scope for this pass). Nottingham deliberately has two fleet_classes entries sharing one id, since site-data.json holds its Incentro and Citadis fleets in a single mixed-fleet row. Croydon Tramlink keeps 'Croydon Tramlink' as its `name` (the tile/OSM/legend string) with 'Tramlink'/'London Trams' as aliases, rather than renaming to Wikipedia's current 'London Trams' branding — the map label has to stay stable. NOT covered by this pass, still falling through to 'coming soon' when clicked: the 6 renamed London Overground lines (Windrush, Weaver, Mildmay, Lioness, Suffragette, Liberty), the 'Heritage' bucket, and the bare 'GTR' tile value, which has no entry here because the four sub-brands (SN/TL/GX/GN) are keyed separately.",
+  "_notes": "Keyed by a short operator code (your own convention — GWR, AWC, etc). 2026-07-13: seeded 28 new entries from api/incidents.js's TOC_REGION_TABLE, using that table's own 2-letter ATOC-style codes (VT, GR, XC, ...) as the key — name only, awaiting Wikipedia/manual enrichment like any other entry. RESOLVED: WMR (West Midlands Railway) predates that seed and keeps its own, longer code on purpose — TOC_REGION_TABLE's WM is a real-world ATOC operator code required for matching the live Darwin incident feed in api/incidents.js, not an arbitrary internal choice, so it is NOT changed to WMR for internal consistency; do not add a WM entry here. 2026-07-13 canonicalization pass (see chat): `aliases` (array of strings) is a new manual/curated field — OSM-tagged naming variants (spelling, casing, historical franchise/legal names) that should be treated as the same operator as this entry's `name`; also added to matching stations-content.json entries' `operators` arrays, replacing the variant string with the canonical `name`. `legal_entity` (string) is a separate new manual/curated field for a DIFFERENT real entity behind a brand (e.g. the group company operating it) — deliberately NOT folded into `aliases`/station data, since equating a legal entity with its brand would be wrong, not just imprecise. 2026-07-14: SE (Southeastern)'s wikipedia_title set to \"Southeastern (train operating company)\" — verified live against Wikipedia's API as a real, non-disambiguation page, exact match. GN (Great Northern)'s wikipedia_title set to \"Greater Thameslink Railway\", NOT its own article — bare \"Great Northern\" is a disambiguation page and no \"Great Northern (train operating company)\" article exists; Wikipedia confirms Thameslink Southern Great Northern Ltd, trading as Greater Thameslink Railway (GTR), took over Govia Thameslink Railway's services on 31 May 2026 and runs Gatwick Express/Great Northern/Southern/Thameslink as sub-brands with no separate per-brand articles post-merger, so GTR's article is genuinely the correct/only source for Great Northern content today. This is a deliberate exception to the usual \"wikipedia_title points to the entity's own article\" rule — flagged here so it isn't mistaken for a mis-resolution later. 2026-07-14 follow-up: swept SN/TL/GX/GN (the four Greater Thameslink Railway sub-brands) for stale \"Govia Thameslink Railway\" references. SN's headline/parent_company updated to \"Greater Thameslink Railway\". TL and GX already had it correctly recorded as history (a franchises entry ending 31 May 2026, TL also has the new \"Greater Thameslink Railway\" entry starting then) — left untouched, that's accurate history not a stale current-parent field. GN had no Govia reference to begin with (freshly set this session). NOTE left unresolved: TL's parent_company is \"Govia\" (not \"Govia Thameslink Railway\") — a different, narrower string referring to the private-sector parent group; didn't touch it since it wasn't the string asked about, but it's arguably equally stale post-nationalization and may need its own follow-up. 2026-07-14: \"Southern Railway\" folded into SN/Southern as a 19th alias (added to its `aliases` array; 15 stations' operators arrays updated) — after the membership-checking extraction switch this string reappeared as a genuinely stop-verified (not proximity) OSM tag, always co-occurring with \"Southern\" at the same stations, confirming it's a stale/duplicate relation tag for the same brand rather than the historic 1923–1947 Southern Railway company or proximity noise. By contrast \"Greater Thameslink Railway\" (which also reappeared under membership-checking, co-occurring with Thameslink/Southern/Gatwick Express/Great Northern) was deliberately NOT folded anywhere — it's the real current legal successor entity (GTR, since 31 May 2026) that Southern/Thameslink/Great Northern/Gatwick Express now operate under as sub-brands, confirmed via its own Wikipedia article; equating it with any one sub-brand would be wrong, same reasoning as `legal_entity`. fleet_classes store the EXACT display label as it should appear (not a bare number + assumed 'Class ' prefix) — this covers cases like Manchester Metrolink's M5000 that don't follow the 'Class NN' pattern. 'id' is used to link through to that vehicle's entry on the database page; 'display' is shown verbatim, no reformatting. franchises is the full history; sidebar should show the current one as a simple 'Operating since {start}' line by default, with the full array available as an expandable detail. FIELD OWNERSHIP (see scripts/ for the population scripts): headline/parent_company/franchises are written by scripts/fetch-wikipedia-facts.mjs (Wikipedia, narrative/historical — Claude extracts, never invents; headline is a punchy 8-12 word sentence, not a paragraph; a franchise entry only appears if the article states its dates). schema_jsonld is written by scripts/build-schema-jsonld.mjs (template assembly from the fields above, no new facts, no API calls). 2026-07-14 UI/content pass (mockup-routes.png/mockup-station.png): `stations_operated` is now computed by scripts/compute-operator-stats.mjs — a plain count of stations-content.json entries listing this operator's `name`/`aliases`, i.e. it inherits fetch-osm-facts.mjs's route-relation membership-verification standard rather than being a fresh guess. A genuine 0 (no verified station found — HT/Hull Trains, HX/Heathrow Express, XR/Elizabeth line as of this run) is left unset rather than written as literal 0, since 0 would misleadingly render as \"no stations\" for operators that plainly have real coverage; OSM just doesn't have a stop-verified route relation for them under these names yet. `regions_served` (main/other) and `notable_features` are now written by scripts/fetch-wikipedia-facts.mjs, same grounded-extraction discipline as headline/parent_company/franchises (never invented; omitted if the article doesn't state it) — see that script's header. `fleet_classes` remains manual/curated only — extracting specific class numbers from prose carries a higher hallucination risk than the other fields and needs the structured id/display shape below; not automated in this pass. name/wikipedia_title are manual/curated only. _wikipedia is provenance metadata written by the Wikipedia script (no _osm block here — OSM doesn't own any operator-level field in this design; the OSM-derived operator name lives on the station/route entries that reference it, via their own operator/operators fields). 2026-07-13 follow-up: `sub_brands` (array of strings, on LE/Greater Anglia so far) is a named service brand under this operator that intentionally does NOT get its own operators-content.json entry and is NOT folded into `aliases`/station data — distinct from both a naming variant (aliases) and a different legal entity (legal_entity). `welsh_name` (string, on AW so far) is the official bilingual Welsh-language name — kept as its own field rather than merged into `aliases` because it's a live, still-used official name, not a deprecated/historical variant. REVISED 2026-07-19: AW was renamed from \"Transport for Wales\" to \"Transport for Wales Rail\" and wikipedia_title re-pointed to match — \"Transport for Wales\" (Welsh Government's overall multi-modal transport body) and \"Transport for Wales Rail\" (the actual train operating company, abbr AW in its own Wikipedia infobox) are DIFFERENT real entities with separate Wikipedia articles; the AW entry was previously, incorrectly, sourced from the parent body's article. `welsh_name` updated to \"Trafnidiaeth Cymru Trenau\" (the rail company's own official Welsh name per its infobox's other_name field, more specific than the general org's plain \"Trafnidiaeth Cymru\"); \"Transport for Wales\"/\"Trafnidiaeth Cymru\"/\"Trafnidiaeth Cymru Trenau\" are now all aliases. station-content.json's \"Trafnidiaeth Cymru\" operator tags (238 stations) were renamed to \"Transport for Wales Rail\", same canonicalization precedent as every other alias-folding pass in this file — the earlier \"deliberately left as-is\" call is superseded by this correction. website (added 2026-07-19) is the operator's official corporate website URL, written by scripts/fetch-official-websites.mjs — deterministic, no AI (Wikipedia article title -> connected Wikidata item -> its official-website/P856 claim), NOT fetch-wikipedia-facts.mjs: confirmed live that plain-text article extraction cannot see infobox fields like this at all (0/30 operators extracted via that pathway before this script was built). Provenance under _wikidata (fetched_at, qid) — a separate namespace from _wikipedia. map.html's bottom link row shows this as the leftmost \"Official website\" link, paired with Wikipedia. RESOLVED 2026-07-19 (was flagged as a known gap in the previous note): GW's wikipedia_title was pointing at the HISTORIC 1833-1947 company's article (Q843251, no website claim) — re-pointed to \"Great Western Railway (train operating company)\" and headline/parent_company/franchises/regions_served/notable_features fully re-extracted from the correct source. Same class of bug found and fixed the same day on AW (see welsh_name note above). BOTH GW and AW's franchises/regions_served/fleet_classes were then further corrected by hand from each article's raw infobox wikitext (Special:Export-equivalent, prop=revisions&rvprop=content), NOT scripts/fetch-wikipedia-facts.mjs's normal Claude/prose extraction — confirmed live that Claude's prose-based extraction produces a plausible-looking but WRONG approximation of these two fields specifically: it extracts the company's narrated trading-name history (e.g. \"Great Western Trains\" -> \"First Great Western\" -> ...) as if those were franchises, when the infobox's own `franchise=` parameter actually names the two DfT-designated franchise PERIODS (\"InterCity Great Western\" 1996-2006, \"Greater Western\" 2006-2026) — a different, more official categorization entirely invisible to plain-text extraction. `fleet_classes` (previously empty for every operator — \"not automated in this pass\" per the field's own definition above) was populated for GW/AW only, from the same verified infobox `fleet=` parameter — NOT rolled out to the other 28 operators in this pass; flagged as a good candidate for a dedicated infobox-wikitext extraction script if the same treatment is wanted site-wide, rather than hand-verifying each one. KNOWN DIVERGENCE (not a bug, left as-is both places): GW/AW's Wikipedia-infobox-stated `stationsop` (198 / 248) differs from this file's own `stations_operated` (237 / 64) — the latter is intentionally a live, independently-computed count (scripts/compute-operator-stats.mjs, OSM route-relation membership) rather than a Wikipedia-stated snapshot; the two fields measure different things by design, see that field's own definition above. 2026-07-19 investigation: AW's stations_operated was stuck at 64 (vs Wikipedia's stated 248) even after the Trafnidiaeth Cymru rename above — root cause confirmed live via direct Overpass queries against Cardiff Central/Swansea/Wrexham General's actual route relations: OSM's own operator= tag is near-universally Welsh (\"Trafnidiaeth Cymru\") or the generic English parent name (\"Transport for Wales\") — NEVER literally \"Transport for Wales Rail\" as a raw OSM tag value; that string only exists in this file's own data, from the rename above. The 64 count predated BOTH (a) AW's name/aliases being updated and (b) scripts/compute-operator-stats.mjs being re-run afterward — it was matching only the bare \"Transport for Wales\" alias, silently excluding every Welsh-tagged relation (the overwhelming majority). This is NOT an OSM data-quality gap — OSM's route-relation coverage for Welsh stations is genuinely complete, just tagged in Welsh. Re-ran scripts/compute-operator-stats.mjs after the alias fix: corrected count is 271 (all of NWP/BNG/PMD/HHD and every other spot-checked Welsh station now match correctly). 271 vs Wikipedia's 248 is the same class of divergence as GW's 237-vs-198 (see that note above) — our count is stations verifiably SERVED (a stop-verified route relation passes through), Wikipedia's stationsop figure is stations MANAGED — not re-investigated further per this pass's scope; flagged for the same planned UI clarification. 2026-07-19 follow-up investigation (triggered by GN/Greater Thameslink Railway stationsop looking wrong: 56 vs Wikipedia's 238): confirmed GN's case is NOT a bug — GTR's own infobox literally states \"abbr = GN, GX, SN, TL\", i.e. 238 is a combined total across all four sub-brands, not comparable to any single brand's own count (SN+TL+GX+GN sums to 395, exceeding 238, as expected from stations served by multiple overlapping sub-brands). That prompted a full 30-operator sweep for the SAME general risk class (wikipedia_title pointing at the wrong scope/entity), which found FOUR separate, genuine bugs distinct from GN's: GR (\"LNER\"), SN (\"Southern\"), GC (\"Grand Central\"), and IL (\"Island Line\") all had wikipedia_title pointing at DISAMBIGUATION pages, not real articles — confirmed live via prop=pageprops&ppprop=disambiguation against all 30. Root cause: fetch-wikipedia-facts.mjs only disambiguation-checks a title it auto-resolves itself; an already-set wikipedia_title (however it got there) is trusted as-is and never validated — same root-cause class as the GW/AW wrong-article bugs fixed earlier this session, just a different failure mode (disambiguation vs wrong-but-real article). All four re-pointed to their real, correctly-scoped articles (verified live: each has its own infobox with abbr matching this operator's own key) and fully re-extracted (headline/parent_company/franchises/regions_served/notable_features via Claude from the correct article, website via Wikidata, franchises/regions_served/fleet_classes further corrected by hand from each infobox's raw wikitext, same discipline as GW/AW). GR's notable finding: its old data (headline \"LNER name spans a 1923 railway company and a 2018 operator\", franchises combining BOTH the historic 1923-1947 London and North Eastern Railway AND the modern 2018-present London North Eastern Railway into one list) was a direct symptom of extracting from the disambiguation page's own text, which literally lists both meanings — a clean example of why this bug class matters, not just a cosmetic mismatch. SEPARATE, NOT fixed this pass — flagged as a genuine judgment call rather than a clear bug: TL (Thameslink) and XR (Elizabeth line) both use {{Infobox rail service}} (a ROUTE/SERVICE infobox — locale/line_used/stock fields, no franchise/stationsop/abbr at all) rather than a company infobox; Thameslink's own infobox states its operator as [[Greater Thameslink Railway]], and no dedicated \"Thameslink (brand)\"-style modern company article exists (unlike Southern's) — \"Thameslink (train operating company)\" redirects to a disambiguation page, and the only date-qualified alternative is explicitly the HISTORIC 1997-2006 company. Given no unambiguous single correct company-scoped target exists, TL/XR's current wikipedia_title (the best available service-level article) was left as-is rather than force a guess — flagged for a human decision (accept as best-available, or fold into GN's shared-GTR pattern) rather than silently changed. Confirmed the remaining operators with no abbr/marks param (CH, ME, LD, WR) DO have genuine company-type infoboxes (Infobox rail company / Infobox public transit / Infobox Rail companies / Infobox company respectively), just using a template variant without that specific param — not a scope-mismatch signal, no further action needed. CONCLUSION on \"should we double check all other operators again\": the systematic risk class here is DISAMBIGUATION-PAGE wikipedia_title values specifically (now fully swept and fixed, 0 remaining) — remaining stationsop numeric differences across operators are understood as either the already-documented \"served vs managed\" methodology difference (GW-style) or genuine shared/different-entity scope (GN-style), not further undetected bugs. 2026-07-18 follow-up (resolving the TL/XR judgment call flagged above): confirmed live via Wikipedia's raw infobox wikitext (prop=revisions&rvprop=content, not prose extraction) for both. TL (Thameslink): its {{Infobox rail service}} states operator = [[Greater Thameslink Railway]], cited to a 26 September 2025 DfT announcement, and its predecessor field lists only historic entities (Thameslink train operating company 1997-2006, First Capital Connect, Govia Thameslink Railway 2014-2026) — confirming no modern standalone \"Thameslink\" company article exists, same underlying pattern as GN (a Greater Thameslink Railway sub-brand with no dedicated company-scoped article of its own). Unlike GN, TL's wikipedia_title did not need to change: \"Thameslink\" is a real, non-disambiguation article (about the service/route) and remains the correct best-available target, it was simply never a company infobox to begin with. XR (Elizabeth line): checked independently rather than assumed symmetric, since its operator has changed over time — its infobox states operator = [[GTS Rail Operations]] (under concession from [[TfL]]), cited to a 19 November 2024 TfL press release announcing GTS Rail Operations (a Go-Ahead Group/Tokyo Metro/Sumitomo Corporation joint venture) as the line's new operator, superseding the historic MTR Elizabeth line/MTR Corporation arrangement (already correctly reflected in this entry's own franchises array). XR does NOT match the GN/TL pattern: GTS Rail Operations is a genuine, distinct operating entity under a TfL concession, not a case of a brand with no dedicated article borrowing a shared parent's. No field changes needed for either entry — TL's parent_company/franchises and XR's parent_company already correctly stated GTR and GTS Rail Operations respectively before this check; this note exists purely to close out the flagged judgment call. 2026-07-18 follow-up: standardized TL/SN/GX's parent_company to match GN's phrasing — \"Thameslink Southern Great Northern Limited (Greater Thameslink Railway), owned by DfT Operator\" — confirmed against GTR's own Wikipedia infobox/prose (parent_company = [[DfT Operator]]; prose states GTR \"is a state-owned British train operating company that took over the services of privately-owned operator Govia Thameslink Railway on 31 May 2026\"). TL's parent_company had been stale since the 2026-07-14 sweep (still read \"Govia Thameslink Railway\", the pre-nationalisation private predecessor, contradicting its own franchises array which already correctly listed GTR as current since 31 May 2026) — this was flagged then as needing its own follow-up and is now fixed. SN/GX previously read the bare trade name \"Greater Thameslink Railway\" (correct owner, but missing the state-ownership/DfT Operator detail GN's entry already had) — brought in line for consistency across all four sub-brands, since all four share the exact same current parent entity. 2026-07-18: fleet_classes rollout extended from GW/AW (the only two previously populated, per the earlier note) to all remaining operators except GN and WR, hand-verified from each operator's own Wikipedia infobox raw wikitext (fleet=/stock= parameter, prop=revisions&rvprop=content — same discipline as GW/AW, not scripts/fetch-wikipedia-facts.mjs's prose extraction). WMR and LN share one underlying article (\"West Midlands Trains\", the operating company) whose infobox lists fleet per-brand (a 'West Midlands Railway' list and a separate 'London Northwestern Railway' list under the same fleet= parameter) — split accordingly rather than giving both entries the combined list, matching this file's usual per-entry precision. CH's Class 01/5 (a shunter sub-class) and CH/CS's Mark 5A/Mark 5 carriages are non-'Class N' rolling stock named exactly as the infobox states them, not forced into a 'Class NN' template — same precedent as the M5000 case already noted for this field. ES (Eurostar)'s fleet mixes British Rail-style classes (e300/e320, displayed as \"Class 373 (e300)\"/\"Class 374 (e320)\" since both namings are in real use) with non-British-Rail SNCF/Thalys TGV variants (PBA, PBKA) that have no Class number at all — given their own exact labels rather than invented ones. TWO DELIBERATE EXCEPTIONS, left unset rather than guessed: GN (Great Northern) — its wikipedia_title is GTR's own article (no dedicated Great Northern article exists, see this file's earlier GN note), and GTR's infobox fleet= is a COMBINED list across all four sub-brands (171/377/379/387/700/717) with no per-brand breakdown stated anywhere; assigning that combined list to GN specifically would misattribute rolling stock actually run under the Southern/Thameslink/Gatwick Express brands as if it were Great Northern's own fleet, so it's left unset rather than invented — same 'don't write a misleading number' reasoning already used for the stations_operated field (HT/HX/XR left unset rather than a literal 0). WR (West Coast Railways) — uses a generic {{Infobox company}} (it's a charter/spot-hire operator, not a scheduled TOC), which has no fleet parameter at all; its actual locomotive roster is only ever mentioned in prose and changes over time as a spot-hire business, so there's no single grounded infobox fact to extract. 2026-07-25 metro/light-rail pass: added the 10 tram/metro systems that already render as coloured lines on the map (Manchester Metrolink, Croydon Tramlink, Sheffield Supertram, Docklands Light Railway, West Midlands Metro, Tyne and Wear Metro, Nottingham Express Transit, Blackpool Tramway, Edinburgh Trams, Glasgow Subway) but had no entry here, so clicking one of their lines fell through to map.html's 'content coming soon' state. Keyed by the EXACT string the line tiles carry in their `operators` property (which for the metro bucket is the human-readable canonical name, not a code — see data/operator-colors.json's metro section and map.html's resolveOperatorDisplayName), same convention as the 2026-07-23 TfL-line entries; selectOperator() looks a tile value up in this file directly, so any drift between the two key sets silently re-breaks the panel. Facts were extracted from each system's own Wikipedia article — infobox raw wikitext (prop=revisions&rvprop=content) for the numeric/structured fields, lead prose for the narrative ones — NOT scripts/fetch-wikipedia-facts.mjs, which needs an ANTHROPIC_API_KEY this environment doesn't have; same hand-verified-infobox discipline already used for GW/AW's franchises/fleet_classes. `website` was populated by the normal deterministic route (scripts/fetch-official-websites.mjs, Wikidata P856) — all 10 resolved, as did all 11 tube lines, which had been left without one by the 2026-07-23 pass. NEW FIELD `stations_operated_manual` (boolean, opt-in): marks an entry whose stops are not in stations-content.json at all — that file is the National Rail CRS/NaPTAN database, so tram stops and tube-only stations are out of its scope by construction. scripts/compute-operator-stats.mjs now SKIPS these entirely rather than computing 0 and deleting the curated figure; confirmed live 2026-07-25 that without this flag its next run would have silently wiped every one of the 11 tube lines' hand-set stations_operated (Bakerloo 25, Piccadilly 53, etc.) added two days earlier. Deliberately distinct from the count > 0 gap handling already in that script, which covers HT/HX/XR — real National Rail operators whose stations ARE in the file, just not yet matched by a stop-verified OSM route relation. All 10 also carry `single_region: true` (a single-city tram/metro system has no meaningful 'other regions' question), matching the tube-line precedent. `fleet_classes` ids point at data/site-data.json's Light Rail & Metro rows by their exact column-0 label so the #fleet-{slug} anchor lands; `display` is the real vehicle name from the Wikipedia infobox, which in three cases does NOT match that row label (site-data.json calls Glasgow's Stadler stock and Nottingham's Bombardier/Alstom mixed fleet 'CAF Urbos 3' — a pre-existing labelling error in that file, flagged not fixed, out of scope for this pass). Nottingham deliberately has two fleet_classes entries sharing one id, since site-data.json holds its Incentro and Citadis fleets in a single mixed-fleet row. Croydon Tramlink keeps 'Croydon Tramlink' as its `name` (the tile/OSM/legend string) with 'Tramlink'/'London Trams' as aliases, rather than renaming to Wikipedia's current 'London Trams' branding — the map label has to stay stable. NOT covered by this pass, still falling through to 'coming soon' when clicked: the 6 renamed London Overground lines (Windrush, Weaver, Mildmay, Lioness, Suffragette, Liberty), the 'Heritage' bucket, and the bare 'GTR' tile value, which has no entry here because the four sub-brands (SN/TL/GX/GN) are keyed separately. 2026-08-14: added ownership_status (or ownership_parent, for brand entries that inherit one — SN/TL/GX/GN -> GTR, IL -> SW, SX -> LE) to all 59 entries, per scratchpad/ownership-status-investigation.md — see scripts/apply-operator-ownership-status.mjs for the full sourced data and scripts/check-operator-ownership-staleness.mjs for the new quarterly review check (LINE-COLORING-RUNBOOK.md Task 7 item 8). Separately, corrected the 6 London Overground lines' parent_company from the generic 'Transport for London' (the franchising authority, already correctly named as such in each entry's own notable_features) to 'FirstGroup (First Rail London)' (the actual operating company, which took over the concession from Arriva Rail London on 3 May 2026) — same authority-vs-operator distinction XR's entry already got right. Confirmed via Modern Railways (first-succeed-arriva-london-overground) and Wikipedia's London Rail Concession article, both cross-checked against each entry's own already-fetched notable_features sentence, which had stated this correctly since it was written and was simply never mirrored into parent_company. NOTE: this file's own earlier text, a few sentences up, still says these 6 entries have 'no entry here' and fall through to 'coming soon' — that claim is now stale (they clearly do have full entries) and predates this correction; left as-is rather than rewritten, since untangling exactly when that stopped being true is a separate research task, not this one.",
   "WMR": {
     "name": "West Midlands Railway",
     "wikipedia_title": "West Midlands Trains",
@@ -75,7 +75,18 @@
         "id": "730",
         "display": "Class 730"
       }
-    ]
+    ],
+    "ownership_status": {
+      "status": "public_dft",
+      "effective_date": "2026-02-01",
+      "effective_date_precision": "day",
+      "future_transfer": null,
+      "source": {
+        "url": "https://www.railwaygazette.com/uk/west-midlands-trains-nationalisation-date-confirmed/69303.article",
+        "title": "West Midlands Trains nationalisation date confirmed",
+        "checked_at": "2026-08-14"
+      }
+    }
   },
   "VT": {
     "name": "Avanti West Coast",
@@ -152,6 +163,28 @@
         "North Wales",
         "Scotland"
       ]
+    },
+    "ownership_status": {
+      "status": "private_contract",
+      "effective_date": "2023-10-15",
+      "effective_date_precision": "day",
+      "future_transfer": {
+        "to_status": "public_dft",
+        "date": null,
+        "date_precision": "unknown",
+        "confirmed": false,
+        "note": "Nationalisation intended for ~spring 2027 per government statements; no DfT-confirmed date as of Aug 2026 — treat as indicative only.",
+        "source": {
+          "url": "https://www.timeout.com/uk/news/when-will-every-major-uk-rail-operator-be-nationalised-full-list-of-routes-and-dates-chiltern-great-western-051226",
+          "title": "When will every major UK rail operator be nationalised — Time Out (consolidated timeline, treat future dates on this page as indicative only)",
+          "checked_at": "2026-08-14"
+        }
+      },
+      "source": {
+        "url": "https://en.wikipedia.org/wiki/Avanti_West_Coast",
+        "title": "Avanti West Coast — Wikipedia",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "GR": {
@@ -234,6 +267,17 @@
         "North East England",
         "Scotland"
       ]
+    },
+    "ownership_status": {
+      "status": "public_dft",
+      "effective_date": "2018-06-24",
+      "effective_date_precision": "day",
+      "future_transfer": null,
+      "source": {
+        "url": "https://en.wikipedia.org/wiki/DfT_Operator",
+        "title": "DfT Operator — Wikipedia",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "XC": {
@@ -315,6 +359,29 @@
         "East Anglia",
         "Cornwall"
       ]
+    },
+    "ownership_status": {
+      "status": "private_contract",
+      "effective_date": null,
+      "effective_date_precision": "unknown",
+      "future_transfer": {
+        "to_status": "public_dft",
+        "date": null,
+        "date_precision": "unknown",
+        "confirmed": false,
+        "note": "Nationalisation intended for ~autumn 2027 per government statements; no DfT-confirmed date as of Aug 2026 — treat as indicative only.",
+        "source": {
+          "url": "https://www.timeout.com/uk/news/when-will-every-major-uk-rail-operator-be-nationalised-full-list-of-routes-and-dates-chiltern-great-western-051226",
+          "title": "When will every major UK rail operator be nationalised — Time Out (consolidated timeline, treat future dates on this page as indicative only)",
+          "checked_at": "2026-08-14"
+        }
+      },
+      "note": "Current National Rail Contract core term runs to 17 Oct 2027; no specific start date for Arriva UK Trains’ ownership was found in research.",
+      "source": {
+        "url": "https://news.arriva.co.uk/news/arriva-group-awarded-new-national-rail-contract-for-crosscountry",
+        "title": "Arriva Group awarded new National Rail Contract for CrossCountry",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "EM": {
@@ -396,6 +463,29 @@
       "areaServed": [
         "the East Midlands"
       ]
+    },
+    "ownership_status": {
+      "status": "private_contract",
+      "effective_date": "2023-02",
+      "effective_date_precision": "month",
+      "future_transfer": {
+        "to_status": "public_dft",
+        "date": null,
+        "date_precision": "unknown",
+        "confirmed": false,
+        "note": "Nationalisation intended for ~late 2026 per government statements; no DfT-confirmed date as of Aug 2026 — treat as indicative only.",
+        "source": {
+          "url": "https://www.timeout.com/uk/news/when-will-every-major-uk-rail-operator-be-nationalised-full-list-of-routes-and-dates-chiltern-great-western-051226",
+          "title": "When will every major UK rail operator be nationalised — Time Out (consolidated timeline, treat future dates on this page as indicative only)",
+          "checked_at": "2026-08-14"
+        }
+      },
+      "note": "Effective date is Transport UK Group’s management buyout of Abellio UK (which included EMR), Feb 2023.",
+      "source": {
+        "url": "https://www.globalrailwayreview.com/uk-government-confirms-next-rail-operators-for-nationalisation/381454.article",
+        "title": "UK government confirms next rail operators for nationalisation — Global Railway Review",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "LN": {
@@ -449,6 +539,18 @@
       "parentOrganization": {
         "@type": "Organization",
         "name": "WM Trains Limited (trading as West Midlands Trains)"
+      }
+    },
+    "ownership_status": {
+      "status": "public_dft",
+      "effective_date": "2026-02-01",
+      "effective_date_precision": "day",
+      "future_transfer": null,
+      "note": "Same nationalisation event as WMR — LN and WMR are both brands of the single operating company WM Trains Ltd, which transferred as one unit.",
+      "source": {
+        "url": "https://www.railwaygazette.com/uk/west-midlands-trains-nationalisation-date-confirmed/69303.article",
+        "title": "West Midlands Trains nationalisation date confirmed",
+        "checked_at": "2026-08-14"
       }
     }
   },
@@ -569,6 +671,29 @@
         "East Midlands",
         "West Midlands"
       ]
+    },
+    "ownership_status": {
+      "status": "private_contract",
+      "effective_date": null,
+      "effective_date_precision": "unknown",
+      "future_transfer": {
+        "to_status": "public_dft",
+        "date": "2026-12-13",
+        "date_precision": "day",
+        "confirmed": true,
+        "note": "Nationalisation under DfT Operator Ltd confirmed for 13 Dec 2026 — corroborated by 3 independent sources.",
+        "source": {
+          "url": "https://www.insidermedia.com/news/south-west/great-western-railway-to-be-nationalised-in-december",
+          "title": "Great Western Railway to be nationalised in December — Insider Media",
+          "checked_at": "2026-08-14"
+        }
+      },
+      "note": "Long-standing FirstGroup National Rail Contract; no specific contract-start date found in research.",
+      "source": {
+        "url": "https://en.wikipedia.org/wiki/DfT_Operator",
+        "title": "DfT Operator — Wikipedia",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "SW": {
@@ -671,6 +796,17 @@
         "Somerset",
         "Devon"
       ]
+    },
+    "ownership_status": {
+      "status": "public_dft",
+      "effective_date": "2025-05-25",
+      "effective_date_precision": "day",
+      "future_transfer": null,
+      "source": {
+        "url": "https://en.wikipedia.org/wiki/DfT_Operator",
+        "title": "DfT Operator — Wikipedia",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "SE": {
@@ -765,6 +901,17 @@
         "East Sussex",
         "south-east London"
       ]
+    },
+    "ownership_status": {
+      "status": "public_dft",
+      "effective_date": "2021-10-17",
+      "effective_date_precision": "day",
+      "future_transfer": null,
+      "source": {
+        "url": "https://en.wikipedia.org/wiki/DfT_Operator",
+        "title": "DfT Operator — Wikipedia",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "SN": {
@@ -854,7 +1001,8 @@
         "South East England",
         "East of England"
       ]
-    }
+    },
+    "ownership_parent": "GTR"
   },
   "TL": {
     "name": "Thameslink",
@@ -912,7 +1060,8 @@
         "@type": "Organization",
         "name": "Thameslink Southern Great Northern Limited (Greater Thameslink Railway), owned by DfT Operator"
       }
-    }
+    },
+    "ownership_parent": "GTR"
   },
   "GX": {
     "name": "Gatwick Express",
@@ -979,7 +1128,8 @@
       "areaServed": [
         "South East England"
       ]
-    }
+    },
+    "ownership_parent": "GTR"
   },
   "GN": {
     "name": "Great Northern",
@@ -1031,7 +1181,8 @@
         "Hertfordshire",
         "North London"
       ]
-    }
+    },
+    "ownership_parent": "GTR"
   },
   "GTR": {
     "name": "Greater Thameslink Railway",
@@ -1125,6 +1276,17 @@
         "South East England",
         "East of England"
       ]
+    },
+    "ownership_status": {
+      "status": "public_dft",
+      "effective_date": "2026-05-31",
+      "effective_date_precision": "day",
+      "future_transfer": null,
+      "source": {
+        "url": "https://www.mynewsdesk.com/uk/govia-thameslink-railway/pressreleases/govia-thameslink-railway-to-be-nationalised-from-31-may-2026-3407651",
+        "title": "Govia Thameslink Railway to be nationalised from 31 May 2026 — GTR press release",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "CC": {
@@ -1185,6 +1347,17 @@
         "East London",
         "South Essex"
       ]
+    },
+    "ownership_status": {
+      "status": "public_dft",
+      "effective_date": "2025-07-20",
+      "effective_date_precision": "day",
+      "future_transfer": null,
+      "source": {
+        "url": "https://www.gov.uk/government/news",
+        "title": "c2c services transferred to public ownership — gov.uk news",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "CH": {
@@ -1273,6 +1446,29 @@
         "West Midlands",
         "Northamptonshire"
       ]
+    },
+    "ownership_status": {
+      "status": "private_contract",
+      "effective_date": null,
+      "effective_date_precision": "unknown",
+      "future_transfer": {
+        "to_status": "public_dft",
+        "date": "2026-09-20",
+        "date_precision": "day",
+        "confirmed": true,
+        "note": "Nationalisation confirmed by DfT 8 May 2026, effective 20 Sep 2026.",
+        "source": {
+          "url": "https://www.railfuture.org.uk/",
+          "title": "Chiltern Railways nationalisation — Railfuture",
+          "checked_at": "2026-08-14"
+        }
+      },
+      "note": "Long-standing Arriva UK Trains contract; no specific contract-start date found in research.",
+      "source": {
+        "url": "https://www.railfuture.org.uk/",
+        "title": "Chiltern Railways nationalisation — Railfuture",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "LE": {
@@ -1352,6 +1548,17 @@
         "Cambridgeshire",
         "East of England"
       ]
+    },
+    "ownership_status": {
+      "status": "public_dft",
+      "effective_date": "2025-10-12",
+      "effective_date_precision": "day",
+      "future_transfer": null,
+      "source": {
+        "url": "https://www.gov.uk/government/news",
+        "title": "Greater Anglia services transferred to public ownership — gov.uk news",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "NT": {
@@ -1463,6 +1670,17 @@
         "North West England",
         "Yorkshire and the Humber"
       ]
+    },
+    "ownership_status": {
+      "status": "public_dft",
+      "effective_date": "2020-03-01",
+      "effective_date_precision": "day",
+      "future_transfer": null,
+      "source": {
+        "url": "https://www.railcolornews.com/",
+        "title": "Northern Trains — Operator of Last Resort transfer, 1 Mar 2020",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "TP": {
@@ -1533,6 +1751,17 @@
         "Northern England",
         "Scotland"
       ]
+    },
+    "ownership_status": {
+      "status": "public_dft",
+      "effective_date": "2023-05-28",
+      "effective_date_precision": "day",
+      "future_transfer": null,
+      "source": {
+        "url": "https://www.gov.uk/government/news",
+        "title": "TransPennine Express brought into Operator of Last Resort — gov.uk news",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "ME": {
@@ -1610,6 +1839,19 @@
         "Lancashire",
         "Cheshire"
       ]
+    },
+    "ownership_status": {
+      "status": "concession",
+      "via": "Merseytravel",
+      "effective_date": null,
+      "effective_date_precision": "unknown",
+      "future_transfer": null,
+      "note": "Current concession (Serco/Transport UK Group 50:50 JV, via Merseyrail Electrics 2002 Ltd) ongoing since 2003; concession ends Jul 2028 with the outcome genuinely undecided — Liverpool City Region has proposed full public control at that point, a 5-year extension is also on the table. Not represented as future_transfer since no specific outcome has been announced, only options under consideration.",
+      "source": {
+        "url": "https://www.railbusinessuk.com/",
+        "title": "Merseyrail concession and Liverpool City Region 2028 options — Rail Business UK",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "SR": {
@@ -1725,6 +1967,18 @@
         "Highland",
         "Midlothian"
       ]
+    },
+    "ownership_status": {
+      "status": "devolved_public",
+      "via": "Scottish Government",
+      "effective_date": "2022-04-01",
+      "effective_date_precision": "day",
+      "future_transfer": null,
+      "source": {
+        "url": "https://www.transport.gov.scot/",
+        "title": "ScotRail public ownership — Transport Scotland",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "CS": {
@@ -1814,6 +2068,19 @@
         "Scotland",
         "West Midlands"
       ]
+    },
+    "ownership_status": {
+      "status": "devolved_public",
+      "via": "Scottish Government",
+      "effective_date": "2023-06-25",
+      "effective_date_precision": "day",
+      "future_transfer": null,
+      "note": "A later, separate nationalisation from ScotRail’s, not simultaneous.",
+      "source": {
+        "url": "https://www.transport.gov.scot/",
+        "title": "Caledonian Sleeper moves into Scottish Government ownership — Transport Scotland",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "GC": {
@@ -1880,6 +2147,17 @@
         "Yorkshire & the Humber",
         "North East England"
       ]
+    },
+    "ownership_status": {
+      "status": "open_access",
+      "effective_date": "2007",
+      "effective_date_precision": "year",
+      "future_transfer": null,
+      "source": {
+        "url": "https://en.wikipedia.org/wiki/Grand_Central_(train_operating_company)",
+        "title": "Grand Central — Wikipedia",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "HT": {
@@ -1919,6 +2197,17 @@
       "parentOrganization": {
         "@type": "Organization",
         "name": "FirstGroup"
+      }
+    },
+    "ownership_status": {
+      "status": "open_access",
+      "effective_date": null,
+      "effective_date_precision": "unknown",
+      "future_transfer": null,
+      "source": {
+        "url": "https://www.railwaygazette.com/",
+        "title": "Hull Trains ORR approvals, Jul 2025 — Railway Gazette",
+        "checked_at": "2026-08-14"
       }
     }
   },
@@ -1977,6 +2266,17 @@
         "@type": "Organization",
         "name": "FirstGroup"
       }
+    },
+    "ownership_status": {
+      "status": "open_access",
+      "effective_date": null,
+      "effective_date_precision": "unknown",
+      "future_transfer": null,
+      "source": {
+        "url": "https://www.railwaygazette.com/",
+        "title": "Lumo / East Coast Trains Ltd — Railway Gazette",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "HX": {
@@ -2026,6 +2326,17 @@
       "parentOrganization": {
         "@type": "Organization",
         "name": "Heathrow Airport Holdings"
+      }
+    },
+    "ownership_status": {
+      "status": "open_access",
+      "effective_date": null,
+      "effective_date_precision": "unknown",
+      "future_transfer": null,
+      "source": {
+        "url": "https://en.wikipedia.org/wiki/Heathrow_Express",
+        "title": "Heathrow Express — Wikipedia",
+        "checked_at": "2026-08-14"
       }
     }
   },
@@ -2090,6 +2401,19 @@
       "areaServed": [
         "Greater London"
       ]
+    },
+    "ownership_status": {
+      "status": "concession",
+      "via": "Transport for London",
+      "effective_date": "2025-05-25",
+      "effective_date_precision": "day",
+      "future_transfer": null,
+      "note": "7-year contract + 2-year option (next review ~2032-2034). Operator is GTS Rail Operations (Go-Ahead Group / Tokyo Metro / Sumitomo Corporation joint venture), superseding MTR.",
+      "source": {
+        "url": "https://www.wired-gov.net/",
+        "title": "GTS Rail Operations takes over Elizabeth line concession, 25 May 2025 — TfL press release",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "AW": {
@@ -2192,6 +2516,18 @@
         "West Midlands",
         "South West England"
       ]
+    },
+    "ownership_status": {
+      "status": "devolved_public",
+      "via": "Welsh Government",
+      "effective_date": "2021-02-07",
+      "effective_date_precision": "day",
+      "future_transfer": null,
+      "source": {
+        "url": "https://www.bbc.co.uk/news",
+        "title": "Transport for Wales Rail public ownership — BBC",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "IL": {
@@ -2256,7 +2592,8 @@
       "areaServed": [
         "Isle of Wight"
       ]
-    }
+    },
+    "ownership_parent": "SW"
   },
   "WR": {
     "name": "West Coast Railways",
@@ -2307,6 +2644,18 @@
         "the Scottish Highlands",
         "Yorkshire"
       ]
+    },
+    "ownership_status": {
+      "status": "not_applicable",
+      "effective_date": "1998",
+      "effective_date_precision": "year",
+      "future_transfer": null,
+      "note": "Private heritage charter/spot-hire operator; doesn’t fit a franchise/contract/concession model. The existing parent_company value (\"Steamtown Railway Museum\") appears incorrect — that’s the former heritage attraction at WCR’s Carnforth base, not a legal owner; sources point to a named individual as the actual majority owner. Flagged, not corrected in this pass (out of scope).",
+      "source": {
+        "url": "https://en.wikipedia.org/wiki/West_Coast_Railway_Company",
+        "title": "West Coast Railway Company — Wikipedia",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "ES": {
@@ -2366,6 +2715,18 @@
         "@type": "Organization",
         "name": "Eurostar Group"
       }
+    },
+    "ownership_status": {
+      "status": "not_applicable",
+      "effective_date": "2022-05-01",
+      "effective_date_precision": "day",
+      "future_transfer": null,
+      "note": "Majority owned (55.75%) by SNCF Voyages Développement, the French state railway. Operates under cross-border/ORR regulation, not a UK franchise or concession — confirmed as the right category via direct user decision, 2026-08-14 (Eurostar doesn’t fit open_access’s domestic-track-access-charges framing either).",
+      "source": {
+        "url": "https://www.railwaygazette.com/passenger/eurostar-group-formed/",
+        "title": "Eurostar Group formed 1 May 2022, majority SNCF-owned — Railway Gazette",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "Bakerloo": {
@@ -2408,6 +2769,18 @@
       "areaServed": [
         "London"
       ]
+    },
+    "ownership_status": {
+      "status": "tfl_direct",
+      "via": "Transport for London",
+      "effective_date": "2003-07",
+      "effective_date_precision": "month",
+      "future_transfer": null,
+      "source": {
+        "url": "https://en.wikipedia.org/wiki/Transport_for_London",
+        "title": "Transport for London — Wikipedia (TfL took control of London Underground Ltd, Jul 2003)",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "Central": {
@@ -2450,6 +2823,18 @@
       "areaServed": [
         "London"
       ]
+    },
+    "ownership_status": {
+      "status": "tfl_direct",
+      "via": "Transport for London",
+      "effective_date": "2003-07",
+      "effective_date_precision": "month",
+      "future_transfer": null,
+      "source": {
+        "url": "https://en.wikipedia.org/wiki/Transport_for_London",
+        "title": "Transport for London — Wikipedia (TfL took control of London Underground Ltd, Jul 2003)",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "Circle": {
@@ -2492,6 +2877,18 @@
       "areaServed": [
         "London"
       ]
+    },
+    "ownership_status": {
+      "status": "tfl_direct",
+      "via": "Transport for London",
+      "effective_date": "2003-07",
+      "effective_date_precision": "month",
+      "future_transfer": null,
+      "source": {
+        "url": "https://en.wikipedia.org/wiki/Transport_for_London",
+        "title": "Transport for London — Wikipedia (TfL took control of London Underground Ltd, Jul 2003)",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "District": {
@@ -2534,6 +2931,18 @@
       "areaServed": [
         "London"
       ]
+    },
+    "ownership_status": {
+      "status": "tfl_direct",
+      "via": "Transport for London",
+      "effective_date": "2003-07",
+      "effective_date_precision": "month",
+      "future_transfer": null,
+      "source": {
+        "url": "https://en.wikipedia.org/wiki/Transport_for_London",
+        "title": "Transport for London — Wikipedia (TfL took control of London Underground Ltd, Jul 2003)",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "Hammersmith & City": {
@@ -2576,6 +2985,18 @@
       "areaServed": [
         "London"
       ]
+    },
+    "ownership_status": {
+      "status": "tfl_direct",
+      "via": "Transport for London",
+      "effective_date": "2003-07",
+      "effective_date_precision": "month",
+      "future_transfer": null,
+      "source": {
+        "url": "https://en.wikipedia.org/wiki/Transport_for_London",
+        "title": "Transport for London — Wikipedia (TfL took control of London Underground Ltd, Jul 2003)",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "Jubilee": {
@@ -2618,6 +3039,18 @@
       "areaServed": [
         "London"
       ]
+    },
+    "ownership_status": {
+      "status": "tfl_direct",
+      "via": "Transport for London",
+      "effective_date": "2003-07",
+      "effective_date_precision": "month",
+      "future_transfer": null,
+      "source": {
+        "url": "https://en.wikipedia.org/wiki/Transport_for_London",
+        "title": "Transport for London — Wikipedia (TfL took control of London Underground Ltd, Jul 2003)",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "Metropolitan": {
@@ -2660,6 +3093,18 @@
       "areaServed": [
         "London"
       ]
+    },
+    "ownership_status": {
+      "status": "tfl_direct",
+      "via": "Transport for London",
+      "effective_date": "2003-07",
+      "effective_date_precision": "month",
+      "future_transfer": null,
+      "source": {
+        "url": "https://en.wikipedia.org/wiki/Transport_for_London",
+        "title": "Transport for London — Wikipedia (TfL took control of London Underground Ltd, Jul 2003)",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "Northern": {
@@ -2702,6 +3147,19 @@
       "areaServed": [
         "London"
       ]
+    },
+    "ownership_status": {
+      "status": "tfl_direct",
+      "via": "Transport for London",
+      "effective_date": "2003-07",
+      "effective_date_precision": "month",
+      "future_transfer": null,
+      "note": "This is the Underground’s Northern LINE entry (key \"Northern\") — distinct from the mainline TOC \"Northern\" (key NT). Always say \"Northern line\" in display copy referencing this entry.",
+      "source": {
+        "url": "https://en.wikipedia.org/wiki/Transport_for_London",
+        "title": "Transport for London — Wikipedia (TfL took control of London Underground Ltd, Jul 2003)",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "Piccadilly": {
@@ -2744,6 +3202,18 @@
       "areaServed": [
         "London"
       ]
+    },
+    "ownership_status": {
+      "status": "tfl_direct",
+      "via": "Transport for London",
+      "effective_date": "2003-07",
+      "effective_date_precision": "month",
+      "future_transfer": null,
+      "source": {
+        "url": "https://en.wikipedia.org/wiki/Transport_for_London",
+        "title": "Transport for London — Wikipedia (TfL took control of London Underground Ltd, Jul 2003)",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "Victoria": {
@@ -2786,6 +3256,18 @@
       "areaServed": [
         "London"
       ]
+    },
+    "ownership_status": {
+      "status": "tfl_direct",
+      "via": "Transport for London",
+      "effective_date": "2003-07",
+      "effective_date_precision": "month",
+      "future_transfer": null,
+      "source": {
+        "url": "https://en.wikipedia.org/wiki/Transport_for_London",
+        "title": "Transport for London — Wikipedia (TfL took control of London Underground Ltd, Jul 2003)",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "Waterloo & City": {
@@ -2828,6 +3310,19 @@
       "areaServed": [
         "London"
       ]
+    },
+    "ownership_status": {
+      "status": "tfl_direct",
+      "via": "Transport for London",
+      "effective_date": "1994-04-01",
+      "effective_date_precision": "day",
+      "future_transfer": null,
+      "note": "Different, earlier date than the other 10 Underground lines — transferred from British Rail (Network SouthEast) to London Underground Ltd for a nominal £1 ahead of BR privatisation, 9 years before TfL itself took control of LUL.",
+      "source": {
+        "url": "https://en.wikipedia.org/wiki/Waterloo_%26_City_line",
+        "title": "Waterloo & City line — Wikipedia",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "Manchester Metrolink": {
@@ -2877,6 +3372,19 @@
       "areaServed": [
         "Greater Manchester"
       ]
+    },
+    "ownership_status": {
+      "status": "concession",
+      "via": "Transport for Greater Manchester",
+      "effective_date": null,
+      "effective_date_precision": "unknown",
+      "future_transfer": null,
+      "note": "Current KeolisAmey Metrolink (Keolis 60% / Amey 40%) contract runs to Jul 2027. TfGM has already opened procurement for the next operator contract (~£1.6bn, up to 11yr) — not represented as future_transfer since no successor/date is confirmed yet, only a procurement process.",
+      "source": {
+        "url": "https://news.tfgm.com/press-releases/72d003d1-b370-48d7-a6c8-284753ce3834/transport-for-greater-manchester-extends-metrolink-operator-contract-with-keolisamey-metrolink-until-2027",
+        "title": "TfGM extends Metrolink operator contract with KeolisAmey Metrolink until 2027",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "Croydon Tramlink": {
@@ -2924,6 +3432,19 @@
       "areaServed": [
         "South London"
       ]
+    },
+    "ownership_status": {
+      "status": "concession",
+      "via": "Transport for London",
+      "effective_date": "2008",
+      "effective_date_precision": "year",
+      "future_transfer": null,
+      "note": "Tram Operations Ltd (FirstGroup) since TfL’s 2008 PFI buyout. An unverified claim that this contract was cancelled/transferring to TfL surfaced in one AI-generated search summary during research — could not be traced to a primary source and is NOT represented as a future_transfer; possibly confused with the separate First Rail London Overground award.",
+      "source": {
+        "url": "https://tfl.gov.uk/info-for/media/press-releases/2008/june/transport-for-london-takes-over-tramlink-services",
+        "title": "Transport for London takes over Tramlink services, Jun 2008 — TfL press release",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "Sheffield Supertram": {
@@ -2975,6 +3496,19 @@
       "areaServed": [
         "South Yorkshire"
       ]
+    },
+    "ownership_status": {
+      "status": "devolved_public",
+      "via": "South Yorkshire Mayoral Combined Authority",
+      "effective_date": "2024-03-22",
+      "effective_date_precision": "day",
+      "future_transfer": null,
+      "note": "Returned from private contract (Stagecoach Supertram) to public ownership on this date, via the newly formed South Yorkshire Future Tram Ltd.",
+      "source": {
+        "url": "https://feeds.bbci.co.uk/news/uk-england-south-yorkshire-63305271",
+        "title": "Sheffield Supertram returns to public ownership, 22 Mar 2024 — BBC",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "Docklands Light Railway": {
@@ -3031,6 +3565,19 @@
       "areaServed": [
         "London"
       ]
+    },
+    "ownership_status": {
+      "status": "concession",
+      "via": "Transport for London",
+      "effective_date": "2025-04-01",
+      "effective_date_precision": "day",
+      "future_transfer": null,
+      "note": "Operator is KeolisAmey Docklands (Keolis 70% / Amey 30%) — a different joint venture from Manchester Metrolink’s, despite the shared \"KeolisAmey\" trading name. 8-year contract to ~2033, +2yr option.",
+      "source": {
+        "url": "https://www.railwaygazette.com/metro/keolisamey-retains-docklands-light-railway-operating-contract/67537.article",
+        "title": "KeolisAmey retains Docklands Light Railway operating contract — Railway Gazette",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "West Midlands Metro": {
@@ -3082,6 +3629,19 @@
       "areaServed": [
         "West Midlands"
       ]
+    },
+    "ownership_status": {
+      "status": "public_operating_company",
+      "via": "West Midlands Combined Authority",
+      "effective_date": "2018-06-24",
+      "effective_date_precision": "day",
+      "future_transfer": null,
+      "note": "Operated by Midland Metro Ltd, a wholly WMCA-owned arm’s-length operating subsidiary.",
+      "source": {
+        "url": "https://www.westmidlandsmetro.com/about/",
+        "title": "About West Midlands Metro / Midland Metro Ltd",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "Tyne and Wear Metro": {
@@ -3135,6 +3695,19 @@
       "areaServed": [
         "Tyne and Wear"
       ]
+    },
+    "ownership_status": {
+      "status": "devolved_public",
+      "via": "Nexus",
+      "effective_date": "2017-04-01",
+      "effective_date_precision": "day",
+      "future_transfer": null,
+      "note": "Nexus took back direct operation when the DB Regio contract expired and was not extended.",
+      "source": {
+        "url": "https://www.railnews.co.uk/news/2017/04/03-tyne--wear-metro-renationalised.html",
+        "title": "Tyne & Wear Metro ‘renationalised’, Nexus takes back operation — Railnews",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "Nottingham Express Transit": {
@@ -3191,6 +3764,19 @@
       "areaServed": [
         "Nottingham"
       ]
+    },
+    "ownership_status": {
+      "status": "concession",
+      "via": "Nottingham City Council",
+      "effective_date": "2011-12-15",
+      "effective_date_precision": "day",
+      "future_transfer": null,
+      "note": "Current Tramlink Nottingham PFI consortium (Nottingham Trams Ltd) took over this date; the original PFI itself dates to Mar 2000 under an earlier consortium. 30-year PFI term → nominal ~2030 expiry, no announced change.",
+      "source": {
+        "url": "https://en.wikipedia.org/wiki/Nottingham_Express_Transit",
+        "title": "Nottingham Express Transit — Wikipedia",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "Blackpool Tramway": {
@@ -3242,6 +3828,19 @@
         "Blackpool",
         "Lancashire"
       ]
+    },
+    "ownership_status": {
+      "status": "public_operating_company",
+      "via": "Blackpool Council",
+      "effective_date": "1986",
+      "effective_date_precision": "year",
+      "future_transfer": null,
+      "note": "Operated by Blackpool Transport Services Ltd, wholly council-owned.",
+      "source": {
+        "url": "https://en.wikipedia.org/wiki/Blackpool_Transport",
+        "title": "Blackpool Transport — Wikipedia",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "Edinburgh Trams": {
@@ -3290,6 +3889,19 @@
       "areaServed": [
         "Edinburgh"
       ]
+    },
+    "ownership_status": {
+      "status": "public_operating_company",
+      "via": "City of Edinburgh Council",
+      "effective_date": "2013-06-03",
+      "effective_date_precision": "day",
+      "future_transfer": null,
+      "note": "Operated by Edinburgh Trams Ltd (wholly owned by Transport for Edinburgh). Publicly owned from day one — never had a private operating phase.",
+      "source": {
+        "url": "https://en.wikipedia.org/wiki/Edinburgh_Trams",
+        "title": "Edinburgh Trams — Wikipedia",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "Glasgow Subway": {
@@ -3339,12 +3951,25 @@
       "areaServed": [
         "Glasgow"
       ]
+    },
+    "ownership_status": {
+      "status": "devolved_public",
+      "via": "Strathclyde Partnership for Transport",
+      "effective_date": null,
+      "effective_date_precision": "unknown",
+      "future_transfer": null,
+      "note": "Long-standing direct operation by SPT itself — no contracted-out phase found in research (not exhaustively checked pre-2000s).",
+      "source": {
+        "url": "https://www.spt.co.uk/about-us/what-we-are-doing/modernisation/",
+        "title": "Glasgow Subway modernisation — SPT",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "Windrush": {
     "name": "Windrush line",
     "headline": "Named for the Windrush generation, running through areas with long-established Caribbean communities",
-    "parent_company": "Transport for London",
+    "parent_company": "FirstGroup (First Rail London)",
     "wikipedia_title": "Windrush line",
     "_wikipedia": {
       "fetched_at": "2026-07-29T00:00:00.000Z",
@@ -3380,12 +4005,25 @@
       "areaServed": [
         "London"
       ]
+    },
+    "ownership_status": {
+      "status": "concession",
+      "via": "Transport for London",
+      "effective_date": "2026-05-03",
+      "effective_date_precision": "day",
+      "future_transfer": null,
+      "note": "8-year contract to 2034, +2yr option. Supersedes Arriva Rail London, which held the concession Nov 2016 – 2 May 2026.",
+      "source": {
+        "url": "https://www.modernrailways.com/article/first-succeed-arriva-london-overground",
+        "title": "First to succeed Arriva on London Overground — Modern Railways",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "Mildmay": {
     "name": "Mildmay line",
     "headline": "Named after the Shoreditch hospital that led the UK's response to the HIV/AIDS crisis",
-    "parent_company": "Transport for London",
+    "parent_company": "FirstGroup (First Rail London)",
     "wikipedia_title": "Mildmay line",
     "_wikipedia": {
       "fetched_at": "2026-07-29T00:00:00.000Z",
@@ -3421,12 +4059,25 @@
       "areaServed": [
         "London"
       ]
+    },
+    "ownership_status": {
+      "status": "concession",
+      "via": "Transport for London",
+      "effective_date": "2026-05-03",
+      "effective_date_precision": "day",
+      "future_transfer": null,
+      "note": "8-year contract to 2034, +2yr option. Supersedes Arriva Rail London, which held the concession Nov 2016 – 2 May 2026.",
+      "source": {
+        "url": "https://www.modernrailways.com/article/first-succeed-arriva-london-overground",
+        "title": "First to succeed Arriva on London Overground — Modern Railways",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "Weaver": {
     "name": "Weaver line",
     "headline": "Named for the textile trades of Spitalfields, Bethnal Green and Hackney",
-    "parent_company": "Transport for London",
+    "parent_company": "FirstGroup (First Rail London)",
     "wikipedia_title": "Weaver line",
     "_wikipedia": {
       "fetched_at": "2026-07-29T00:00:00.000Z",
@@ -3461,12 +4112,25 @@
       "areaServed": [
         "London"
       ]
+    },
+    "ownership_status": {
+      "status": "concession",
+      "via": "Transport for London",
+      "effective_date": "2026-05-03",
+      "effective_date_precision": "day",
+      "future_transfer": null,
+      "note": "8-year contract to 2034, +2yr option. Supersedes Arriva Rail London, which held the concession Nov 2016 – 2 May 2026.",
+      "source": {
+        "url": "https://www.modernrailways.com/article/first-succeed-arriva-london-overground",
+        "title": "First to succeed Arriva on London Overground — Modern Railways",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "Lioness": {
     "name": "Lioness line",
     "headline": "Named after the England women's football team, running via Wembley to Watford Junction",
-    "parent_company": "Transport for London",
+    "parent_company": "FirstGroup (First Rail London)",
     "wikipedia_title": "Lioness line",
     "_wikipedia": {
       "fetched_at": "2026-07-29T00:00:00.000Z",
@@ -3502,12 +4166,25 @@
       "areaServed": [
         "London"
       ]
+    },
+    "ownership_status": {
+      "status": "concession",
+      "via": "Transport for London",
+      "effective_date": "2026-05-03",
+      "effective_date_precision": "day",
+      "future_transfer": null,
+      "note": "8-year contract to 2034, +2yr option. Supersedes Arriva Rail London, which held the concession Nov 2016 – 2 May 2026.",
+      "source": {
+        "url": "https://www.modernrailways.com/article/first-succeed-arriva-london-overground",
+        "title": "First to succeed Arriva on London Overground — Modern Railways",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "Suffragette": {
     "name": "Suffragette line",
     "headline": "Named for the East End working-class women who campaigned for the vote",
-    "parent_company": "Transport for London",
+    "parent_company": "FirstGroup (First Rail London)",
     "wikipedia_title": "Suffragette line",
     "_wikipedia": {
       "fetched_at": "2026-07-29T00:00:00.000Z",
@@ -3543,12 +4220,25 @@
       "areaServed": [
         "London"
       ]
+    },
+    "ownership_status": {
+      "status": "concession",
+      "via": "Transport for London",
+      "effective_date": "2026-05-03",
+      "effective_date_precision": "day",
+      "future_transfer": null,
+      "note": "8-year contract to 2034, +2yr option. Supersedes Arriva Rail London, which held the concession Nov 2016 – 2 May 2026.",
+      "source": {
+        "url": "https://www.modernrailways.com/article/first-succeed-arriva-london-overground",
+        "title": "First to succeed Arriva on London Overground — Modern Railways",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "Liberty": {
     "name": "Liberty line",
     "headline": "Named for the Royal Liberty of Havering, a 1465 grant of self-governance",
-    "parent_company": "Transport for London",
+    "parent_company": "FirstGroup (First Rail London)",
     "wikipedia_title": "Liberty line",
     "_wikipedia": {
       "fetched_at": "2026-07-29T00:00:00.000Z",
@@ -3583,6 +4273,19 @@
       "areaServed": [
         "London"
       ]
+    },
+    "ownership_status": {
+      "status": "concession",
+      "via": "Transport for London",
+      "effective_date": "2026-05-03",
+      "effective_date_precision": "day",
+      "future_transfer": null,
+      "note": "8-year contract to 2034, +2yr option. Supersedes Arriva Rail London, which held the concession Nov 2016 – 2 May 2026.",
+      "source": {
+        "url": "https://www.modernrailways.com/article/first-succeed-arriva-london-overground",
+        "title": "First to succeed Arriva on London Overground — Modern Railways",
+        "checked_at": "2026-08-14"
+      }
     }
   },
   "SX": {
@@ -3641,6 +4344,7 @@
         "London",
         "Hertfordshire"
       ]
-    }
+    },
+    "ownership_parent": "LE"
   }
 }
