@@ -1109,6 +1109,24 @@
     width: auto; border-top: none; background: transparent; z-index: 5; }
   #sb-attribution::before { content: none; } /* no longer a bar sitting below scrolling content — nothing to fade under */
   .sb-attrib-toggle { width: auto; padding: 10px; justify-content: center; }
+  /* BUG FIX (2026-08-14): #sb-attribution's right:4px/left:auto/width:auto
+     shrink-to-fit sizing only shrinks correctly while its sole visible
+     child is the small icon button. Once .sb-attrib-body (a plain in-flow
+     block, no width of its own) becomes visible on expand, ITS preferred
+     width pulls the whole absolutely-positioned container's shrink-to-fit
+     width out to fill the sidebar, which resolves `left` to ~0 — the icon
+     visibly jumped to the sidebar's left corner on click, though `right`
+     never actually changed. Fix: take the expanded body out of that flow
+     entirely and float it as its own anchored panel, positioned relative
+     to #sb-attribution (already position:absolute, so a valid containing
+     block) — same "anchored under the icon, sized to content" the button's
+     own comment already describes, just actually wired that way. Desktop
+     inline-expand only; the mobile full-sheet override two rules below
+     cancels this back to a normal in-flow block. */
+  .sb-attrib-body { position: absolute; right: 0; bottom: calc(100% + 6px);
+    width: 280px; max-width: calc(100vw - 32px); background: var(--sf);
+    border: 0.5px solid var(--brh); border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+    padding: 10px 16px; }
 
   /* ── Attribution full-sheet (tablet/mobile only) ──────────────────────────
      Simple full-screen takeover — NOT the draggable sheet, no shared code
@@ -1124,8 +1142,14 @@
   .attrib-sheet-body { flex: 1; overflow-y: auto; padding: 4px 16px 16px; }
   /* #sb-attrib-body is reparented in here on open — its own CSS (max-height:
      40vh, meant for the small inline-expand case) would otherwise cap it
-     inside a container that's supposed to use the full available height. */
-  .attrib-sheet-body .sb-attrib-body { max-height: none; overflow-y: visible; padding: 12px 0 0; }
+     inside a container that's supposed to use the full available height.
+     Also cancels the desktop inline-expand's floating-card styling
+     (position/width/background/border/shadow, added above) back to a
+     plain in-flow block — the full sheet already provides its own
+     background and edges, it doesn't want a second nested card. */
+  .attrib-sheet-body .sb-attrib-body { position: static; width: auto; max-width: none;
+    background: transparent; border: none; box-shadow: none;
+    max-height: none; overflow-y: visible; padding: 12px 0 0; }
 
   /* ── History-mode year slider (two instances, one state) ────────────────
      Only the sidebar instance remains (#sb-history-slider); the map-canvas one
@@ -1159,18 +1183,34 @@
   .hs-jump:focus { outline: none; border-color: var(--brh); }
   .hs-jump.invalid { border-color: var(--m); }
 
-  /* Track. .hs-span is the ACTIVE SPAN INDICATOR — a band showing the open
-     entity's map-coverage range. Purely visual: it never gates the range
-     input's own min/max, so dragging and jumping outside it stay unrestricted. */
+  /* Track. .hs-span hosts the ACTIVE SPAN INDICATOR — one band per open
+     operating period of the selected entity. REPLACES the default
+     1825->dot progress fill rather than sitting alongside it (see
+     .has-span below): the fill was redundant with the dot itself, so its
+     visual weight is reused for the range instead. Purely visual: it never
+     gates the range input's own min/max, so dragging and jumping outside
+     it stay unrestricted. */
   .hs-track-wrap { position: relative; }
-  .hs-span { position: absolute; top: 7.5px; height: 3px; border-radius: 2px;
-    background: rgba(64,224,208,0.28); pointer-events: none; }
+  .hs-span { position: absolute; top: 7.5px; left: 0; right: 0; height: 3px; pointer-events: none; }
+  .hs-span-band { position: absolute; top: 0; height: 3px; border-radius: 2px; background: var(--t); }
   .hs-range { -webkit-appearance: none; appearance: none; width: 100%; height: 18px; background: transparent;
     cursor: pointer; --fill: 100%; margin: 0; position: relative; }
   .hs-range::-webkit-slider-runnable-track { height: 3px; border-radius: 2px;
     background: linear-gradient(to right, var(--t) var(--fill), var(--br) var(--fill)); }
   .hs-range::-moz-range-track { height: 3px; border-radius: 2px; background: var(--br); }
   .hs-range::-moz-range-progress { height: 3px; border-radius: 2px; background: var(--t); }
+  /* .has-span is JS-toggled on .hs-track-wrap whenever the selection has a
+     known range. The native track's own fill is exactly what .hs-span's
+     bands take over, so it goes fully TRANSPARENT here, not just dim —
+     var(--br) is itself translucent (rgba, 14%/6% alpha per theme), and
+     leaving it on would tint the band underneath instead of matching it at
+     the same brightness as the default fill it replaces. .hs-span sits
+     BEFORE .hs-range in the DOM, so the native thumb (part of .hs-range's
+     own rendering) still paints on top of the bands once the track itself
+     stops painting over them. */
+  .hs-track-wrap.has-span .hs-range::-webkit-slider-runnable-track { background: transparent; }
+  .hs-track-wrap.has-span .hs-range::-moz-range-track { background: transparent; }
+  .hs-track-wrap.has-span .hs-range::-moz-range-progress { background: transparent; }
   .hs-range::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%;
     background: var(--t); border: 3px solid var(--bg); box-shadow: 0 0 0 1px var(--t); margin-top: -6.5px; cursor: pointer; }
   .hs-range::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%;
@@ -7216,6 +7256,12 @@
     // Clear button would silently fail to clear a route reached via a
     // station's path list.
     lockedFromToPath = null;
+    // Deselecting a History entity clears its active-span band too — was a
+    // silent no-op while the band was invisible (obscured by the progress
+    // fill it now replaces), so this was never reachable as a visible bug
+    // until that fix landed alongside this one.
+    activeSpanRange = null;
+    activeSpanPeriods = null;
     renderSelectionChrome();
     animateSidebarTransition();
     setSelectedStationPoints([]);
@@ -7223,6 +7269,7 @@
     // History's per-segment lock is the same kind of state as the operator
     // highlight above — dismissing the panel drops the map highlight with it.
     clearHistoryLock();
+    if (mode === 'history') syncSliderInstances();
     pushHistoryForCurrentState();
   }
   document.getElementById('sb-clear-btn').addEventListener('click', clearSelection);
@@ -7764,6 +7811,91 @@
   var historyLayersReady = false;
   var historyTilesFailed = false;
   var activeSpanRange = null; // {first_year,last_year} of the open entity, or null
+  // Array of {start,end} bands for RENDERING — parallel to activeSpanRange
+  // but keeps per-period gaps a multi-period station has (activeSpanRange
+  // stays collapsed to one first-to-last pair, which is what RULE 1/2/3 in
+  // applySliderFollow() below needs; this is what syncSliderInstances()
+  // draws). null when nothing selected or no range is known. Set alongside
+  // activeSpanRange inside applySliderFollow() so the two can never drift.
+  var activeSpanPeriods = null;
+
+  // Minimum on-screen size for a rendered span band/gap, in CSS px. Below
+  // these, a real single-year period or a real inter-period gap becomes
+  // sub-pixel and disappears — measured on the live dataset (2026-08-14):
+  // the tightest real gap is 1 year (e.g. Blaydon, closed 1966/reopened
+  // 1967), which is ~1.8px on a 343px mobile track and ~1.9px at 368px
+  // desktop — both well under anything visible. 63 stations also have a
+  // genuine zero-duration period (opened and closed the same year), which
+  // needs the same floor or it renders as nothing at all. Chosen against
+  // the band's own 3px thickness: MIN_BAND_PX matches it (a band thinner
+  // than it is tall reads as a smear, not a mark); MIN_GAP_PX is set
+  // slightly above it so a gap reads as a clean notch rather than being
+  // eaten by the 2px rounded corners on the bands either side of it.
+  var MIN_SPAN_BAND_PX = 3;
+  var MIN_SPAN_GAP_PX = 4;
+
+  // Lays out one or more bands as {startPct,endPct} (0-100, relative to the
+  // full min..max track), clipping each period to the visible range and
+  // then enforcing MIN_SPAN_BAND_PX / MIN_SPAN_GAP_PX against the track's
+  // REAL measured pixel width (matches pruneOverlappingTicks()'s own
+  // measure-don't-estimate approach) — accepting slight positional
+  // inaccuracy where the true gap/band is narrower than the floor, per
+  // spec. Order is always preserved; nothing here can invert two bands.
+  //
+  // Two-pass, in this order: band width first, then gap width. A widened
+  // band is capped at the midpoint to its neighbour so this pass alone can
+  // never cause an overlap. A widened gap takes space from BOTH adjacent
+  // bands, weighted toward whichever is longer (so a short band is not the
+  // one erased to make room), capped at 45% of either band's own width. In
+  // a genuinely packed cluster (checked against the dataset: one real case,
+  // a station with two same-year periods 2 years apart) both caps can bind
+  // at once and the realised gap comes out slightly under MIN_SPAN_GAP_PX —
+  // flagged rather than solved further, since forcing it open there would
+  // have to come at the cost of erasing one of the bands entirely.
+  function computeSpanBands(periods, min, max, trackWidthPx) {
+    var bands = [];
+    for (var i = 0; i < periods.length; i++) {
+      var s = Math.max(periods[i].start, min);
+      var e = Math.min(periods[i].end === null || periods[i].end === undefined ? max : periods[i].end, max);
+      if (e < s) continue; // fully outside the visible range
+      bands.push({ startPct: ((s - min) / (max - min)) * 100, endPct: ((e - min) / (max - min)) * 100 });
+    }
+    if (!bands.length || !trackWidthPx) return bands;
+
+    var minBandPct = (MIN_SPAN_BAND_PX / trackWidthPx) * 100;
+    var minGapPct = (MIN_SPAN_GAP_PX / trackWidthPx) * 100;
+
+    for (var b = 0; b < bands.length; b++) {
+      var band = bands[b];
+      var width = band.endPct - band.startPct;
+      if (width >= minBandPct) continue;
+      var deficit = minBandPct - width;
+      var leftCap = Math.max(0, b > 0 ? (band.startPct - bands[b - 1].endPct) / 2 : band.startPct);
+      var rightCap = Math.max(0, b < bands.length - 1 ? (bands[b + 1].startPct - band.endPct) / 2 : (100 - band.endPct));
+      var growRight = Math.min(deficit / 2, rightCap);
+      var growLeft = Math.min(deficit - growRight, leftCap);
+      growRight = Math.min(deficit - growLeft, rightCap); // reclaim from right if left couldn't take its share
+      band.startPct -= growLeft;
+      band.endPct += growRight;
+    }
+
+    for (var g = 0; g < bands.length - 1; g++) {
+      var a = bands[g], c = bands[g + 1];
+      var gap = c.startPct - a.endPct;
+      if (gap >= minGapPct) continue;
+      var gDeficit = minGapPct - gap;
+      var aWidth = a.endPct - a.startPct, cWidth = c.endPct - c.startPct;
+      var totalWidth = aWidth + cWidth;
+      var aShare = totalWidth > 0 ? (aWidth / totalWidth) : 0.5;
+      var aAdjust = Math.min(gDeficit * aShare, aWidth * 0.45);
+      var cAdjust = Math.min(gDeficit - aAdjust, cWidth * 0.45);
+      aAdjust = Math.min(gDeficit - cAdjust, aWidth * 0.45); // reclaim if c couldn't take its share
+      a.endPct -= aAdjust;
+      c.startPct += cAdjust;
+    }
+
+    return bands;
+  }
 
   function eraBandForYear(y) {
     if (y < 1923) return 'pre1923';
@@ -7925,18 +8057,28 @@
       }
       // ACTIVE SPAN INDICATOR — visual only. It never touches the range
       // input's min/max, so dragging and the Jump-to field stay unrestricted
-      // outside the open entity's span.
+      // outside the open entity's span. Replaces the default progress fill
+      // (.has-span, toggled below) rather than sitting alongside it — see
+      // the .hs-span CSS comment for why the fill has to go fully
+      // transparent, not just dim, for the two to read as the same weight.
       var span = sliderEl(inst, 'span');
       if (span) {
-        if (activeSpanRange) {
-          var a = Math.max(activeSpanRange.first_year, min);
-          var b = Math.min(activeSpanRange.last_year === null ? max : activeSpanRange.last_year, max);
-          if (b >= a) {
-            span.hidden = false;
-            span.style.left = (((a - min) / (max - min)) * 100) + '%';
-            span.style.width = (((b - a) / (max - min)) * 100) + '%';
-          } else { span.hidden = true; }
-        } else { span.hidden = true; }
+        var wrap = span.parentElement; // .hs-track-wrap — no id of its own, .hs-span is its only child with one
+        var bands = activeSpanPeriods && activeSpanPeriods.length && range
+          ? computeSpanBands(activeSpanPeriods, min, max, range.getBoundingClientRect().width)
+          : [];
+        if (bands.length) {
+          span.hidden = false;
+          span.innerHTML = bands.map(function (bnd) {
+            return '<div class="hs-span-band" style="left:' + bnd.startPct + '%;width:' + (bnd.endPct - bnd.startPct) + '%"></div>';
+          }).join('');
+          if (range) range.style.setProperty('--fill', '0%'); // replaces the default fill, doesn't sit alongside it
+          if (wrap) wrap.classList.add('has-span');
+        } else {
+          span.hidden = true;
+          span.innerHTML = '';
+          if (wrap) wrap.classList.remove('has-span');
+        }
       }
     });
   }
@@ -8931,9 +9073,20 @@
   // whether to show a "slider moved" notice. Existing callers ignore the
   // return value — a new true/false result on a function that used to
   // return undefined cannot break anything that never checked it.
-  function applySliderFollow(range, operatedFrom, opts) {
+  //
+  // `spanPeriods` (2026-08-14, optional 4th arg): the per-period band list
+  // for RENDERING (activeSpanPeriods) — kept separate from `range`/
+  // activeSpanRange because RULE 1/2/3 above need the OVERALL collapsed
+  // span (does the slider's year fall anywhere in the entity's whole
+  // existence), while the rendered bands need to preserve real gaps
+  // between periods so a multi-period station's closures stay visible
+  // (see historicalPeriodSpan()'s own comment on why it collapses and
+  // historicalOperatingRangeLabel() for the display-side equivalent of
+  // this same split). Omitted by lines/operators, neither of which carries
+  // per-period data — they default to one band matching activeSpanRange.
+  function applySliderFollow(range, operatedFrom, opts, spanPeriods) {
     opts = opts || {};
-    if (!range) { activeSpanRange = null; syncSliderInstances(); return false; } // RULE 3
+    if (!range) { activeSpanRange = null; activeSpanPeriods = null; syncSliderInstances(); return false; } // RULE 3
     var max = historyMaxYear();
     var lo = range.first_year;
     var hi = range.last_year === null ? max : range.last_year;
@@ -8948,6 +9101,7 @@
     var spanFrom = lo;
     if (typeof operatedFrom === 'number' && operatedFrom > spanFrom && operatedFrom <= hi) spanFrom = operatedFrom;
     activeSpanRange = { first_year: spanFrom, last_year: range.last_year };
+    activeSpanPeriods = spanPeriods || [{ start: spanFrom, end: range.last_year }];
 
     if (opts.snapTo === 'nearest') {
       if (opts.targetYear === null || opts.targetYear === undefined) { syncSliderInstances(); return false; }
@@ -9450,8 +9604,11 @@
     setSelectedStationPoints(coords ? [{ lon: coords[0], lat: coords[1] }] : []);
     var span = historicalPeriodSpan(props);
     var range = span.first !== undefined ? { first_year: span.first, last_year: span.sawOpen ? null : span.last } : null;
+    // Real per-period list for the rendered bands — see applySliderFollow()'s
+    // spanPeriods param comment for why this can't just reuse `range`.
+    var spanPeriods = range ? historicalPeriodList(props).map(function (p) { return { start: p.start, end: p.end }; }) : null;
     var targetYear = opts.snapToOpen ? historicalStationSnapYear(props, historyYear) : null;
-    var didSnap = applySliderFollow(range, undefined, opts.snapToOpen ? { snapTo: 'nearest', targetYear: targetYear } : undefined);
+    var didSnap = applySliderFollow(range, undefined, opts.snapToOpen ? { snapTo: 'nearest', targetYear: targetYear } : undefined, spanPeriods);
     // Visible notice (Section 2 rewrite) — only ever set when a search-driven
     // snap actually moved the slider; every other path (a plain click, or a
     // search pick that needed no snap) clears it, so a stale notice from a
