@@ -492,7 +492,73 @@ than discarding it); `build-heritage-client-data.mjs` →
 `data/heritage-railways.json` (keyed by slug — `placement_confirmed` is
 itself generator-owned, but once a human sets it `true` the whole
 placement is frozen at the confirmed values, since flipping that field is
-the file's own documented hand-edit path).
+the file's own documented hand-edit path); `build-historical-stations.mjs`
+→ `scripts/output/historical-stations.geojson` (keyed by `wikidata_qid` —
+NOT `crs`, which is exactly the fragile, orphan-prone signal that caused
+the AGR/Angel Road bug below; a Wikidata QID is a real, permanent external
+identifier, same stability class as a hand-given slug — confirmed 100%
+unique across all 8,884 features before adopting it).
+
+## Corrections layer: the pattern for a genuine sourced-disagreement case
+
+Not built — nothing in this repo currently needs it. Recorded here as the
+design to follow WHEN one appears, so the next real case (AGR/Angel Road
+was investigated as the driving example but turned out to be a bug in our
+own pipeline, not a sourced disagreement — see `build-historical-stations.mjs`'s
+`_notes` on `historical-stations-report.json` for that writeup) doesn't
+have to re-derive this from scratch. Full survey and reasoning:
+`scratchpad/corrections-layer-scoping.md`.
+
+**This is a different problem from read-merge-preserve above.**
+Read-merge-preserve protects a hand-edit from being silently destroyed by a
+regeneration that doesn't know about it. A correction is the opposite
+direction: asserting that a SOURCED value is wrong and a different value is
+right, with a reason and a citation, surviving the source continuing to say
+the old thing. `ownership_status` (operators-content.json) and heritage's
+`established_year` are both fresh assertions — nothing else ever
+re-derives them, so there is no rival generator output to disagree with.
+The genuine case looks like Knottingley's `attribution_note` on
+`line-segments.json` (already shipping, node-chain keyed): a value a
+generator ACTIVELY produces, being overridden on purpose.
+
+**Shape, when needed:**
+- **Inline, per-domain — not a central corrections file.** Every
+  correction-shaped pattern already in this repo chose this independently
+  (`_why` on rolling-stock-overrides.json, `_note` on operator-colors.json,
+  `attribution_note` on line-segments.json, `ownership_status` on
+  operators-content.json) — a central file would need its own key bridging
+  every domain, introducing exactly the cross-file drift risk the
+  allowlist rule above already exists to avoid.
+- A sibling `corrections` array on the entry, never a redirect: the real
+  field carries the corrected value directly (so every existing consumer
+  keeps working unmodified), the array carries `{field, overridden_value,
+  reason, source: {url, title, checked_at}}` per correction — plain
+  fields, NOT `_`-prefixed (see the naming-convention warning above; a
+  correction is hand-curated, never regenerated, so prefixing it would
+  claim the opposite of what's true).
+- **Keying is domain-specific — check before assuming a short code works.**
+  Human-assigned identifiers (slug, operator code) are stable by
+  construction. Derived ones need scrutiny: segment `nodes`-chain and
+  Wikidata `qid` both turned out to be the right answer for two different
+  domains this session, `crs`/`id` were both traps for the same reason
+  (order- or curation-dependent, not a real permanent identifier).
+- **Retirement detection is two-tier, not one mechanism.** Where a cheap
+  local re-derivation exists (a re-exported spreadsheet, an already-fetched
+  Overpass extract), reuse `heritageOverrideStatus()`'s shape
+  (`scripts/lib/operator-classify.mjs`, generalised in
+  `scripts/check-classifier-overrides.mjs`): compare fresh source data
+  against both the overridden and the corrected value, four states (dead /
+  corrected / partially-corrected / still-active). Where no re-derivation
+  path exists at all, don't pretend otherwise — reuse
+  `check-operator-ownership-staleness.mjs`'s shape instead: age-only
+  nudge against `checked_at`, no comparison, because there is nothing to
+  compare against.
+- **Orphan protection falls out of read-merge-preserve for free** for any
+  domain the guard above already covers — a `corrections` array is just
+  one more non-generator-owned field the inverted allowlist preserves or
+  loudly orphans. The only real work for a new domain is giving it a
+  read-merge-preserve guard first; the correction mechanism adds nothing
+  new on top of that.
 
 ## Parked future ideas (not in scope, don't build without being asked)
 - Full postal-address coverage for `location` across all 2,637 stations,

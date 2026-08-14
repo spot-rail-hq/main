@@ -232,10 +232,18 @@ function build() {
       if (ov) Object.assign(obj, ov); // unknown keys pass through by design
       const corr = (corrections[def.name] || {})[obj.class];
       if (corr) {
-        for (const [k, v] of Object.entries(corr)) {
-          if (k.startsWith('_')) continue; // _why is documentation, not a field
-          obj[k] = v;
-        }
+        // BUGFIX (2026-08-15, corrections-layer audit): `_why` used to be
+        // filtered out here and never reached data/site-data.json or
+        // database.html — the correction's VALUE shipped, its REASON did
+        // not, which is exactly backwards for something meant to be
+        // auditable. `additions` a few lines below already spreads its own
+        // underscore-prefixed fields (`_source`) onto the class object
+        // unconditionally — this now matches that existing sibling
+        // pattern instead of being the one inconsistent case, and matches
+        // data/operator-colors.json's `_note` convention (a note field
+        // that survives to the shipped/consumed file, not stripped before
+        // it gets there).
+        Object.assign(obj, corr);
         obj.hasCorrections = true;
       }
       return obj;

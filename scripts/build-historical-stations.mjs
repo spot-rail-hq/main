@@ -79,6 +79,112 @@ const OUT_GEOJSON = path.join(OUTPUT_DIR, 'historical-stations.geojson');
 const OUT_REPORT = path.join(OUTPUT_DIR, 'historical-stations-report.json');
 const OUT_REVIEW = path.join(OUTPUT_DIR, 'historical-stations-review.json');
 const OUT_HIDDEN = path.join(ROOT, 'data', 'history-hidden-stations.json');
+const ORPHANED_NOTES_PATH = path.join(OUTPUT_DIR, `historical-stations-orphaned-annotations-${Date.now()}.json`);
+
+// ─── read-merge-preserve (inverted allowlist) ──────────────────────────────
+// Same convention as build-line-segments.mjs / build-heritage-content.mjs /
+// build-heritage-client-data.mjs (see CLAUDE.md's "Generator safety" section)
+// — this is the 4th generator getting it, not a new mechanism. Nothing is
+// currently hand-curated in this file's output (confirmed empty at the time
+// this guard was added), but build-heritage-client-data.mjs was in the exact
+// same "latent, not yet used" state when it was fixed, and the AGR
+// investigation that prompted this fix depends on the guard existing BEFORE
+// any hand data is written, not after.
+//
+// Keying: `wikidata_qid`, confirmed live against the current output —
+// present on all 8,884 features, 100% unique, zero collisions. Deliberately
+// NOT `crs`: `crs` being stale/orphaned in stations-content.json is the
+// exact bug this session's AGR fix corrects (see openNow below), so keying
+// preservation on the same fragile signal that caused the bug would be
+// circular. A Wikidata QID is a real, permanent external identifier, the
+// same stability class as heritage's hand-assigned `slug`.
+export const STATION_OWNED_KEYS = new Set([
+  'name', 'wikipedia_title', 'crs', 'periods', 'start_year', 'end_year',
+  'start_precision', 'end_precision', 'periods_uncertain',
+  'periods_same_year_reorder', 'triage', 'source', 'wikidata_qid', 'license',
+  'coord_source',
+]);
+
+function loadExistingGeojson() {
+  if (!existsSync(OUT_GEOJSON)) return null;
+  try {
+    return JSON.parse(readFileSync(OUT_GEOJSON, 'utf8'));
+  } catch (err) {
+    throw new Error(`Existing output at ${OUT_GEOJSON} is not valid JSON, refusing to overwrite blind: ${err.message}`);
+  }
+}
+
+export function foreignFields(properties, ownedKeys) {
+  const out = {};
+  for (const [k, v] of Object.entries(properties)) {
+    if (!ownedKeys.has(k)) out[k] = v;
+  }
+  return out;
+}
+
+// Merges hand-curated fields from the previous output onto the freshly
+// built features, matched by wikidata_qid. Returns { mergedFeatures,
+// orphaned } — orphaned is every old feature that carried a foreign field
+// but whose QID no longer appears in this run (article merged/QID changed/
+// station dropped by a triage rule change), so there is nowhere honest to
+// reattach it. Never guessed onto whatever feature happens to share a name.
+export function mergeStationAnnotations(existingGeojson, freshFeatures) {
+  if (!existingGeojson) return { mergedFeatures: freshFeatures, orphaned: [] };
+
+  const oldNoted = new Map(); // qid -> { feature, foreign }
+  for (const old of existingGeojson.features || []) {
+    const qid = old.properties && old.properties.wikidata_qid;
+    if (!qid) continue;
+    const foreign = foreignFields(old.properties, STATION_OWNED_KEYS);
+    if (Object.keys(foreign).length === 0) continue;
+    oldNoted.set(qid, { feature: old, foreign });
+  }
+
+  const consumed = new Set();
+  const mergedFeatures = freshFeatures.map((f) => {
+    const qid = f.properties.wikidata_qid;
+    const hit = qid && oldNoted.get(qid);
+    if (!hit) return f;
+    consumed.add(qid);
+    return { ...f, properties: { ...f.properties, ...hit.foreign } };
+  });
+
+  const orphaned = [];
+  for (const [qid, hit] of oldNoted) {
+    if (!consumed.has(qid)) {
+      orphaned.push({ qid, name: hit.feature.properties.name, wikipedia_title: hit.feature.properties.wikipedia_title, foreign: hit.foreign });
+    }
+  }
+
+  return { mergedFeatures, orphaned };
+}
+
+// Fails loudly by default: if this run would silently drop hand-curated
+// content, abort and write nothing. ALLOW_ORPHANED_STATION_NOTES=1 lets the
+// write proceed but archives everything dropped to a side ledger, same
+// escape-hatch shape as build-line-segments.mjs's
+// ALLOW_ORPHANED_SEGMENT_NOTES.
+export function assertNoStationAnnotationLoss(orphaned) {
+  if (orphaned.length === 0) return;
+
+  console.error(`\n✗ STATION ANNOTATION LOSS DETECTED`);
+  console.error(`${orphaned.length} station(s) with hand-curated fields have no matching wikidata_qid in this run:`);
+  for (const o of orphaned) {
+    console.error(`  ${o.qid} (${o.name} — ${o.wikipedia_title}):`);
+    console.error(`    ${JSON.stringify(o.foreign)}`);
+  }
+
+  if (process.env.ALLOW_ORPHANED_STATION_NOTES === '1') {
+    mkdirSync(OUTPUT_DIR, { recursive: true });
+    writeFileSync(ORPHANED_NOTES_PATH, JSON.stringify({ generated_at: new Date().toISOString(), reason: 'no matching wikidata_qid in rebuild', orphaned }, null, 2) + '\n');
+    console.error(`\nALLOW_ORPHANED_STATION_NOTES=1 set — proceeding anyway. Orphaned content archived to ${ORPHANED_NOTES_PATH}. Re-triage by hand.`);
+    return;
+  }
+
+  console.error(`\nRefusing to write ${OUT_GEOJSON} — this would silently drop the content above.`);
+  console.error(`If this loss is expected, re-run with ALLOW_ORPHANED_STATION_NOTES=1 after reviewing the diagnostic — dropped content is archived, never just discarded.`);
+  throw new Error('station annotation loss guard tripped — see diagnostic above');
+}
 
 const WIKI_API = 'https://en.wikipedia.org/w/api.php';
 const WIKIDATA_API = 'https://www.wikidata.org/w/api.php';
@@ -363,6 +469,20 @@ async function main() {
   }
   const crsToCoords = {};
   for (const s of stationList) crsToCoords[s.crs] = [s.lon, s.lat];
+  // BUGFIX (2026-08-15, AGR/Angel Road investigation — see this file's own
+  // header comment and _notes on historical-stations-report.json for the
+  // full writeup). `titleToCrs` above is built from stations-content.json's
+  // OWN keys, not from station-list.json — so `crs` can be non-null for a
+  // station stations-content.json still has a row for, even after the real
+  // CRS has been retired from station-list.json (the actually-live NaPTAN
+  // source) and never pruned from stations-content.json. `openNow` below
+  // must check LIVE membership, not mere presence of a `crs` value, or a
+  // closed station with a stale stations-content.json row renders as
+  // perpetually open regardless of what its own Wikipedia article says.
+  // liveCrsSet is also used further down for the tab-consistency hide list
+  // — one set, not two (that block used to declare its own copy; now reuses
+  // this one, hoisted here so both call sites see the identical live set).
+  const liveCrsSet = new Set(stationList.filter((s) => s.crs).map((s) => s.crs));
 
   // Proximity index for the name-match-failure bucket.
   const openPoints = stationList.map((s) => [s.lon, s.lat]);
@@ -426,7 +546,7 @@ async function main() {
     }
 
     const crs = titleToCrs[title] || null;
-    const openNow = !!crs;
+    const openNow = !!(crs && liveCrsSet.has(crs));
     const openings = cache.years.opened[title] || [];
     const closings = cache.years.closed[title] || [];
 
@@ -614,7 +734,7 @@ async function main() {
     .replace(/\s+(Rail|Railway|Metro|Underground|DLR|Tram|tube)?\s*(Stations|Station|Stop)$/i, '')
     .trim().toLowerCase();
   const liveNorm = new Set(stationList.filter((s) => s.name).map((s) => normName(s.name)));
-  const liveCrsSet = new Set(stationList.filter((s) => s.crs).map((s) => s.crs));
+  // liveCrsSet is declared once, above, near crsToCoords — reused here.
   const hidden = [];
   for (const f of features) {
     if (f.properties.end_year !== null && f.properties.end_year !== undefined) continue; // closed — out of scope
@@ -631,11 +751,19 @@ async function main() {
   }, null, 2) + '\n');
   console.log(`  tab-consistency hide list: ${hidden.length} still-open stations with no Database row`);
 
+  const existingGeojson = loadExistingGeojson();
+  const { mergedFeatures, orphaned } = mergeStationAnnotations(existingGeojson, features);
+  assertNoStationAnnotationLoss(orphaned);
+  if (existingGeojson) {
+    const preservedCount = mergedFeatures.filter((f) => Object.keys(foreignFields(f.properties, STATION_OWNED_KEYS)).length > 0).length;
+    console.log(`  Preserved hand-curated fields on ${preservedCount} station(s) via wikidata_qid match; ${orphaned.length} orphaned.`);
+  }
+
   mkdirSync(OUTPUT_DIR, { recursive: true });
   writeFileSync(
     OUT_GEOJSON,
     '{"type":"FeatureCollection","features":[\n' +
-      features.map((f) => JSON.stringify(f)).join(',\n') +
+      mergedFeatures.map((f) => JSON.stringify(f)).join(',\n') +
       '\n]}\n',
   );
   writeFileSync(
@@ -644,6 +772,8 @@ async function main() {
       {
         generated_at: new Date().toISOString(),
         source: 'Wikipedia year categories + Wikidata P625, GB polygon clip',
+        _notes:
+          'BUGFIX 2026-08-15 (AGR/Angel Road investigation, scratchpad/corrections-layer-scoping.md Section 4): openNow used to be `!!crs` — true whenever stations-content.json had ANY row for this Wikipedia title, regardless of whether that CRS is still live in station-list.json (the actual NaPTAN source). stations-content.json is never pruned when a station closes, so a closed station whose row was never removed rendered as perpetually open no matter what its own article said. Root-caused rather than patched at the one instance: checked live whether this was a one-off or a pattern (2026-08-15) — 633 stations-content.json rows have no station-list.json counterpart, but 632 of those are ATCO tram/metro codes (9400ZZ... — Underground/DLR/Metrolink/Supertram/etc.), which station-list.json never carries BY DESIGN (it is the National Rail CRS database), not a data gap; those are open in reality and were already rendering correctly by coincidence, not because openNow was right about them. AGR was the ONLY genuine 3-letter National Rail CRS in that orphaned set — a real bug, not a symptom of a wider undercount. openNow now additionally requires the crs to appear in a liveCrsSet built from station-list.json itself (hoisted once, reused by the tab-consistency hide list below, which already built the identical set independently). Verified by a real rerun against the full cached dataset (no synthetic test): exactly one stat changed across all 8,884 emitted stations (open_now 2565 -> 2564); every triage bucket, hidden count and uncertain/reorder count was byte-identical, confirming zero collateral effect on the 632 tram/metro entries. AGR itself needed no hand correction at all once fixed at the root — Wikipedia\'s own closure category already had 2019, sourced independently by both Wikidata P3999 and Wikipedia\'s infobox (National Rail Enquiries), and simply was never read because openNow overrode it. stations-content.json\'s own orphaned AGR row was NOT touched — now harmless since openNow no longer trusts it uncritically, but its cleanup (or a general prune of all 633 orphaned rows) is a separate, un-scoped hygiene question, deliberately not folded into this fix.',
         stats,
         triage_legend: {
           a_non_heavy_rail: 'Underground/metro/tram/heritage — may be genuinely open but absent from a NaPTAN-derived list. RENDERED.',

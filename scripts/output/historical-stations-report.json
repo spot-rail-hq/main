@@ -1,12 +1,13 @@
 {
-  "generated_at": "2026-08-04T19:48:58.968Z",
+  "generated_at": "2026-08-14T20:03:22.220Z",
   "source": "Wikipedia year categories + Wikidata P625, GB polygon clip",
+  "_notes": "BUGFIX 2026-08-15 (AGR/Angel Road investigation, scratchpad/corrections-layer-scoping.md Section 4): openNow used to be `!!crs` — true whenever stations-content.json had ANY row for this Wikipedia title, regardless of whether that CRS is still live in station-list.json (the actual NaPTAN source). stations-content.json is never pruned when a station closes, so a closed station whose row was never removed rendered as perpetually open no matter what its own article said. Root-caused rather than patched at the one instance: checked live whether this was a one-off or a pattern (2026-08-15) — 633 stations-content.json rows have no station-list.json counterpart, but 632 of those are ATCO tram/metro codes (9400ZZ... — Underground/DLR/Metrolink/Supertram/etc.), which station-list.json never carries BY DESIGN (it is the National Rail CRS database), not a data gap; those are open in reality and were already rendering correctly by coincidence, not because openNow was right about them. AGR was the ONLY genuine 3-letter National Rail CRS in that orphaned set — a real bug, not a symptom of a wider undercount. openNow now additionally requires the crs to appear in a liveCrsSet built from station-list.json itself (hoisted once, reused by the tab-consistency hide list below, which already built the identical set independently). Verified by a real rerun against the full cached dataset (no synthetic test): exactly one stat changed across all 8,884 emitted stations (open_now 2565 -> 2564); every triage bucket, hidden count and uncertain/reorder count was byte-identical, confirming zero collateral effect on the 632 tram/metro entries. AGR itself needed no hand correction at all once fixed at the root — Wikipedia's own closure category already had 2019, sourced independently by both Wikidata P3999 and Wikipedia's infobox (National Rail Enquiries), and simply was never read because openNow overrode it. stations-content.json's own orphaned AGR row was NOT touched — now harmless since openNow no longer trusts it uncritically, but its cleanup (or a general prune of all 633 orphaned rows) is a separate, un-scoped hygiene question, deliberately not folded into this fix.",
   "stats": {
     "candidate_articles": 9421,
     "no_coordinates": 228,
     "outside_gb": 0,
     "emitted": 8884,
-    "open_now": 2565,
+    "open_now": 2564,
     "reopened_multi_period": 965,
     "uncertain_periods": 133,
     "same_year_reordered": 161,
