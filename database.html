@@ -633,25 +633,6 @@ function Row({ cat, k }) {
                   build script already passes through onto the class object. */}
             </div>
           )}
-
-          {/* DATA CORRECTION (2026-08-15) — `_why` is data/rolling-stock-
-              overrides.json's `corrections` reason field. It used to be
-              stripped in scripts/build-locomotive-data.mjs before reaching
-              this file at all (`hasCorrections` shipped with no explanation
-              alongside it, silently, since this file was first built) — the
-              corrected VALUE was visible above, the REASON it differs from
-              the raw spreadsheet export never was. Same amber "flag" colour
-              already used for Max speed above, since this is exactly that:
-              a flagged, hand-verified departure from the raw export. */}
-          {k.hasCorrections && k._why && (
-            <div style={{ width: '100%', padding: '18px 22px', borderRadius: 12, marginTop: 12,
-                          background: `linear-gradient(135deg, ${colorAlpha(SRHQ.amber, '10')}, transparent 60%)`,
-                          border: `1px solid ${colorAlpha(SRHQ.amber, '33')}` }}>
-              <div style={{ fontFamily: SRHQ.mono, fontSize: 10.5, letterSpacing: 2,
-                            textTransform: 'uppercase', color: SRHQ.amber, marginBottom: 8 }}>Data correction</div>
-              <div style={{ fontSize: 14, color: SRHQ.ink, lineHeight: 1.7, maxWidth: '76ch' }}>{k._why}</div>
-            </div>
-          )}
         </div>
       )}
     </div>
