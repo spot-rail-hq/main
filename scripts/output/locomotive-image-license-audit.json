@@ -5,7 +5,7 @@
     "name": "HST / InterCity 125",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_43_(HST)",
     "wikiTitle": "British_Rail_Class_43_(HST)",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/St_Philip%27s_Marsh_-_GWR_43002_Sir_Kenneth_Grange.JPG/330px-St_Philip%27s_Marsh_-_GWR_43002_Sir_Kenneth_Grange.JPG",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/St_Philip%27s_Marsh_-_GWR_43002_Sir_Kenneth_Grange.JPG/330px-St_Philip%27s_Marsh_-_GWR_43002_Sir_Kenneth_Grange.JPG?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -16,7 +16,7 @@
     "name": "InterCity 225 (Electra)",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_91",
     "wikiTitle": "British_Rail_Class_91",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/91127_%22Neville_Hill%22_Potters_Bar_090923_09.04_KX-Leeds.jpg/330px-91127_%22Neville_Hill%22_Potters_Bar_090923_09.04_KX-Leeds.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/91127_%22Neville_Hill%22_Potters_Bar_090923_09.04_KX-Leeds.jpg/330px-91127_%22Neville_Hill%22_Potters_Bar_090923_09.04_KX-Leeds.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -27,7 +27,7 @@
     "name": "Voyager",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_220",
     "wikiTitle": "British_Rail_Class_220",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Silk_Mills_-_CrossCountry_220027_Leeds_to_Plymouth.JPG/330px-Silk_Mills_-_CrossCountry_220027_Leeds_to_Plymouth.JPG",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Silk_Mills_-_CrossCountry_220027_Leeds_to_Plymouth.JPG/330px-Silk_Mills_-_CrossCountry_220027_Leeds_to_Plymouth.JPG?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -38,7 +38,7 @@
     "name": "Super Voyager",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_221",
     "wikiTitle": "British_Rail_Class_221",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/221-127_Cross_Country_Leamington_18-06-15_%2818747695939%29.jpg/330px-221-127_Cross_Country_Leamington_18-06-15_%2818747695939%29.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/221-127_Cross_Country_Leamington_18-06-15_%2818747695939%29.jpg/330px-221-127_Cross_Country_Leamington_18-06-15_%2818747695939%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -49,7 +49,7 @@
     "name": "Meridian / Pioneer",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_222",
     "wikiTitle": "British_Rail_Class_222",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/EMR_222104_at_Nottingham.jpg/330px-EMR_222104_at_Nottingham.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/EMR_222104_at_Nottingham.jpg/330px-EMR_222104_at_Nottingham.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -58,12 +58,12 @@
     "category": "Intercity & High Speed",
     "cls": "373",
     "name": "Eurostar e300",
-    "commonsUrl": "commons.wikimedia.org/wiki/Category:Eurostar_Class_373",
-    "wikiTitle": "Eurostar_Class_373",
-    "imageUrl": null,
-    "license": null,
+    "commonsUrl": "commons.wikimedia.org/wiki/File:Eurostar_d'hiver_quittant_Albertville_(2018).JPG",
+    "wikiTitle": null,
+    "imageUrl": "File:Eurostar_d'hiver_quittant_Albertville_(2018).JPG",
+    "license": "CC BY-SA 4.0",
     "action": "keep",
-    "reason": "summary fetch failed (HTTP 404) — TrainImage() would show \"no image available\""
+    "reason": "curated Commons File: link, confirmed free-reuse license"
   },
   {
     "category": "Intercity & High Speed",
@@ -71,7 +71,7 @@
     "name": "Eurostar e320 (Velaro)",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:Eurostar_e320",
     "wikiTitle": "Eurostar_e320",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Eurostar_sp%C3%A9cial_Alpes-Paris_suite_COVID-19_le_16_mars_2020_en_Savoie.JPG/330px-Eurostar_sp%C3%A9cial_Alpes-Paris_suite_COVID-19_le_16_mars_2020_en_Savoie.JPG",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Eurostar_sp%C3%A9cial_Alpes-Paris_suite_COVID-19_le_16_mars_2020_en_Savoie.JPG/330px-Eurostar_sp%C3%A9cial_Alpes-Paris_suite_COVID-19_le_16_mars_2020_en_Savoie.JPG?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -82,7 +82,7 @@
     "name": "Pendolino",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_390",
     "wikiTitle": "British_Rail_Class_390",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/390rugeley.jpg/330px-390rugeley.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/390rugeley.jpg/330px-390rugeley.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -93,7 +93,7 @@
     "name": "Javelin",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_395",
     "wikiTitle": "British_Rail_Class_395",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/395023_at_Dover_Priory.jpg/330px-395023_at_Dover_Priory.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/395023_at_Dover_Priory.jpg/330px-395023_at_Dover_Priory.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -104,7 +104,7 @@
     "name": "Nova 2",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_397",
     "wikiTitle": "British_Rail_Class_397",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Transpennine_Express_397003_at_Wigan_North_Western_April_2019.jpg/330px-Transpennine_Express_397003_at_Wigan_North_Western_April_2019.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Transpennine_Express_397003_at_Wigan_North_Western_April_2019.jpg/330px-Transpennine_Express_397003_at_Wigan_North_Western_April_2019.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -115,7 +115,7 @@
     "name": "Azuma (bi-mode)",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_800",
     "wikiTitle": "British_Rail_Class_800",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/800105_at_Arbroath_260523_%2852927192017%29.jpg/330px-800105_at_Arbroath_260523_%2852927192017%29.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/An_LNER_Azuma_train_at_Spittal_-_geograph.org.uk_-_6573343.jpg/330px-An_LNER_Azuma_train_at_Spittal_-_geograph.org.uk_-_6573343.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -126,7 +126,7 @@
     "name": "Azuma (bi-mode)",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_801",
     "wikiTitle": "British_Rail_Class_801",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Class_801_Azuma_EMU_-_LNER_801214.jpg/330px-Class_801_Azuma_EMU_-_LNER_801214.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Class_801_Azuma_EMU_-_LNER_801214.jpg/330px-Class_801_Azuma_EMU_-_LNER_801214.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -134,10 +134,10 @@
   {
     "category": "Intercity & High Speed",
     "cls": "802",
-    "name": "Azuma / Castle / Nova 1 (bi-mode)",
+    "name": "Azuma / Nova 1 (bi-mode)",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_802",
     "wikiTitle": "British_Rail_Class_802",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Great_Western_Railway_Class_802_%28802010%29_at_Par.jpg/330px-Great_Western_Railway_Class_802_%28802010%29_at_Par.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Great_Western_Railway_Class_802_%28802010%29_at_Par.jpg/330px-Great_Western_Railway_Class_802_%28802010%29_at_Par.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -148,7 +148,7 @@
     "name": "Evero Electric (Lumo)",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_803",
     "wikiTitle": "British_Rail_Class_803",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Lumo_803003_at_Edinburgh_Waverley.jpg/330px-Lumo_803003_at_Edinburgh_Waverley.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Lumo_803003_at_Edinburgh_Waverley.jpg/330px-Lumo_803003_at_Edinburgh_Waverley.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -159,7 +159,7 @@
     "name": "Evero Electric (Avanti)",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_805",
     "wikiTitle": "British_Rail_Class_805",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/805005_at_Crewe.jpg/330px-805005_at_Crewe.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/805005_at_Crewe.jpg/330px-805005_at_Crewe.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -170,7 +170,7 @@
     "name": "Evero(Avanti)",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_807",
     "wikiTitle": "British_Rail_Class_807",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Wolverhampton_-_AWC_807007_London_service.JPG/330px-Wolverhampton_-_AWC_807007_London_service.JPG",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Wolverhampton_-_AWC_807007_London_service.JPG/330px-Wolverhampton_-_AWC_807007_London_service.JPG?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -181,7 +181,7 @@
     "name": "Aurora (AT300 bi-mode)",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_810",
     "wikiTitle": "British_Rail_Class_810",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/EMR_Class_810_Kilby_Bridge_17_April_2025.jpg/330px-EMR_Class_810_Kilby_Bridge_17_April_2025.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/EMR_Class_810_Kilby_Bridge_17_April_2025.jpg/330px-EMR_Class_810_Kilby_Bridge_17_April_2025.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -192,7 +192,7 @@
     "name": "Class 67",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_67",
     "wikiTitle": "British_Rail_Class_67",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Kingswear_-_DB_Cargo_67030_on_the_level_crossing.JPG/330px-Kingswear_-_DB_Cargo_67030_on_the_level_crossing.JPG",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Kingswear_-_DB_Cargo_67030_on_the_level_crossing.JPG/330px-Kingswear_-_DB_Cargo_67030_on_the_level_crossing.JPG?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -203,7 +203,7 @@
     "name": "Class 68",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_68",
     "wikiTitle": "British_Rail_Class_68",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/68033_in_York_station.jpg/330px-68033_in_York_station.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/68033_in_York_station.jpg/330px-68033_in_York_station.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -214,7 +214,7 @@
     "name": "Express Sprinter",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_158",
     "wikiTitle": "British_Rail_Class_158",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/20230929_Northern_158784_Brough.jpg/330px-20230929_Northern_158784_Brough.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/20230929_Northern_158784_Brough.jpg/330px-20230929_Northern_158784_Brough.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -225,7 +225,7 @@
     "name": "South Western Turbo",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_159",
     "wikiTitle": "British_Rail_Class_159",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/New_SWR_livery_variation.jpg/330px-New_SWR_livery_variation.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/New_SWR_livery_variation.jpg/330px-New_SWR_livery_variation.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -236,7 +236,7 @@
     "name": "Networker Turbo",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_165",
     "wikiTitle": "British_Rail_Class_165",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/BR_165106.jpg/330px-BR_165106.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/BR_165106.jpg/330px-BR_165106.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -247,7 +247,7 @@
     "name": "Networker Express",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_166",
     "wikiTitle": "British_Rail_Class_166",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/166208_in_GWR_by_Chris_Warman.jpg/330px-166208_in_GWR_by_Chris_Warman.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/166208_in_GWR_by_Chris_Warman.jpg/330px-166208_in_GWR_by_Chris_Warman.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -258,7 +258,7 @@
     "name": "Turbostar",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_170",
     "wikiTitle": "British_Rail_Class_170",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/170461_at_Knaresborough_260623_%2853003817811%29.jpg/330px-170461_at_Knaresborough_260623_%2853003817811%29.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/170461_at_Knaresborough_260623_%2853003817811%29.jpg/330px-170461_at_Knaresborough_260623_%2853003817811%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -269,7 +269,7 @@
     "name": "Turbostar",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_171",
     "wikiTitle": "British_Rail_Class_171",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Class_171_Hastings_13745676313.jpg/330px-Class_171_Hastings_13745676313.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Class_171_Hastings_13745676313.jpg/330px-Class_171_Hastings_13745676313.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -280,7 +280,7 @@
     "name": "Turbostar",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_172",
     "wikiTitle": "British_Rail_Class_172",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/WMT_Class_172_Pair_at_Birmingham_Moor_Street.jpg/330px-WMT_Class_172_Pair_at_Birmingham_Moor_Street.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/WMT_Class_172_Pair_at_Birmingham_Moor_Street.jpg/330px-WMT_Class_172_Pair_at_Birmingham_Moor_Street.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -291,7 +291,7 @@
     "name": "Coradia 1000",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_175",
     "wikiTitle": "British_Rail_Class_175",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Par_-_GWR_175112_blocking_platform_2.JPG/330px-Par_-_GWR_175112_blocking_platform_2.JPG",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Par_-_GWR_175112_blocking_platform_2.JPG/330px-Par_-_GWR_175112_blocking_platform_2.JPG?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -302,7 +302,7 @@
     "name": "Adelante",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_180",
     "wikiTitle": "British_Rail_Class_180",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/180_107_Kings_Cross%288077807274%29.jpg/330px-180_107_Kings_Cross%288077807274%29.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/180_107_Kings_Cross%288077807274%29.jpg/330px-180_107_Kings_Cross%288077807274%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -313,7 +313,7 @@
     "name": "Desiro",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_185",
     "wikiTitle": "British_Rail_Class_185",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Doncaster_-_TPE_185106_Manchester_AIrport_servce.JPG/330px-Doncaster_-_TPE_185106_Manchester_AIrport_servce.JPG",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Doncaster_-_TPE_185106_Manchester_AIrport_servce.JPG/330px-Doncaster_-_TPE_185106_Manchester_AIrport_servce.JPG?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -324,7 +324,7 @@
     "name": "Civity",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_195",
     "wikiTitle": "British_Rail_Class_195",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Class_195_at_Preston.jpg/330px-Class_195_at_Preston.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Class_195_at_Preston.jpg/330px-Class_195_at_Preston.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -335,7 +335,7 @@
     "name": "Civity",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_196",
     "wikiTitle": "British_Rail_Class_196",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/196005%2C_Coventry%2C_March_25th_2025.jpg/330px-196005%2C_Coventry%2C_March_25th_2025.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/196005%2C_Coventry%2C_March_25th_2025.jpg/330px-196005%2C_Coventry%2C_March_25th_2025.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -346,7 +346,7 @@
     "name": "Electrostar",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_387",
     "wikiTitle": "British_Rail_Class_387",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/387164_at_Didcot_Parkway.jpg/330px-387164_at_Didcot_Parkway.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/387164_at_Didcot_Parkway.jpg/330px-387164_at_Didcot_Parkway.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -357,7 +357,7 @@
     "name": "Flirt (electric)",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_745",
     "wikiTitle": "British_Rail_Class_745",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Greater_Anglia_745010_Colchester.jpg/330px-Greater_Anglia_745010_Colchester.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Greater_Anglia_745010_Colchester.jpg/330px-Greater_Anglia_745010_Colchester.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -368,7 +368,7 @@
     "name": "Flirt (bi-mode)",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_755",
     "wikiTitle": "British_Rail_Class_755",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/755406_at_Ipswich.jpg/330px-755406_at_Ipswich.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/755406_at_Ipswich.jpg/330px-755406_at_Ipswich.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -379,8 +379,52 @@
     "name": "Flex",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_769",
     "wikiTitle": "British_Rail_Class_769",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/NorthernClass769.jpg/330px-NorthernClass769.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/NorthernClass769.jpg/330px-NorthernClass769.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY 4.0",
+    "action": "keep",
+    "reason": "Commons-hosted, confirmed free-reuse license"
+  },
+  {
+    "category": "Regional Passenger",
+    "cls": "139",
+    "name": "Parry People Mover",
+    "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_139",
+    "wikiTitle": "British_Rail_Class_139",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/139002_SBT.jpg/330px-139002_SBT.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "license": "CC BY-SA 4.0",
+    "action": "keep",
+    "reason": "Commons-hosted, confirmed free-reuse license"
+  },
+  {
+    "category": "Regional Passenger",
+    "cls": "168",
+    "name": "Clubman",
+    "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_168",
+    "wikiTitle": "British_Rail_Class_168",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/168106_Dorridge_2025.jpg/330px-168106_Dorridge_2025.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "license": "CC BY-SA 4.0",
+    "action": "keep",
+    "reason": "Commons-hosted, confirmed free-reuse license"
+  },
+  {
+    "category": "Regional Passenger",
+    "cls": "197",
+    "name": "Civity",
+    "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_197",
+    "wikiTitle": "British_Rail_Class_197",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/Class_197_unit_at_Cardiff_Central_-_geograph.org.uk_-_7424295_%28cropped%29.jpg/330px-Class_197_unit_at_Cardiff_Central_-_geograph.org.uk_-_7424295_%28cropped%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "license": "CC BY-SA 2.0",
+    "action": "keep",
+    "reason": "Commons-hosted, confirmed free-reuse license"
+  },
+  {
+    "category": "Regional Passenger",
+    "cls": "231",
+    "name": "FLIRT",
+    "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_231",
+    "wikiTitle": "British_Rail_Class_231",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/20240316_TfW_231001_Bargoed_%28cropped%29.jpg/330px-20240316_TfW_231001_Bargoed_%28cropped%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "license": "CC0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
   },
@@ -390,7 +434,7 @@
     "name": "Sprinter",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_150",
     "wikiTitle": "British_Rail_Class_150",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/LNWR_Class_150_at_Bedford.jpg/330px-LNWR_Class_150_at_Bedford.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/LNWR_Class_150_at_Bedford.jpg/330px-LNWR_Class_150_at_Bedford.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -401,7 +445,7 @@
     "name": "Super Sprinter (single-car)",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_153",
     "wikiTitle": "British_Rail_Class_153",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/Class_153_at_Ty_Glas_station_crop_%28geograph_6162860%29.jpg/330px-Class_153_at_Ty_Glas_station_crop_%28geograph_6162860%29.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/Class_153_at_Ty_Glas_station_crop_%28geograph_6162860%29.jpg/330px-Class_153_at_Ty_Glas_station_crop_%28geograph_6162860%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -412,7 +456,7 @@
     "name": "Super Sprinter",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_155",
     "wikiTitle": "British_Rail_Class_155",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Hull_-_Arriva_155343_arrived_from_Scarborough.JPG/330px-Hull_-_Arriva_155343_arrived_from_Scarborough.JPG",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Hull_-_Arriva_155343_arrived_from_Scarborough.JPG/330px-Hull_-_Arriva_155343_arrived_from_Scarborough.JPG?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -423,7 +467,7 @@
     "name": "Super Sprinter",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_156",
     "wikiTitle": "British_Rail_Class_156",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/ALT_156413.jpg/330px-ALT_156413.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/ALT_156413.jpg/330px-ALT_156413.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -434,7 +478,7 @@
     "name": "D-Train",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_230",
     "wikiTitle": "British_Rail_Class_230",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/TFW_230.jpg/330px-TFW_230.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/TFW_230.jpg/330px-TFW_230.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -445,7 +489,7 @@
     "name": "Bedpan",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_313",
     "wikiTitle": "British_Rail_Class_313",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/313203_at_Brighton.jpg/330px-313203_at_Brighton.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/313203_at_Brighton.jpg/330px-313203_at_Brighton.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 3.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -453,10 +497,9 @@
   {
     "category": "Commuter & Suburban",
     "cls": "315",
-    "name": "",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_315",
     "wikiTitle": "British_Rail_Class_315",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/315844_Forest_Gate_2015-09-13_XAM-E1.jpg/330px-315844_Forest_Gate_2015-09-13_XAM-E1.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/315844_Forest_Gate_2015-09-13_XAM-E1.jpg/330px-315844_Forest_Gate_2015-09-13_XAM-E1.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -464,10 +507,9 @@
   {
     "category": "Commuter & Suburban",
     "cls": "317",
-    "name": "",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_317",
     "wikiTitle": "British_Rail_Class_317",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/317348_at_Cambridge_North.jpg/330px-317348_at_Cambridge_North.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/317348_at_Cambridge_North.jpg/330px-317348_at_Cambridge_North.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -478,7 +520,7 @@
     "name": "Thameslink",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_319",
     "wikiTitle": "British_Rail_Class_319",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/319367_at_LIV_2023.jpg/330px-319367_at_LIV_2023.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/319367_at_LIV_2023.jpg/330px-319367_at_LIV_2023.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -486,10 +528,9 @@
   {
     "category": "Commuter & Suburban",
     "cls": "320",
-    "name": "",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_320",
     "wikiTitle": "British_Rail_Class_320",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Hugh_Llewellyn_19630631832.jpg/330px-Hugh_Llewellyn_19630631832.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Hugh_Llewellyn_19630631832.jpg/330px-Hugh_Llewellyn_19630631832.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -497,10 +538,9 @@
   {
     "category": "Commuter & Suburban",
     "cls": "321",
-    "name": "",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_321",
     "wikiTitle": "British_Rail_Class_321",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/321344_at_Colchester.jpg/330px-321344_at_Colchester.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/321344_at_Colchester.jpg/330px-321344_at_Colchester.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -508,10 +548,9 @@
   {
     "category": "Commuter & Suburban",
     "cls": "323",
-    "name": "",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_323",
     "wikiTitle": "British_Rail_Class_323",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Northern_Trains_class_323.jpg/330px-Northern_Trains_class_323.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Northern_Trains_class_323.jpg/330px-Northern_Trains_class_323.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -522,7 +561,7 @@
     "name": "Civity (electric)",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_331",
     "wikiTitle": "British_Rail_Class_331",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Northern_331_101_leaving_Ben_Rhydding_%28cropped%29.jpg/330px-Northern_331_101_leaving_Ben_Rhydding_%28cropped%29.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Northern_331_101_leaving_Ben_Rhydding_%28cropped%29.jpg/330px-Northern_331_101_leaving_Ben_Rhydding_%28cropped%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "Public domain",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -533,7 +572,7 @@
     "name": "Heathrow Express",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_332",
     "wikiTitle": "British_Rail_Class_332",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/332005_A_London_Paddington.JPG/330px-332005_A_London_Paddington.JPG",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/332005_A_London_Paddington.JPG/330px-332005_A_London_Paddington.JPG?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "Public domain",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -541,10 +580,9 @@
   {
     "category": "Commuter & Suburban",
     "cls": "333",
-    "name": "",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_333",
     "wikiTitle": "British_Rail_Class_333",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/333006_at_Keighley_270623_%2853006220766%29.jpg/330px-333006_at_Keighley_270623_%2853006220766%29.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/333006_at_Keighley_270623_%2853006220766%29.jpg/330px-333006_at_Keighley_270623_%2853006220766%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -553,12 +591,12 @@
     "category": "Commuter & Suburban",
     "cls": "334",
     "name": "Juniper",
-    "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_334",
-    "wikiTitle": "British_Rail_Class_334",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/ScotRail_Class_334_interior%2C_08_May_2013.JPG/330px-ScotRail_Class_334_interior%2C_08_May_2013.JPG",
-    "license": "CC0",
+    "commonsUrl": "commons.wikimedia.org/wiki/File:Class334019_at_dumbarton_central.jpg",
+    "wikiTitle": null,
+    "imageUrl": "File:Class334019_at_dumbarton_central.jpg",
+    "license": "CC BY-SA 4.0",
     "action": "keep",
-    "reason": "Commons-hosted, confirmed free-reuse license"
+    "reason": "curated Commons File: link, confirmed free-reuse license"
   },
   {
     "category": "Commuter & Suburban",
@@ -566,7 +604,7 @@
     "name": "Aventra — Elizabeth line",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_345",
     "wikiTitle": "British_Rail_Class_345",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/345001_ABW.jpg/330px-345001_ABW.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/345001_ABW.jpg/330px-345001_ABW.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -577,7 +615,7 @@
     "name": "Desiro",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_350",
     "wikiTitle": "British_Rail_Class_350",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/20220903_LNR_350114_350124.jpg/330px-20220903_LNR_350114_350124.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/20220903_LNR_350114_350124.jpg/330px-20220903_LNR_350114_350124.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -588,7 +626,7 @@
     "name": "Electrostar",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_357",
     "wikiTitle": "British_Rail_Class_357",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Unit_357207_at_Dagenham_Dock_in_Jan_2025.jpg/330px-Unit_357207_at_Dagenham_Dock_in_Jan_2025.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Unit_357207_at_Dagenham_Dock_in_Jan_2025.jpg/330px-Unit_357207_at_Dagenham_Dock_in_Jan_2025.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -599,7 +637,7 @@
     "name": "Desiro",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_360",
     "wikiTitle": "British_Rail_Class_360",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/CL360_KET.jpg/330px-CL360_KET.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/CL360_KET.jpg/330px-CL360_KET.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -610,7 +648,7 @@
     "name": "Networker Express",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_365",
     "wikiTitle": "British_Rail_Class_365",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/48415953371_730663eba9_o_%28365528_at_KGX%29_%28XAM-E1%29.jpg/330px-48415953371_730663eba9_o_%28365528_at_KGX%29_%28XAM-E1%29.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/48415953371_730663eba9_o_%28365528_at_KGX%29_%28XAM-E1%29.jpg/330px-48415953371_730663eba9_o_%28365528_at_KGX%29_%28XAM-E1%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -621,7 +659,7 @@
     "name": "Electrostar",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_375",
     "wikiTitle": "British_Rail_Class_375",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Southeastern_375_715.jpg/330px-Southeastern_375_715.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Southeastern_375_715.jpg/330px-Southeastern_375_715.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -632,7 +670,7 @@
     "name": "Electrostar (metro)",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_376",
     "wikiTitle": "British_Rail_Class_376",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/376016_passes_Wandsworth_Road_20_11_25_%2854936341620%29_-_cropped.jpg/330px-376016_passes_Wandsworth_Road_20_11_25_%2854936341620%29_-_cropped.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/376016_passes_Wandsworth_Road_20_11_25_%2854936341620%29_-_cropped.jpg/330px-376016_passes_Wandsworth_Road_20_11_25_%2854936341620%29_-_cropped.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -643,8 +681,8 @@
     "name": "Electrostar",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_377",
     "wikiTitle": "British_Rail_Class_377",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Battersea_Park_railway_station_MMB_30_377605.jpg/330px-Battersea_Park_railway_station_MMB_30_377605.jpg",
-    "license": "CC BY-SA 4.0",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/377163_at_Hastings.jpg/330px-377163_at_Hastings.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "license": "CC BY-SA 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
   },
@@ -654,7 +692,7 @@
     "name": "Capitalstar — London Overground",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_378",
     "wikiTitle": "British_Rail_Class_378",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Class_378_at_Brondesbury_Park.jpg/330px-Class_378_at_Brondesbury_Park.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Class_378_at_Brondesbury_Park.jpg/330px-Class_378_at_Brondesbury_Park.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -665,7 +703,7 @@
     "name": "Electrostar",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_379",
     "wikiTitle": "British_Rail_Class_379",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/379010_%26_379028%2C_Finsbury_Park%2C_May_29th_2025.jpg/330px-379010_%26_379028%2C_Finsbury_Park%2C_May_29th_2025.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/379010_%26_379028%2C_Finsbury_Park%2C_May_29th_2025.jpg/330px-379010_%26_379028%2C_Finsbury_Park%2C_May_29th_2025.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -676,7 +714,7 @@
     "name": "Desiro",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_380",
     "wikiTitle": "British_Rail_Class_380",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Glasgow_Central_-_Abellio_380004_and_380104.JPG/330px-Glasgow_Central_-_Abellio_380004_and_380104.JPG",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Glasgow_Central_-_Abellio_380004_and_380104.JPG/330px-Glasgow_Central_-_Abellio_380004_and_380104.JPG?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -687,7 +725,7 @@
     "name": "AT200",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_385",
     "wikiTitle": "British_Rail_Class_385",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/385008_at_Gourock_station_buffers.jpg/330px-385008_at_Gourock_station_buffers.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/385008_at_Gourock_station_buffers.jpg/330px-385008_at_Gourock_station_buffers.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -698,7 +736,7 @@
     "name": "Wessex Electric",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_442",
     "wikiTitle": "British_Rail_Class_442",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/48141767263_d56509e0e2_o_%28442403_near_Shawford%29_%28XAM-E1%29.jpg/330px-48141767263_d56509e0e2_o_%28442403_near_Shawford%29_%28XAM-E1%29.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/48141767263_d56509e0e2_o_%28442403_near_Shawford%29_%28XAM-E1%29.jpg/330px-48141767263_d56509e0e2_o_%28442403_near_Shawford%29_%28XAM-E1%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -709,7 +747,7 @@
     "name": "Desiro",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_444",
     "wikiTitle": "British_Rail_Class_444",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/51133180752_1a510547ce_o_%28444042_at_SOA%29_%28XAM-E1%29.jpg/330px-51133180752_1a510547ce_o_%28444042_at_SOA%29_%28XAM-E1%29.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/51133180752_1a510547ce_o_%28444042_at_SOA%29_%28XAM-E1%29.jpg/330px-51133180752_1a510547ce_o_%28444042_at_SOA%29_%28XAM-E1%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -720,7 +758,7 @@
     "name": "Desiro",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_450",
     "wikiTitle": "British_Rail_Class_450",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/20230527_SWR_450054.jpg/330px-20230527_SWR_450054.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/20230527_SWR_450054.jpg/330px-20230527_SWR_450054.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -728,10 +766,9 @@
   {
     "category": "Commuter & Suburban",
     "cls": "455",
-    "name": "",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_455",
     "wikiTitle": "British_Rail_Class_455",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/Class_455_train_seen_on_the_Kingston_loop_line.jpg/330px-Class_455_train_seen_on_the_Kingston_loop_line.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/Class_455_train_seen_on_the_Kingston_loop_line.jpg/330px-Class_455_train_seen_on_the_Kingston_loop_line.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -739,10 +776,9 @@
   {
     "category": "Commuter & Suburban",
     "cls": "456",
-    "name": "",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_456",
     "wikiTitle": "British_Rail_Class_456",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/SWR_456_014_at_Guildford.jpg/330px-SWR_456_014_at_Guildford.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/SWR_456_014_at_Guildford.jpg/330px-SWR_456_014_at_Guildford.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -753,7 +789,7 @@
     "name": "Juniper",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_458",
     "wikiTitle": "British_Rail_Class_458",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/20240625_SWR_458415_WAT.jpg/330px-20240625_SWR_458415_WAT.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/20240625_SWR_458415_WAT.jpg/330px-20240625_SWR_458415_WAT.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -764,7 +800,7 @@
     "name": "Networker",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_465",
     "wikiTitle": "British_Rail_Class_465",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/20200916_Southeastern_465152.jpg/330px-20200916_Southeastern_465152.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/20200916_Southeastern_465152.jpg/330px-20200916_Southeastern_465152.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -775,7 +811,7 @@
     "name": "Networker",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_466",
     "wikiTitle": "British_Rail_Class_466",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/466003_at_Ashford_International.jpg/330px-466003_at_Ashford_International.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/466003_at_Ashford_International.jpg/330px-466003_at_Ashford_International.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -786,7 +822,7 @@
     "name": "D-Train (Island Line)",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_484",
     "wikiTitle": "British_Rail_Class_484",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/SWR_484_003_%40_Ryde_Esplanade_-_cropped.jpg/330px-SWR_484_003_%40_Ryde_Esplanade_-_cropped.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/SWR_484_003_%40_Ryde_Esplanade_-_cropped.jpg/330px-SWR_484_003_%40_Ryde_Esplanade_-_cropped.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -794,10 +830,9 @@
   {
     "category": "Commuter & Suburban",
     "cls": "507",
-    "name": "",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_507",
     "wikiTitle": "British_Rail_Class_507",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/507021_Bidston.jpg/330px-507021_Bidston.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/507021_Bidston.jpg/330px-507021_Bidston.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -805,10 +840,9 @@
   {
     "category": "Commuter & Suburban",
     "cls": "508",
-    "name": "",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_508",
     "wikiTitle": "British_Rail_Class_508",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/20190820-Merseyrail-508131.jpg/330px-20190820-Merseyrail-508131.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/20190820-Merseyrail-508131.jpg/330px-20190820-Merseyrail-508131.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -819,7 +853,7 @@
     "name": "Desiro City — Thameslink",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_700",
     "wikiTitle": "British_Rail_Class_700",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/20220519_Thameslink_700032.jpg/330px-20220519_Thameslink_700032.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/20220519_Thameslink_700032.jpg/330px-20220519_Thameslink_700032.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -830,7 +864,7 @@
     "name": "Arterio",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_701",
     "wikiTitle": "British_Rail_Class_701",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/701_Kingston.jpg/330px-701_Kingston.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/701_Kingston.jpg/330px-701_Kingston.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -841,7 +875,7 @@
     "name": "Desiro City",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_707",
     "wikiTitle": "British_Rail_Class_707",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d9/707009_%26_010_Hither_Green_160921.jpg/330px-707009_%26_010_Hither_Green_160921.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d9/707009_%26_010_Hither_Green_160921.jpg/330px-707009_%26_010_Hither_Green_160921.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -852,7 +886,7 @@
     "name": "Aventra — London Overground",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_710",
     "wikiTitle": "British_Rail_Class_710",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/710122_Hackney_Downs.jpg/330px-710122_Hackney_Downs.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/710122_Hackney_Downs.jpg/330px-710122_Hackney_Downs.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -863,7 +897,7 @@
     "name": "Desiro City — Great Northern",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_717",
     "wikiTitle": "British_Rail_Class_717",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Great_Northern_Class_717_Desiro_City_at_Palmers_Green_June_2019_cropped.jpg/330px-Great_Northern_Class_717_Desiro_City_at_Palmers_Green_June_2019_cropped.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Great_Northern_Class_717_Desiro_City_at_Palmers_Green_June_2019_cropped.jpg/330px-Great_Northern_Class_717_Desiro_City_at_Palmers_Green_June_2019_cropped.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -874,7 +908,7 @@
     "name": "Aventra — Greater Anglia / c2c",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_720",
     "wikiTitle": "British_Rail_Class_720",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Vehicles_of_the_United_Kingdom_278_%28edited%29.jpg/330px-Vehicles_of_the_United_Kingdom_278_%28edited%29.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Vehicles_of_the_United_Kingdom_278_%28edited%29.jpg/330px-Vehicles_of_the_United_Kingdom_278_%28edited%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -885,7 +919,7 @@
     "name": "Aventra — West Midlands",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_730",
     "wikiTitle": "British_Rail_Class_730",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/British_Rail_Class_730_at_Milton_Keynes_Central.jpg/330px-British_Rail_Class_730_at_Milton_Keynes_Central.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/British_Rail_Class_730_at_Milton_Keynes_Central.jpg/330px-British_Rail_Class_730_at_Milton_Keynes_Central.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -893,11 +927,32 @@
   {
     "category": "Commuter & Suburban",
     "cls": "777",
-    "name": "Nova 1 — Merseyrail",
+    "name": "Stadler METRO — Merseyrail",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_777",
     "wikiTitle": "British_Rail_Class_777",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/777010_at_Hooton_Station_20210728-1.jpg/330px-777010_at_Hooton_Station_20210728-1.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/777010_at_Hooton_Station_20210728-1.jpg/330px-777010_at_Hooton_Station_20210728-1.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
+    "action": "keep",
+    "reason": "Commons-hosted, confirmed free-reuse license"
+  },
+  {
+    "category": "Commuter & Suburban",
+    "cls": "318",
+    "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_318",
+    "wikiTitle": "British_Rail_Class_318",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/da/Hyndland_-_Abellio_318262_Cumbernauld_service.JPG/330px-Hyndland_-_Abellio_318262_Cumbernauld_service.JPG?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "license": "CC BY-SA 4.0",
+    "action": "keep",
+    "reason": "Commons-hosted, confirmed free-reuse license"
+  },
+  {
+    "category": "Commuter & Suburban",
+    "cls": "756",
+    "name": "FLIRT tri-mode",
+    "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_756",
+    "wikiTitle": "British_Rail_Class_756",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/TfW_Rail_756117_at_Aberdare_19_November_2024.jpg/330px-TfW_Rail_756117_at_Aberdare_19_November_2024.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "license": "CC BY 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
   },
@@ -907,7 +962,7 @@
     "name": "Shunter",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_08",
     "wikiTitle": "British_Rail_Class_08",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Class_08_08801_%28D3969%29_%286833336546%29.jpg/330px-Class_08_08801_%28D3969%29_%286833336546%29.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Class_08_08801_%28D3969%29_%286833336546%29.jpg/330px-Class_08_08801_%28D3969%29_%286833336546%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -918,7 +973,7 @@
     "name": "Shunter (higher-geared)",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_09",
     "wikiTitle": "British_Rail_Class_09",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/09_008_Coalville_Open_Day_25th_may_1991.jpg/330px-09_008_Coalville_Open_Day_25th_may_1991.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/09_008_Coalville_Open_Day_25th_may_1991.jpg/330px-09_008_Coalville_Open_Day_25th_may_1991.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -929,7 +984,7 @@
     "name": "Class 56 (Grids)",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_56",
     "wikiTitle": "British_Rail_Class_56",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/56006_at_Doncaster_Works.JPG/330px-56006_at_Doncaster_Works.JPG",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/56006_at_Doncaster_Works.JPG/330px-56006_at_Doncaster_Works.JPG?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 3.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -940,7 +995,7 @@
     "name": "Class 60 (Tugs)",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_60",
     "wikiTitle": "British_Rail_Class_60",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/60068_by_Castleton_East_Junction.jpg/330px-60068_by_Castleton_East_Junction.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/60068_by_Castleton_East_Junction.jpg/330px-60068_by_Castleton_East_Junction.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -951,7 +1006,7 @@
     "name": "Class 66 (Shed)",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_66",
     "wikiTitle": "British_Rail_Class_66",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/66534_on_container_train.jpg/330px-66534_on_container_train.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/66534_on_container_train.jpg/330px-66534_on_container_train.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -962,7 +1017,7 @@
     "name": "Class 69 (rebuilt ex-56)",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_69",
     "wikiTitle": "British_Rail_Class_69",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Class_69_Number_69001_at_Tonbridge_West_Yard.jpg/330px-Class_69_Number_69001_at_Tonbridge_West_Yard.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Class_69_Number_69001_at_Tonbridge_West_Yard.jpg/330px-Class_69_Number_69001_at_Tonbridge_West_Yard.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -973,7 +1028,7 @@
     "name": "Class 70 (PowerHaul)",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_70",
     "wikiTitle": "British_Rail_Class_70",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Trimley_Branch_Line_-_Freightliner_70017.jpg/330px-Trimley_Branch_Line_-_Freightliner_70017.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Trimley_Branch_Line_-_Freightliner_70017.jpg/330px-Trimley_Branch_Line_-_Freightliner_70017.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 3.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -984,7 +1039,7 @@
     "name": "Class 73 (Electro-Diesel)",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_73",
     "wikiTitle": "British_Rail_Class_73",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Highlander_sleeper_diverted_to_Oban_-_February_2016_%285%29_%28geograph_4833956%29.jpg/330px-Highlander_sleeper_diverted_to_Oban_-_February_2016_%285%29_%28geograph_4833956%29.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Highlander_sleeper_diverted_to_Oban_-_February_2016_%285%29_%28geograph_4833956%29.jpg/330px-Highlander_sleeper_diverted_to_Oban_-_February_2016_%285%29_%28geograph_4833956%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -995,7 +1050,7 @@
     "name": "Class 86",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_86",
     "wikiTitle": "British_Rail_Class_86",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/86244_at_Wolverhampton.jpg/330px-86244_at_Wolverhampton.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/86244_at_Wolverhampton.jpg/330px-86244_at_Wolverhampton.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -1006,7 +1061,7 @@
     "name": "Class 88",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_88",
     "wikiTitle": "British_Rail_Class_88",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/88009_at_Scout_Green_with_a_Daventry_to_Mossend_intermodal_train.jpg/330px-88009_at_Scout_Green_with_a_Daventry_to_Mossend_intermodal_train.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/88009_at_Scout_Green_with_a_Daventry_to_Mossend_intermodal_train.jpg/330px-88009_at_Scout_Green_with_a_Daventry_to_Mossend_intermodal_train.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -1017,7 +1072,7 @@
     "name": "Class 90",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_90",
     "wikiTitle": "British_Rail_Class_90",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Freightliner_90047_at_Edinburgh_Waverley.jpg/330px-Freightliner_90047_at_Edinburgh_Waverley.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Freightliner_90047_at_Edinburgh_Waverley.jpg/330px-Freightliner_90047_at_Edinburgh_Waverley.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -1028,8 +1083,39 @@
     "name": "Class 92",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_92",
     "wikiTitle": "British_Rail_Class_92",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Caledonian_Sleeper_Class_92_033_Euston_-_42922325644.jpg/330px-Caledonian_Sleeper_Class_92_033_Euston_-_42922325644.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Caledonian_Sleeper_Class_92_033_Euston_-_42922325644.jpg/330px-Caledonian_Sleeper_Class_92_033_Euston_-_42922325644.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY 2.0",
+    "action": "keep",
+    "reason": "Commons-hosted, confirmed free-reuse license"
+  },
+  {
+    "category": "Freight",
+    "cls": "59",
+    "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_59",
+    "wikiTitle": "British_Rail_Class_59",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/59001_%27Yeoman_Endeavour%27_at_Doncaster_Works.JPG/330px-59001_%27Yeoman_Endeavour%27_at_Doncaster_Works.JPG?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "license": "CC BY-SA 3.0",
+    "action": "keep",
+    "reason": "Commons-hosted, confirmed free-reuse license"
+  },
+  {
+    "category": "Freight",
+    "cls": "93",
+    "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_93",
+    "wikiTitle": "British_Rail_Class_93",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/93001_Stadler_Bo-Bo_Tri-mode_of_Rail_Operations_Group_at_Witham_240625.jpg/330px-93001_Stadler_Bo-Bo_Tri-mode_of_Rail_Operations_Group_at_Witham_240625.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "license": "CC BY 4.0",
+    "action": "keep",
+    "reason": "Commons-hosted, confirmed free-reuse license"
+  },
+  {
+    "category": "Freight",
+    "cls": "99",
+    "name": "Eurodual",
+    "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_99",
+    "wikiTitle": "British_Rail_Class_99",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/20250802-IMGP9636.jpg/330px-20250802-IMGP9636.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
   },
@@ -1039,7 +1125,7 @@
     "name": "Class 20 (Choppers)",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_20",
     "wikiTitle": "British_Rail_Class_20",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/20134_%26_20075_at_Ryecroft_Junction.jpg/330px-20134_%26_20075_at_Ryecroft_Junction.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/20134_%26_20075_at_Ryecroft_Junction.jpg/330px-20134_%26_20075_at_Ryecroft_Junction.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -1050,7 +1136,7 @@
     "name": "Class 37 (Tractors / Growlers)",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_37",
     "wikiTitle": "British_Rail_Class_37",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/5191693456_59e928f289_Steve_Jones.jpg/330px-5191693456_59e928f289_Steve_Jones.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/5191693456_59e928f289_Steve_Jones.jpg/330px-5191693456_59e928f289_Steve_Jones.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -1061,7 +1147,7 @@
     "name": "Class 47 (Duffs / Choppers)",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_47",
     "wikiTitle": "British_Rail_Class_47",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/47474_BNS_1987_Steve_Jones.jpg/330px-47474_BNS_1987_Steve_Jones.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/47474_BNS_1987_Steve_Jones.jpg/330px-47474_BNS_1987_Steve_Jones.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -1072,7 +1158,7 @@
     "name": "Class 57 (rebuilds)",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_57",
     "wikiTitle": "British_Rail_Class_57",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/St_Philip%27s_Marsh_-_GWR_57603.JPG/330px-St_Philip%27s_Marsh_-_GWR_57603.JPG",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/St_Philip%27s_Marsh_-_GWR_57603.JPG/330px-St_Philip%27s_Marsh_-_GWR_57603.JPG?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -1083,7 +1169,7 @@
     "name": "Braunton — SR West Country",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:SR_West_Country_class",
     "wikiTitle": "SR_West_Country_class",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Salisbury_ECS_geograph-2969477-by-Ben-Brooksbank.jpg/330px-Salisbury_ECS_geograph-2969477-by-Ben-Brooksbank.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Salisbury_ECS_geograph-2969477-by-Ben-Brooksbank.jpg/330px-Salisbury_ECS_geograph-2969477-by-Ben-Brooksbank.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -1094,7 +1180,7 @@
     "name": "Tangmere — SR Battle of Britain",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:SR_West_Country_class",
     "wikiTitle": "SR_West_Country_class",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Salisbury_ECS_geograph-2969477-by-Ben-Brooksbank.jpg/330px-Salisbury_ECS_geograph-2969477-by-Ben-Brooksbank.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Salisbury_ECS_geograph-2969477-by-Ben-Brooksbank.jpg/330px-Salisbury_ECS_geograph-2969477-by-Ben-Brooksbank.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -1105,7 +1191,7 @@
     "name": "City of Wells — SR Battle of Britain",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:SR_West_Country_class",
     "wikiTitle": "SR_West_Country_class",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Salisbury_ECS_geograph-2969477-by-Ben-Brooksbank.jpg/330px-Salisbury_ECS_geograph-2969477-by-Ben-Brooksbank.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Salisbury_ECS_geograph-2969477-by-Ben-Brooksbank.jpg/330px-Salisbury_ECS_geograph-2969477-by-Ben-Brooksbank.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -1116,7 +1202,7 @@
     "name": "British India Line — SR Merchant Navy",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:SR_Merchant_Navy_class",
     "wikiTitle": "SR_Merchant_Navy_class",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Mytchett%2C_Surrey_with_Waterloo_-_Weymouth_express_at_Sturt_Lane_Junction_geograph-2676694-by-Ben-Brooksbank.jpg/330px-Mytchett%2C_Surrey_with_Waterloo_-_Weymouth_express_at_Sturt_Lane_Junction_geograph-2676694-by-Ben-Brooksbank.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Mytchett%2C_Surrey_with_Waterloo_-_Weymouth_express_at_Sturt_Lane_Junction_geograph-2676694-by-Ben-Brooksbank.jpg/330px-Mytchett%2C_Surrey_with_Waterloo_-_Weymouth_express_at_Sturt_Lane_Junction_geograph-2676694-by-Ben-Brooksbank.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -1127,7 +1213,7 @@
     "name": "Clan Line — SR Merchant Navy",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:SR_Merchant_Navy_class",
     "wikiTitle": "SR_Merchant_Navy_class",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Mytchett%2C_Surrey_with_Waterloo_-_Weymouth_express_at_Sturt_Lane_Junction_geograph-2676694-by-Ben-Brooksbank.jpg/330px-Mytchett%2C_Surrey_with_Waterloo_-_Weymouth_express_at_Sturt_Lane_Junction_geograph-2676694-by-Ben-Brooksbank.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Mytchett%2C_Surrey_with_Waterloo_-_Weymouth_express_at_Sturt_Lane_Junction_geograph-2676694-by-Ben-Brooksbank.jpg/330px-Mytchett%2C_Surrey_with_Waterloo_-_Weymouth_express_at_Sturt_Lane_Junction_geograph-2676694-by-Ben-Brooksbank.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -1136,89 +1222,89 @@
     "category": "Charter & Railtours",
     "cls": "44871",
     "name": "LMS Black Five",
-    "commonsUrl": "commons.wikimedia.org/wiki/Category:LMS_Class_5MT",
-    "wikiTitle": "LMS_Class_5MT",
-    "imageUrl": null,
-    "license": null,
+    "commonsUrl": "commons.wikimedia.org/wiki/File:LMS_Stanier_Class_\"5MT\"_4-6-0_No.44871_-_29372786862.jpg",
+    "wikiTitle": null,
+    "imageUrl": "File:LMS_Stanier_Class_\"5MT\"_4-6-0_No.44871_-_29372786862.jpg",
+    "license": "CC BY-SA 2.0",
     "action": "keep",
-    "reason": "summary fetch failed (HTTP 404) — TrainImage() would show \"no image available\""
+    "reason": "curated Commons File: link, confirmed free-reuse license"
   },
   {
     "category": "Charter & Railtours",
     "cls": "45596",
     "name": "Bahamas — LMS Jubilee",
-    "commonsUrl": "commons.wikimedia.org/wiki/Category:LMS_Jubilee_class",
-    "wikiTitle": "LMS_Jubilee_class",
-    "imageUrl": null,
-    "license": null,
+    "commonsUrl": "commons.wikimedia.org/wiki/File:45596_Bahamas_(46988770322).jpg",
+    "wikiTitle": null,
+    "imageUrl": "File:45596_Bahamas_(46988770322).jpg",
+    "license": "CC BY 2.0",
     "action": "keep",
-    "reason": "summary fetch failed (HTTP 404) — TrainImage() would show \"no image available\""
+    "reason": "curated Commons File: link, confirmed free-reuse license"
   },
   {
     "category": "Charter & Railtours",
     "cls": "45690",
     "name": "Leander — LMS Jubilee",
-    "commonsUrl": "commons.wikimedia.org/wiki/Category:LMS_Jubilee_class",
-    "wikiTitle": "LMS_Jubilee_class",
-    "imageUrl": null,
-    "license": null,
+    "commonsUrl": "commons.wikimedia.org/wiki/File:LMS_45690_Leander_at_Barrow_Hill_Roundhouse.JPG",
+    "wikiTitle": null,
+    "imageUrl": "File:LMS_45690_Leander_at_Barrow_Hill_Roundhouse.JPG",
+    "license": "CC BY-SA 4.0",
     "action": "keep",
-    "reason": "summary fetch failed (HTTP 404) — TrainImage() would show \"no image available\""
+    "reason": "curated Commons File: link, confirmed free-reuse license"
   },
   {
     "category": "Charter & Railtours",
     "cls": "45699",
     "name": "Galatea — LMS Jubilee",
-    "commonsUrl": "commons.wikimedia.org/wiki/Category:LMS_Jubilee_class",
-    "wikiTitle": "LMS_Jubilee_class",
-    "imageUrl": null,
-    "license": null,
+    "commonsUrl": "commons.wikimedia.org/wiki/File:45699_Galatea_Passing_Bates_Mill.jpg",
+    "wikiTitle": null,
+    "imageUrl": "File:45699_Galatea_Passing_Bates_Mill.jpg",
+    "license": "CC BY 2.0",
     "action": "keep",
-    "reason": "summary fetch failed (HTTP 404) — TrainImage() would show \"no image available\""
+    "reason": "curated Commons File: link, confirmed free-reuse license"
   },
   {
     "category": "Charter & Railtours",
     "cls": "46203",
     "name": "Princess Margaret Rose — LMS Princess Royal",
-    "commonsUrl": "commons.wikimedia.org/wiki/Category:LMS_Princess_Royal_class",
-    "wikiTitle": "LMS_Princess_Royal_class",
-    "imageUrl": null,
-    "license": null,
+    "commonsUrl": "commons.wikimedia.org/wiki/File:LMS_8P_4-6-2_46203_PMR_Carlisle_22.09.94R_edited-2.jpg",
+    "wikiTitle": null,
+    "imageUrl": "File:LMS_8P_4-6-2_46203_PMR_Carlisle_22.09.94R_edited-2.jpg",
+    "license": "CC BY 3.0",
     "action": "keep",
-    "reason": "summary fetch failed (HTTP 404) — TrainImage() would show \"no image available\""
+    "reason": "curated Commons File: link, confirmed free-reuse license"
   },
   {
     "category": "Charter & Railtours",
     "cls": "46229",
     "name": "Duchess of Hamilton — LMS Coronation",
-    "commonsUrl": "commons.wikimedia.org/wiki/Category:LMS_Coronation_class",
-    "wikiTitle": "LMS_Coronation_class",
-    "imageUrl": null,
-    "license": null,
+    "commonsUrl": "commons.wikimedia.org/wiki/File:6229_Duchess_of_Hamilton_at_the_National_Railway_Museum.jpg",
+    "wikiTitle": null,
+    "imageUrl": "File:6229_Duchess_of_Hamilton_at_the_National_Railway_Museum.jpg",
+    "license": "CC BY 2.0",
     "action": "keep",
-    "reason": "summary fetch failed (HTTP 404) — TrainImage() would show \"no image available\""
+    "reason": "curated Commons File: link, confirmed free-reuse license"
   },
   {
     "category": "Charter & Railtours",
     "cls": "46233",
     "name": "Duchess of Sutherland — LMS Coronation",
-    "commonsUrl": "commons.wikimedia.org/wiki/Category:LMS_Coronation_class",
-    "wikiTitle": "LMS_Coronation_class",
-    "imageUrl": null,
-    "license": null,
+    "commonsUrl": "commons.wikimedia.org/wiki/File:6233_Duchess_of_Sutherland_at_Monk_Fryston.jpg",
+    "wikiTitle": null,
+    "imageUrl": "File:6233_Duchess_of_Sutherland_at_Monk_Fryston.jpg",
+    "license": "CC BY 2.0",
     "action": "keep",
-    "reason": "summary fetch failed (HTTP 404) — TrainImage() would show \"no image available\""
+    "reason": "curated Commons File: link, confirmed free-reuse license"
   },
   {
     "category": "Charter & Railtours",
     "cls": "48151",
     "name": "LMS Stanier 8F",
-    "commonsUrl": "commons.wikimedia.org/wiki/Category:LMS_Class_8F",
-    "wikiTitle": "LMS_Class_8F",
-    "imageUrl": null,
-    "license": null,
+    "commonsUrl": "commons.wikimedia.org/wiki/File:41851_The_Fellsman_Approaching_Ais_Gill.jpg",
+    "wikiTitle": null,
+    "imageUrl": "File:41851_The_Fellsman_Approaching_Ais_Gill.jpg",
+    "license": "CC BY 2.0",
     "action": "keep",
-    "reason": "summary fetch failed (HTTP 404) — TrainImage() would show \"no image available\""
+    "reason": "curated Commons File: link, confirmed free-reuse license"
   },
   {
     "category": "Charter & Railtours",
@@ -1226,7 +1312,7 @@
     "name": "Sir Nigel Gresley — LNER A4",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:LNER_Class_A4",
     "wikiTitle": "LNER_Class_A4",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Up_Capitals_Limited_express_on_the_ECML_at_Wymondley%2C_south_of_Hitchin_2282866.jpg/330px-Up_Capitals_Limited_express_on_the_ECML_at_Wymondley%2C_south_of_Hitchin_2282866.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Up_Capitals_Limited_express_on_the_ECML_at_Wymondley%2C_south_of_Hitchin_2282866.jpg/330px-Up_Capitals_Limited_express_on_the_ECML_at_Wymondley%2C_south_of_Hitchin_2282866.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -1237,7 +1323,7 @@
     "name": "Union of South Africa — LNER A4",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:LNER_Class_A4",
     "wikiTitle": "LNER_Class_A4",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Up_Capitals_Limited_express_on_the_ECML_at_Wymondley%2C_south_of_Hitchin_2282866.jpg/330px-Up_Capitals_Limited_express_on_the_ECML_at_Wymondley%2C_south_of_Hitchin_2282866.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Up_Capitals_Limited_express_on_the_ECML_at_Wymondley%2C_south_of_Hitchin_2282866.jpg/330px-Up_Capitals_Limited_express_on_the_ECML_at_Wymondley%2C_south_of_Hitchin_2282866.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -1248,7 +1334,7 @@
     "name": "Flying Scotsman — LNER A3",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:LNER_Class_A4",
     "wikiTitle": "LNER_Class_A4",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Up_Capitals_Limited_express_on_the_ECML_at_Wymondley%2C_south_of_Hitchin_2282866.jpg/330px-Up_Capitals_Limited_express_on_the_ECML_at_Wymondley%2C_south_of_Hitchin_2282866.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Up_Capitals_Limited_express_on_the_ECML_at_Wymondley%2C_south_of_Hitchin_2282866.jpg/330px-Up_Capitals_Limited_express_on_the_ECML_at_Wymondley%2C_south_of_Hitchin_2282866.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -1257,12 +1343,12 @@
     "category": "Charter & Railtours",
     "cls": "60163",
     "name": "Tornado — LNER A1",
-    "commonsUrl": "commons.wikimedia.org/wiki/File:60163_Tornado_at_York.jpg",
+    "commonsUrl": "commons.wikimedia.org/wiki/File:LNER_Class_A1_4-6-2_No60163_'Tornado'_(29903372180).jpg",
     "wikiTitle": null,
-    "imageUrl": null,
-    "license": null,
+    "imageUrl": "File:LNER_Class_A1_4-6-2_No60163_'Tornado'_(29903372180).jpg",
+    "license": "CC BY-SA 2.0",
     "action": "keep",
-    "reason": "no derivable Wikipedia title — TrainImage() would show \"no image available\" (nothing to flag)"
+    "reason": "curated Commons File: link, confirmed free-reuse license"
   },
   {
     "category": "Charter & Railtours",
@@ -1270,7 +1356,7 @@
     "name": "Oliver Cromwell — BR Standard 7MT",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:BR_Standard_Class_7",
     "wikiTitle": "BR_Standard_Class_7",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/Ans_05373-0321.tif/lossy-page1-330px-Ans_05373-0321.tif.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/Ans_05373-0321.tif/lossy-page1-330px-Ans_05373-0321.tif.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -1281,7 +1367,7 @@
     "name": "BR Standard 5MT",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:BR_Standard_Class_5",
     "wikiTitle": "BR_Standard_Class_5",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Ans_05373-0330-Web_on_demand.jpg/330px-Ans_05373-0330-Web_on_demand.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Ans_05373-0330-Web_on_demand.jpg/330px-Ans_05373-0330-Web_on_demand.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -1292,7 +1378,7 @@
     "name": "BR Standard 9F",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:BR_Standard_Class_9F",
     "wikiTitle": "BR_Standard_Class_9F",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Ans_05373-0343.tif/lossy-page1-330px-Ans_05373-0343.tif.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Ans_05373-0343.tif/lossy-page1-330px-Ans_05373-0343.tif.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -1303,87 +1389,43 @@
     "name": "Modern Blackpool trams",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:Blackpool_tram",
     "wikiTitle": "Blackpool_tram",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Vehicles_in_the_United_Kingdom_52.jpg/330px-Vehicles_in_the_United_Kingdom_52.jpg",
-    "license": "CC BY 2.0",
-    "action": "keep",
-    "reason": "Commons-hosted, confirmed free-reuse license"
-  },
-  {
-    "category": "Light Rail & Metro",
-    "cls": "Class 345 — Elizabeth line",
-    "name": "Aventra Elizabeth line trains",
-    "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_345",
-    "wikiTitle": "British_Rail_Class_345",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/345001_ABW.jpg/330px-345001_ABW.jpg",
-    "license": "CC BY-SA 4.0",
-    "action": "keep",
-    "reason": "Commons-hosted, confirmed free-reuse license"
-  },
-  {
-    "category": "Light Rail & Metro",
-    "cls": "Class 378 — London Overground",
-    "name": "Capitalstar Overground trains",
-    "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_378",
-    "wikiTitle": "British_Rail_Class_378",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Class_378_at_Brondesbury_Park.jpg/330px-Class_378_at_Brondesbury_Park.jpg",
-    "license": "CC BY-SA 4.0",
-    "action": "keep",
-    "reason": "Commons-hosted, confirmed free-reuse license"
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/2/26/Blackpool_Tramway_logo.svg/330px-Blackpool_Tramway_logo.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "license": "non-free (Wikipedia fair-use, not on Commons)",
+    "action": "REMOVE",
+    "reason": "image is hosted outside Wikimedia Commons — Commons never accepts non-free content, so this is fair-use content valid only for Wikipedia’s own encyclopedic use, not reusable on a third-party commercial site"
   },
   {
     "category": "Light Rail & Metro",
     "cls": "Class 555",
     "name": "New Metro trains",
-    "commonsUrl": "commons.wikimedia.org/wiki/Category:Tyne_and_Wear_Metro",
-    "wikiTitle": "Tyne_and_Wear_Metro",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Tyne_Wear_Metro_logo.svg/330px-Tyne_Wear_Metro_logo.svg.png",
-    "license": "Public domain",
+    "commonsUrl": "commons.wikimedia.org/wiki/File:555032_at_Whitley_Bay_Metro_Station_-_geograph.org.uk_-_8285661_(cropped).jpg",
+    "wikiTitle": null,
+    "imageUrl": "File:555032_at_Whitley_Bay_Metro_Station_-_geograph.org.uk_-_8285661_(cropped).jpg",
+    "license": "CC BY-SA 2.0",
     "action": "keep",
-    "reason": "Commons-hosted, confirmed free-reuse license"
-  },
-  {
-    "category": "Light Rail & Metro",
-    "cls": "Class 710 — London Overground",
-    "name": "Aventra Overground trains",
-    "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_710",
-    "wikiTitle": "British_Rail_Class_710",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/710122_Hackney_Downs.jpg/330px-710122_Hackney_Downs.jpg",
-    "license": "CC BY-SA 4.0",
-    "action": "keep",
-    "reason": "Commons-hosted, confirmed free-reuse license"
-  },
-  {
-    "category": "Light Rail & Metro",
-    "cls": "Class 777 — Merseyrail",
-    "name": "Nova 1 Merseyrail trains",
-    "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_777",
-    "wikiTitle": "British_Rail_Class_777",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/777010_at_Hooton_Station_20210728-1.jpg/330px-777010_at_Hooton_Station_20210728-1.jpg",
-    "license": "CC BY-SA 4.0",
-    "action": "keep",
-    "reason": "Commons-hosted, confirmed free-reuse license"
+    "reason": "curated Commons File: link, confirmed free-reuse license"
   },
   {
     "category": "Light Rail & Metro",
     "cls": "DLR — B90 / B92 / B2K / B07 / B09 Stock",
     "name": "Docklands Light Railway existing fleet",
-    "commonsUrl": "commons.wikimedia.org/wiki/Category:Bombardier_Movia_DLR",
-    "wikiTitle": "Bombardier_Movia_DLR",
-    "imageUrl": null,
-    "license": null,
+    "commonsUrl": "commons.wikimedia.org/wiki/File:Docklands_Light_Railway_trein_in_Shadwell_(12753975413).jpg",
+    "wikiTitle": null,
+    "imageUrl": "File:Docklands_Light_Railway_trein_in_Shadwell_(12753975413).jpg",
+    "license": "CC BY 2.0",
     "action": "keep",
-    "reason": "summary fetch failed (HTTP 404) — TrainImage() would show \"no image available\""
+    "reason": "curated Commons File: link, confirmed free-reuse license"
   },
   {
     "category": "Light Rail & Metro",
     "cls": "DLR — CAF B23",
     "name": "New Docklands Light Railway fleet",
-    "commonsUrl": "commons.wikimedia.org/wiki/Category:Docklands_Light_Railway_rolling_stock",
-    "wikiTitle": "Docklands_Light_Railway_rolling_stock",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/DLR_roundel.svg/330px-DLR_roundel.svg.png",
-    "license": "Public domain",
+    "commonsUrl": "commons.wikimedia.org/wiki/File:DLR_B23_at_Pontoon_Dock.jpg",
+    "wikiTitle": null,
+    "imageUrl": "File:DLR_B23_at_Pontoon_Dock.jpg",
+    "license": "CC BY-SA 4.0",
     "action": "keep",
-    "reason": "Commons-hosted, confirmed free-reuse license"
+    "reason": "curated Commons File: link, confirmed free-reuse license"
   },
   {
     "category": "Light Rail & Metro",
@@ -1391,7 +1433,7 @@
     "name": "Edinburgh trams",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:Edinburgh_Trams",
     "wikiTitle": "Edinburgh_Trams",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Edinburgh_tram_03_first_day_of_operation.JPG/330px-Edinburgh_tram_03_first_day_of_operation.JPG",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Edinburgh_tram_03_first_day_of_operation.JPG/330px-Edinburgh_tram_03_first_day_of_operation.JPG?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -1402,7 +1444,7 @@
     "name": "New subway trains",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:Glasgow_Subway_rolling_stock",
     "wikiTitle": "Glasgow_Subway_rolling_stock",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Glasgow_Subway_Stadler_unit_at_West_Street_160624_%2853794657782%29.jpg/330px-Glasgow_Subway_Stadler_unit_at_West_Street_160624_%2853794657782%29.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Glasgow_Subway_Stadler_unit_at_West_Street_160624_%2853794657782%29.jpg/330px-Glasgow_Subway_Stadler_unit_at_West_Street_160624_%2853794657782%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -1413,8 +1455,8 @@
     "name": "Piccadilly line stock (retiring)",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:1973_Stock",
     "wikiTitle": "1973_Stock",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/1973_Tube_Stock_Hillingdon.jpg/330px-1973_Tube_Stock_Hillingdon.jpg",
-    "license": "CC BY-SA 4.0",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/LU_1973_Stock_passes_Turnham_Green_09_07_23_%2853034413809%29.jpg/330px-LU_1973_Stock_passes_Turnham_Green_09_07_23_%2853034413809%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "license": "CC BY-SA 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
   },
@@ -1424,7 +1466,7 @@
     "name": "Central line & Waterloo and City line stock",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:1992_Stock",
     "wikiTitle": "1992_Stock",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/London_Underground_1992_Stock_at_Theydon_Bois_by_tompagenet.jpg/330px-London_Underground_1992_Stock_at_Theydon_Bois_by_tompagenet.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/London_Underground_1992_Stock_at_Theydon_Bois_by_tompagenet.jpg/330px-London_Underground_1992_Stock_at_Theydon_Bois_by_tompagenet.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -1435,7 +1477,7 @@
     "name": "Northern line & Jubilee line stock",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:1995_Stock",
     "wikiTitle": "1995_Stock",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/95_Tube_Stock_Finchley_Central.jpg/330px-95_Tube_Stock_Finchley_Central.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/95_Tube_Stock_Finchley_Central.jpg/330px-95_Tube_Stock_Finchley_Central.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -1446,7 +1488,7 @@
     "name": "Victoria line stock",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:2009_Stock",
     "wikiTitle": "2009_Stock",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/London_Underground_2009_Stock_front.jpg/330px-London_Underground_2009_Stock_front.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/London_Underground_2009_Stock_front.jpg/330px-London_Underground_2009_Stock_front.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -1455,12 +1497,12 @@
     "category": "Light Rail & Metro",
     "cls": "LU 2024 Stock",
     "name": "New Piccadilly line trains (Siemens Inspiro London)",
-    "commonsUrl": "commons.wikimedia.org/wiki/Category:London_Underground_Deep_Tube_Upgrade",
-    "wikiTitle": "London_Underground_Deep_Tube_Upgrade",
-    "imageUrl": null,
-    "license": null,
+    "commonsUrl": "commons.wikimedia.org/wiki/File:London_Underground_2024_tube_stock_approaching_Turnham_Green_during_a_test_run_(March_2026)_(1).jpg",
+    "wikiTitle": null,
+    "imageUrl": "File:London_Underground_2024_tube_stock_approaching_Turnham_Green_during_a_test_run_(March_2026)_(1).jpg",
+    "license": "CC BY-SA 4.0",
     "action": "keep",
-    "reason": "summary fetch failed (HTTP 404) — TrainImage() would show \"no image available\""
+    "reason": "curated Commons File: link, confirmed free-reuse license"
   },
   {
     "category": "Light Rail & Metro",
@@ -1468,7 +1510,7 @@
     "name": "Sub-surface lines stock",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:S_Stock",
     "wikiTitle": "S_Stock",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Amersham_station_MMB_18_S_Stock.jpg/330px-Amersham_station_MMB_18_S_Stock.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Amersham_station_MMB_18_S_Stock.jpg/330px-Amersham_station_MMB_18_S_Stock.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 3.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -1477,12 +1519,12 @@
     "category": "Light Rail & Metro",
     "cls": "Manchester Metrolink — M5000",
     "name": "M5000 trams",
-    "commonsUrl": "commons.wikimedia.org/wiki/Category:Metrolink_M5000",
-    "wikiTitle": "Metrolink_M5000",
-    "imageUrl": null,
-    "license": null,
+    "commonsUrl": "commons.wikimedia.org/wiki/File:Greater_Manchester_Metrolink_-_tram_3009A.jpg",
+    "wikiTitle": null,
+    "imageUrl": "File:Greater_Manchester_Metrolink_-_tram_3009A.jpg",
+    "license": "CC BY-SA 2.0",
     "action": "keep",
-    "reason": "summary fetch failed (HTTP 404) — TrainImage() would show \"no image available\""
+    "reason": "curated Commons File: link, confirmed free-reuse license"
   },
   {
     "category": "Light Rail & Metro",
@@ -1490,7 +1532,7 @@
     "name": "NET trams (mixed fleet)",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:Nottingham_Express_Transit",
     "wikiTitle": "Nottingham_Express_Transit",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/20200810_NET_229.jpg/330px-20200810_NET_229.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/20200810_NET_229.jpg/330px-20200810_NET_229.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -1501,7 +1543,7 @@
     "name": "Sheffield Supertram (original fleet)",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:Sheffield_Supertram",
     "wikiTitle": "Sheffield_Supertram",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Sheffield_Supertrams_399201_and_110_at_Cathedral%2C_Sheffield_09-04-26.jpg/330px-Sheffield_Supertrams_399201_and_110_at_Cathedral%2C_Sheffield_09-04-26.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Sheffield_Supertrams_399201_and_110_at_Cathedral%2C_Sheffield_09-04-26.jpg/330px-Sheffield_Supertrams_399201_and_110_at_Cathedral%2C_Sheffield_09-04-26.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -1512,7 +1554,7 @@
     "name": "Original Metrocar fleet",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:Tyne_and_Wear_Metrocar",
     "wikiTitle": "Tyne_and_Wear_Metrocar",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Metro_train_approaching_Meadow_Well_Station%2C_geograph-5656080-by-Andrew-Curtis.jpg/330px-Metro_train_approaching_Meadow_Well_Station%2C_geograph-5656080-by-Andrew-Curtis.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Metro_train_approaching_Meadow_Well_Station%2C_geograph-5656080-by-Andrew-Curtis.jpg/330px-Metro_train_approaching_Meadow_Well_Station%2C_geograph-5656080-by-Andrew-Curtis.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -1523,8 +1565,52 @@
     "name": "West Midlands Metro trams",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:Midland_Metro",
     "wikiTitle": "Midland_Metro",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/Edgbaston_Village_tram_stop%2C_geograph_7247771_by_Mark_Percy.jpg/330px-Edgbaston_Village_tram_stop%2C_geograph_7247771_by_Mark_Percy.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/Edgbaston_Village_tram_stop%2C_geograph_7247771_by_Mark_Percy.jpg/330px-Edgbaston_Village_tram_stop%2C_geograph_7247771_by_Mark_Percy.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 2.0",
+    "action": "keep",
+    "reason": "Commons-hosted, confirmed free-reuse license"
+  },
+  {
+    "category": "Light Rail & Metro",
+    "cls": "LU 1972 Stock",
+    "name": "Bakerloo line stock",
+    "commonsUrl": "commons.wikimedia.org/wiki/Category:London_Underground_1972_Stock",
+    "wikiTitle": "London_Underground_1972_Stock",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/3534_Bakerloo_Line_to_Harrow_%26_W%27stone_-_20098270635.jpg/330px-3534_Bakerloo_Line_to_Harrow_%26_W%27stone_-_20098270635.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "license": "CC BY-SA 2.0",
+    "action": "keep",
+    "reason": "Commons-hosted, confirmed free-reuse license"
+  },
+  {
+    "category": "Light Rail & Metro",
+    "cls": "399",
+    "name": "Citylink tram-train",
+    "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_399",
+    "wikiTitle": "British_Rail_Class_399",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/399206_Parkgate.jpg/330px-399206_Parkgate.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "license": "CC BY-SA 4.0",
+    "action": "keep",
+    "reason": "Commons-hosted, confirmed free-reuse license"
+  },
+  {
+    "category": "Light Rail & Metro",
+    "cls": "398",
+    "name": "Citylink tram-train",
+    "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_398",
+    "wikiTitle": "British_Rail_Class_398",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/TfW_Rail_398024_at_Cardiff_Bay_1_July_2026.jpg/330px-TfW_Rail_398024_at_Cardiff_Bay_1_July_2026.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "license": "CC BY 4.0",
+    "action": "keep",
+    "reason": "Commons-hosted, confirmed free-reuse license"
+  },
+  {
+    "category": "Light Rail & Metro",
+    "cls": "Croydon Tramlink",
+    "name": "Tramlink trams (mixed fleet)",
+    "commonsUrl": "commons.wikimedia.org/wiki/Category:Tramlink",
+    "wikiTitle": "Tramlink",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Trams_roundel.svg/330px-Trams_roundel.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "license": "Public domain",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
   },
@@ -1556,7 +1642,7 @@
     "name": "BR mixed-traffic steam (heritage)",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:BR_Standard_Class_5",
     "wikiTitle": "BR_Standard_Class_5",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Ans_05373-0330-Web_on_demand.jpg/330px-Ans_05373-0330-Web_on_demand.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Ans_05373-0330-Web_on_demand.jpg/330px-Ans_05373-0330-Web_on_demand.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -1567,7 +1653,7 @@
     "name": "BR express passenger steam",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:BR_Standard_Class_7",
     "wikiTitle": "BR_Standard_Class_7",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/Ans_05373-0321.tif/lossy-page1-330px-Ans_05373-0321.tif.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/Ans_05373-0321.tif/lossy-page1-330px-Ans_05373-0321.tif.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -1578,7 +1664,7 @@
     "name": "BR heavy freight steam (heritage)",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:BR_Standard_Class_9F",
     "wikiTitle": "BR_Standard_Class_9F",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Ans_05373-0343.tif/lossy-page1-330px-Ans_05373-0343.tif.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Ans_05373-0343.tif/lossy-page1-330px-Ans_05373-0343.tif.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -1589,7 +1675,7 @@
     "name": "BR Type 2 diesel — heritage",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_25",
     "wikiTitle": "British_Rail_Class_25",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/25211_Manchester_Victoria.jpg/330px-25211_Manchester_Victoria.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/25211_Manchester_Victoria.jpg/330px-25211_Manchester_Victoria.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -1600,7 +1686,7 @@
     "name": "BR Type 2 diesel — heritage",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_26",
     "wikiTitle": "British_Rail_Class_26",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Carlisle_Class_26_26037.jpg/330px-Carlisle_Class_26_26037.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Carlisle_Class_26_26037.jpg/330px-Carlisle_Class_26_26037.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -1611,7 +1697,7 @@
     "name": "BR Type 4 diesel — heritage",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_40",
     "wikiTitle": "British_Rail_Class_40",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/40104_-_Ayr_%2812074017243%29.jpg/330px-40104_-_Ayr_%2812074017243%29.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/40104_-_Ayr_%2812074017243%29.jpg/330px-40104_-_Ayr_%2812074017243%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -1622,7 +1708,7 @@
     "name": "BR Type 4 diesel (Peaks) — heritage",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_45",
     "wikiTitle": "British_Rail_Class_45",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/BR_Class_45_on_passenger_train_at_Loughborough%2C_July_1975.jpg/330px-BR_Class_45_on_passenger_train_at_Loughborough%2C_July_1975.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/BR_Class_45_on_passenger_train_at_Loughborough%2C_July_1975.jpg/330px-BR_Class_45_on_passenger_train_at_Loughborough%2C_July_1975.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 3.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -1633,7 +1719,7 @@
     "name": "BR Type 4 diesel — heritage",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_50",
     "wikiTitle": "British_Rail_Class_50",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/50014_at_Birmingham_New_Street_2.jpg/330px-50014_at_Birmingham_New_Street_2.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/50014_at_Birmingham_New_Street_2.jpg/330px-50014_at_Birmingham_New_Street_2.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -1644,7 +1730,7 @@
     "name": "BR Type 4 diesel-hydraulic — heritage",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_52",
     "wikiTitle": "British_Rail_Class_52",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/%22Western_Lady%22_At_Old_Oak_Common_-_1976_%2814153848945%29.jpg/330px-%22Western_Lady%22_At_Old_Oak_Common_-_1976_%2814153848945%29.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/%22Western_Lady%22_At_Old_Oak_Common_-_1976_%2814153848945%29.jpg/330px-%22Western_Lady%22_At_Old_Oak_Common_-_1976_%2814153848945%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -1655,7 +1741,7 @@
     "name": "BR Type 5 diesel — heritage",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:British_Rail_Class_55",
     "wikiTitle": "British_Rail_Class_55",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/55006_at_Finsbury_Park_Depot_on_03_July_1977_%28crop%29.jpg/330px-55006_at_Finsbury_Park_Depot_on_03_July_1977_%28crop%29.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/55006_at_Finsbury_Park_Depot_on_03_July_1977_%28crop%29.jpg/330px-55006_at_Finsbury_Park_Depot_on_03_July_1977_%28crop%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -1666,7 +1752,7 @@
     "name": "GWR express passenger steam",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:GWR_Castle_class",
     "wikiTitle": "GWR_Castle_class",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/GWR_4079_Pendennis_Castle_Didcot_Railway_Centre_4th_March_2023.jpg/330px-GWR_4079_Pendennis_Castle_Didcot_Railway_Centre_4th_March_2023.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/GWR_4079_Pendennis_Castle_Didcot_Railway_Centre_4th_March_2023.jpg/330px-GWR_4079_Pendennis_Castle_Didcot_Railway_Centre_4th_March_2023.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY 3.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -1688,7 +1774,7 @@
     "name": "GWR express passenger steam",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:GWR_King_class",
     "wikiTitle": "GWR_King_class",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/6024_King_Edward_I_at_The_Didcot_Railway_Centre_in_June_1994.jpg/330px-6024_King_Edward_I_at_The_Didcot_Railway_Centre_in_June_1994.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/6024_King_Edward_I_at_The_Didcot_Railway_Centre_in_June_1994.jpg/330px-6024_King_Edward_I_at_The_Didcot_Railway_Centre_in_June_1994.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -1697,23 +1783,23 @@
     "category": "Heritage & Preserved",
     "cls": "GWR Manor Class 4-6-0",
     "name": "GWR light express steam",
-    "commonsUrl": "commons.wikimedia.org/wiki/Category:GWR_Manor_class",
-    "wikiTitle": "GWR_Manor_class",
-    "imageUrl": null,
-    "license": null,
+    "commonsUrl": "commons.wikimedia.org/wiki/File:Gloucester_Central_Station,_with_a_stopping_train_to_Hereford_geograph-2510735-by-Ben-Brooksbank.jpg",
+    "wikiTitle": null,
+    "imageUrl": "File:Gloucester_Central_Station,_with_a_stopping_train_to_Hereford_geograph-2510735-by-Ben-Brooksbank.jpg",
+    "license": "CC BY-SA 2.0",
     "action": "keep",
-    "reason": "summary fetch failed (HTTP 404) — TrainImage() would show \"no image available\""
+    "reason": "curated Commons File: link, confirmed free-reuse license"
   },
   {
     "category": "Heritage & Preserved",
     "cls": "GWR Modified Hall 4-6-0",
     "name": "GWR mixed-traffic steam (improved)",
-    "commonsUrl": "commons.wikimedia.org/wiki/Category:GWR_Modified_Hall_class",
-    "wikiTitle": "GWR_Modified_Hall_class",
-    "imageUrl": null,
-    "license": null,
+    "commonsUrl": "commons.wikimedia.org/wiki/File:Ruscombe_Siding_geograph-2482312-by-Ben-Brooksbank.jpg",
+    "wikiTitle": null,
+    "imageUrl": "File:Ruscombe_Siding_geograph-2482312-by-Ben-Brooksbank.jpg",
+    "license": "CC BY-SA 2.0",
     "action": "keep",
-    "reason": "summary fetch failed (HTTP 404) — TrainImage() would show \"no image available\""
+    "reason": "curated Commons File: link, confirmed free-reuse license"
   },
   {
     "category": "Heritage & Preserved",
@@ -1721,7 +1807,7 @@
     "name": "GWR shunting / branch passenger",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:GWR_5700_class",
     "wikiTitle": "GWR_5700_class",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Newport_High_Street_Station_geograph-2570159-by-Ben-Brooksbank.jpg/330px-Newport_High_Street_Station_geograph-2570159-by-Ben-Brooksbank.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Newport_High_Street_Station_geograph-2570159-by-Ben-Brooksbank.jpg/330px-Newport_High_Street_Station_geograph-2570159-by-Ben-Brooksbank.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -1730,12 +1816,12 @@
     "category": "Heritage & Preserved",
     "cls": "GWR Prairie Tank 4500/5500 Class",
     "name": "GWR branch line passenger",
-    "commonsUrl": "commons.wikimedia.org/wiki/Category:GWR_4500_class",
-    "wikiTitle": "GWR_4500_class",
-    "imageUrl": null,
-    "license": null,
+    "commonsUrl": "commons.wikimedia.org/wiki/File:Dawlish_Kennaway_Tunnel_geograph-2935623-by-Ben-Brooksbank.jpg",
+    "wikiTitle": null,
+    "imageUrl": "File:Dawlish_Kennaway_Tunnel_geograph-2935623-by-Ben-Brooksbank.jpg",
+    "license": "CC BY-SA 2.0",
     "action": "keep",
-    "reason": "summary fetch failed (HTTP 404) — TrainImage() would show \"no image available\""
+    "reason": "curated Commons File: link, confirmed free-reuse license"
   },
   {
     "category": "Heritage & Preserved",
@@ -1743,7 +1829,7 @@
     "name": "Industrial / wartime shunting steam",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:Hunslet_Austerity",
     "wikiTitle": "Hunslet_Austerity",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Repulse_at_Haverthwaite_railway_station_%286549%29.jpg/330px-Repulse_at_Haverthwaite_railway_station_%286549%29.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Repulse_at_Haverthwaite_railway_station_%286549%29.jpg/330px-Repulse_at_Haverthwaite_railway_station_%286549%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 4.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -1752,34 +1838,34 @@
     "category": "Heritage & Preserved",
     "cls": "LMS Black Five — heritage examples",
     "name": "LMS mixed-traffic steam",
-    "commonsUrl": "commons.wikimedia.org/wiki/Category:LMS_Class_5MT",
-    "wikiTitle": "LMS_Class_5MT",
-    "imageUrl": null,
-    "license": null,
+    "commonsUrl": "commons.wikimedia.org/wiki/File:44949_Manchester_Victoria.jpg",
+    "wikiTitle": null,
+    "imageUrl": "File:44949_Manchester_Victoria.jpg",
+    "license": "CC BY 2.0",
     "action": "keep",
-    "reason": "summary fetch failed (HTTP 404) — TrainImage() would show \"no image available\""
+    "reason": "curated Commons File: link, confirmed free-reuse license"
   },
   {
     "category": "Heritage & Preserved",
     "cls": "LMS Fairburn 2-6-4T",
     "name": "LMS passenger tank engine",
-    "commonsUrl": "commons.wikimedia.org/wiki/Category:LMS_Fairburn_Class_4",
-    "wikiTitle": "LMS_Fairburn_Class_4",
-    "imageUrl": null,
-    "license": null,
+    "commonsUrl": "commons.wikimedia.org/wiki/File:Derby_LMS_Fairburn_2-6-4T_geograph-2811195-by-Ben-Brooksbank.jpg",
+    "wikiTitle": null,
+    "imageUrl": "File:Derby_LMS_Fairburn_2-6-4T_geograph-2811195-by-Ben-Brooksbank.jpg",
+    "license": "CC BY-SA 2.0",
     "action": "keep",
-    "reason": "summary fetch failed (HTTP 404) — TrainImage() would show \"no image available\""
+    "reason": "curated Commons File: link, confirmed free-reuse license"
   },
   {
     "category": "Heritage & Preserved",
     "cls": "LMS Stanier 8F — heritage examples",
     "name": "LMS heavy freight steam",
-    "commonsUrl": "commons.wikimedia.org/wiki/Category:LMS_Class_8F",
-    "wikiTitle": "LMS_Class_8F",
-    "imageUrl": null,
-    "license": null,
+    "commonsUrl": "commons.wikimedia.org/wiki/File:Stanier_8F_2-8-0_No._48479.jpg",
+    "wikiTitle": null,
+    "imageUrl": "File:Stanier_8F_2-8-0_No._48479.jpg",
+    "license": "CC BY-SA 3.0",
     "action": "keep",
-    "reason": "summary fetch failed (HTTP 404) — TrainImage() would show \"no image available\""
+    "reason": "curated Commons File: link, confirmed free-reuse license"
   },
   {
     "category": "Heritage & Preserved",
@@ -1787,7 +1873,7 @@
     "name": "LNER streamlined express steam",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:LNER_Class_A4",
     "wikiTitle": "LNER_Class_A4",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Up_Capitals_Limited_express_on_the_ECML_at_Wymondley%2C_south_of_Hitchin_2282866.jpg/330px-Up_Capitals_Limited_express_on_the_ECML_at_Wymondley%2C_south_of_Hitchin_2282866.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Up_Capitals_Limited_express_on_the_ECML_at_Wymondley%2C_south_of_Hitchin_2282866.jpg/330px-Up_Capitals_Limited_express_on_the_ECML_at_Wymondley%2C_south_of_Hitchin_2282866.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -1798,7 +1884,7 @@
     "name": "LNER mixed-traffic steam",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:LNER_Class_V2",
     "wikiTitle": "LNER_Class_V2",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Green_Arrow_at_Toddington_1.jpg/330px-Green_Arrow_at_Toddington_1.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Green_Arrow_at_Toddington_1.jpg/330px-Green_Arrow_at_Toddington_1.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -1809,7 +1895,7 @@
     "name": "SR express passenger steam",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:SR_Schools_class",
     "wikiTitle": "SR_Schools_class",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Basingstoke_geograph-2636877-by-Ben-Brooksbank.jpg/330px-Basingstoke_geograph-2636877-by-Ben-Brooksbank.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Basingstoke_geograph-2636877-by-Ben-Brooksbank.jpg/330px-Basingstoke_geograph-2636877-by-Ben-Brooksbank.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -1820,7 +1906,7 @@
     "name": "SR mixed-traffic steam",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:SR_U_class",
     "wikiTitle": "SR_U_class",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Clapham_Carriage_Yard_empty_stock_for_a_Special_geograph-2683609-by-Ben-Brooksbank.jpg/330px-Clapham_Carriage_Yard_empty_stock_for_a_Special_geograph-2683609-by-Ben-Brooksbank.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Clapham_Carriage_Yard_empty_stock_for_a_Special_geograph-2683609-by-Ben-Brooksbank.jpg/330px-Clapham_Carriage_Yard_empty_stock_for_a_Special_geograph-2683609-by-Ben-Brooksbank.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -1831,7 +1917,7 @@
     "name": "SR express passenger steam (heritage examples)",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:SR_West_Country_class",
     "wikiTitle": "SR_West_Country_class",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Salisbury_ECS_geograph-2969477-by-Ben-Brooksbank.jpg/330px-Salisbury_ECS_geograph-2969477-by-Ben-Brooksbank.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Salisbury_ECS_geograph-2969477-by-Ben-Brooksbank.jpg/330px-Salisbury_ECS_geograph-2969477-by-Ben-Brooksbank.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"
@@ -1842,7 +1928,7 @@
     "name": "Wartime heavy freight steam",
     "commonsUrl": "commons.wikimedia.org/wiki/Category:WD_Austerity_2-8-0",
     "wikiTitle": "WD_Austerity_2-8-0",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/War_Department_Austerity_2-8-0_%E2%80%9890733%E2%80%99_-_19897189343.jpg/330px-War_Department_Austerity_2-8-0_%E2%80%9890733%E2%80%99_-_19897189343.jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/War_Department_Austerity_2-8-0_%E2%80%9890733%E2%80%99_-_19897189343.jpg/330px-War_Department_Austerity_2-8-0_%E2%80%9890733%E2%80%99_-_19897189343.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "license": "CC BY-SA 2.0",
     "action": "keep",
     "reason": "Commons-hosted, confirmed free-reuse license"

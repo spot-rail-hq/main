@@ -2,25 +2,37 @@
 /**
  * scripts/audit-locomotive-image-licenses.mjs
  * ─────────────────────────────────────────────────────────────────────────
- * Read-only audit — does not modify data/rolling-stock.json or database.html.
+ * Read-only audit — does not modify data/site-data.json or database.html.
+ *
+ * REPOINTED 2026-08-15 from data/rolling-stock.json (raw export) to
+ * data/site-data.json (generated: export + rolling-stock-overrides.json
+ * layered on top by build-locomotive-data.mjs). The raw export never sees
+ * the 22 hand-curated Wikimedia File: links, nor any image value set by a
+ * `corrections`/`additions` entry — auditing it was auditing a fleet of
+ * images the site was never actually showing for those 22+ rows. Reads
+ * canonical instances only (isCanonicalHere) so a cross-listed class isn't
+ * audited twice.
  *
  * database.html's TrainImage() component fetches a locomotive class's image
- * LIVE, client-side, via Wikipedia's REST summary API
- * (en.wikipedia.org/api/rest_v1/page/summary/{title}), using whatever the
- * article's current lead image happens to be — unlike the station photo
- * pipeline (scripts/fetch-station-photos.mjs), this path never checks
- * whether that image is actually free-reuse licensed. Wikipedia articles are
- * allowed to embed "non-free"/fair-use images (current press photos, logos,
- * etc.) directly in English Wikipedia's own local file namespace — Commons
- * never accepts non-free content at all, so a lead image NOT hosted on
- * Commons is, by that split alone, essentially always non-free/fair-use,
- * and fair-use does not extend to reuse on a third-party commercial site
- * like srhq.uk.
+ * LIVE, client-side, via parseImageRef() — which branches on TWO different
+ * Commons URL shapes, not one:
+ *   - Category:X — treats X as a guessed EN Wikipedia article title and
+ *     fetches THAT article's current lead/thumbnail image via Wikipedia's
+ *     REST summary API. Works by coincidence whenever the category name
+ *     matches the article title — often true, not always.
+ *   - File:X — a SPECIFIC curated photo, fetched directly from that
+ *     Commons file's own imageinfo/extmetadata. This is the 22-row curated
+ *     set (data/rolling-stock-overrides.json's `overrides`).
+ * This audit REPOINTED-AND-FIXED to mirror both branches (previously it only
+ * ever matched Category:, via deriveWikiTitle()'s regex, so a File: row fell
+ * through to "no derivable Wikipedia title" — silently un-audited, not
+ * flagged, not confirmed safe, just skipped). The File: branch does not need
+ * a Wikipedia-article guess or a Commons-hosted check at all: a Commons
+ * File: URL is BY CONSTRUCTION Commons-hosted (Commons never accepts
+ * non-free content), so it goes straight to the same Commons imageinfo
+ * license lookup used for the Category: branch's Commons-hosted case.
  *
- * This script re-derives each class's Wikipedia title exactly the way
- * database.html's deriveWikiTitle() does (same regex, same "Category:" URL
- * in data/rolling-stock.json's Wikimedia Image column), fetches the same
- * REST summary the live page would show, and classifies the result:
+ * For the Category: branch, classification is unchanged:
  *   - image URL contains "/wikipedia/commons/" -> Commons-hosted -> queries
  *     Commons' own imageinfo API for the real license (same technique as
  *     fetch-station-photos.mjs) to confirm it's actually free-reuse (CC BY/
@@ -33,8 +45,9 @@
  *   node scripts/audit-locomotive-image-licenses.mjs
  *
  * Writes scripts/output/locomotive-image-license-audit.json — the full
- * per-class report. Does NOT touch data/rolling-stock.json or any rendering
- * code; removal (if any) is a deliberate separate step after review.
+ * per-class report. Does NOT touch data/site-data.json, data/rolling-stock-
+ * overrides.json, or any rendering code; removal (if any) is a deliberate
+ * separate step after review.
  */
 
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -43,7 +56,7 @@ import path from 'node:path';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
-const ROLLING_STOCK_PATH = path.join(ROOT, 'data', 'rolling-stock.json');
+const SITE_DATA_PATH = path.join(ROOT, 'data', 'site-data.json');
 const OUTPUT_PATH = path.join(__dirname, 'output', 'locomotive-image-license-audit.json');
 
 const REST_SUMMARY_API = 'https://en.wikipedia.org/api/rest_v1/page/summary/';
@@ -55,22 +68,29 @@ function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
-// Exactly database.html's deriveWikiTitle() — same regex, same assumption
-// that the Wikipedia article title matches the Commons category name.
-function deriveWikiTitle(commonsUrl) {
+// Must stay in step with database.html's parseImageRef() — same two URL
+// shapes, same precedence (File: checked before Category:).
+function parseImageRef(commonsUrl) {
   if (!commonsUrl) return null;
-  const m = String(commonsUrl).match(/Category:([^?#]+)$/);
-  return m ? m[1] : null;
+  const url = String(commonsUrl);
+  const fileMatch = url.match(/File:([^?#]+)$/);
+  if (fileMatch) return { type: 'file', filename: decodeURIComponent(fileMatch[1]) };
+  const catMatch = url.match(/Category:([^?#]+)$/);
+  if (catMatch) return { type: 'category', title: catMatch[1] };
+  return null;
 }
 
 function extractRows() {
-  const data = JSON.parse(readFileSync(ROLLING_STOCK_PATH, 'utf8'));
-  const categories = Object.keys(data).filter((k) => k !== 'Legend');
+  const site = JSON.parse(readFileSync(SITE_DATA_PATH, 'utf8'));
   const rows = [];
-  for (const cat of categories) {
-    for (const row of data[cat]) {
-      if (row[9] && /commons\.wikimedia\.org/i.test(row[9])) {
-        rows.push({ category: cat, cls: row[0], name: row[1], commonsUrl: row[9] });
+  for (const cat of site.categories) {
+    for (const k of cat.classes) {
+      if (!k.isCanonicalHere) continue; // avoid auditing a cross-listed class twice
+      if (k.image && /commons\.wikimedia\.org/i.test(k.image)) {
+        // Heritage instances carry `role`, not `name` (unified schema, see
+        // build-locomotive-data.mjs's SECTIONS) — same fallback database.html
+        // uses for displayName.
+        rows.push({ category: cat.name, cls: k.class, name: k.name || k.role, commonsUrl: k.image });
       }
     }
   }
@@ -107,10 +127,31 @@ async function fetchCommonsLicense(filename) {
 }
 
 async function auditRow(row) {
-  const title = deriveWikiTitle(row.commonsUrl);
-  if (!title) {
-    return { ...row, wikiTitle: null, imageUrl: null, license: null, action: 'keep', reason: 'no derivable Wikipedia title — TrainImage() would show "no image available" (nothing to flag)' };
+  const ref = parseImageRef(row.commonsUrl);
+  if (!ref) {
+    return { ...row, wikiTitle: null, imageUrl: null, license: null, action: 'keep', reason: 'commonsUrl matches neither File: nor Category: — TrainImage() would show "no image available" (nothing to flag)' };
   }
+
+  if (ref.type === 'file') {
+    // Commons File: URL is Commons-hosted by construction (Commons never
+    // accepts non-free content) — no Wikipedia-article guess, no
+    // Commons-hosted check needed, straight to the license lookup.
+    const license = await fetchCommonsLicense(ref.filename);
+    await sleep(REQUEST_DELAY_MS);
+    const isFree = license && /^(cc0|cc by|cc by-sa|public domain|pdm)/i.test(license);
+    return {
+      ...row,
+      wikiTitle: null,
+      imageUrl: `File:${ref.filename}`,
+      license: license || '(Commons File: link, license lookup failed)',
+      action: isFree ? 'keep' : 'REVIEW',
+      reason: isFree
+        ? 'curated Commons File: link, confirmed free-reuse license'
+        : 'curated Commons File: link but license could not be confirmed as free-reuse — needs manual check (Commons-hosted, so still not fair-use risk, but verify the license string)',
+    };
+  }
+
+  const title = ref.title;
   const { data: summary, error } = await fetchSummary(title);
   await sleep(REQUEST_DELAY_MS);
   if (error) {

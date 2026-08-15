@@ -79,6 +79,16 @@
     }
   },
   "corrections": {
+    "Intercity & High Speed": {
+      "801": {
+        "traction": "Electric 25kV AC (auxiliary diesel engine fitted for emergency use only — not a bi-mode train)",
+        "_why": "Export said 'Bi-mode (25kV AC + diesel)', copying the 800/802 platform's traction value. The 801 is the electric-only IEP variant — Wikipedia's own infobox states explicitly 'not a bi-mode train'. It does carry one MTU 12V 1600 R80L diesel engine per unit, but strictly as emergency get-you-home backup, never for scheduled diesel-mode running the way the true bi-mode 800/802 are. This already matched the row's own Notes ('Electric-only variant of IEP') — only the traction column itself was inconsistent with it. FLAGGED separately (not changed here, scope was traction only): maxSpeedMph on this row is 140, but 140 is the IEP platform's design maximum — Wikipedia gives the 801's actual in-service/certified top speed as 125 mph, which is also what this dataset's own 802 row already uses for the same physical platform. Worth a second correction pass if confirmed."
+      },
+      "802": {
+        "name": "Azuma / Nova 1 (bi-mode)",
+        "_why": "Requested fix: remove 'Castle' — confirmed it is GWR's own name for its refurbished Class 43 HST sets (each power car nameplated after a Cornish castle, tradition retired Dec 2025), not for the 802. Applied exactly as scoped (Castle removed only). FLAGGED, not changed: 'Azuma' is ALSO misattributed here and was left in place because the request scoped this to Castle only — Azuma is exclusively LNER's brand, and this row's own `operators` field already lists the 802's real operators as 'Great Western Railway; TransPennine Express; Hull Trains' with no LNER at all (LNER's IEP units are 800/801/803, not 802). GWR's actual public brand for its 802 fleet is 'Intercity Express Train (IET)', already correctly named in this row's own `primaryService` field. Recommend replacing 'Azuma' with 'IET' in a follow-up pass if confirmed — proposed corrected value: 'IET / Nova 1 / Paragon (bi-mode)', matching all three real operator brands and dropping the two that don't belong (Azuma=LNER/801, Castle=GWR/Class 43)."
+      }
+    },
     "Commuter & Suburban": {
       "777": {
         "name": "Stadler METRO — Merseyrail",
@@ -378,6 +388,23 @@
         ],
         "_source": "Railway Gazette / Wikipedia British Rail Class 398 — 36 Citylink units being built for South Wales Metro. Entry-to-service year NOT confirmed; left blank. || VERIFICATION PASS 2026-08-04: TfW / Rail Magazine / Rail Technology Magazine — 100 km/h (62 mph) on rail, 45 mph in tram mode. yearIntro, serviceYears and capacity DELIBERATELY BLANK: the fleet entered testing in 2025 with launch planned for spring 2026 and no source checked confirms it has entered passenger service; no capacity figure found.",
         "needsVerification": true
+      },
+      {
+        "class": "Croydon Tramlink",
+        "name": "Tramlink trams (mixed fleet)",
+        "traction": "750V DC overhead",
+        "builder": "Bombardier Vienna / Stadler Rail (mixed fleet)",
+        "yearIntro": "2000 / 2012",
+        "maxSpeedMph": "50",
+        "fleetSize": "35 trams (23 × CR4000 + 12 × Variobahn)",
+        "cityNetwork": "Croydon Tramlink (branded London Trams) — Croydon, Wimbledon, Beckenham, Elmers End, New Addington",
+        "numberBuilt": "35 (23 Bombardier CR4000 + 12 Stadler Variobahn)",
+        "notes": "Mixed fleet: 23 × Bombardier CR4000 (now marketed as Flexity Swift; built 1998-99, in service from May 2000 — one of the original 24 permanently withdrawn after the 2016 Sandilands derailment) + 12 × Stadler Variobahn (built/delivered 2012-2016). Operated by Tram Operations Ltd (FirstGroup) under contract to TfL, which owns the fleet; contract runs to 2030. Officially rebranded 'London Trams', though 'Croydon Tramlink' remains the commonly used name.",
+        "image": "commons.wikimedia.org/wiki/Category:Tramlink",
+        "verifyFields": [],
+        "_source": "Wikipedia Tramlink — currently branded London Trams, owned by TfL, operated by Tram Operations Ltd (FirstGroup) to 2030; fleet 23 CR4000 (Bombardier Vienna, built 1998-99) + 12 Variobahn (Stadler, 2012-2016) = 35 trams; 750V DC overhead, 50 mph top speed; CR4000 capacity 208 total (70 seated/138 standing), Variobahn capacity 206 total (134 seated/72 standing). Cross-checked against International Railway Journal / Railway Gazette coverage of the Variobahn deliveries and the 2016 derailment's fleet-size impact.",
+        "capacity": "CR4000: 208 total (70 seated, 138 standing); Variobahn: 206 total (134 seated, 72 standing)",
+        "serviceYears": "2000–present"
       }
     ]
   }
