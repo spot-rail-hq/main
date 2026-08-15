@@ -907,6 +907,15 @@
   .db-notable-list li { position: relative; padding: 4px 0 4px 14px; font-size: 15px; color: var(--ink-primary); line-height: 1.5; }
   .db-notable-list li::before { content: ''; position: absolute; left: 0; top: 11px; width: 4px; height: 4px; border-radius: 50%; background: var(--t); }
   .db-hint { padding: 24px 20px; font-size: 15px; color: var(--ink); text-align: center; line-height: 1.6; }
+  /* GTR sub-brand notice (2026-08-15) — a subtitle-weight line naming the
+     GTR parent, shown only on SN/TL/GN/GX's own panels. Left-aligned and
+     positioned at the very top of the body (before the headline) rather than
+     inside the shared multi-type .sb-selection title row, which is used by
+     station/route/operator/heritage/histop/histline/histstation alike —
+     restructuring that shared row for four entries risked exactly the kind
+     of fragile one-off the task this shipped under warned against. */
+  .db-suboperator-notice { padding: 8px 16px 0; font-size: 13px; color: var(--ink); line-height: 1.5; }
+  .db-suboperator-link { font: inherit; color: var(--t); text-decoration: underline; background: none; border: none; padding: 0; cursor: pointer; box-sizing: border-box; }
   .dep-cols { display: flex; align-items: center; gap: 10px; padding: 6px 0 4px; font-family: var(--font-mono);
     font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink); border-bottom: 0.5px solid var(--br); }
   .dep-cols span:nth-child(1) { width: 52px; flex-shrink: 0; }
@@ -1800,11 +1809,36 @@
   // ZERO segments, so selecting Southern would have highlighted nothing at all.
   //
   // LN stays: London Northwestern really does still have no track of its own.
-  // Its OSM relations exist and carry an `LNWR:` name prefix, so the same split
-  // would work — that is queued, not done.
+  // Investigated 2026-08-15 (report only, not wired): its OSM relations carry
+  // a `brand=London Northwestern Railway` tag distinct from WMR's own — an
+  // even cleaner signal than GTR's split used (46/48 West Midlands Trains
+  // relations resolve straight off `brand`, the remaining 2 off an `LNWR:`
+  // name prefix, 100% resolvable either way). NOT a trivial copy of
+  // split-subbrand-segments.mjs's GTR group, though: unlike GTR (a pure shell
+  // with no real service of its own), WMR is a real brand that also runs
+  // trains — 324 of its ~2,630 ways are physically shared with LN-brand
+  // relations, so a split has to add LN without blindly dropping WMR
+  // wherever LN appears, the way GTR's `dropParent` safely could.
+  //
+  // GTR ITSELF (2026-08-15): the mirror-image gap flagged below is now fixed,
+  // but NOT by adding GTR here — GTR is not folded into any one segment set,
+  // it is the UNION of four (SN/TL/GN/GX). OPERATOR_FOLDED_INTO stays
+  // single-valued on purpose; see GTR_CHILDREN below for the one-to-many case.
   var OPERATOR_FOLDED_INTO = {
     LN: 'WMR',
   };
+  // GTR special case (2026-08-15) — a DELIBERATE ONE-OFF, not a general
+  // parent-to-children system. GTR (Greater Thameslink Railway) is a real,
+  // selectable, searchable operators-content.json entry with ZERO segments
+  // of its own — every one of its four sub-brands (SN/TL/GN/GX) carries its
+  // own segments and its own colour since the 2026-08-05 split. Selecting GTR
+  // should highlight the union of all four, each kept in its own colour, and
+  // fly to their combined extent — not redirect to a single parent the way
+  // OPERATOR_FOLDED_INTO does. Every consumer of this constant hardcodes the
+  // check for the literal code 'GTR'; nothing here is configurable for any
+  // other operator, on purpose — see applyOperatorHighlightPaint(),
+  // highlightAndFlyToOperator() and flyToOperatorNetwork().
+  var GTR_CHILDREN = ['SN', 'TL', 'GN', 'GX'];
   // Set only by submitOperatorPick(), once the metadata above has CONFIRMED the
   // operator has no track — never while that lookup is in flight, so a slow
   // fetch cannot flash a false negative. Cleared by selectOperator() on every
@@ -3980,12 +4014,22 @@
         groups.push({ cond: ['==', ['get', 'heritage_slug'], hoveredHeritageSlug], color: heritageColor, heritage: true });
       }
     }
-    if (locked) {
-      groups.push({ cond: ['==', ['get', 'operators'], locked], color: lookup[locked] || MULTI_OPERATOR_NEUTRAL[theme] });
+    // GTR special case: it has no segments of its own to match — 'GTR' never
+    // appears as a real `operators` tag value post-split — so expands to one
+    // group PER CHILD instead of one group for the code itself, each keeping
+    // its own real colour. See GTR_CHILDREN's own comment for why this is a
+    // hardcoded one-off rather than a general capability.
+    function pushOperatorHighlightGroup(code) {
+      if (code === 'GTR') {
+        GTR_CHILDREN.forEach(function (c) {
+          groups.push({ cond: ['==', ['get', 'operators'], c], color: lookup[c] || MULTI_OPERATOR_NEUTRAL[theme] });
+        });
+      } else {
+        groups.push({ cond: ['==', ['get', 'operators'], code], color: lookup[code] || MULTI_OPERATOR_NEUTRAL[theme] });
+      }
     }
-    if (hovered) {
-      groups.push({ cond: ['==', ['get', 'operators'], hovered], color: lookup[hovered] || MULTI_OPERATOR_NEUTRAL[theme] });
-    }
+    if (locked) pushOperatorHighlightGroup(locked);
+    if (hovered) pushOperatorHighlightGroup(hovered);
 
     if (!groups.length) {
       map.setFilter('operator-lines-active', NO_OPERATOR_FILTER);
@@ -6597,11 +6641,30 @@
     return '<div class="db-hint" data-anim-row>Route data for this operator isn’t available yet, so there’s nothing to highlight on the map. ' +
       'The details below still apply.</div>';
   }
+  // GTR sub-brand notice (2026-08-15) — gated on `ownership_parent === 'GTR'`,
+  // which today is true for exactly SN/TL/GN/GX and nothing else. Hardcoded
+  // to GTR specifically (same one-off as GTR_CHILDREN, not a general
+  // "show any ownership_parent" feature) but the NAME/link text is pulled
+  // live from operatorsContent.GTR — never duplicated as hardcoded prose, so
+  // a future rename of GTR's own entry does not silently go stale here.
+  function gtrSubBrandNoticeHtml(o) {
+    if (!o || o.ownership_parent !== 'GTR') return '';
+    var parent = operatorsContent.GTR;
+    var parentName = (parent && parent.name) || 'Greater Thameslink Railway';
+    var siblings = GTR_CHILDREN.filter(function (c) { return c !== selection.code; })
+      .map(function (c) { return (operatorsContent[c] && operatorsContent[c].name) || c; });
+    var siblingsText = siblings.length > 1
+      ? siblings.slice(0, -1).join(', ') + ' and ' + siblings[siblings.length - 1]
+      : siblings.join('');
+    return '<div class="db-suboperator-notice" data-anim-row>Part of <button type="button" class="db-suboperator-link" data-op="GTR">' +
+      escapeAttr(parentName) + '</button>, alongside ' + escapeAttr(siblingsText) + '.</div>';
+  }
   function operatorDetailSkeletonHtml() {
     var o = selection.code && operatorsContent[selection.code];
     if (!o) return dbComingSoonHtml(selection.fallbackName || selection.code);
     var html = '';
     html += operatorNoTrackNoticeHtml(selection.code);
+    html += gtrSubBrandNoticeHtml(o);
     html += dbHeadlineHtml(o.headline);
     html += dbFieldHtml('Parent company', (o.parent_company || '') + operatorOwnershipHtml(o));
     html += operatorFranchiseListHtml(o.franchises);
@@ -6672,6 +6735,17 @@
         }
       });
     });
+    // GTR sub-brand notice link (2026-08-15) — same click-through shape as a
+    // search pick (selectOperator() for the panel, highlightAndFlyToOperator()
+    // for the map+camera), so clicking "part of Greater Thameslink Railway"
+    // behaves exactly like searching GTR directly.
+    var gtrLink = contentBlock.querySelector('.db-suboperator-link');
+    if (gtrLink) {
+      gtrLink.addEventListener('click', function () {
+        selectOperator('GTR');
+        highlightAndFlyToOperator('GTR', selectionSeq);
+      });
+    }
   }
 
   // A full "browse all routes/operators" list was here, generated straight
@@ -10592,7 +10666,12 @@
       if (attempt < 15) setTimeout(function () { flyToOperatorNetwork(code, mySeq, attempt + 1, gestureAtStart); }, 300);
       return;
     }
-    var feats = map.querySourceFeatures('operator-vector', { sourceLayer: 'operators', filter: ['==', ['get', 'operators'], code] });
+    // GTR special case: no feature ever carries operators === 'GTR' post-split
+    // (see GTR_CHILDREN's comment) — fly to the union extent of its four real
+    // children instead. Same ['in', ['get','operators'], ['literal', …]] shape
+    // already used for the trunk/regional/hyperlocal tier filters above.
+    var opFilter = code === 'GTR' ? ['in', ['get', 'operators'], ['literal', GTR_CHILDREN]] : ['==', ['get', 'operators'], code];
+    var feats = map.querySourceFeatures('operator-vector', { sourceLayer: 'operators', filter: opFilter });
     var bounds = null;
     feats.forEach(function (f) {
       var coords = f.geometry && f.geometry.coordinates;
@@ -11464,6 +11543,23 @@
   // animated move, not a jump-to-wrong-place-then-fly-to-right-place.
   function highlightAndFlyToOperator(code, mySeq) {
     if (!code || !map) return;
+    // GTR SPECIAL CASE (2026-08-15) — checked before the tileset-keys lookup
+    // below, not folded into it. GTR genuinely has zero segments, but unlike
+    // a real gap (HT) or a folded brand (LN -> WMR) that is not a "no data"
+    // state to report: it's a KNOWN one-to-many case, so no no-track notice,
+    // no OPERATOR_FOLDED_INTO redirect. applyOperatorHighlightPaint() expands
+    // 'GTR' into its four real children's own groups/colours, and
+    // flyToOperatorNetwork() has its own matching 'GTR' branch for the
+    // camera. See GTR_CHILDREN's comment for why this is hardcoded rather
+    // than generalised.
+    if (code === 'GTR') {
+      operatorNoTrackCode = null;
+      lockedOperatorHighlight = 'GTR';
+      applyOperatorHighlightPaint();
+      map.jumpTo({ center: mapInitCenter, zoom: mapInitZoom, padding: regionJumpFlyToPadding() });
+      flyToOperatorNetwork('GTR', mySeq, 1, userCameraGestureSeq);
+      return;
+    }
     // ASKED BEFORE THE JUMP, not after. If this operator has no track in the
     // tileset there is nothing to fly to, so the whole camera sequence is
     // skipped — no jump, no fly, no restore. The camera does not move at all;
@@ -11485,13 +11581,10 @@
         // GN/GX/TL/SN were in this list until 2026-08-05 and are not any more —
         // they carry their own segments now. See OPERATOR_FOLDED_INTO.
         //
-        // ⚠ KNOWN GAP, flagged not fixed: GTR is now the mirror image of this
-        // case. It has ZERO segments (all four sub-brands took them), so
-        // selecting the parent falls through to the generic "route data isn't
-        // available yet" notice — which is misleading, since its trains are all
-        // over the map under four other names. Fixing it needs a ONE-TO-MANY
-        // fold (GTR -> [SN, TL, GN, GX]) that this map cannot express: both
-        // OPERATOR_FOLDED_INTO and highlightCode are single-valued.
+        // GTR's own mirror-image gap (zero segments, one-to-many rather than
+        // many-to-one) is handled by the dedicated branch above this .then(),
+        // before this function ever reaches OPERATOR_FOLDED_INTO — GTR is
+        // never looked up here.
         highlightCode = OPERATOR_FOLDED_INTO[code];
         if (!highlightCode || !keys[highlightCode]) return; // nothing to show — camera stays put
       } else {

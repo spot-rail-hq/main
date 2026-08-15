@@ -265,6 +265,43 @@ track" — since only one of them has a known location.
   decision for the segment graph's output, not repeated here). The stage
   table below is the short version.
 
+### Heritage `established_year` — tranche-3 prep note
+
+`heritage-content.json`'s `established_year` (+ `established_year_type`,
+`opened_year`, `heritage_reopened_year`, `_established_year`) is populated in
+hand-run batches — a pilot (20 railways) and two 30-railway tranches, merged
+via one-off scripts (`merge-pilot.mjs`, `merge-tranche.mjs`,
+`merge-tranche2.mjs`) that live in session scratch space, not this repo.
+Current state (confirmed 2026-08-14): all 80 railways across the three
+batches were genuinely researched and are protected by the read-merge-preserve
+guard on `build-heritage-content.mjs`; of those, 63 have a published
+`established_year` and 17 are correctly, deliberately blank (weak/ambiguous
+sourcing, or a real "revival in progress" case where publishing the original
+opening date would misrepresent an in-development project as an operating
+heritage railway). 63 is the true, complete baseline for these 80 — not a
+partial/lost 80, see the investigation this note came out of for the full
+reconciliation if the 63-vs-80 question ever resurfaces.
+
+**Known bug, unfixed, in `merge-tranche2.mjs`'s loop logic — read before
+reusing this script for tranche 3.** North Dorset Railway's own tranche-2
+entry documents (via its `flag` field) a real, confirmed 1863 opening date
+that should NOT be published as `established_year`, because the line is a
+revival-in-progress (permission to run trains was only granted September
+2025, no confirmed public passenger service yet) — the same "don't publish
+the original date" shape as Halesworth to Southwold in tranche 1. Tranche 1's
+merge script (`merge-tranche.mjs`) has an explicit per-slug blank override for
+its equivalent case (`if (slug === 'halesworth-to-southwold-narrow-gauge-railway-cio')
+{ blanked++; } else { ... }`). **`merge-tranche2.mjs` has no equivalent
+override for North Dorset Railway** — its loop would auto-publish 1863 as
+`established_year` if run as saved. The live file is correct today only
+because this was caught by hand (checking all 30 entries individually rather
+than trusting the script's own summary count) and hand-patched directly into
+`heritage-content.json` after the buggy run — the script itself was never
+fixed. Anyone extending or reusing `merge-tranche2.mjs`'s pattern for
+tranche 3 needs to add that blank-override branch (or an equivalent explicit
+check) to the loop first, or the bug reintroduces itself silently on the next
+run.
+
 ## Line-data pipeline stages — and which figures each one may be quoted for
 
 Every stage rewrites or derives from `scripts/output/line-segments.json`, and
