@@ -1808,27 +1808,31 @@
   // track of their own, and the highlight would redirect to GTR — which now has
   // ZERO segments, so selecting Southern would have highlighted nothing at all.
   //
-  // LN stays: London Northwestern really does still have no track of its own.
-  // Investigated 2026-08-15 (report only, not wired): its OSM relations carry
-  // a `brand=London Northwestern Railway` tag distinct from WMR's own — an
-  // even cleaner signal than GTR's split used (46/48 West Midlands Trains
-  // relations resolve straight off `brand`, the remaining 2 off an `LNWR:`
-  // name prefix, 100% resolvable either way). NOT a trivial copy of
-  // split-subbrand-segments.mjs's GTR group, though: unlike GTR (a pure shell
-  // with no real service of its own), WMR is a real brand that also runs
-  // trains — 324 of its ~2,630 ways are physically shared with LN-brand
-  // relations, so a split has to add LN without blindly dropping WMR
-  // wherever LN appears, the way GTR's `dropParent` safely could.
+  // LN REMOVED 2026-08-15 — no longer folded. Investigated first (its OSM
+  // relations carry a `brand=London Northwestern Railway` tag distinct from
+  // WMR's own — an even cleaner signal than GTR's split used: 46/48 West
+  // Midlands Trains relations resolve straight off `brand`, the remaining 2
+  // off an `LNWR:` name prefix, 100% resolvable either way), then wired the
+  // same day via the same split-subbrand-segments.mjs used for GTR, with one
+  // real difference: unlike GTR (a pure shell with no service of its own),
+  // WMR is a real brand that also runs trains — 324 of its ~2,630 ways are
+  // physically shared with LN-brand relations, so the split ADDS LN there
+  // rather than dropping WMR the way GTR's `dropParent` safely could
+  // (`dropParentIfUncovered` in that script's WMT group: WMR is only removed
+  // from a segment where no WMR-brand relation covers it at all). LN now
+  // carries 192 segments of its own (30 of them dual-attributed with WMR, the
+  // genuinely shared ones) and has its own colour, same as GN/GX/TL/SN.
   //
   // GTR ITSELF (2026-08-15): the mirror-image gap flagged below is now fixed,
   // but NOT by adding GTR here — GTR is not folded into any one segment set,
   // it is the UNION of four (SN/TL/GN/GX). OPERATOR_FOLDED_INTO stays
   // single-valued on purpose; see GTR_CHILDREN below for the one-to-many case.
-  var OPERATOR_FOLDED_INTO = {
-    LN: 'WMR',
-  };
+  var OPERATOR_FOLDED_INTO = {};
   // GTR special case (2026-08-15) — a DELIBERATE ONE-OFF, not a general
-  // parent-to-children system. GTR (Greater Thameslink Railway) is a real,
+  // parent-to-children system. GTR (Govia Thameslink Railway — renamed back
+  // 2026-08-15 from the post-nationalisation "Greater Thameslink Railway" on
+  // explicit instruction, overriding the 2026-07-28 sourced research; see
+  // operators-content.json's _notes) is a real,
   // selectable, searchable operators-content.json entry with ZERO segments
   // of its own — every one of its four sub-brands (SN/TL/GN/GX) carries its
   // own segments and its own colour since the 2026-08-05 split. Selecting GTR
@@ -6650,7 +6654,7 @@
   function gtrSubBrandNoticeHtml(o) {
     if (!o || o.ownership_parent !== 'GTR') return '';
     var parent = operatorsContent.GTR;
-    var parentName = (parent && parent.name) || 'Greater Thameslink Railway';
+    var parentName = (parent && parent.name) || 'Govia Thameslink Railway';
     var siblings = GTR_CHILDREN.filter(function (c) { return c !== selection.code; })
       .map(function (c) { return (operatorsContent[c] && operatorsContent[c].name) || c; });
     var siblingsText = siblings.length > 1
@@ -6737,7 +6741,7 @@
     });
     // GTR sub-brand notice link (2026-08-15) — same click-through shape as a
     // search pick (selectOperator() for the panel, highlightAndFlyToOperator()
-    // for the map+camera), so clicking "part of Greater Thameslink Railway"
+    // for the map+camera), so clicking "part of Govia Thameslink Railway"
     // behaves exactly like searching GTR directly.
     var gtrLink = contentBlock.querySelector('.db-suboperator-link');
     if (gtrLink) {
@@ -11545,8 +11549,9 @@
     if (!code || !map) return;
     // GTR SPECIAL CASE (2026-08-15) — checked before the tileset-keys lookup
     // below, not folded into it. GTR genuinely has zero segments, but unlike
-    // a real gap (HT) or a folded brand (LN -> WMR) that is not a "no data"
-    // state to report: it's a KNOWN one-to-many case, so no no-track notice,
+    // a real gap (HT) or a folded brand (OPERATOR_FOLDED_INTO is currently
+    // empty — LN was the last entry, removed 2026-08-15) that is not a "no
+    // data" state to report: it's a KNOWN one-to-many case, so no no-track notice,
     // no OPERATOR_FOLDED_INTO redirect. applyOperatorHighlightPaint() expands
     // 'GTR' into its four real children's own groups/colours, and
     // flyToOperatorNetwork() has its own matching 'GTR' branch for the
@@ -11570,16 +11575,17 @@
       if (keys && !keys[code]) {
         operatorNoTrackCode = code;
         rebuildSidebarContent();
-        // A FOLDED operator (LN -> WMR) has no track of its own because OSM tags
-        // those services under the parent brand — but the trains do run, and the
-        // user asking for London Northwestern is entitled to see where.
-        // Highlight the PARENT's network instead of leaving the map blank; the
-        // notice in the panel names the parent so the substitution is never
-        // silent. A genuine absence (HT) still shows nothing, which is honest —
-        // there is no geometry anywhere to point at.
+        // A FOLDED operator has no track of its own because OSM tags those
+        // services under the parent brand — but the trains do run, and the
+        // user is entitled to see where. Highlight the PARENT's network
+        // instead of leaving the map blank; the notice in the panel names the
+        // parent so the substitution is never silent. A genuine absence (HT)
+        // still shows nothing, which is honest — there is no geometry
+        // anywhere to point at.
         //
-        // GN/GX/TL/SN were in this list until 2026-08-05 and are not any more —
-        // they carry their own segments now. See OPERATOR_FOLDED_INTO.
+        // GN/GX/TL/SN were in this list until 2026-08-05, LN until 2026-08-15
+        // — none are any more, they all carry their own segments now.
+        // OPERATOR_FOLDED_INTO is currently empty; see its own comment.
         //
         // GTR's own mirror-image gap (zero segments, one-to-many rather than
         // many-to-one) is handled by the dedicated branch above this .then(),

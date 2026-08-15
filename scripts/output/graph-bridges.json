@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-06T19:07:22.114Z",
+  "generated_at": "2026-08-15T08:18:26.957Z",
   "threshold_m": 150,
   "bridges": [
     {
@@ -663,13 +663,13 @@
       "confidence": "mode-matched",
       "waiver": null,
       "fromOperators": [
-        "WMR"
+        "LN"
       ],
       "toOperators": [
         "CS",
         "LD",
         "VT",
-        "WMR"
+        "LN"
       ]
     },
     {
@@ -790,7 +790,7 @@
       "confidence": "mode-matched",
       "waiver": null,
       "fromOperators": [
-        "WMR"
+        "LN"
       ],
       "toOperators": [
         "SN"

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-06T17:09:04.484Z",
+  "generated_at": "2026-08-15T08:17:56.644Z",
   "tolerance_m": 200,
   "station_count": 3443,
   "snapped_count": 3407,
@@ -212,7 +212,7 @@
         "CS",
         "LD",
         "VT",
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 2.8,
       "snap_point": [
@@ -454,7 +454,8 @@
         "AW",
         "VT",
         "WMR",
-        "XC"
+        "XC",
+        "LN"
       ],
       "nearest_distance_m": 4.9,
       "snap_point": [
@@ -1629,7 +1630,7 @@
       "segment_id": 3973,
       "snap_tier": "operator",
       "snap_operators": [
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 1.2,
       "snap_point": [
@@ -1692,7 +1693,7 @@
       "segment_id": 6967,
       "snap_tier": "operator",
       "snap_operators": [
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 6,
       "snap_point": [
@@ -2020,7 +2021,7 @@
       "snap_tier": "operator",
       "snap_operators": [
         "EM",
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 1.8,
       "snap_point": [
@@ -2232,7 +2233,7 @@
       "segment_id": 2767,
       "snap_tier": "operator",
       "snap_operators": [
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 0.7,
       "snap_point": [
@@ -5317,7 +5318,7 @@
         "CS",
         "LD",
         "VT",
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 18.8,
       "snap_point": [
@@ -5487,8 +5488,8 @@
       "snap_tier": "operator",
       "snap_operators": [
         "VT",
-        "WMR",
-        "XC"
+        "XC",
+        "LN"
       ],
       "nearest_distance_m": 53.1,
       "snap_point": [
@@ -5874,7 +5875,7 @@
         "CS",
         "LD",
         "VT",
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 0.7,
       "snap_point": [
@@ -7349,8 +7350,8 @@
       "snap_tier": "mode",
       "snap_operators": [
         "VT",
-        "WMR",
-        "XC"
+        "XC",
+        "LN"
       ],
       "nearest_distance_m": 11.8,
       "snap_point": [
@@ -7561,8 +7562,8 @@
       "segment_id": 6958,
       "snap_tier": "operator",
       "snap_operators": [
-        "WMR",
-        "SN"
+        "SN",
+        "LN"
       ],
       "nearest_distance_m": 1.4,
       "snap_point": [
@@ -7606,7 +7607,7 @@
       "segment_id": 3972,
       "snap_tier": "operator",
       "snap_operators": [
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 16.7,
       "snap_point": [
@@ -8570,7 +8571,7 @@
       "segment_id": 3973,
       "snap_tier": "operator",
       "snap_operators": [
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 1.1,
       "snap_point": [
@@ -8680,7 +8681,7 @@
       "segment_id": 6468,
       "snap_tier": "operator",
       "snap_operators": [
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 12.8,
       "snap_point": [
@@ -10057,7 +10058,7 @@
         "CS",
         "LD",
         "VT",
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 10.8,
       "snap_point": [
@@ -11864,8 +11865,8 @@
       "snap_tier": "operator",
       "snap_operators": [
         "VT",
-        "WMR",
-        "XC"
+        "XC",
+        "LN"
       ],
       "nearest_distance_m": 12.3,
       "snap_point": [
@@ -12335,7 +12336,7 @@
       "snap_tier": "operator",
       "snap_operators": [
         "VT",
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 0.2,
       "snap_point": [
@@ -13308,7 +13309,8 @@
         "AW",
         "VT",
         "WMR",
-        "XC"
+        "XC",
+        "LN"
       ],
       "nearest_distance_m": 7.7,
       "snap_point": [
@@ -14598,7 +14600,8 @@
         "AW",
         "VT",
         "WMR",
-        "XC"
+        "XC",
+        "LN"
       ],
       "nearest_distance_m": 6.6,
       "snap_point": [
@@ -18124,7 +18127,7 @@
       "snap_operators": [
         "CS",
         "VT",
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 6.8,
       "snap_point": [
@@ -18569,7 +18572,7 @@
       "segment_id": 3981,
       "snap_tier": "operator",
       "snap_operators": [
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 0.9,
       "snap_point": [
@@ -21886,7 +21889,7 @@
       "segment_id": 6468,
       "snap_tier": "operator",
       "snap_operators": [
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 2.2,
       "snap_point": [
@@ -23674,8 +23677,8 @@
       "snap_tier": "operator",
       "snap_operators": [
         "VT",
-        "WMR",
-        "XC"
+        "XC",
+        "LN"
       ],
       "nearest_distance_m": 11.9,
       "snap_point": [
@@ -24358,7 +24361,7 @@
       "segment_id": 6967,
       "snap_tier": "operator",
       "snap_operators": [
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 5.7,
       "snap_point": [
@@ -25444,8 +25447,8 @@
       "segment_id": 6958,
       "snap_tier": "operator",
       "snap_operators": [
-        "WMR",
-        "SN"
+        "SN",
+        "LN"
       ],
       "nearest_distance_m": 4.7,
       "snap_point": [
@@ -25710,7 +25713,7 @@
         "CS",
         "LD",
         "VT",
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 0.5,
       "snap_point": [
@@ -25734,7 +25737,7 @@
         "CS",
         "LD",
         "VT",
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 9.8,
       "snap_point": [
@@ -26251,7 +26254,7 @@
       "segment_id": 6468,
       "snap_tier": "operator",
       "snap_operators": [
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 7.3,
       "snap_point": [
@@ -27268,7 +27271,7 @@
       "segment_id": 3516,
       "snap_tier": "mode",
       "snap_operators": [
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 7.1,
       "snap_point": [
@@ -27618,7 +27621,7 @@
         "CS",
         "LD",
         "VT",
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 24.2,
       "snap_point": [
@@ -28157,7 +28160,7 @@
       "segment_id": 3973,
       "snap_tier": "operator",
       "snap_operators": [
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 8.6,
       "snap_point": [
@@ -29286,7 +29289,7 @@
       "segment_id": 2562,
       "snap_tier": "operator",
       "snap_operators": [
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 13.3,
       "snap_point": [
@@ -29373,7 +29376,7 @@
       "segment_id": 6953,
       "snap_tier": "operator",
       "snap_operators": [
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 13.4,
       "snap_point": [
@@ -29698,7 +29701,8 @@
         "AW",
         "VT",
         "WMR",
-        "XC"
+        "XC",
+        "LN"
       ],
       "nearest_distance_m": 11.3,
       "snap_point": [
@@ -30446,7 +30450,7 @@
       "segment_id": 3973,
       "snap_tier": "operator",
       "snap_operators": [
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 5.3,
       "snap_point": [
@@ -30577,9 +30581,9 @@
       "snap_operators": [
         "NT",
         "TP",
-        "WMR",
         "VT",
-        "EM"
+        "EM",
+        "LN"
       ],
       "nearest_distance_m": 6.1,
       "snap_point": [
@@ -31461,8 +31465,8 @@
         "EM",
         "NT",
         "VT",
-        "WMR",
-        "XC"
+        "XC",
+        "LN"
       ],
       "nearest_distance_m": 2.5,
       "snap_point": [
@@ -31509,7 +31513,7 @@
         "AW",
         "EM",
         "VT",
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 50.2,
       "snap_point": [
@@ -31912,7 +31916,7 @@
       "segment_id": 2767,
       "snap_tier": "operator",
       "snap_operators": [
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 4.6,
       "snap_point": [
@@ -33413,7 +33417,8 @@
         "AW",
         "VT",
         "WMR",
-        "XC"
+        "XC",
+        "LN"
       ],
       "nearest_distance_m": 3.7,
       "snap_point": [
@@ -33715,7 +33720,7 @@
       "segment_id": 2562,
       "snap_tier": "operator",
       "snap_operators": [
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 13.8,
       "snap_point": [
@@ -33799,7 +33804,7 @@
       "segment_id": 3973,
       "snap_tier": "operator",
       "snap_operators": [
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 4,
       "snap_point": [
@@ -34657,7 +34662,7 @@
         "AW",
         "EM",
         "VT",
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 11.9,
       "snap_point": [
@@ -36215,7 +36220,7 @@
       "segment_id": 2562,
       "snap_tier": "operator",
       "snap_operators": [
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 20.9,
       "snap_point": [
@@ -38635,8 +38640,8 @@
       "snap_tier": "operator",
       "snap_operators": [
         "VT",
-        "WMR",
-        "XC"
+        "XC",
+        "LN"
       ],
       "nearest_distance_m": 13,
       "snap_point": [
@@ -38678,7 +38683,7 @@
       "segment_id": 6468,
       "snap_tier": "operator",
       "snap_operators": [
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 10.8,
       "snap_point": [
@@ -41556,7 +41561,7 @@
         "CS",
         "LD",
         "VT",
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 0.7,
       "snap_point": [
@@ -41812,7 +41817,7 @@
       "segment_id": 3973,
       "snap_tier": "operator",
       "snap_operators": [
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 10.1,
       "snap_point": [
@@ -42581,7 +42586,7 @@
       "snap_operators": [
         "AW",
         "VT",
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 15.1,
       "snap_point": [
@@ -42878,7 +42883,7 @@
       "segment_id": 6468,
       "snap_tier": "operator",
       "snap_operators": [
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 10.1,
       "snap_point": [
@@ -42944,7 +42949,8 @@
         "AW",
         "VT",
         "WMR",
-        "XC"
+        "XC",
+        "LN"
       ],
       "nearest_distance_m": 6.5,
       "snap_point": [
@@ -43562,7 +43568,8 @@
         "AW",
         "VT",
         "WMR",
-        "XC"
+        "XC",
+        "LN"
       ],
       "nearest_distance_m": 30.3,
       "snap_point": [
@@ -45984,7 +45991,8 @@
         "AW",
         "VT",
         "WMR",
-        "XC"
+        "XC",
+        "LN"
       ],
       "nearest_distance_m": 19.8,
       "snap_point": [
@@ -46090,8 +46098,8 @@
       "segment_id": 4543,
       "snap_tier": "operator",
       "snap_operators": [
-        "WMR",
-        "XC"
+        "XC",
+        "LN"
       ],
       "nearest_distance_m": 8.8,
       "snap_point": [
@@ -46754,8 +46762,8 @@
       "snap_operators": [
         "EM",
         "VT",
-        "WMR",
-        "XC"
+        "XC",
+        "LN"
       ],
       "nearest_distance_m": 0.1,
       "snap_point": [
@@ -47633,9 +47641,9 @@
       "snap_tier": "operator",
       "snap_operators": [
         "VT",
-        "WMR",
         "CS",
-        "LD"
+        "LD",
+        "LN"
       ],
       "nearest_distance_m": 31.4,
       "snap_point": [
@@ -48707,7 +48715,7 @@
       "segment_id": 3973,
       "snap_tier": "operator",
       "snap_operators": [
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 0.6,
       "snap_point": [
@@ -49046,7 +49054,7 @@
       "segment_id": 2767,
       "snap_tier": "mode",
       "snap_operators": [
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 0.9,
       "snap_point": [
@@ -49109,7 +49117,7 @@
       "segment_id": 2767,
       "snap_tier": "operator",
       "snap_operators": [
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 0.9,
       "snap_point": [
@@ -49647,8 +49655,8 @@
       "snap_tier": "operator",
       "snap_operators": [
         "VT",
-        "WMR",
-        "XC"
+        "XC",
+        "LN"
       ],
       "nearest_distance_m": 11.3,
       "snap_point": [
@@ -49819,7 +49827,8 @@
         "AW",
         "VT",
         "WMR",
-        "XC"
+        "XC",
+        "LN"
       ],
       "nearest_distance_m": 7.3,
       "snap_point": [
@@ -50496,7 +50505,7 @@
       "segment_id": 2568,
       "snap_tier": "operator",
       "snap_operators": [
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 2.4,
       "snap_point": [
@@ -52443,8 +52452,8 @@
       "snap_tier": "mode",
       "snap_operators": [
         "VT",
-        "WMR",
-        "XC"
+        "XC",
+        "LN"
       ],
       "nearest_distance_m": 2.8,
       "snap_point": [
@@ -52677,7 +52686,7 @@
       "segment_id": 6967,
       "snap_tier": "operator",
       "snap_operators": [
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 0.6,
       "snap_point": [
@@ -52719,7 +52728,7 @@
       "segment_id": 6468,
       "snap_tier": "operator",
       "snap_operators": [
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 5.3,
       "snap_point": [
@@ -53895,8 +53904,8 @@
       "segment_id": 6958,
       "snap_tier": "operator",
       "snap_operators": [
-        "WMR",
-        "SN"
+        "SN",
+        "LN"
       ],
       "nearest_distance_m": 2.4,
       "snap_point": [
@@ -54449,7 +54458,7 @@
       "segment_id": 3973,
       "snap_tier": "operator",
       "snap_operators": [
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 1.2,
       "snap_point": [
@@ -54534,7 +54543,7 @@
       "segment_id": 2562,
       "snap_tier": "operator",
       "snap_operators": [
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 16.6,
       "snap_point": [
@@ -55025,7 +55034,7 @@
         "AW",
         "EM",
         "VT",
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 6.1,
       "snap_point": [
@@ -55091,7 +55100,7 @@
         "CS",
         "LD",
         "VT",
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 10.6,
       "snap_point": [
@@ -59738,7 +59747,7 @@
       "snap_tier": "mode",
       "snap_operators": [
         "Lioness",
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 3.4,
       "snap_point": [
@@ -61268,7 +61277,7 @@
         "CS",
         "LD",
         "VT",
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 14.9,
       "snap_point": [
@@ -69062,7 +69071,8 @@
         "AW",
         "VT",
         "WMR",
-        "XC"
+        "XC",
+        "LN"
       ],
       "nearest_distance_m": 53.4,
       "snap_point": [
@@ -69086,7 +69096,8 @@
         "AW",
         "VT",
         "WMR",
-        "XC"
+        "XC",
+        "LN"
       ],
       "nearest_distance_m": 1.3,
       "snap_point": [
@@ -69363,7 +69374,8 @@
         "AW",
         "VT",
         "WMR",
-        "XC"
+        "XC",
+        "LN"
       ],
       "nearest_distance_m": 15.3,
       "snap_point": [
@@ -69829,7 +69841,7 @@
       "segment_id": 2767,
       "snap_tier": "mode",
       "snap_operators": [
-        "WMR"
+        "LN"
       ],
       "nearest_distance_m": 11546.1,
       "snap_point": [
