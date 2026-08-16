@@ -897,7 +897,7 @@ function DatasetRow({ config, groupKey, groupsByKey, item }) {
             </div>
 
             {/* Spacing only, no divider rule — matches the Database.jpg
-                mockup's visual treatment (2026-08-30): the field grid and
+                mockup's visual treatment (2026-08-16): the field grid and
                 these full-width extras read as one continuous panel. */}
             {anyFull && (
               <div className="row-expanded-extra" style={{ marginTop: 20 }}>

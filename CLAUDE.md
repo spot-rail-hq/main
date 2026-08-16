@@ -200,7 +200,7 @@ Funnel ferry terminal), not rail infrastructure at all, so it was never
 going to have an `RLY` NaPTAN record — `atco: null` is permanent and correct
 for it, not a gap.
 
-**Tagged distinctly in `station-list.json` (2026-08-30) so it doesn't render
+**Tagged distinctly in `station-list.json` (2026-08-16) so it doesn't render
 as a normal station once a Stations tab exists**: `mode: "bus"` /
 `network: "National Rail (replacement bus)"`, instead of every other row's
 `mode: "rail"` / `network: "National Rail"`. `migrate-station-list.mjs`
