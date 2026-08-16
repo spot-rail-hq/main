@@ -114,6 +114,23 @@ const SAME_STATION = {
 // Closed 2019, replaced by Meridian Water. The only row this migration removes.
 const CLOSED_CRS = { AGR: 'Angel Road — closed 2019, replaced by Meridian Water' };
 
+// Hand-curated mode/network overrides, keyed by CRS. This loop otherwise
+// hardcodes every pre-existing row to mode:'rail'/network:'National Rail'
+// (line ~10 below) rather than reading its own prior output, so an override
+// applied any other way would be silently destroyed on the next re-run —
+// this constant is the escape hatch, following the same pattern as
+// SAME_STATION/CLOSED_CRS above rather than inventing a new one.
+//
+// STQ Southampton Town Quay (investigated 2026-08-16, see CLAUDE.md's
+// station-regions note): a National Rail-ticketed replacement BUS stop (the
+// QuayConnect shuttle to the Red Funnel ferry terminal), not rail
+// infrastructure — it was never going to have an RLY NaPTAN record, so
+// `atco: null` here is permanent and correct, not a gap. Tagged distinctly
+// so it doesn't render as a normal station once a Stations tab exists.
+const MODE_OVERRIDES = {
+  STQ: { mode: 'bus', network: 'National Rail (replacement bus)' },
+};
+
 const COORD_DP = 5;
 const coordKey = (lon, lat) => `${lon.toFixed(COORD_DP)},${lat.toFixed(COORD_DP)}`;
 
@@ -151,12 +168,13 @@ function main() {
   for (const s of kept) {
     const hit = railByCoord.get(coordKey(s.lon, s.lat));
     if (!hit) unmatched.push(s);
+    const override = MODE_OVERRIDES[s.crs];
     migrated.push({
       name: s.name,
       crs: s.crs,
       atco: hit ? hit.atco : null,
-      mode: 'rail',
-      network: 'National Rail',
+      mode: override ? override.mode : 'rail',
+      network: override ? override.network : 'National Rail',
       lat: s.lat,
       lon: s.lon,
     });

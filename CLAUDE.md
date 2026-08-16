@@ -200,6 +200,27 @@ Funnel ferry terminal), not rail infrastructure at all, so it was never
 going to have an `RLY` NaPTAN record — `atco: null` is permanent and correct
 for it, not a gap.
 
+**Tagged distinctly in `station-list.json` (2026-08-30) so it doesn't render
+as a normal station once a Stations tab exists**: `mode: "bus"` /
+`network: "National Rail (replacement bus)"`, instead of every other row's
+`mode: "rail"` / `network: "National Rail"`. `migrate-station-list.mjs`
+otherwise hardcodes both fields for every pre-existing row on each run
+(it does not read-merge-preserve its own prior output — nothing else in
+this file is hand-curated, so it never needed to), which would silently
+overwrite this on a future re-run; the override lives in that script's own
+`MODE_OVERRIDES` constant (same pattern as its existing `SAME_STATION`/
+`CLOSED_CRS` maps) specifically so it survives one. Confirmed safe against
+the current map.html: every `mode`/`network`-sensitive code path there
+(`MODE_STATION_TIER`, `MODE_LABELS`, `nonCrsLiveNoticeHtml`,
+`nonCrsDatabaseHtml`) is gated on stations with **no** `crs` — Southampton
+Town Quay has a real one (`STQ`), so none of them touch it; the override is
+inert metadata until a Stations tab (or something else) chooses to read it.
+**When the Stations tab is built**: don't render this row like a normal
+station (no departure-board expectation, no "station" copy) — surface it as
+a ferry-connection bus stop, or exclude it, per whatever the Stations tab's
+own scoping decides; this note exists so that decision doesn't have to
+re-derive the "it's not actually a station" fact from scratch.
+
 **Read-merge-preserve applies** (`GENERATOR_OWNED_KEYS` = `region`,
 `method`, `distance_km`, `flagged`) — any other field hand-added to an entry
 survives a re-run.

@@ -2233,7 +2233,7 @@
 {"name":"Stonehaven Rail Station","crs":"STN","atco":"9100SHVN","mode":"rail","network":"National Rail","lat":56.96682338528,"lon":-2.22529705069},
 {"name":"South Tottenham Rail Station","crs":"STO","atco":"9100STOTNHM","mode":"rail","network":"National Rail","lat":51.58037225345,"lon":-0.0721025934},
 {"name":"London St Pancras International Rail Station","crs":"STP","atco":"9100STPADOM","mode":"rail","network":"National Rail","lat":51.5325135782,"lon":-0.1264633895},
-{"name":"Southampton Town Quay","crs":"STQ","atco":null,"mode":"rail","network":"National Rail","lat":50.8951524436,"lon":-1.40583030391},
+{"name":"Southampton Town Quay","crs":"STQ","atco":null,"mode":"bus","network":"National Rail (replacement bus)","lat":50.8951524436,"lon":-1.40583030391},
 {"name":"Stranraer Rail Station","crs":"STR","atco":"9100STRNRR","mode":"rail","network":"National Rail","lat":54.90960226162,"lon":-5.02473747151},
 {"name":"Saltash Rail Station","crs":"STS","atco":"9100SASH","mode":"rail","network":"National Rail","lat":50.40735665835,"lon":-4.20911259141},
 {"name":"Stewarton Rail Station","crs":"STT","atco":"9100STEWRTN","mode":"rail","network":"National Rail","lat":55.68215385455,"lon":-4.51805752834},

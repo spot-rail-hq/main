@@ -361,21 +361,22 @@ function TrainImage({ commonsUrl, cls, name, accent }) {
       </div>
     );
   }
+  // Credit renders as its own plain line BELOW the frame, not overlaid on
+  // the photo — matches map.html's station panel (.db-photo-credit): no
+  // gradient scrim, no underline, ink-colored. (map.html tried the overlay
+  // treatment this component used to have, reverted it as "messy at this
+  // sidebar's narrower width" — see .db-photo-credit's CSS comment there.)
   return (
-    <div style={wrap}>
-      <img src={state.src} alt={`${name} — ${cls}`}
-           style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-           onError={() => setState({ status: 'none' })} />
-      <div style={{
-        position: 'absolute', bottom: 0, left: 0, right: 0,
-        padding: '14px 12px 8px',
-        background: 'linear-gradient(to top, rgba(var(--bg-rgb),0.92), transparent)',
-        fontFamily: SRHQ.mono, fontSize: 10, letterSpacing: 0.6,
-        color: SRHQ.inkMute,
-      }}>
+    <div>
+      <div style={wrap}>
+        <img src={state.src} alt={`${name} — ${cls}`}
+             style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+             onError={() => setState({ status: 'none' })} />
+      </div>
+      <div style={{ fontSize: 13, color: SRHQ.ink, marginTop: 4 }}>
         <a href={state.creditHref}
            target="_blank" rel="noreferrer noopener"
-           style={{ color: SRHQ.inkDim, textDecoration: 'underline' }}>
+           style={{ color: SRHQ.ink, textDecoration: 'none' }}>
           {state.creditText}
         </a>
       </div>
