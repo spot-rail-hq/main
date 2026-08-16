@@ -441,6 +441,28 @@ Run the tile script directly after stage 3 and you tile the pre-dedupe graph,
 which is a real, shippable, wrong tileset that nothing downstream complains
 about.
 
+**Stage 4 has a narrow, currently-dormant read-merge-preserve gap** (audited
+2026-08-17, alongside the `build-operator-palette.mjs` gap fixed the same
+day — see that section below for the general pattern). When a merge group
+has more than one member, `dedupe-line-segments.mjs` keeps the CANONICAL
+member's own fields (`{...canonical.seg, operators, way_ids}` — safe, this
+preserves whatever hand-curated content the canonical segment carries) but
+the OTHER, non-canonical members in that group are dropped along with
+everything they carried beyond `operators`/`way_ids`. Not fixed here —
+**documenting, not fixing**, per the same call as the audit that found it.
+
+Dormant today: Knottingley's hand-curated `attribution_note` (see the
+Corrections-layer section below) sits on a segment whose `way_ids` are all
+under this stage's dedup floor, so it never enters a merge group at all. But
+there is no protection if a future hand-curated segment ever loses the
+canonical vote to another segment describing the same physical corridor —
+its curated field(s) would be silently dropped, the same failure shape
+`migrate-station-list.mjs` and `build-operator-palette.mjs` both had before
+their fixes. If this is ever hit for real, the fix is the same shape as
+those two: read-merge-preserve the non-canonical members' non-generator-
+owned fields into the canonical survivor before dropping them, rather than
+just discarding the loser wholesale.
+
 **Stages 6–9 are a CYCLE, not a line.** `build-graph-bridges.mjs` reads
 `routing-graph.json`, which `build-routing-graph.mjs` writes — so the bridges
 script scores candidates against whatever node space the *last* routing build

@@ -66,13 +66,59 @@
  * section for the categorization rules; this file is the actual hex table.
  */
 
-import { writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 const OUT_PATH = path.join(ROOT, 'data', 'operator-colors.json');
+
+// ═══ Read-merge-preserve (2026-08-17) ═════════════════════════════════════
+// This script used to only ever WRITE data/operator-colors.json, never read
+// it — every run reconstructed every entry from scratch. That silently
+// dropped hand-curated content that lives ONLY in the JSON: `_note` fields
+// (the measurements/sourcing/reasoning behind a hand-set color, e.g.
+// heritage's CVD-separation writeup), and — for GC, Manchester Metrolink,
+// and Stansted Express (SX) specifically — the hand-set dark/light VALUES
+// themselves, because this script's own generic derivation produces
+// different (wrong) values for those three. Found live 2026-08-16: GC's
+// dark and Metrolink's dark+light had already silently drifted out of sync
+// with their own `_note`s at least once before this was caught.
+//
+// Fix has two parts:
+//  1. COLOR_OVERRIDES below — hand-set hex VALUES, baked into the script
+//     itself (same escape-hatch pattern as migrate-station-list.mjs's
+//     MODE_OVERRIDES) so a from-scratch run with no prior JSON on disk
+//     still produces the correct color, not just a regeneration. The
+//     reasoning for each stays in that entry's `_note` in the JSON itself
+//     — not duplicated into the script as a second copy of the same prose.
+//  2. mergeEntry()/mergeCategory()/assertNothingLost() near the bottom —
+//     generic read-merge-preserve for `_note` and any other non-generator-
+//     owned field, plus a guard that THROWS if the final merged output is
+//     about to ship without something the prior file had. Catches SX too:
+//     it isn't in this script's operator list at all (never generated,
+//     purely hand-added), so it needs pure passthrough rather than a
+//     COLOR_OVERRIDES entry — the generic merge's "prior-only key" handling
+//     covers that case without a per-operator special case.
+const priorPalette = existsSync(OUT_PATH) ? JSON.parse(readFileSync(OUT_PATH, 'utf8')) : null;
+
+// Hand-set colour overrides — GC's dark theme and Manchester Metrolink's
+// whole entry bypass this script's generic derivation, which produces
+// wrong values for both (see each entry's own `_note` in
+// data/operator-colors.json for the full reasoning: an all-black livery
+// can't be lifted into a dark basemap by lightness alone for GC; Metrolink
+// uses one real brand yellow in both themes, not a derived light/dark
+// pair). Keyed the same way each category already is — TOC code, metro
+// name — matching MODE_OVERRIDES' keyed-by-identity shape.
+const COLOR_OVERRIDES = {
+  toc: {
+    GC: { dark: '#B8AB7A' }, // light is correctly derived from REAL_TOC_COLORS.GC.primary — only dark needs the override
+  },
+  metro: {
+    'Manchester Metrolink': { dark: '#FFDC44', light: '#FFDC44' },
+  },
+};
 
 // ═══ Color math ═════════════════════════════════════════════════════════
 function hexToRgb(hex) {
@@ -336,6 +382,22 @@ for (const [key, baseHex] of Object.entries(METRO_BASE)) {
   const gate = passesGates(candidate, key, placedLight);
   placedLight[key] = gate.ok ? candidate : findFallbackHue(candidate, key, placedLight).hex;
 }
+// Manchester Metrolink's light override is applied LATER, alongside its dark
+// override (search COLOR_OVERRIDES below) — NOT here. Overriding placedLight
+// mid-sequence, before the darkByKey loop runs, was tried first and caused a
+// real bug: the darkByKey loop's fallback search for keys processed AFTER
+// Metrolink reads whatever is in `darkByKey` at that point for gate-checking
+// (an "already placed" collision check), and an early light override changes
+// what toDarkThemeFromLight() derives for Metrolink DURING the loop — a
+// value nobody ever ships, since the real override replaces it afterward —
+// which measurably changed OTHER metro entries' (Nottingham Express Transit,
+// Edinburgh Trams) dark-theme fallback hue purely as a side effect, with
+// nothing about their own colors having changed. Applying both overrides
+// together, strictly after both loops complete (same point Blackpool
+// Tramway and GC's dark override already use), means Manchester Metrolink
+// never participates in the sequential placement AT ALL — consistent with
+// every other hand-set entry in this file, and the only way to guarantee
+// fixing one entry's color can't silently perturb an unrelated one's.
 
 // ═══ Blackpool Tramway — deliberate exception to the vivid-lightness-band
 // convention every other TOC/metro light-theme color follows ═══════════════
@@ -424,6 +486,29 @@ for (const key of [...tocOrder, ...Object.keys(METRO_BASE)]) {
   const gate = passesGates(direct, key, darkByKey);
   darkByKey[key] = gate.ok ? direct : findFallbackHue(direct, key, darkByKey).hex;
 }
+// Grand Central dark-theme override (see COLOR_OVERRIDES above). Verified
+// against the CURRENT palette rather than trusted blindly — same pattern as
+// Blackpool's re-verify block just below, and for the same reason: if this
+// ever stops clearing, that's a real signal something upstream changed and
+// needs a fresh look, not something to silently paper over.
+{
+  const gc = COLOR_OVERRIDES.toc.GC.dark;
+  const gate = passesGates(gc, 'GC', darkByKey);
+  if (!gate.ok) throw new Error(`Grand Central's hand-set dark value (${gc}) no longer clears gates (${gate.reason}) — the palette must have changed since this was verified (see toc.GC's _note in data/operator-colors.json); re-verify before trusting it, don't just ignore this.`);
+  darkByKey.GC = gc;
+}
+// Manchester Metrolink — both theme values overridden together, here and
+// only here (see the comment where the light-only version of this used to
+// sit, right after the METRO_BASE light loop, for why applying it earlier
+// is wrong). Both entries in darkByKey/placedLight already hold whatever
+// the generic loops computed for this key — irrelevant, nothing downstream
+// reads them again after this point, so overwriting both now is safe.
+// Deliberately no passesGates() check: this entry's own `_note` documents
+// that it fails the gate against Merseyrail (a real, known, unresolved
+// brand collision, not a bug), so a throw-on-fail check would break every
+// build.
+darkByKey['Manchester Metrolink'] = COLOR_OVERRIDES.metro['Manchester Metrolink'].dark;
+placedLight['Manchester Metrolink'] = COLOR_OVERRIDES.metro['Manchester Metrolink'].light;
 // Blackpool Tramway again bypasses the generic derive-then-gate flow — its
 // dark value was hand-verified together with its light value (see the
 // BLACKPOOL_TRAMWAY_LIGHT/DARK block above), re-verify here rather than
@@ -541,13 +626,87 @@ function withThemes(keys) {
   return Object.fromEntries(keys.map((k) => [k, { dark: darkByKey[k], light: placedLight[k] }]));
 }
 
+// ═══ Read-merge-preserve: merge + guard ═══════════════════════════════════
+// `dark`/`light` are this script's own output — always overwritten with
+// whatever was just computed, that's the entire point of a regeneration.
+// Anything else on an entry (in practice: `_note`) is NOT something this
+// script produces, so it must come from the prior file instead of being
+// silently dropped. Same inverted-allowlist principle as every other
+// read-merge-preserve generator in this repo (CLAUDE.md's "Generator
+// safety" section) — the allowlist here is deliberately just the two keys
+// this script actually writes, not a naming convention, so it can't miss
+// whatever a future hand-edit adds under some other field name.
+const GENERATOR_OWNED_ENTRY_KEYS = new Set(['dark', 'light']);
+
+function mergeEntry(freshEntry, priorEntry) {
+  if (!priorEntry) return freshEntry;
+  const merged = { ...freshEntry };
+  for (const [k, v] of Object.entries(priorEntry)) {
+    if (!GENERATOR_OWNED_ENTRY_KEYS.has(k)) merged[k] = v;
+  }
+  return merged;
+}
+// A category is a map of key -> entry (toc, metro, tfl_lines). Keys that
+// exist ONLY in the prior file — Stansted Express (SX) today: not in this
+// script's operator list at all, so `fresh` never produces an 'SX' key —
+// are carried over wholesale rather than disappearing just because the
+// generator didn't (re)produce that key this run.
+function mergeCategory(freshCategory, priorCategory) {
+  if (!priorCategory) return freshCategory;
+  const merged = {};
+  for (const [key, entry] of Object.entries(freshCategory)) merged[key] = mergeEntry(entry, priorCategory[key]);
+  for (const [key, entry] of Object.entries(priorCategory)) if (!(key in merged)) merged[key] = entry;
+  return merged;
+}
+// Independent re-check of the ACTUAL merged output against the prior file —
+// deliberately not just trusting mergeEntry/mergeCategory did their job.
+// Throws rather than silently shipping a regression if a non-generator-
+// owned field is missing, or changed, from what the prior file had.
+function assertNothingLostFromCategory(label, mergedCategory, priorCategory) {
+  if (!priorCategory) return;
+  for (const [key, priorEntry] of Object.entries(priorCategory)) {
+    const mergedEntry = mergedCategory[key];
+    if (!mergedEntry) throw new Error(`${label}.${key} existed in the prior data/operator-colors.json and is missing entirely from the merged output — read-merge-preserve failed, refusing to write.`);
+    for (const [k, v] of Object.entries(priorEntry)) {
+      if (GENERATOR_OWNED_ENTRY_KEYS.has(k)) continue;
+      if (!(k in mergedEntry) || JSON.stringify(mergedEntry[k]) !== JSON.stringify(v)) {
+        throw new Error(`${label}.${key}.${k} would be lost or changed by this write — a hand-curated field must survive a regeneration verbatim. Prior: ${JSON.stringify(v)}. About to write: ${JSON.stringify(mergedEntry[k])}. Refusing to write.`);
+      }
+    }
+  }
+}
+function assertNothingLostFromEntry(label, mergedEntry, priorEntry) {
+  if (!priorEntry) return;
+  for (const [k, v] of Object.entries(priorEntry)) {
+    if (GENERATOR_OWNED_ENTRY_KEYS.has(k)) continue;
+    if (!(k in mergedEntry) || JSON.stringify(mergedEntry[k]) !== JSON.stringify(v)) {
+      throw new Error(`${label}.${k} would be lost or changed by this write. Prior: ${JSON.stringify(v)}. About to write: ${JSON.stringify(mergedEntry[k])}. Refusing to write.`);
+    }
+  }
+}
+
+const freshToc = withThemes(tocKeys);
+const freshMetro = withThemes(metroKeys);
+const freshTflLines = Object.fromEntries(Object.keys(TFL_LINE_COLORS).map((k) => [k, { dark: tflDarkByKey[k], light: TFL_LINE_COLORS[k] }]));
+const freshHeritage = { dark: heritageDark, light: heritageLight };
+
+const mergedToc = mergeCategory(freshToc, priorPalette?.toc);
+const mergedMetro = mergeCategory(freshMetro, priorPalette?.metro);
+const mergedTflLines = mergeCategory(freshTflLines, priorPalette?.tfl_lines);
+const mergedHeritage = mergeEntry(freshHeritage, priorPalette?.heritage);
+
+assertNothingLostFromCategory('toc', mergedToc, priorPalette?.toc);
+assertNothingLostFromCategory('metro', mergedMetro, priorPalette?.metro);
+assertNothingLostFromCategory('tfl_lines', mergedTflLines, priorPalette?.tfl_lines);
+assertNothingLostFromEntry('heritage', mergedHeritage, priorPalette?.heritage);
+
 const palette = {
   generated_at: new Date().toISOString(),
   _notes: 'SUPERSEDES the earlier algorithmically-generated TOC palette. toc hex are now REAL corporate colors (see assignment_report for source/confidence per operator) — primary tried first, secondary/alternate brand shade if primary collides, algorithmic hue-nudge fallback (flagged) only if neither real option clears separation. Light theme is the anchor (real liveries/websites are designed for pale backgrounds); dark theme is derived by lifting lightness, preserving true hue. metro/heritage are out of scope for corporate research (not TOCs) and keep their prior hand-picked design, gate-checked against the new toc placements. tfl_lines unchanged from the prior round.',
-  toc: withThemes(tocKeys),
-  metro: withThemes(metroKeys),
-  tfl_lines: Object.fromEntries(Object.keys(TFL_LINE_COLORS).map((k) => [k, { dark: tflDarkByKey[k], light: TFL_LINE_COLORS[k] }])),
-  heritage: { dark: heritageDark, light: heritageLight },
+  toc: mergedToc,
+  metro: mergedMetro,
+  tfl_lines: mergedTflLines,
+  heritage: mergedHeritage,
   assignment_report: assignmentReport,
   cvd_report: {
     min_delta_e_threshold: MIN_DELTA_E,
