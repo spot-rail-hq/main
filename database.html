@@ -124,7 +124,8 @@
     .row-grid { grid-template-columns: 104px 1fr 100px 132px 22px !important; gap: 14px !important; padding: 12px 18px !important; }
     .col-op { display: none !important; }
     .col-year { display: none !important; }
-    .row-expanded-grid { grid-template-columns: 1fr !important; padding: 18px !important; gap: 14px !important; }
+    .row-expanded-grid { grid-template-columns: 1fr !important; gap: 14px !important; }
+    .row-expanded-panel { padding: 18px !important; }
     .row-expanded { padding: 4px 14px 18px !important; }
     .col-class { font-size: 14px !important; line-height: 1.25 !important; }
   }
@@ -518,7 +519,20 @@ function fleetClassSlug(id) {
 // divergent sections: index 6 is "Fleet Size" in Light Rail & Metro and "Main
 // Heritage Lines" in Heritage & Preserved, both of which were being drawn in
 // the Operators column.
-function Row({ cat, k }) {
+// "Also listed under X" — generated at render time from a class's own
+// categories[], rather than the hardcoded/draft crossListNote the build
+// script used to emit (removed 2026-08-16). `catSlug` is the section this
+// particular row instance is being rendered under, so viewing the SAME class
+// from a different section names whichever OTHER sections it's also in.
+function crossListLabel(k, catSlug, catNames) {
+  const others = (k.categories || []).filter((s) => s !== catSlug);
+  if (!others.length) return null;
+  const names = others.map((s) => catNames[s]).filter(Boolean);
+  if (!names.length) return null;
+  return `Also listed under ${names.join(' and ')}`;
+}
+
+function Row({ cat, catSlug, catNames, k }) {
   const [open, setOpen] = React.useState(false);
   const meta = CAT[cat];
   const tk = tractionKind(k.traction);
@@ -528,6 +542,7 @@ function Row({ cat, k }) {
   const year = k.yearIntro || k.yearsBuilt || '';
   // Heritage rows have no name/nickname — their equivalent slot is Type / Role.
   const displayName = k.name || k.role || '';
+  const crossListText = crossListLabel(k, catSlug, catNames);
 
   return (
     <div id={k.domId} style={{ borderBottom: `1px solid ${SRHQ.line}` }}>
@@ -569,70 +584,73 @@ function Row({ cat, k }) {
                       transform: open ? 'rotate(90deg)' : 'none' }}>›</div>
       </button>
 
+      {/* 2026-08-16: consolidated from three separate boxes (field grid +
+          dashed cross-listing box + gradient notes box) into ONE unified
+          panel — same background/border throughout, no nested boxes. The
+          field grid and the full-width extras below it are separated by a
+          hairline divider only, not a second box. */}
       {open && (
         <div className="row-expanded" style={{ padding: '4px 24px 24px', background: 'rgba(var(--line-rgb),0.015)' }}>
-          <div className="row-expanded-grid" style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr 1fr', gap: 20,
-                        padding: '20px 24px', borderRadius: 12,
-                        background: SRHQ.surface, border: `1px solid ${SRHQ.line}`,
-                        marginBottom: 12 }}>
-            <TrainImage commonsUrl={k.image} cls={k.class} name={displayName} accent={meta.color} />
-            <div>
-              <Field label="Traction" value={k.traction} color={tk.c} mono />
-              <Field label="Builder" value={k.builder} />
-              <Field label={k.yearsBuilt ? 'Years built' : 'Year introduced'} value={year} mono />
-              {k.maxSpeedMph && <Field label="Max speed" value={`${k.maxSpeedMph} mph`} mono color={SRHQ.amber} />}
-              {/* New fields (2026-08-04). Rendered only when populated — every
-                  value has to be sourced, so they ship empty rather than
-                  estimated, and an empty one must not print a bare dash. */}
-              {k.numberBuilt && <Field label="Number built" value={k.numberBuilt} mono />}
-            </div>
-            <div>
-              {k.operators && <Field label="Operator(s)" value={k.operators} multi />}
-              {k.primaryService && <Field label="Primary route / service" value={k.primaryService} />}
-              {k.fleetSize && <Field label="Fleet size" value={k.fleetSize} />}
-              {k.cityNetwork && <Field label="City / network" value={k.cityNetwork} />}
-              {k.preservedExamples && <Field label="Preserved examples" value={k.preservedExamples} />}
-              {k.mainHeritageLines && <Field label="Main heritage lines" value={k.mainHeritageLines} multi />}
-              {k.mainlineCertified && <Field label="Mainline certified?" value={k.mainlineCertified} />}
-              {k.capacity && <Field label="Capacity" value={k.capacity} />}
-              {k.serviceYears && <Field label="Service years" value={k.serviceYears} mono />}
-            </div>
-          </div>
-
-          {/* CROSS-LISTING NOTE — why this class appears in more than one
-              section. DRAFT COPY pending review (crossListNoteStatus). */}
-          {k.crossListNote && (
-            <div style={{ padding: '12px 20px', borderRadius: 12, marginBottom: 12,
-                          background: 'rgba(var(--line-rgb),0.03)',
-                          border: `1px dashed ${colorAlpha(meta.color, '55')}` }}>
-              <div style={{ fontFamily: SRHQ.mono, fontSize: 10.5, letterSpacing: 2,
-                            textTransform: 'uppercase', color: SRHQ.inkMute, marginBottom: 6 }}>
-                Also listed elsewhere
+          <div className="row-expanded-panel" style={{ borderRadius: 12,
+                        padding: '20px 24px', background: SRHQ.surface, border: `1px solid ${SRHQ.line}` }}>
+            <div className="row-expanded-grid" style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr 1fr', gap: 20 }}>
+              <TrainImage commonsUrl={k.image} cls={k.class} name={displayName} accent={meta.color} />
+              {/* Left column: Traction → Builder → Year introduced → Number built → Capacity */}
+              <div>
+                <Field label="Traction" value={k.traction} color={tk.c} mono />
+                <Field label="Builder" value={k.builder} />
+                <Field label={k.yearsBuilt ? 'Years built' : 'Year introduced'} value={year} mono />
+                {/* Rendered only when populated — every value has to be
+                    sourced, so they ship empty rather than estimated, and an
+                    empty one must not print a bare dash. */}
+                {k.numberBuilt && <Field label="Number built" value={k.numberBuilt} mono />}
+                {k.capacity && <Field label="Capacity" value={k.capacity} />}
               </div>
-              <div style={{ fontSize: 13.5, color: SRHQ.inkDim, lineHeight: 1.6 }}>{k.crossListNote}</div>
+              {/* Right column: Operator(s) → Primary route/service → Max speed →
+                  Service years, then category-specific fields (metro / heritage
+                  only), each conditional on the category actually having it. */}
+              <div>
+                {k.operators && <Field label="Operator(s)" value={k.operators} multi />}
+                {k.primaryService && <Field label="Primary route / service" value={k.primaryService} />}
+                {k.maxSpeedMph && <Field label="Max speed" value={`${k.maxSpeedMph} mph`} mono color={SRHQ.amber} />}
+                {k.serviceYears && <Field label="Service years" value={k.serviceYears} mono />}
+                {k.fleetSize && <Field label="Fleet size" value={k.fleetSize} />}
+                {k.cityNetwork && <Field label="City / network" value={k.cityNetwork} />}
+                {k.preservedExamples && <Field label="Preserved examples" value={k.preservedExamples} />}
+                {k.mainHeritageLines && <Field label="Main heritage lines" value={k.mainHeritageLines} multi />}
+                {k.mainlineCertified && <Field label="Mainline certified?" value={k.mainlineCertified} />}
+              </div>
             </div>
-          )}
 
-          {/* NOTES — FULL-WIDTH PANEL (2026-08-04). Was a narrower block inside
-              the flow above; now spans the whole expanded row so long notes read
-              as prose rather than a squeezed column. */}
-          {k.notes && (
-            <div style={{ width: '100%', padding: '18px 22px', borderRadius: 12,
-                          background: `linear-gradient(135deg, ${colorAlpha(meta.color, '10')}, transparent 60%)`,
-                          border: `1px solid ${colorAlpha(meta.color, '33')}` }}>
-              <div style={{ fontFamily: SRHQ.mono, fontSize: 10.5, letterSpacing: 2,
-                            textTransform: 'uppercase', color: meta.color, marginBottom: 8 }}>Notes</div>
-              <div style={{ fontSize: 14, color: SRHQ.ink, lineHeight: 1.7, maxWidth: '76ch' }}>{k.notes}</div>
-              {/* TODO (Prompt B): image attribution goes here — photographer /
-                  licence / Commons File: link, following the same pattern as
-                  map.html's dbPhotoCreditHtml(). Deliberately NOT rendered yet:
-                  the Wikimedia column currently holds 146 Category: URLs and 22
-                  File: URLs and carries NO photographer/licence/sourceUrl
-                  fields, so there is nothing truthful to print. Those fields
-                  will arrive in data/rolling-stock-overrides.json, which the
-                  build script already passes through onto the class object. */}
-            </div>
-          )}
+            {/* Full width, beneath both columns: cross-listing note (if any) →
+                Notes → Wikipedia link. Same Field component as the columns
+                above, so styling is identical throughout — no separate box. */}
+            {(crossListText || k.notes || k.wikipediaUrl) && (
+              <div className="row-expanded-extra" style={{ marginTop: 20, paddingTop: 20, borderTop: `1px solid ${SRHQ.line}` }}>
+                {crossListText && <Field label="Also listed under" value={crossListText} />}
+                {k.notes && <Field label="Notes" value={k.notes} />}
+                {/* TODO (Prompt B, carried over from the old boxed Notes panel):
+                    image attribution goes here — photographer / licence /
+                    Commons File: link, following the same pattern as
+                    map.html's dbPhotoCreditHtml(). Deliberately NOT rendered
+                    yet: the Wikimedia column currently holds 146 Category:
+                    URLs and 22 File: URLs and carries NO photographer/
+                    licence/sourceUrl fields, so there is nothing truthful to
+                    print. Those fields will arrive in
+                    data/rolling-stock-overrides.json, which the build script
+                    already passes through onto the class object. */}
+                {/* wikipediaUrl (2026-08-16): schema + render only — populated
+                    in a dedicated pass, so this is currently always empty and
+                    the row below never renders yet. */}
+                {k.wikipediaUrl && (
+                  <Field label="Wikipedia" value={
+                    <a href={k.wikipediaUrl} target="_blank" rel="noreferrer noopener"
+                       style={{ color: SRHQ.turq, textDecoration: 'underline' }}>{k.wikipediaUrl}</a>
+                  } />
+                )}
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
@@ -762,6 +780,10 @@ function App() {
     .filter(c => active === 'all' || c.name === active)
     .map(c => ({ ...c, filtered: c.classes.filter(filterClass) }));
 
+  // slug -> display name, for crossListLabel() to name a class's OTHER
+  // categories at render time.
+  const catNames = Object.fromEntries(data.categories.map(c => [c.slug, c.name]));
+
   // GLOBAL total counts each class ONCE however many sections it is listed in —
   // summing the per-section counts would double-count the cross-listed ones.
   // Keyed on the canonical instance's home category + class, which is unique.
@@ -809,7 +831,7 @@ function App() {
               </summary>
               <ColumnHead />
               {c.filtered.map(k => (
-                <Row key={k.domId} cat={c.name} k={k} />
+                <Row key={k.domId} cat={c.name} catSlug={c.slug} catNames={catNames} k={k} />
               ))}
             </details>
           );

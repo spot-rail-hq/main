@@ -136,7 +136,7 @@ const COLUMN_SET = {
 
 // Fields shown in the expanded panel rather than the row grid. `notes` is the
 // full-width panel body (Step 3); `image` drives the photo frame.
-const PANEL_FIELDS = ['notes', 'image', 'numberBuilt', 'capacity', 'serviceYears'];
+const PANEL_FIELDS = ['notes', 'image', 'numberBuilt', 'capacity', 'serviceYears', 'wikipediaUrl'];
 
 // ── Cross-listings ───────────────────────────────────────────────────────
 // APPROVED SET ONLY (2026-08-04). `home` is the section the row physically
@@ -144,8 +144,12 @@ const PANEL_FIELDS = ['notes', 'image', 'numberBuilt', 'capacity', 'serviceYears
 // unchanged, which is what keeps the map.html Fleet-chip anchors resolving.
 // `also` are the additional sections it renders under.
 //
-// `note` is DRAFT COPY, flagged for review — see the report. It is emitted as
-// `crossListNote` and rendered in the expanded panel.
+// 2026-08-16: this used to also carry a per-entry `note` (draft prose, emitted
+// as `crossListNote`/`crossListNoteStatus: 'draft-needs-review'`). That text is
+// GONE — database.html now derives "Also listed under X" at render time from a
+// class's own `categories[]` instead, so there is nothing here to keep in sync
+// by hand and nothing shipping as permanently "draft". This array is now pure
+// structural data: which classes cross-list into which extra sections.
 //
 // NOTE ON HOMES: 20/37/47 live in Charter & Railtours in the export, not in
 // Freight — checked, not assumed. The approved pairing "20/37/47 <-> Charter/
@@ -153,42 +157,18 @@ const PANEL_FIELDS = ['notes', 'image', 'numberBuilt', 'capacity', 'serviceYears
 // added section. The build warns and exits non-zero if any `match` misses, so a
 // wrong home cannot pass silently.
 const CROSS_LISTINGS = [
-  {
-    match: { section: 'Commuter & Suburban', class: '777' }, also: ['metro'],
-    note: 'Also listed under Light Rail & Metro: the Class 777 works Merseyrail’s self-contained third-rail network, which runs as a city metro rather than a conventional commuter railway.',
-  },
-  {
-    match: { section: 'Intercity & High Speed', class: '43' }, also: ['charter'],
-    note: 'Also listed under Charter & Railtours: alongside ScotRail Inter7City duties, HST power cars are regularly used on charter, test and support workings.',
-  },
-  {
-    match: { section: 'Charter & Railtours', class: '20' }, also: ['heritage'],
-    note: 'Also listed under Heritage & Preserved: surviving Class 20s are split between mainline charter work and preserved operation on heritage lines.',
-  },
-  {
-    match: { section: 'Charter & Railtours', class: '37' }, also: ['heritage'],
-    note: 'Also listed under Heritage & Preserved: the Class 37 remains in mainline charter and infrastructure use while a large preserved fleet runs on heritage railways.',
-  },
-  {
-    match: { section: 'Charter & Railtours', class: '47' }, also: ['heritage'],
-    note: 'Also listed under Heritage & Preserved: Class 47s continue on charter and support duties, with many more preserved across heritage lines.',
-  },
+  { match: { section: 'Commuter & Suburban', class: '777' }, also: ['metro'] },
+  { match: { section: 'Intercity & High Speed', class: '43' }, also: ['charter'] },
+  { match: { section: 'Charter & Railtours', class: '20' }, also: ['heritage'] },
+  { match: { section: 'Charter & Railtours', class: '37' }, also: ['heritage'] },
+  { match: { section: 'Charter & Railtours', class: '47' }, also: ['heritage'] },
   // 2026-08-04 (second pass) — the other three classes that had been recorded
   // TWICE (once in Commuter, once in Light Rail & Metro) before categories[]
   // existed. The duplicate rows are merged away in mergeDuplicates; these
   // entries are what actually keeps them visible under Light Rail & Metro.
-  {
-    match: { section: 'Commuter & Suburban', class: '345' }, also: ['metro'],
-    note: 'Also listed under Light Rail & Metro: the Elizabeth line runs as a high-frequency cross-London metro through its central section while remaining a National Rail service at both ends.',
-  },
-  {
-    match: { section: 'Commuter & Suburban', class: '378' }, also: ['metro'],
-    note: 'Also listed under Light Rail & Metro: the Class 378 works London Overground’s orbital network, operated by TfL as part of the London metro system rather than as a conventional commuter railway.',
-  },
-  {
-    match: { section: 'Commuter & Suburban', class: '710' }, also: ['metro'],
-    note: 'Also listed under Light Rail & Metro: like the 378 it works TfL-operated London Overground routes, which sit inside the London metro network.',
-  },
+  { match: { section: 'Commuter & Suburban', class: '345' }, also: ['metro'] },
+  { match: { section: 'Commuter & Suburban', class: '378' }, also: ['metro'] },
+  { match: { section: 'Commuter & Suburban', class: '710' }, also: ['metro'] },
 ];
 
 // ── Helpers ──────────────────────────────────────────────────────────────
@@ -228,6 +208,10 @@ function build() {
       obj.numberBuilt = obj.numberBuilt || '';
       obj.capacity = obj.capacity || '';
       obj.serviceYears = obj.serviceYears || '';
+      // wikipediaUrl (2026-08-16): schema + render only, deliberately EMPTY —
+      // populating one URL per class (dedicated article where one exists,
+      // otherwise the class-overview article) is its own pass.
+      obj.wikipediaUrl = obj.wikipediaUrl || '';
       const ov = (overrides[def.name] || {})[obj.class];
       if (ov) Object.assign(obj, ov); // unknown keys pass through by design
       const corr = (corrections[def.name] || {})[obj.class];
@@ -257,7 +241,7 @@ function build() {
     // them are still blank pending verification.
     for (const add of additions[def.name] || []) {
       const obj = { ...add };
-      for (const f of ['numberBuilt', 'capacity', 'serviceYears']) obj[f] = obj[f] || '';
+      for (const f of ['numberBuilt', 'capacity', 'serviceYears', 'wikipediaUrl']) obj[f] = obj[f] || '';
       if (classes.some((c) => c.class === obj.class)) {
         warnings.push(`addition "${obj.class}" already exists in "${def.name}" — skipped`);
         continue;
@@ -309,8 +293,6 @@ function build() {
       if (target.categories.includes(extra)) continue;
       target.categories.push(extra);
     }
-    target.crossListNote = cl.note;
-    target.crossListNoteStatus = 'draft-needs-review';
   }
 
   // Pass 3 — emit. A cross-listed class is emitted into each of its categories

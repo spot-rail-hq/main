@@ -95,6 +95,46 @@
         "yearIntro": "2023",
         "_why": "name: the export said 'Nova 1 — Merseyrail'. 'Nova 1' is TransPennine Express's brand for the Class 802 (correctly recorded on the Intercity 802 row) and has nothing to do with Merseyrail — the 777 is a Stadler METRO unit. The same wrong name appeared on the duplicate Light Rail & Metro row merged away below. yearIntro: the two duplicate rows disagreed, 2020 vs 2023. This column means ENTERED SERVICE everywhere else in the dataset (e.g. Class 43 = 1976), and the 777 entered passenger service in January 2023; 2020 was first delivery/testing. FLAGGED for review."
       },
+      "315": {
+        "name": "BREL 1972",
+        "_why": "Blank name cell. Wikipedia's British Rail Class 315 infobox 'Family name' field reads 'BREL 1972' (checked 2026-08-16) — the 315 shares this design family with 507/508 (also corrected below). No individual nickname exists for the class, so the sourced family name fills the slot, matching the pattern already used for unnamed locos elsewhere in this dataset (e.g. Charter's bare-class rows)."
+      },
+      "317": {
+        "name": "BR Second Generation (Mark 3)",
+        "_why": "Blank name cell. Wikipedia's British Rail Class 317 infobox 'Family name' field reads 'BR Second Generation (Mark 3)' (checked 2026-08-16) — shared with 320/321/455/456, all built on the Mark 3 coach bodyshell. No individual nickname exists."
+      },
+      "320": {
+        "name": "BR Second Generation (Mark 3)",
+        "_why": "Blank name cell. Wikipedia's British Rail Class 320 infobox 'Family name' field reads 'BR Second Generation (Mark 3)' (checked 2026-08-16), same family as 317/321/455/456. No individual nickname exists."
+      },
+      "321": {
+        "name": "BR Second Generation (Mark 3)",
+        "_why": "Blank name cell. Wikipedia's British Rail Class 321 infobox 'Family name' field reads 'BR Second Generation (Mark 3)' (checked 2026-08-16), same family as 317/320/455/456. No individual nickname exists."
+      },
+      "323": {
+        "name": "Class 323",
+        "_why": "Blank name cell, but unlike 315/317/320/321/455/456/507/508 no Wikipedia 'Family name' infobox value could be found for the 323 (checked 2026-08-16 — the infobox omits the field). Rather than leave the cell blank or invent a family name, uses a self-referential placeholder ('Class 323') per instruction — stylistically inconsistent with punchier names elsewhere in this column (Sprinter, Desiro), which is accepted as fine for a general-audience dataset."
+      },
+      "333": {
+        "name": "Class 333",
+        "_why": "Same situation as 323 — blank name cell, no sourced Wikipedia 'Family name' value found (checked 2026-08-16), self-referential placeholder used instead of inventing one."
+      },
+      "455": {
+        "name": "BR Second Generation (Mark 3)",
+        "_why": "Blank name cell. Wikipedia's British Rail Class 455 infobox 'Family name' field reads 'BR Second Generation (Mark 3)' (checked 2026-08-16), same family as 317/320/321/456. No individual nickname exists."
+      },
+      "456": {
+        "name": "BR Second Generation (Mark 3)",
+        "_why": "Blank name cell. Wikipedia's British Rail Class 456 infobox 'Family name' field reads 'BR Second Generation (Mark 3)' (checked 2026-08-16), same family as 317/320/321/455. No individual nickname exists."
+      },
+      "507": {
+        "name": "BREL 1972",
+        "_why": "Blank name cell. Wikipedia's British Rail Class 507 infobox 'Family name' field reads 'BREL 1972' (checked 2026-08-16), same family as 315/508. No individual nickname exists."
+      },
+      "508": {
+        "name": "BREL 1972",
+        "_why": "Blank name cell. Wikipedia's British Rail Class 508 infobox 'Family name' field reads 'BREL 1972' (checked 2026-08-16), same family as 315/507. No individual nickname exists."
+      },
       "345": {
         "notes": "70 nine-car trains in service. A June 2024 Alstom order (£370m / €430m) added 10 more, taking the eventual fleet to 80; production began October 2025 at Derby Litchurch Lane Works, the first unit (345071) completed and started testing in June 2026, and all ten are planned in service by 2027. Central section through London opened May 2022 (Crossrail). Capacity 1,500 total per train (454 seated, 1,046 standing).",
         "numberBuilt": "70 in service; 10 more under construction (fleet reaching 80 by 2027)",
@@ -106,6 +146,25 @@
       "Sheffield Supertram — Siemens-Duewag": {
         "cityNetwork": "South Yorkshire Supertram (also known as Sheffield Supertram)",
         "_why": "CORRECTS THIS FILE'S OWN EARLIER CORRECTION (was: 'Sheffield Supertram', set 2026-08-04). That pass normalised away 'South Yorkshire Supertram' as an ambiguous duplicate of 'Sheffield Supertram'. Re-checked 2026-08-15: the two are not interchangeable duplicates, they're two names for the same network from different eras, and which one is 'current' has flipped. At opening in 1994 the operator was South Yorkshire Supertram Limited (a SYPTE subsidiary). From the 1997 Stagecoach takeover through 2024 the network traded as Stagecoach Supertram and was popularly known as Sheffield Supertram. On 22 March 2024 it returned to public ownership under the South Yorkshire Mayoral Combined Authority, operated by South Yorkshire Future Trams Ltd, and the OFFICIAL name reverted to South Yorkshire Supertram — this matches the current Wikipedia article title and the operator's own branding (its X/Twitter account is @SY_Supertram, bio 'South Yorkshire's Transport'). 'Sheffield Supertram' has NOT gone fully historical though — regional press (e.g. The Star) is still using it in 2026 headlines — so this is recorded as 'also known as', not 'formerly'. There is no separate, distinct 'Sheffield Supertram' entity today; it's the same network as South Yorkshire Supertram. Both rows tied to this network (this one and the Class 399 addition) now carry the identical base network-name string again, for the same reason the 2026-08-04 pass cared about it: naming-based counts should see one network, not two."
+      }
+    },
+    "Charter & Railtours": {
+      "46229": {
+        "name": "Duchess of Hamilton — LMS Princess Coronation",
+        "_why": "Was 'Duchess of Hamilton — LMS Coronation'. This locomotive has its own dedicated Wikipedia article, titled 'LMS Princess Coronation Class 6229 Duchess of Hamilton' (confirmed 2026-08-16) — the class's real, full name is the LMS Princess Coronation Class (informally 'Coronation Class' or 'Duchess Class'); 'LMS Coronation' alone drops the 'Princess' that the dedicated article title carries. The BR/TOPS class number (46229) and this row's identity/DOM id are unchanged — only the name/family label is corrected."
+      },
+      "46233": {
+        "name": "Duchess of Sutherland — LMS Princess Coronation",
+        "_why": "Was 'Duchess of Sutherland — LMS Coronation'. Same fix as 46229 above: this locomotive's own dedicated Wikipedia article is titled 'LMS Princess Coronation Class 6233 Duchess of Sutherland' (confirmed 2026-08-16). Class number, row identity and DOM id unchanged — name/family label only."
+      },
+      "34067": {
+        "class": "34",
+        "name": "SR Battle of Britain",
+        "yearIntro": "1947–1949",
+        "operators": "Tangmere Locomotive Company; West Coast Railway Company; East Lancashire Railway",
+        "primaryService": "Mainline railtours and heritage tours, UK-wide",
+        "notes": "Two Battle of Britain-class Bulleid Pacifics currently run: Tangmere (built Brighton Works 1947), owned by the Tangmere Locomotive Company and operated by West Coast Railway Company, frequently works the Golden Arrow and other Pullman-style excursions; City of Wells (built Brighton Works 1949), based with East Lancashire Railway, is a regular mainline performer.",
+        "_why": "Folds the individually-named 34067 'Tangmere' and 34092 'City of Wells' rows into one plain class-level row, matching the existing bare-class-number pattern already used elsewhere in this same section (20/37/47/57 — a bare class number with a family/group name, no individual loco name in that cell) rather than inventing a new row-grouping pattern. Both engines' individual names are preserved in the notes text rather than dropped. 34092's row is removed via mergeDuplicates below; this correction retargets 34067's own class/name/notes and merges the two rows' operators and primaryService into one combined description, since the two source rows disagreed on both (Tangmere: Tangmere Locomotive Co/WCRC, mainline railtours; City of Wells: ELR, heritage tours) and the instruction did not specify field-by-field merge mechanics — flagged for review if a different treatment (e.g. picking one operator only) is preferred. yearIntro is the two specific engines' own build years (1947, 1949), not the wider Battle of Britain subclass's historical build range."
       }
     }
   },
@@ -169,6 +228,18 @@
         "cityNetwork"
       ],
       "_why": "Same class, two rows. Traction differed only by a trailing space, which the build script's clean() already strips — not a real conflict. One editorial error found and DISCARDED WITH THE ROW rather than merged: the metro note said 'DC-only routes', which contradicts both its own dual-voltage traction field and the 25kV AC Gospel Oak-Barking route the same row lists. Flagged in the report; no correction needed because the note does not survive the merge."
+    },
+    {
+      "keep": {
+        "section": "Charter & Railtours",
+        "class": "34"
+      },
+      "remove": {
+        "section": "Charter & Railtours",
+        "class": "34092"
+      },
+      "mergeFields": [],
+      "_why": "Folds 34092 'City of Wells' into the retargeted 34067 row (corrected above to bare class '34', name 'SR Battle of Britain'). No mergeFields needed — the kept row's class/name/operators/primaryService/notes were already rewritten by the 34067 correction to cover both engines, so there is nothing left on the removed row to pull across. This is the first use of mergeDuplicates for two DIFFERENT source class numbers folding into a THIRD, renamed class value, rather than a same-class-different-key-format dedupe — the keep-side correction runs first (pass 1) and changes 34067's own `class` field to '34' before this merge (pass 1b) looks it up, which is why `keep.class` here is '34' and not '34067'."
     }
   ],
   "additions": {
@@ -245,7 +316,7 @@
     "Commuter & Suburban": [
       {
         "class": "318",
-        "name": "",
+        "name": "BR Second Generation (Mark 3)",
         "traction": "Electric (25kV AC overhead)",
         "builder": "BREL York",
         "yearIntro": "1986",
@@ -255,10 +326,8 @@
         "numberBuilt": "21",
         "notes": "Three-car EMU built for Strathclyde suburban electrification; refurbished with end gangways removed.",
         "image": "commons.wikimedia.org/wiki/Category:British_Rail_Class_318",
-        "verifyFields": [
-          "name"
-        ],
-        "_source": "Wikipedia British Rail Class 318 — 21 units built. Year of introduction NOT confirmed by the sources checked; left blank deliberately. || VERIFICATION PASS 2026-08-04: Wikipedia British Rail Class 318 — introduced 29 September 1986 with Ayrshire Coast electrification; 90 mph; 216 seats as built; 21 units built BREL York 1985-86. `name` left blank: the 318 has no established nickname, so this is a genuine absence rather than a gap.",
+        "verifyFields": [],
+        "_source": "Wikipedia British Rail Class 318 — 21 units built. Year of introduction NOT confirmed by the sources checked; left blank deliberately. || VERIFICATION PASS 2026-08-04: Wikipedia British Rail Class 318 — introduced 29 September 1986 with Ayrshire Coast electrification; 90 mph; 216 seats as built; 21 units built BREL York 1985-86. `name` left blank at the time: the 318 has no established individual nickname. || FAMILY NAME PASS 2026-08-16: the blank-name policy changed — Wikipedia's British Rail Class 318 infobox 'Family name' field reads 'BR Second Generation (Mark 3)', the same family as 317/320/321/455/456, all corrected the same way. Superseding the 2026-08-04 'genuine absence' rationale: a nickname was genuinely absent, but a sourced family name was not.",
         "needsVerification": true,
         "capacity": "216 seats (as built)",
         "serviceYears": "1986–present"
