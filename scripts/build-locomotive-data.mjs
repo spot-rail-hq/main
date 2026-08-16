@@ -339,17 +339,55 @@ function build() {
   };
 }
 
+// ── noscript count sync ──────────────────────────────────────────────────
+// database.html's <noscript> fallback (search engines / no-JS clients)
+// hand-wrote the same category counts this script already generates —
+// which drifted the moment a class was added, removed or merged. Found
+// 2026-08-23: every single count was stale except Charter, which only
+// looked right by coincidence (25→24 from an unrelated merge landed back on
+// the old hand-written number). Markers make it regenerable instead of
+// hand-maintained: database.html carries `<!--COUNT:key-->NNN<!--/COUNT-->`
+// around each figure, `key` is 'total' or a category slug, resynced from
+// `payload` on every run. Fails loudly on any mismatch between the marker
+// keys present and the keys this build actually produced — a silently-
+// skipped marker is exactly how the original staleness happened.
+const DB_HTML = path.join(ROOT, 'database.html');
+function syncedNoscriptCounts(html, payload) {
+  const values = { total: payload.totalClasses };
+  for (const c of payload.categories) values[c.slug] = c.count;
+  const foundKeys = [...html.matchAll(/<!--COUNT:([a-z]+)-->/g)].map((m) => m[1]);
+  const unknownKeys = foundKeys.filter((k) => !(k in values));
+  const missingKeys = Object.keys(values).filter((k) => !foundKeys.includes(k));
+  if (unknownKeys.length || missingKeys.length) {
+    throw new Error(
+      'database.html noscript COUNT markers out of sync with build output: ' +
+      (unknownKeys.length ? `marker(s) for unknown key(s) [${unknownKeys.join(', ')}]; ` : '') +
+      (missingKeys.length ? `no marker found for [${missingKeys.join(', ')}]` : '')
+    );
+  }
+  return html.replace(/<!--COUNT:([a-z]+)-->\d+<!--\/COUNT-->/g, (m, key) => `<!--COUNT:${key}-->${values[key]}<!--/COUNT-->`);
+}
+
 const { payload, warnings } = build();
 const json = JSON.stringify(payload, null, 2) + '\n';
+const dbHtml = readFileSync(DB_HTML, 'utf8');
+const dbHtmlSynced = syncedNoscriptCounts(dbHtml, payload);
 
 if (process.argv.includes('--check')) {
   const current = readFileSync(OUT, 'utf8');
-  if (current === json) { console.log('site-data.json is up to date (byte-identical).'); process.exit(0); }
-  console.error('site-data.json DIFFERS from a fresh build — re-run without --check.');
+  const siteOk = current === json;
+  const dbOk = dbHtml === dbHtmlSynced;
+  if (siteOk && dbOk) { console.log('site-data.json and database.html noscript counts are up to date.'); process.exit(0); }
+  if (!siteOk) console.error('site-data.json DIFFERS from a fresh build — re-run without --check.');
+  if (!dbOk) console.error('database.html noscript counts DIFFER from a fresh build — re-run without --check.');
   process.exit(1);
 }
 
 writeFileSync(OUT, json);
+if (dbHtml !== dbHtmlSynced) {
+  writeFileSync(DB_HTML, dbHtmlSynced);
+  console.log(`Synced noscript counts in ${path.relative(ROOT, DB_HTML)}`);
+}
 for (const w of warnings) console.warn('WARNING: ' + w);
 console.log(`Wrote ${path.relative(ROOT, OUT)}`);
 console.log(`  distinct classes (global total): ${payload.totalClasses}`);
