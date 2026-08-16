@@ -117,6 +117,25 @@ adding classes may raise it, but a drop means a chip stopped landing on a row.
 `node scripts/build-locomotive-data.mjs`), or `fleetClassSlug()` diverges between
 its four copies.
 
+### `station-region-harness.mjs`
+**Slices:** `regionKeyFor()` out of `shared.jsx` (React/JSX, loaded browser-side
+as a `text/babel` script with no build step — same reason the other harnesses
+here slice rather than import).
+
+**Asserts:** every one of the 3,443 current stations in `station-list.json`
+resolves, via `regionKeyFor()`, to a real `data/station-regions.json` `current`
+entry whose `region` is a real key in that file's own `regions` table; that
+every station carrying its own `atco` resolves through that atco (never the
+`crs:` fallback); and that the `crs:` fallback set is exactly the 7 stations
+CLAUDE.md's station-regions note documents (Bond Street, Barking Riverside,
+Custom House, Canary Wharf, Tottenham Court Road, Woolwich, Southampton Town
+Quay) — named individually, not just counted, so a drift names itself rather
+than just changing a number.
+
+**Breaks if:** `regionKeyFor()` is renamed or restructured so its body is no
+longer closed by a bare top-level `}`, or `station.atco`/`'crs:'` stop
+appearing in its source (the slice sanity check).
+
 ## When one of these fails
 
 A failure is usually real. But because they slice source text, a **restructure**

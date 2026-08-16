@@ -195,66 +195,28 @@
 </noscript>
 </main>
 <script type="text/babel">
-function useData() {
-  const [d, setD] = React.useState(null);
-  const [err, setErr] = React.useState(null);
-  React.useEffect(() => {
-    let cancelled = false;
-    // Try several locations so the page works whether it's deployed at the
-    // site root (srhq.uk/database.html → /data/…) or one level deep
-    // (…/site/database.html → ../data/…). Each candidate must parse as real
-    // JSON — this rejects hosts that answer unknown paths with an HTML 404 or
-    // SPA-fallback page carrying a 200 status (which otherwise hangs forever).
-    const candidates = [
-      'data/site-data.json',
-      '../data/site-data.json',
-      '/data/site-data.json',
-    ];
-    (async () => {
-      for (const url of candidates) {
-        try {
-          const r = await fetch(url, { cache: 'no-cache' });
-          if (!r.ok) continue;
-          const text = await r.text();
-          let json;
-          try { json = JSON.parse(text); }
-          catch (e) { continue; } // got HTML / non-JSON — try the next path
-          if (json && Array.isArray(json.categories)) {
-            if (!cancelled) setD(json);
-            return;
-          }
-        } catch (e) { /* network error — try the next candidate */ }
-      }
-      if (!cancelled) setErr('Could not load the rolling-stock data file (data/site-data.json). Make sure the data folder is uploaded alongside the site.');
-    })();
-    return () => { cancelled = true; };
-  }, []);
-  return { data: d, err };
-}
+// ═══════════════════════════════════════════════════════════════════════
+// LOCOMOTIVE_CONFIG — the rolling-stock DatasetExplorer config (shared.jsx).
+// 2026-08-23: this page's data-loading, tabs, toolbar, section-collapse and
+// row/card rendering used to be hardcoded here; all of that moved into the
+// generic DatasetExplorer component. What's left below is genuinely
+// rolling-stock-specific: the traction→chip classifier, the Wikimedia image
+// resolver, and this config object wiring the two together. Refactor only —
+// this must render identically to the pre-refactor page.
+// ═══════════════════════════════════════════════════════════════════════
 
-// Detect traction kind from the traction string → chip color + label
+// Detect traction kind from the traction string → chip color + label.
+// This is the DatasetExplorer `chip.classify()` — rolling-stock-specific,
+// so it stays a page config rather than living in the generic component.
 function tractionKind(s = '') {
   const t = s.toLowerCase();
-  if (t.includes('steam'))           return { k: 'Steam',        c: SRHQ.coral };
-  if (t.includes('diesel-electric')) return { k: 'Diesel-elec',  c: SRHQ.amber };
-  if (t.includes('bi-mode') || t.includes('tri-mode')) return { k: 'Bi/Tri-mode', c: SRHQ.lime };
-  if (t.includes('diesel'))          return { k: 'Diesel',       c: SRHQ.amber };
-  if (t.includes('battery'))         return { k: 'Battery',      c: SRHQ.lime };
-  if (t.includes('electric'))        return { k: 'Electric',     c: SRHQ.turq };
-  return { k: 'Other', c: SRHQ.inkDim };
-}
-
-function Chip({ color, children, solid = false }) {
-  return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center', gap: 6,
-      fontFamily: SRHQ.mono, fontSize: 10.5, letterSpacing: 1.2,
-      textTransform: 'uppercase', color: solid ? SRHQ.bg : color,
-      padding: '3px 8px', borderRadius: 999,
-      background: solid ? color : colorAlpha(color, '15'),
-      border: solid ? 'none' : `1px solid ${colorAlpha(color, '55')}`,
-    }}>{children}</span>
-  );
+  if (t.includes('steam'))           return { label: 'Steam',        color: SRHQ.coral };
+  if (t.includes('diesel-electric')) return { label: 'Diesel-elec',  color: SRHQ.amber };
+  if (t.includes('bi-mode') || t.includes('tri-mode')) return { label: 'Bi/Tri-mode', color: SRHQ.lime };
+  if (t.includes('diesel'))          return { label: 'Diesel',       color: SRHQ.amber };
+  if (t.includes('battery'))         return { label: 'Battery',      color: SRHQ.lime };
+  if (t.includes('electric'))        return { label: 'Electric',     color: SRHQ.turq };
+  return { label: 'Other', color: SRHQ.inkDim };
 }
 
 function Header() {
@@ -274,86 +236,6 @@ function Header() {
         Data verified April 2026 from Wikipedia, operator websites and railway press.
       </p>
     </section>
-  );
-}
-
-function Tabs({ categories, active, onSelect }) {
-  return (
-    <div style={{ maxWidth: 1280, margin: '0 auto', padding: '8px 32px',
-                  display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-      <button onClick={() => onSelect('all')} style={tabStyle('all' === active, SRHQ.ink)}>
-        All categories
-      </button>
-      {categories.map(c => {
-        const meta = CAT[c.name];
-        return (
-          <button key={c.name} onClick={() => onSelect(c.name)}
-                  style={tabStyle(active === c.name, meta.color)}>
-            <span style={{ width: 7, height: 7, borderRadius: '50%',
-                            background: meta.color, display: 'inline-block', marginRight: 8 }} />
-            {meta.short}
-            {/* Per-section count, same semantics as the section header. */}
-            <span style={{ marginLeft: 8, fontSize: 11, color: SRHQ.inkMute,
-                           fontFamily: SRHQ.mono }}>{c.count}</span>
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-function tabStyle(on, color) {
-  return {
-    padding: '10px 16px', borderRadius: 999,
-    fontFamily: 'Manrope, sans-serif', fontSize: 13.5, fontWeight: 500,
-    color: on ? SRHQ.bg : SRHQ.ink,
-    background: on ? color : 'rgba(var(--line-rgb),0.04)',
-    border: `1px solid ${on ? color : SRHQ.line}`,
-    cursor: 'pointer', transition: 'all .15s ease',
-  };
-}
-
-function Toolbar({ query, setQuery, traction, setTraction, count }) {
-  const options = ['All', 'Electric', 'Diesel', 'Diesel-elec', 'Bi/Tri-mode', 'Steam', 'Battery'];
-  return (
-    <div style={{ maxWidth: 1280, margin: '0 auto', padding: '16px 32px 8px',
-                  display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-      <div style={{ position: 'relative', flex: '1 1 320px', minWidth: 260 }}>
-        <input value={query} onChange={e => setQuery(e.target.value)}
-               placeholder="Search class, name, builder, operator…"
-               style={{
-                 width: '100%', padding: '12px 16px 12px 40px',
-                 background: SRHQ.surface, border: `1px solid ${SRHQ.line}`,
-                 borderRadius: 10, color: SRHQ.ink, fontSize: 14,
-                 fontFamily: SRHQ.body, outline: 'none',
-               }} />
-        <span style={{ position: 'absolute', left: 14, top: '50%',
-                       transform: 'translateY(-50%)', color: SRHQ.inkMute, fontSize: 14 }}>⌕</span>
-      </div>
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-        {options.map(o => {
-          const on = o === traction;
-          const color = o === 'Electric' ? SRHQ.turq
-                      : o === 'Diesel' || o === 'Diesel-elec' ? SRHQ.amber
-                      : o === 'Bi/Tri-mode' ? SRHQ.lime
-                      : o === 'Steam' ? SRHQ.coral
-                      : o === 'Battery' ? SRHQ.lime
-                      : SRHQ.ink;
-          return (
-            <button key={o} onClick={() => setTraction(o)} style={{
-              padding: '8px 12px', borderRadius: 8,
-              fontSize: 12, fontFamily: SRHQ.mono, letterSpacing: 0.5,
-              color: on ? SRHQ.bg : color,
-              background: on ? color : 'transparent',
-              border: `1px solid ${on ? color : SRHQ.line}`,
-              cursor: 'pointer',
-            }}>{o}</button>
-          );
-        })}
-      </div>
-      <div style={{ marginLeft: 'auto', fontFamily: SRHQ.mono, fontSize: 12,
-                    color: SRHQ.inkMute }}>{count} results</div>
-    </div>
   );
 }
 
@@ -524,331 +406,152 @@ function fleetClassSlug(id) {
 // script used to emit (removed 2026-08-16). `catSlug` is the section this
 // particular row instance is being rendered under, so viewing the SAME class
 // from a different section names whichever OTHER sections it's also in.
-function crossListLabel(k, catSlug, catNames) {
-  const others = (k.categories || []).filter((s) => s !== catSlug);
-  if (!others.length) return null;
-  const names = others.map((s) => catNames[s]).filter(Boolean);
-  if (!names.length) return null;
-  return `Also listed under ${names.join(' and ')}`;
-}
+// Category → accent color + short tab label. This is the direct
+// generalization of the old shared.jsx `CAT` object (same 3 fields: color,
+// short, plus the slug it used to call `key`) — now page-specific config
+// instead of a global, since these colors/labels only ever meant "rolling
+// stock category".
+const LOCOMOTIVE_GROUP_COLORS = {
+  intercity: 'var(--color-accent-turquoise)',
+  regional:  'var(--color-accent-lime)',
+  commuter:  'var(--color-accent-magenta)',
+  freight:   'var(--color-accent-amber)',
+  charter:   '#FF7A6B',
+  metro:     '#9D7CFF',
+  heritage:  '#8AA0B4',
+};
+const LOCOMOTIVE_GROUP_SHORT_LABELS = {
+  intercity: 'Intercity', regional: 'Regional', commuter: 'Commuter',
+  freight: 'Freight', charter: 'Charter', metro: 'Metro', heritage: 'Heritage',
+};
 
-function Row({ cat, catSlug, catNames, k }) {
-  const [open, setOpen] = React.useState(false);
-  const meta = CAT[cat];
-  const tk = tractionKind(k.traction);
-  // Whichever "who runs it" field this section actually has.
-  const runner = k.operators || k.cityNetwork || k.mainHeritageLines || '';
-  const runnerFirst = runner.split(';')[0].trim();
-  const year = k.yearIntro || k.yearsBuilt || '';
-  // Heritage rows have no name/nickname — their equivalent slot is Type / Role.
-  const displayName = k.name || k.role || '';
-  const crossListText = crossListLabel(k, catSlug, catNames);
-
-  return (
-    <div id={k.domId} style={{ borderBottom: `1px solid ${SRHQ.line}` }}>
-      <button onClick={() => setOpen(o => !o)} className="row-hover row-grid" style={{
-        width: '100%', textAlign: 'left', cursor: 'pointer',
-        background: 'transparent', border: 'none', color: SRHQ.ink,
-        padding: '14px 24px',
-        display: 'grid',
-        gridTemplateColumns: '136px 1fr 130px 110px 90px 1fr 28px',
-        gap: 20, alignItems: 'center',
-        transition: 'background .12s ease',
-      }}>
-        <div className="col-class" style={{
-          fontFamily: SRHQ.mono, fontSize: 16, fontWeight: 500,
-          color: meta.color, letterSpacing: -0.3,
-        }}>{k.class}</div>
-
-        <div>
-          <div style={{ fontFamily: SRHQ.display, fontSize: 16, fontWeight: 600,
-                        color: SRHQ.ink, letterSpacing: -0.3 }}>{displayName}</div>
-          <div style={{ fontSize: 12, color: SRHQ.inkMute, marginTop: 3,
-                        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{k.builder}</div>
-        </div>
-
-        <Chip color={tk.c}>{tk.k}</Chip>
-
-        <div className="col-year" style={{ fontFamily: SRHQ.mono, fontSize: 12.5, color: SRHQ.inkDim }}>
-          {year || '—'}
-        </div>
-        <div className="col-speed" style={{ fontFamily: SRHQ.mono, fontSize: 12.5, color: SRHQ.ink }}>
-          {k.maxSpeedMph ? `${k.maxSpeedMph} mph` : (k.preservedExamples || '—')}
-        </div>
-        <div className="col-op" style={{ fontSize: 13, color: SRHQ.inkDim,
-                      whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-          {runnerFirst}
-        </div>
-        <div style={{ color: SRHQ.inkMute, fontSize: 14,
-                      transition: 'transform .2s ease',
-                      transform: open ? 'rotate(90deg)' : 'none' }}>›</div>
-      </button>
-
-      {/* 2026-08-16: consolidated from three separate boxes (field grid +
-          dashed cross-listing box + gradient notes box) into ONE unified
-          panel — same background/border throughout, no nested boxes. The
-          field grid and the full-width extras below it are separated by a
-          hairline divider only, not a second box. */}
-      {open && (
-        <div className="row-expanded" style={{ padding: '4px 24px 24px', background: 'rgba(var(--line-rgb),0.015)' }}>
-          <div className="row-expanded-panel" style={{ borderRadius: 12,
-                        padding: '20px 24px', background: SRHQ.surface, border: `1px solid ${SRHQ.line}` }}>
-            <div className="row-expanded-grid" style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr 1fr', gap: 20 }}>
-              <TrainImage commonsUrl={k.image} cls={k.class} name={displayName} accent={meta.color} />
-              {/* Left column: Traction → Builder → Year introduced → Number built → Capacity */}
-              <div>
-                <Field label="Traction" value={k.traction} color={tk.c} mono />
-                <Field label="Builder" value={k.builder} />
-                <Field label={k.yearsBuilt ? 'Years built' : 'Year introduced'} value={year} mono />
-                {/* Rendered only when populated — every value has to be
-                    sourced, so they ship empty rather than estimated, and an
-                    empty one must not print a bare dash. */}
-                {k.numberBuilt && <Field label="Number built" value={k.numberBuilt} mono />}
-                {k.capacity && <Field label="Capacity" value={k.capacity} />}
-              </div>
-              {/* Right column: Operator(s) → Primary route/service → Max speed →
-                  Service years, then category-specific fields (metro / heritage
-                  only), each conditional on the category actually having it. */}
-              <div>
-                {k.operators && <Field label="Operator(s)" value={k.operators} multi />}
-                {k.primaryService && <Field label="Primary route / service" value={k.primaryService} />}
-                {k.maxSpeedMph && <Field label="Max speed" value={`${k.maxSpeedMph} mph`} mono color={SRHQ.amber} />}
-                {k.serviceYears && <Field label="Service years" value={k.serviceYears} mono />}
-                {k.fleetSize && <Field label="Fleet size" value={k.fleetSize} />}
-                {k.cityNetwork && <Field label="City / network" value={k.cityNetwork} />}
-                {k.preservedExamples && <Field label="Preserved examples" value={k.preservedExamples} />}
-                {k.mainHeritageLines && <Field label="Main heritage lines" value={k.mainHeritageLines} multi />}
-                {k.mainlineCertified && <Field label="Mainline certified?" value={k.mainlineCertified} />}
-              </div>
-            </div>
-
-            {/* Full width, beneath both columns: cross-listing note (if any) →
-                Notes → Wikipedia link. Same Field component as the columns
-                above, so styling is identical throughout — no separate box. */}
-            {(crossListText || k.notes || k.wikipediaUrl) && (
-              <div className="row-expanded-extra" style={{ marginTop: 20, paddingTop: 20, borderTop: `1px solid ${SRHQ.line}` }}>
-                {crossListText && <Field label="Also listed under" value={crossListText} />}
-                {k.notes && <Field label="Notes" value={k.notes} />}
-                {/* TODO (Prompt B, carried over from the old boxed Notes panel):
-                    image attribution goes here — photographer / licence /
-                    Commons File: link, following the same pattern as
-                    map.html's dbPhotoCreditHtml(). Deliberately NOT rendered
-                    yet: the Wikimedia column currently holds 146 Category:
-                    URLs and 22 File: URLs and carries NO photographer/
-                    licence/sourceUrl fields, so there is nothing truthful to
-                    print. Those fields will arrive in
-                    data/rolling-stock-overrides.json, which the build script
-                    already passes through onto the class object. */}
-                {/* wikipediaUrl (2026-08-16): schema + render only — populated
-                    in a dedicated pass, so this is currently always empty and
-                    the row below never renders yet. */}
-                {k.wikipediaUrl && (
-                  <Field label="Wikipedia" value={
-                    <a href={k.wikipediaUrl} target="_blank" rel="noreferrer noopener"
-                       style={{ color: SRHQ.turq, textDecoration: 'underline' }}>{k.wikipediaUrl}</a>
-                  } />
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function Field({ label, value, color = SRHQ.ink, mono, multi }) {
-  const val = value || '—';
-  const parts = multi ? String(val).split(/;\s*/) : null;
-  return (
-    <div style={{ marginBottom: 14 }}>
-      <div style={{ fontFamily: SRHQ.mono, fontSize: 10, letterSpacing: 2,
-                    textTransform: 'uppercase', color: SRHQ.inkMute }}>{label}</div>
-      <div style={{ fontFamily: mono ? SRHQ.mono : SRHQ.body, fontSize: 14,
-                    color, marginTop: 6, lineHeight: 1.5 }}>
-        {parts
-          ? parts.map((p, i) => (
-              <span key={i} style={{
-                display: 'inline-block', padding: '3px 8px', margin: '2px 4px 2px 0',
-                background: 'rgba(var(--line-rgb),0.04)', borderRadius: 6,
-                border: `1px solid ${SRHQ.line}`, fontSize: 12,
-              }}>{p}</span>
-            ))
-          : val}
-      </div>
-    </div>
-  );
-}
-
-function ColumnHead() {
-  return (
-    <div className="row-grid" style={{
-      display: 'grid',
-      gridTemplateColumns: '136px 1fr 130px 110px 90px 1fr 28px',
-      gap: 20, alignItems: 'center',
-      padding: '14px 24px',
-      fontFamily: SRHQ.mono, fontSize: 10.5, letterSpacing: 2,
-      textTransform: 'uppercase', color: SRHQ.inkMute,
-      borderBottom: `1px solid ${SRHQ.line}`,
-    }}>
-      <span className="col-class">Class</span><span>Name / nickname</span><span>Traction</span>
-      <span className="col-year">Year</span><span className="col-speed">Speed</span><span className="col-op">Lead operator</span><span></span>
-    </div>
-  );
-}
+const LOCOMOTIVE_CONFIG = {
+  dataSources: ['data/site-data.json', '../data/site-data.json', '/data/site-data.json'],
+  // data/site-data.json already arrives pre-grouped (categories[].classes,
+  // built by scripts/build-locomotive-data.mjs, cross-listed classes already
+  // duplicated with their own domId per group). adapt() just flattens that
+  // into DatasetExplorer's { items, groups } shape — one array of every row
+  // instance, each tagged with which group it came from, plus one metadata
+  // record per group (subtitle/count/label are data-sourced, not config).
+  adapt(json) {
+    if (!json || !Array.isArray(json.categories)) return null;
+    const items = [];
+    const groups = json.categories.map((c) => {
+      for (const cls of c.classes) items.push({ ...cls, _group: c.slug });
+      return { key: c.slug, label: c.name, subtitle: c.subtitle, count: c.count };
+    });
+    return { items, groups };
+  },
+  topNavCurrent: '/database',
+  loadErrorText: 'Could not load the rolling-stock data file (data/site-data.json). Make sure the data folder is uploaded alongside the site.',
+  searchPlaceholder: 'Search class, name, builder, operator…',
+  emptyStateText: 'No classes match those filters.',
+  deepLinkPrefix: 'fleet-',
+  // Identity for the GLOBAL result count: homeCategory is copied identically
+  // onto every instance-copy of a cross-listed class (see
+  // build-locomotive-data.mjs Pass 3), so this dedupes to exactly one entry
+  // per real class regardless of how many groups it's cross-listed into —
+  // same key the pre-refactor page used.
+  dedupeKey: (item) => `${item.homeCategory} ${item.class}`,
+  searchFields: ['class', 'name', 'role', 'traction', 'builder', 'yearIntro',
+    'yearsBuilt', 'maxSpeedMph', 'operators', 'primaryService', 'fleetSize',
+    'cityNetwork', 'preservedExamples', 'mainHeritageLines', 'notes'],
+  // Every section stays expanded regardless of size — unchanged from the
+  // pre-refactor page, which hardcoded `open` on every <details>.
+  collapseThreshold: Infinity,
+  grouping: {
+    field: '_group',
+    values: ['intercity', 'regional', 'commuter', 'freight', 'charter', 'metro', 'heritage'],
+    shortLabels: LOCOMOTIVE_GROUP_SHORT_LABELS,
+    colors: LOCOMOTIVE_GROUP_COLORS,
+    allLabel: 'All categories',
+  },
+  chip: {
+    field: 'traction',
+    classify: tractionKind,
+    values: ['All', 'Electric', 'Diesel', 'Diesel-elec', 'Bi/Tri-mode', 'Steam', 'Battery'],
+    colors: {
+      Electric: SRHQ.turq, Diesel: SRHQ.amber, 'Diesel-elec': SRHQ.amber,
+      'Bi/Tri-mode': SRHQ.lime, Steam: SRHQ.coral, Battery: SRHQ.lime,
+    },
+  },
+  // Shape only — no rolling-stock field feeds this yet (see shared.jsx's
+  // DatasetExplorer config doc). Stations/Routes need the concept to exist
+  // before they land; an empty `values` list renders nothing here.
+  statusFilter: { field: null, values: [], default: [] },
+  card: {
+    renderImage: (item, groupColor, displayName) => (
+      <TrainImage commonsUrl={item.image} cls={item.class} name={displayName} accent={groupColor} />
+    ),
+    summary: {
+      gridTemplate: '136px 1fr 130px 110px 90px 1fr 28px',
+      headers: [
+        { text: 'Class', className: 'col-class' },
+        { text: 'Name / nickname' },
+        { text: 'Traction' },
+        { text: 'Year', className: 'col-year' },
+        { text: 'Speed', className: 'col-speed' },
+        { text: 'Lead operator', className: 'col-op' },
+        { text: '' },
+      ],
+      classField: 'class',
+      // Heritage rows have no name/nickname — their equivalent slot is Type / Role.
+      nameFields: ['name', 'role'],
+      subtitleField: 'builder',
+      yearFields: ['yearIntro', 'yearsBuilt'],
+      speedField: 'maxSpeedMph',
+      speedFormat: (v) => `${v} mph`,
+      speedFallbackField: 'preservedExamples',
+      // Whichever "who runs it" field a given section actually has.
+      runnerFields: ['operators', 'cityNetwork', 'mainHeritageLines'],
+    },
+    // Left column: Traction → Builder → Year introduced → Number built → Capacity.
+    // The first three are `always: true` — unconditional in the pre-refactor
+    // Row (no `k.x &&` guard), so an unpopulated one still prints its label
+    // with an em-dash rather than disappearing. Number built/Capacity stay
+    // conditional, as they always were.
+    left: [
+      { key: 'traction', label: 'Traction', mono: true, colorFromChip: true, always: true },
+      { key: 'builder', label: 'Builder', always: true },
+      { key: 'yearIntro', altKey: 'yearsBuilt', label: 'Year introduced', altLabel: 'Years built', mono: true, always: true },
+      { key: 'numberBuilt', label: 'Number built', mono: true },
+      { key: 'capacity', label: 'Capacity' },
+    ],
+    // Right column: Operator(s) → Primary route/service → Max speed →
+    // Service years, then category-specific fields (metro / heritage only),
+    // each rendered only when the item actually has that field.
+    right: [
+      { key: 'operators', label: 'Operator(s)', multi: true },
+      { key: 'primaryService', label: 'Primary route / service' },
+      { key: 'maxSpeedMph', label: 'Max speed', mono: true, color: SRHQ.amber, format: (v) => `${v} mph` },
+      { key: 'serviceYears', label: 'Service years', mono: true },
+      { key: 'fleetSize', label: 'Fleet size' },
+      { key: 'cityNetwork', label: 'City / network' },
+      { key: 'preservedExamples', label: 'Preserved examples' },
+      { key: 'mainHeritageLines', label: 'Main heritage lines', multi: true },
+      { key: 'mainlineCertified', label: 'Mainline certified?' },
+    ],
+    // Full width, beneath both columns: cross-listing note (if any) → Notes → Wikipedia link.
+    full: [
+      { derive: 'crossList', label: 'Also listed under' },
+      { key: 'notes', label: 'Notes' },
+      // wikipediaUrl (2026-08-16): schema + render only — populated in a
+      // dedicated pass, so this is currently always empty and never renders.
+      // TODO (Prompt B): image attribution belongs here too — photographer /
+      // licence / Commons File: link, following the same pattern as
+      // map.html's dbPhotoCreditHtml(). Deliberately NOT rendered yet: the
+      // Wikimedia column currently holds 146 Category: URLs and 22 File:
+      // URLs and carries NO photographer/licence/sourceUrl fields, so there
+      // is nothing truthful to print. Those fields will arrive in
+      // data/rolling-stock-overrides.json, which the build script already
+      // passes through onto the class object.
+      { key: 'wikipediaUrl', label: 'Wikipedia', link: true },
+    ],
+  },
+};
 
 function App() {
-  const { data, err } = useData();
-  const [active, setActive] = React.useState('all');
-  const [query, setQuery] = React.useState('');
-  const [traction, setTraction] = React.useState('All');
-
-  // A #fleet-{slug} link (map.html's Fleet chips) arrives before data/
-  // site-data.json has loaded, so the browser's native on-load fragment
-  // scroll fires too early and finds nothing — do it ourselves once the
-  // matching row has actually rendered. rAF (not a plain effect) waits for
-  // the just-committed DOM paint before scrollIntoView.
-  React.useEffect(() => {
-    if (!data) return;
-    const hash = window.location.hash;
-    if (!hash.startsWith('#fleet-')) return;
-    requestAnimationFrame(() => {
-      const el = document.getElementById(hash.slice(1));
-      if (!el) return;
-      // Expand the class's row (if not already open) before scrolling to it
-      // — expanding changes the row's height, so scrolling first would land
-      // in the wrong place once the resulting re-render lands (2026-07-21
-      // feedback). Reuses Row()'s own toggle button/local state rather than
-      // adding a controlled-open prop — a real .click() goes through the
-      // exact same code path a user click would.
-      if (!el.querySelector('.row-expanded')) {
-        var toggleBtn = el.querySelector('button');
-        if (toggleBtn) toggleBtn.click();
-      }
-      // Second rAF: waits for the click's state update to actually commit
-      // and paint (the row is now taller) before measuring scroll position.
-      requestAnimationFrame(() => {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      });
-    });
-  }, [data]);
-
-  if (err) {
-    return (
-      <>
-        <TopNav current="/database" />
-        <div style={{ maxWidth: 620, margin: '0 auto', padding: '80px 32px',
-                      textAlign: 'center' }}>
-          <div style={{ fontFamily: SRHQ.mono, fontSize: 11, letterSpacing: 3,
-                        textTransform: 'uppercase', color: SRHQ.coral }}>Data unavailable</div>
-          <p style={{ fontSize: 16, color: SRHQ.inkDim, marginTop: 16, lineHeight: 1.6 }}>{err}</p>
-          <button onClick={() => location.reload()} style={{
-            marginTop: 20, padding: '10px 18px', borderRadius: 10,
-            background: SRHQ.turq, color: SRHQ.bg, border: 'none',
-            fontFamily: SRHQ.body, fontSize: 14, fontWeight: 600, cursor: 'pointer',
-          }}>Retry</button>
-        </div>
-      </>
-    );
-  }
-
-  if (!data) {
-    return (
-      <>
-        <TopNav current="/database" />
-        <div style={{ padding: 60, textAlign: 'center', color: SRHQ.inkDim }}>Loading…</div>
-      </>
-    );
-  }
-
-  const q = query.trim().toLowerCase();
-  // Named-field filter (2026-08-04). Was `r[2]` for traction and a positional
-  // `r.slice(0,9)` haystack — both wrong for the two divergent sections.
-  const SEARCH_FIELDS = ['class', 'name', 'role', 'traction', 'builder', 'yearIntro',
-    'yearsBuilt', 'maxSpeedMph', 'operators', 'primaryService', 'fleetSize',
-    'cityNetwork', 'preservedExamples', 'mainHeritageLines', 'notes'];
-  const filterClass = (k) => {
-    if (traction !== 'All' && tractionKind(k.traction).k !== traction) return false;
-    if (q) {
-      const hay = SEARCH_FIELDS.map(f => k[f] || '').join(' ').toLowerCase();
-      if (!hay.includes(q)) return false;
-    }
-    return true;
-  };
-
-  const sectionsToRender = data.categories
-    .filter(c => active === 'all' || c.name === active)
-    .map(c => ({ ...c, filtered: c.classes.filter(filterClass) }));
-
-  // slug -> display name, for crossListLabel() to name a class's OTHER
-  // categories at render time.
-  const catNames = Object.fromEntries(data.categories.map(c => [c.slug, c.name]));
-
-  // GLOBAL total counts each class ONCE however many sections it is listed in —
-  // summing the per-section counts would double-count the cross-listed ones.
-  // Keyed on the canonical instance's home category + class, which is unique.
-  const total = new Set(
-    sectionsToRender.flatMap(c => c.filtered.map(k => `${k.homeCategory} ${k.class}`))
-  ).size;
-
-  return (
-    <>
-      <TopNav current="/database" />
-      <Header />
-      <Tabs categories={data.categories} active={active} onSelect={setActive} />
-      <Toolbar query={query} setQuery={setQuery} traction={traction} setTraction={setTraction} count={total} />
-
-      <section style={{ maxWidth: 1280, margin: '0 auto', padding: '16px 32px 40px' }}>
-        {sectionsToRender.map(c => {
-          if (c.filtered.length === 0) return null;
-          const meta = CAT[c.name];
-          return (
-            <details key={c.name} open style={{
-              background: SRHQ.surface, border: `1px solid ${SRHQ.line}`,
-              borderRadius: 16, marginBottom: 16, overflow: 'hidden',
-            }}>
-              <summary style={{
-                padding: '18px 24px',
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                borderBottom: `1px solid ${SRHQ.line}`,
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                  <span style={{ width: 10, height: 10, borderRadius: '50%',
-                                  background: meta.color,
-                                  boxShadow: `0 0 0 4px ${colorAlpha(meta.color, '22')}` }} />
-                  <span style={{ fontFamily: SRHQ.display, fontSize: 20, fontWeight: 600,
-                                  letterSpacing: -0.5 }}>{c.name}</span>
-                  {/* PER-SECTION count: classes appearing in THIS section, so a
-                      cross-listed class counts here and in its other sections.
-                      The global figure in the toolbar counts it once. */}
-                  <span style={{ fontFamily: SRHQ.mono, fontSize: 11, color: SRHQ.inkMute,
-                                  letterSpacing: 1 }}>
-                    {c.filtered.length} / {c.count}
-                  </span>
-                </div>
-                <span style={{ fontSize: 13, color: SRHQ.inkDim, maxWidth: 540,
-                               textAlign: 'right' }}>{c.subtitle}</span>
-              </summary>
-              <ColumnHead />
-              {c.filtered.map(k => (
-                <Row key={k.domId} cat={c.name} catSlug={c.slug} catNames={catNames} k={k} />
-              ))}
-            </details>
-          );
-        })}
-
-        {total === 0 && (
-          <div style={{ padding: 60, textAlign: 'center', color: SRHQ.inkDim,
-                        background: SRHQ.surface, border: `1px solid ${SRHQ.line}`,
-                        borderRadius: 16 }}>
-            No classes match those filters.
-          </div>
-        )}
-      </section>
-      <Footer />
-      <CookieConsent />
-    </>
-  );
+  return <DatasetExplorer config={LOCOMOTIVE_CONFIG} header={<Header />} />;
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(<App />);

@@ -70,16 +70,28 @@ function colorAlpha(value, alphaHex) {
   return `rgba(var(${m[1]}-rgb),${alpha})`;
 }
 
-// Category → accent color map (stable across pages)
-const CAT = {
-  'Intercity & High Speed':  { key: 'intercity',   color: 'var(--color-accent-turquoise)', short: 'Intercity'  },
-  'Regional Passenger':      { key: 'regional',    color: 'var(--color-accent-lime)',      short: 'Regional'   },
-  'Commuter & Suburban':     { key: 'commuter',    color: 'var(--color-accent-magenta)',   short: 'Commuter'   },
-  'Freight':                 { key: 'freight',     color: 'var(--color-accent-amber)',     short: 'Freight'    },
-  'Charter & Railtours':     { key: 'charter',     color: '#FF7A6B', short: 'Charter'    },
-  'Light Rail & Metro':      { key: 'metro',       color: '#9D7CFF', short: 'Metro'      },
-  'Heritage & Preserved':    { key: 'heritage',    color: '#8AA0B4', short: 'Heritage'   },
-};
+// regionKeyFor(station) — the ONE place that turns a station object (the
+// station-list.json shape: {name, crs, atco, mode, network, lat, lon}) into
+// the key used to look it up in data/station-regions.json's `current` map.
+// Prefers the station's own `atco` (present for 3,436 of 3,443 stations);
+// falls back to the `crs:<CODE>` namespaced key for the remainder, which
+// carry `atco: null` on their own station-list.json row (see CLAUDE.md's
+// station-regions note — Bond Street, Barking Riverside, Custom House,
+// Canary Wharf, Tottenham Court Road, Woolwich, Southampton Town Quay).
+// The `crs:` prefix can never collide with a real atco, which always starts
+// with a 4-digit numeric prefix.
+//
+// Every consumer of station-regions.json (map.html today; Stations/Routes
+// once they exist) must resolve through this one function rather than
+// re-deriving the atco-vs-crs fallback locally — see
+// scripts/tests/station-region-harness.mjs, which slices this exact
+// function out of this file and asserts all 3,443 current stations resolve.
+function regionKeyFor(station) {
+  if (!station) return null;
+  if (station.atco) return station.atco;
+  if (station.crs) return 'crs:' + station.crs;
+  return null;
+}
 
 // Logo placeholder — text-only wordmark (user will design the real one)
 function BrandMark({ size = 18, accent = SRHQ.turq }) {
@@ -492,4 +504,579 @@ function CookieConsent() {
   );
 }
 
-Object.assign(window, { SRHQ, CAT, BrandMark, TopNav, Footer, CookieConsent, colorAlpha, useTheme, logoSrc });
+// ═══════════════════════════════════════════════════════════════════════
+// DatasetExplorer — generic filterable/groupable dataset browser
+// ═══════════════════════════════════════════════════════════════════════
+// Extracted 2026-08-23 from database.html's rolling-stock UI, which is now
+// its first consumer (see database.html's LOCOMOTIVE_CONFIG for the
+// reference config). Refactor only — nothing about how that page looks or
+// behaves changed; every knob its UI needed became a config field here
+// instead of being hardcoded (CAT, tractionKind(), SEARCH_FIELDS, the
+// hardcoded Row layout).
+//
+// Config shape:
+// {
+//   dataSources: [path, ...],          tried in order; first fetch that
+//                                       parses as real JSON AND survives
+//                                       adapt() wins — rejects HTML/SPA-
+//                                       fallback 200s the same way the old
+//                                       useData() did.
+//   adapt(json) => { items, groups } | falsy
+//                                       raw payload -> a FLAT array of every
+//                                       renderable row instance (a class
+//                                       cross-listed into two sections
+//                                       appears twice, once per instance,
+//                                       exactly as data/site-data.json's own
+//                                       categories[].classes already does)
+//                                       plus one metadata object per group:
+//                                       { key, label, subtitle, count }.
+//                                       Return a falsy value to reject a
+//                                       candidate dataSource and try the
+//                                       next one.
+//   topNavCurrent: '/database',
+//   header: <jsx/>,                    page-specific hero. Rendered only
+//                                       once data has loaded — matches the
+//                                       original page's err/loading states,
+//                                       which never showed it either.
+//   loadErrorText, searchPlaceholder, emptyStateText: string,
+//   deepLinkPrefix: 'fleet-',          '#'+prefix+id auto-expands + scrolls
+//                                       to that row once data has loaded.
+//   dedupeKey(item) => string,         identity used for the GLOBAL result
+//                                       count, so a class cross-listed into
+//                                       two groups is counted once, not
+//                                       twice. Defaults to item.domId (fine
+//                                       when nothing cross-lists).
+//   searchFields: [...],               item fields concatenated + lowercased
+//                                       for the free-text search box.
+//   collapseThreshold: Infinity,       groups at/below this size default
+//                                       open; above it, default collapsed.
+//   grouping: {
+//     field,                           per-item field holding its group key
+//                                       (what adapt() tagged it with).
+//     values: [...],                   display order — independent of
+//                                       whatever order the data arrives in.
+//     shortLabels: { key: 'Short' },   tab text; falls back to the group's
+//                                       own data-provided `label`.
+//     colors: { key: 'var(--...)' },   dot / accent color per group.
+//     allLabel: 'All categories',
+//   },
+//   chip: {                            secondary per-item classification —
+//     field,                           raw field read off each item
+//     classify(rawValue) => { label, color },
+//     values: ['All', ...],            toolbar filter options, IN ORDER —
+//                                       values[0] is the "no filter" state.
+//     colors: { label: color },
+//   } | null,
+//   statusFilter: {                    pre-filter row — SHAPE ONLY today.
+//     field: null,                     No consumer wires `field` yet, so an
+//     values: [],                      empty `values` renders nothing and
+//     default: [],                     filters nothing. Stations/Routes both
+//   } | null,                          need this concept to exist first.
+//   card: {
+//     renderImage(item, groupColor, displayName) => <jsx/> | null,
+//     summary: {
+//       gridTemplate, headers: [{ text, className? }, ...],
+//       classField, nameFields: [...], subtitleField,
+//       yearFields: [...], speedField, speedFormat(v), speedFallbackField,
+//       runnerFields: [...],
+//     },
+//     left: [fieldDescriptor, ...],
+//     right: [fieldDescriptor, ...],
+//     full: [fieldDescriptor, ...],    below both columns (e.g. notes).
+//   },
+// }
+//
+// A field descriptor: { key, altKey?, label, altLabel?, mono?, multi?,
+//   color?, colorFromChip?, format(raw, item)?, link?, derive: 'crossList'? }
+// — rendered only when the item has a truthy value for `key` (or falls back
+// to `altKey`), except `derive: 'crossList'`, which is computed from
+// `grouping` + the item's own `categories` membership instead of a plain
+// field.
+
+function firstTruthy(item, fields) {
+  for (const f of fields || []) if (item[f]) return item[f];
+  return '';
+}
+
+// "Also listed under X" — an item can belong to more than one group (its
+// own `categories` array, same shape data/site-data.json already produces
+// for cross-listed rolling-stock classes). `groupKey` is whichever group
+// THIS particular instance is being rendered under, so the same underlying
+// item viewed from a different group names whichever OTHER groups it's
+// also in.
+function crossListLabel(item, groupKey, groupsByKey) {
+  const others = (item.categories || []).filter((g) => g !== groupKey);
+  if (!others.length) return null;
+  const names = others.map((g) => groupsByKey[g] && groupsByKey[g].label).filter(Boolean);
+  if (!names.length) return null;
+  return `Also listed under ${names.join(' and ')}`;
+}
+
+function useDatasetLoader(config) {
+  const [data, setData] = React.useState(null);
+  const [err, setErr] = React.useState(null);
+  React.useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      for (const url of config.dataSources) {
+        try {
+          const r = await fetch(url, { cache: 'no-cache' });
+          if (!r.ok) continue;
+          const text = await r.text();
+          let json;
+          try { json = JSON.parse(text); }
+          catch (e) { continue; } // got HTML / non-JSON — try the next path
+          const adapted = json && config.adapt(json);
+          if (adapted && Array.isArray(adapted.items) && Array.isArray(adapted.groups)) {
+            if (!cancelled) setData(adapted);
+            return;
+          }
+        } catch (e) { /* network error — try the next candidate */ }
+      }
+      if (!cancelled) setErr(config.loadErrorText || 'Could not load the data file.');
+    })();
+    return () => { cancelled = true; };
+  }, [config]);
+  return { data, err };
+}
+
+function datasetTabStyle(on, color) {
+  return {
+    padding: '10px 16px', borderRadius: 999,
+    fontFamily: 'Manrope, sans-serif', fontSize: 13.5, fontWeight: 500,
+    color: on ? SRHQ.bg : SRHQ.ink,
+    background: on ? color : 'rgba(var(--line-rgb),0.04)',
+    border: `1px solid ${on ? color : SRHQ.line}`,
+    cursor: 'pointer', transition: 'all .15s ease',
+  };
+}
+
+function DatasetTabs({ config, groupsByKey, active, onSelect }) {
+  return (
+    <div style={{ maxWidth: 1280, margin: '0 auto', padding: '8px 32px',
+                  display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+      <button onClick={() => onSelect('all')} style={datasetTabStyle('all' === active, SRHQ.ink)}>
+        {config.grouping.allLabel || 'All'}
+      </button>
+      {config.grouping.values.map((key) => {
+        const g = groupsByKey[key];
+        if (!g) return null;
+        const color = config.grouping.colors[key];
+        const short = (config.grouping.shortLabels && config.grouping.shortLabels[key]) || g.label;
+        return (
+          <button key={key} onClick={() => onSelect(key)}
+                  style={datasetTabStyle(active === key, color)}>
+            <span style={{ width: 7, height: 7, borderRadius: '50%',
+                            background: color, display: 'inline-block', marginRight: 8 }} />
+            {short}
+            {/* Per-group count, same semantics as the section header. */}
+            <span style={{ marginLeft: 8, fontSize: 11, color: SRHQ.inkMute,
+                           fontFamily: SRHQ.mono }}>{g.count}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function DatasetToolbar({ config, query, setQuery, chipValue, setChipValue, statusValue, setStatusValue, count }) {
+  const chipValues = (config.chip && config.chip.values) || [];
+  const statusValues = (config.statusFilter && config.statusFilter.values) || [];
+  return (
+    <div style={{ maxWidth: 1280, margin: '0 auto', padding: '16px 32px 8px',
+                  display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+      <div style={{ position: 'relative', flex: '1 1 320px', minWidth: 260 }}>
+        <input value={query} onChange={e => setQuery(e.target.value)}
+               placeholder={config.searchPlaceholder || 'Search…'}
+               style={{
+                 width: '100%', padding: '12px 16px 12px 40px',
+                 background: SRHQ.surface, border: `1px solid ${SRHQ.line}`,
+                 borderRadius: 10, color: SRHQ.ink, fontSize: 14,
+                 fontFamily: SRHQ.body, outline: 'none',
+               }} />
+        <span style={{ position: 'absolute', left: 14, top: '50%',
+                       transform: 'translateY(-50%)', color: SRHQ.inkMute, fontSize: 14 }}>⌕</span>
+      </div>
+      {chipValues.length > 0 && (
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {chipValues.map(o => {
+            const on = o === chipValue;
+            const color = (config.chip.colors && config.chip.colors[o]) || SRHQ.ink;
+            return (
+              <button key={o} onClick={() => setChipValue(o)} style={{
+                padding: '8px 12px', borderRadius: 8,
+                fontSize: 12, fontFamily: SRHQ.mono, letterSpacing: 0.5,
+                color: on ? SRHQ.bg : color,
+                background: on ? color : 'transparent',
+                border: `1px solid ${on ? color : SRHQ.line}`,
+                cursor: 'pointer',
+              }}>{o}</button>
+            );
+          })}
+        </div>
+      )}
+      {/* Status pre-filter — SHAPE ONLY (see the config doc above). Renders
+          nothing for any dataset that leaves `statusFilter.values` empty. */}
+      {statusValues.length > 0 && (
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {statusValues.map(o => {
+            const on = statusValue.has(o);
+            const color = (config.statusFilter.colors && config.statusFilter.colors[o]) || SRHQ.ink;
+            return (
+              <button key={o} onClick={() => setStatusValue(prev => {
+                const next = new Set(prev);
+                if (next.has(o)) next.delete(o); else next.add(o);
+                return next;
+              })} style={{
+                padding: '8px 12px', borderRadius: 8,
+                fontSize: 12, fontFamily: SRHQ.mono, letterSpacing: 0.5,
+                color: on ? SRHQ.bg : color,
+                background: on ? color : 'transparent',
+                border: `1px solid ${on ? color : SRHQ.line}`,
+                cursor: 'pointer',
+              }}>{o}</button>
+            );
+          })}
+        </div>
+      )}
+      <div style={{ marginLeft: 'auto', fontFamily: SRHQ.mono, fontSize: 12,
+                    color: SRHQ.inkMute }}>{count} results</div>
+    </div>
+  );
+}
+
+function DatasetChip({ color, children, solid = false }) {
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 6,
+      fontFamily: SRHQ.mono, fontSize: 10.5, letterSpacing: 1.2,
+      textTransform: 'uppercase', color: solid ? SRHQ.bg : color,
+      padding: '3px 8px', borderRadius: 999,
+      background: solid ? color : colorAlpha(color, '15'),
+      border: solid ? 'none' : `1px solid ${colorAlpha(color, '55')}`,
+    }}>{children}</span>
+  );
+}
+
+function DatasetField({ label, value, color = SRHQ.ink, mono, multi }) {
+  const val = value || '—';
+  const parts = multi ? String(val).split(/;\s*/) : null;
+  return (
+    <div style={{ marginBottom: 14 }}>
+      <div style={{ fontFamily: SRHQ.mono, fontSize: 10, letterSpacing: 2,
+                    textTransform: 'uppercase', color: SRHQ.inkMute }}>{label}</div>
+      <div style={{ fontFamily: mono ? SRHQ.mono : SRHQ.body, fontSize: 14,
+                    color, marginTop: 6, lineHeight: 1.5 }}>
+        {parts
+          ? parts.map((p, i) => (
+              <span key={i} style={{
+                display: 'inline-block', padding: '3px 8px', margin: '2px 4px 2px 0',
+                background: 'rgba(var(--line-rgb),0.04)', borderRadius: 6,
+                border: `1px solid ${SRHQ.line}`, fontSize: 12,
+              }}>{p}</span>
+            ))
+          : val}
+      </div>
+    </div>
+  );
+}
+
+function renderCardField(f, item, chipInfo, key) {
+  const altVal = f.altKey ? item[f.altKey] : undefined;
+  let raw = item[f.key];
+  if (!raw && altVal) raw = altVal;
+  // `always` fields render unconditionally (matching the pre-refactor Row's
+  // Traction/Builder/Year, which had no `k.x &&` guard) — an empty value
+  // still prints its label with DatasetField's own '—' fallback. Every other
+  // field is skipped outright when it has nothing to show.
+  if (!raw && !f.always) return null;
+  // Matches the pre-refactor label logic exactly: chosen by the ALT value's
+  // own truthiness (`k.yearsBuilt ? 'Years built' : 'Year introduced'`), not
+  // by whether raw ended up falling back to it — the two are the same for
+  // every real row today (yearIntro/yearsBuilt are mutually exclusive per
+  // section), but this keeps the identical rule rather than a look-alike one.
+  const label = altVal ? (f.altLabel || f.label) : f.label;
+  const value = f.format ? f.format(raw, item) : raw;
+  const color = f.colorFromChip && chipInfo ? chipInfo.color : f.color;
+  if (f.link) {
+    return (
+      <DatasetField key={key} label={label} value={
+        <a href={raw} target="_blank" rel="noreferrer noopener"
+           style={{ color: SRHQ.turq, textDecoration: 'underline' }}>{raw}</a>
+      } />
+    );
+  }
+  return <DatasetField key={key} label={label} value={value} mono={f.mono} multi={f.multi} color={color} />;
+}
+
+function DatasetColumnHead({ config }) {
+  const s = config.card.summary;
+  return (
+    <div className="row-grid" style={{
+      display: 'grid',
+      gridTemplateColumns: s.gridTemplate,
+      gap: 20, alignItems: 'center',
+      padding: '14px 24px',
+      fontFamily: SRHQ.mono, fontSize: 10.5, letterSpacing: 2,
+      textTransform: 'uppercase', color: SRHQ.inkMute,
+      borderBottom: `1px solid ${SRHQ.line}`,
+    }}>
+      {s.headers.map((h, i) => <span key={i} className={h.className}>{h.text}</span>)}
+    </div>
+  );
+}
+
+function DatasetRow({ config, groupKey, groupsByKey, item }) {
+  const [open, setOpen] = React.useState(false);
+  const s = config.card.summary;
+  const chipInfo = config.chip ? config.chip.classify(item[config.chip.field]) : null;
+  const displayName = firstTruthy(item, s.nameFields);
+  const year = firstTruthy(item, s.yearFields);
+  const runner = firstTruthy(item, s.runnerFields);
+  const runnerFirst = runner.split(';')[0].trim();
+  const groupColor = config.grouping.colors[groupKey];
+  const crossListText = crossListLabel(item, groupKey, groupsByKey);
+
+  const fullNodes = (config.card.full || []).map((f, i) => f.derive === 'crossList'
+    ? (crossListText ? <DatasetField key={'x' + i} label={f.label} value={crossListText} /> : null)
+    : renderCardField(f, item, chipInfo, 'f' + i));
+  const anyFull = fullNodes.some(Boolean);
+
+  return (
+    <div id={item.domId} style={{ borderBottom: `1px solid ${SRHQ.line}` }}>
+      <button onClick={() => setOpen(o => !o)} className="row-hover row-grid" style={{
+        width: '100%', textAlign: 'left', cursor: 'pointer',
+        background: 'transparent', border: 'none', color: SRHQ.ink,
+        padding: '14px 24px',
+        display: 'grid',
+        gridTemplateColumns: s.gridTemplate,
+        gap: 20, alignItems: 'center',
+        transition: 'background .12s ease',
+      }}>
+        <div className="col-class" style={{
+          fontFamily: SRHQ.mono, fontSize: 16, fontWeight: 500,
+          color: groupColor, letterSpacing: -0.3,
+        }}>{item[s.classField]}</div>
+
+        <div>
+          <div style={{ fontFamily: SRHQ.display, fontSize: 16, fontWeight: 600,
+                        color: SRHQ.ink, letterSpacing: -0.3 }}>{displayName}</div>
+          <div style={{ fontSize: 12, color: SRHQ.inkMute, marginTop: 3,
+                        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item[s.subtitleField]}</div>
+        </div>
+
+        {chipInfo && <DatasetChip color={chipInfo.color}>{chipInfo.label}</DatasetChip>}
+
+        <div className="col-year" style={{ fontFamily: SRHQ.mono, fontSize: 12.5, color: SRHQ.inkDim }}>
+          {year || '—'}
+        </div>
+        <div className="col-speed" style={{ fontFamily: SRHQ.mono, fontSize: 12.5, color: SRHQ.ink }}>
+          {item[s.speedField] ? s.speedFormat(item[s.speedField]) : (item[s.speedFallbackField] || '—')}
+        </div>
+        <div className="col-op" style={{ fontSize: 13, color: SRHQ.inkDim,
+                      whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {runnerFirst}
+        </div>
+        <div style={{ color: SRHQ.inkMute, fontSize: 14,
+                      transition: 'transform .2s ease',
+                      transform: open ? 'rotate(90deg)' : 'none' }}>›</div>
+      </button>
+
+      {open && (
+        <div className="row-expanded" style={{ padding: '4px 24px 24px', background: 'rgba(var(--line-rgb),0.015)' }}>
+          <div className="row-expanded-panel" style={{ borderRadius: 12,
+                        padding: '20px 24px', background: SRHQ.surface, border: `1px solid ${SRHQ.line}` }}>
+            <div className="row-expanded-grid" style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr 1fr', gap: 20 }}>
+              {config.card.renderImage ? config.card.renderImage(item, groupColor, displayName) : null}
+              <div>
+                {(config.card.left || []).map((f, i) => renderCardField(f, item, chipInfo, 'l' + i))}
+              </div>
+              <div>
+                {(config.card.right || []).map((f, i) => renderCardField(f, item, chipInfo, 'r' + i))}
+              </div>
+            </div>
+
+            {anyFull && (
+              <div className="row-expanded-extra" style={{ marginTop: 20, paddingTop: 20, borderTop: `1px solid ${SRHQ.line}` }}>
+                {fullNodes}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function makeFilterItem(config, chipValue, statusValue, query) {
+  const q = query.trim().toLowerCase();
+  const noFilterChip = config.chip ? config.chip.values[0] : null;
+  return (item) => {
+    if (config.chip && chipValue !== noFilterChip) {
+      const info = config.chip.classify(item[config.chip.field]);
+      if (!info || info.label !== chipValue) return false;
+    }
+    if (config.statusFilter && config.statusFilter.field && statusValue && statusValue.size) {
+      if (!statusValue.has(item[config.statusFilter.field])) return false;
+    }
+    if (q) {
+      const hay = (config.searchFields || []).map(f => item[f] || '').join(' ').toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  };
+}
+
+function DatasetExplorer({ config, header }) {
+  const { data, err } = useDatasetLoader(config);
+  const [active, setActive] = React.useState('all');
+  const [query, setQuery] = React.useState('');
+  const [chipValue, setChipValue] = React.useState(config.chip ? config.chip.values[0] : null);
+  const [statusValue, setStatusValue] = React.useState(
+    new Set((config.statusFilter && config.statusFilter.default) || []));
+
+  // A deep link (e.g. map.html's Fleet chips, '#fleet-{slug}') arrives before
+  // the data file has loaded, so the browser's native on-load fragment
+  // scroll fires too early and finds nothing — do it ourselves once the
+  // matching row has actually rendered. rAF (not a plain effect) waits for
+  // the just-committed DOM paint before scrollIntoView.
+  React.useEffect(() => {
+    if (!data) return;
+    const prefix = config.deepLinkPrefix;
+    if (!prefix) return;
+    const hash = window.location.hash;
+    if (!hash.startsWith('#' + prefix)) return;
+    requestAnimationFrame(() => {
+      const el = document.getElementById(hash.slice(1));
+      if (!el) return;
+      // Expand the row (if not already open) before scrolling to it —
+      // expanding changes the row's height, so scrolling first would land in
+      // the wrong place once the resulting re-render lands (2026-07-21
+      // feedback). Reuses DatasetRow's own toggle button/local state rather
+      // than adding a controlled-open prop — a real .click() goes through the
+      // exact same code path a user click would.
+      if (!el.querySelector('.row-expanded')) {
+        var toggleBtn = el.querySelector('button');
+        if (toggleBtn) toggleBtn.click();
+      }
+      // Second rAF: waits for the click's state update to actually commit
+      // and paint (the row is now taller) before measuring scroll position.
+      requestAnimationFrame(() => {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+    });
+  }, [data]);
+
+  if (err) {
+    return (
+      <>
+        <TopNav current={config.topNavCurrent} />
+        <div style={{ maxWidth: 620, margin: '0 auto', padding: '80px 32px',
+                      textAlign: 'center' }}>
+          <div style={{ fontFamily: SRHQ.mono, fontSize: 11, letterSpacing: 3,
+                        textTransform: 'uppercase', color: SRHQ.coral }}>Data unavailable</div>
+          <p style={{ fontSize: 16, color: SRHQ.inkDim, marginTop: 16, lineHeight: 1.6 }}>{err}</p>
+          <button onClick={() => location.reload()} style={{
+            marginTop: 20, padding: '10px 18px', borderRadius: 10,
+            background: SRHQ.turq, color: SRHQ.bg, border: 'none',
+            fontFamily: SRHQ.body, fontSize: 14, fontWeight: 600, cursor: 'pointer',
+          }}>Retry</button>
+        </div>
+      </>
+    );
+  }
+
+  if (!data) {
+    return (
+      <>
+        <TopNav current={config.topNavCurrent} />
+        <div style={{ padding: 60, textAlign: 'center', color: SRHQ.inkDim }}>Loading…</div>
+      </>
+    );
+  }
+
+  const groupsByKey = Object.fromEntries(data.groups.map(g => [g.key, g]));
+  const filterItem = makeFilterItem(config, chipValue, statusValue, query);
+
+  const orderedGroups = config.grouping.values.map(key => groupsByKey[key]).filter(Boolean);
+  const sectionsToRender = orderedGroups
+    .filter(g => active === 'all' || g.key === active)
+    .map(g => ({
+      ...g,
+      filtered: data.items.filter(it => it[config.grouping.field] === g.key).filter(filterItem),
+    }));
+
+  const dedupe = config.dedupeKey || ((item) => item.domId);
+  // GLOBAL total counts each item ONCE however many groups it is listed in —
+  // summing the per-group counts would double-count any cross-listed ones.
+  const total = new Set(sectionsToRender.flatMap(g => g.filtered.map(dedupe))).size;
+
+  return (
+    <>
+      <TopNav current={config.topNavCurrent} />
+      {header}
+      <DatasetTabs config={config} groupsByKey={groupsByKey} active={active} onSelect={setActive} />
+      <DatasetToolbar config={config} query={query} setQuery={setQuery}
+        chipValue={chipValue} setChipValue={setChipValue}
+        statusValue={statusValue} setStatusValue={setStatusValue}
+        count={total} />
+
+      <section style={{ maxWidth: 1280, margin: '0 auto', padding: '16px 32px 40px' }}>
+        {sectionsToRender.map(g => {
+          if (g.filtered.length === 0) return null;
+          const color = config.grouping.colors[g.key];
+          const isOpen = g.count <= config.collapseThreshold;
+          return (
+            <details key={g.key} open={isOpen} style={{
+              background: SRHQ.surface, border: `1px solid ${SRHQ.line}`,
+              borderRadius: 16, marginBottom: 16, overflow: 'hidden',
+            }}>
+              <summary style={{
+                padding: '18px 24px',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                borderBottom: `1px solid ${SRHQ.line}`,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                  <span style={{ width: 10, height: 10, borderRadius: '50%',
+                                  background: color,
+                                  boxShadow: `0 0 0 4px ${colorAlpha(color, '22')}` }} />
+                  <span style={{ fontFamily: SRHQ.display, fontSize: 20, fontWeight: 600,
+                                  letterSpacing: -0.5 }}>{g.label}</span>
+                  {/* PER-GROUP count: items appearing in THIS group, so a
+                      cross-listed item counts here and in its other groups.
+                      The global figure in the toolbar counts it once. */}
+                  <span style={{ fontFamily: SRHQ.mono, fontSize: 11, color: SRHQ.inkMute,
+                                  letterSpacing: 1 }}>
+                    {g.filtered.length} / {g.count}
+                  </span>
+                </div>
+                <span style={{ fontSize: 13, color: SRHQ.inkDim, maxWidth: 540,
+                               textAlign: 'right' }}>{g.subtitle}</span>
+              </summary>
+              <DatasetColumnHead config={config} />
+              {g.filtered.map(item => (
+                <DatasetRow key={item.domId} config={config} groupKey={g.key} groupsByKey={groupsByKey} item={item} />
+              ))}
+            </details>
+          );
+        })}
+
+        {total === 0 && (
+          <div style={{ padding: 60, textAlign: 'center', color: SRHQ.inkDim,
+                        background: SRHQ.surface, border: `1px solid ${SRHQ.line}`,
+                        borderRadius: 16 }}>
+            {config.emptyStateText || 'No results match those filters.'}
+          </div>
+        )}
+      </section>
+      <Footer />
+      <CookieConsent />
+    </>
+  );
+}
+
+Object.assign(window, {
+  SRHQ, BrandMark, TopNav, Footer, CookieConsent, colorAlpha, useTheme, logoSrc,
+  regionKeyFor,
+  DatasetExplorer,
+});
