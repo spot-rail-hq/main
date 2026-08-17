@@ -715,11 +715,47 @@ async function fetchFirstValidJson(candidates, validate) {
 //     so `config.adapt()` needs a { [key]: json } map instead of one payload.
 //     `optional: true` sources may fail to load without aborting the whole
 //     dataset (config.adapt() sees `null` for that key and decides).
+// `config.lazyDataSources` (optional): [{ key, candidates, optional?,
+// validate? }] — sources fetched only when something later calls
+// `ensureLazySource(key)` (DatasetExplorer wires this to a config-declared
+// statusFilter trigger — see its own `trigger` field). Historical stations
+// (3.8MB) is the first real use: a user who never opens the Closed filter
+// never pays that fetch. `config.adapt()` is re-invoked with the ACCUMULATED
+// source map every time a lazy source lands, so it must already tolerate a
+// lazy key being `undefined` (not yet fetched) — which every multi-source
+// adapt() naturally does anyway, since `optional` eager sources already
+// require the same `if (thing) { ... }` guard.
 function useDatasetLoader(config) {
   const [data, setData] = React.useState(null);
   const [err, setErr] = React.useState(null);
+  const sourcesRef = React.useRef({});
+  const loadingRef = React.useRef(new Set());
+
+  const runAdapt = React.useCallback(() => {
+    const adapted = config.adapt(sourcesRef.current);
+    if (adapted && Array.isArray(adapted.items) && Array.isArray(adapted.groups)) {
+      setData(adapted);
+      return true;
+    }
+    return false;
+  }, [config]);
+
+  const ensureLazySource = React.useCallback((key) => {
+    if (sourcesRef.current[key] !== undefined || loadingRef.current.has(key)) return;
+    const src = (config.lazyDataSources || []).find((s) => s.key === key);
+    if (!src) return;
+    loadingRef.current.add(key);
+    fetchFirstValidJson(src.candidates, src.validate).then((json) => {
+      sourcesRef.current[key] = json;
+      loadingRef.current.delete(key);
+      runAdapt();
+    });
+  }, [config, runAdapt]);
+
   React.useEffect(() => {
     let cancelled = false;
+    sourcesRef.current = {};
+    loadingRef.current = new Set();
     const isMultiSource = config.dataSources.length > 0 && typeof config.dataSources[0] === 'object';
     (async () => {
       if (isMultiSource) {
@@ -733,12 +769,8 @@ function useDatasetLoader(config) {
           sources[src.key] = json;
         }
         if (cancelled) return;
-        const adapted = config.adapt(sources);
-        if (adapted && Array.isArray(adapted.items) && Array.isArray(adapted.groups)) {
-          setData(adapted);
-        } else {
-          setErr(config.loadErrorText || 'Could not load the data file.');
-        }
+        sourcesRef.current = sources;
+        if (!runAdapt()) setErr(config.loadErrorText || 'Could not load the data file.');
         return;
       }
       // Original single-source path — unchanged behavior for LOCOMOTIVE_CONFIG.
@@ -761,7 +793,7 @@ function useDatasetLoader(config) {
     })();
     return () => { cancelled = true; };
   }, [config]);
-  return { data, err };
+  return { data, err, ensureLazySource };
 }
 
 function datasetTabStyle(on, color) {
@@ -882,7 +914,35 @@ function DatasetChip({ color, children, solid = false }) {
   );
 }
 
-function DatasetField({ label, value, color = SRHQ.ink, mono, multi }) {
+function DatasetField({ label, value, color = SRHQ.ink, mono, multi, list }) {
+  // `list`: real prose sentences (Notable features today) — matches
+  // map.html's own notableFeaturesHtml()/.db-notable-list exactly: a
+  // bulleted list, one sentence per line, small turquoise dot bullet. NOT
+  // the same thing as `multi` (short discrete entities — operator names,
+  // region names — genuinely suit a pill), and NOT a single flowing
+  // paragraph either, despite how that might sound: map.html's own sidebar,
+  // History panels included, has no plain-paragraph prose field anywhere —
+  // this bulleted list IS its actual convention for exactly this content
+  // shape, confirmed by reading notableFeaturesHtml() directly rather than
+  // going by description.
+  if (list) {
+    return (
+      <div style={{ marginBottom: 14 }}>
+        <div style={{ fontFamily: SRHQ.mono, fontSize: 10, letterSpacing: 2,
+                      textTransform: 'uppercase', color: SRHQ.inkMute }}>{label}</div>
+        <ul style={{ margin: '6px 0 0', padding: 0, listStyle: 'none' }}>
+          {value.map((item, i) => (
+            <li key={i} style={{ position: 'relative', padding: '4px 0 4px 14px',
+                                  fontSize: 14, color: SRHQ.ink, lineHeight: 1.5 }}>
+              <span style={{ position: 'absolute', left: 0, top: 11, width: 4, height: 4,
+                             borderRadius: '50%', background: SRHQ.turq }} />
+              {item}
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  }
   const val = value || '—';
   const parts = multi ? String(val).split(/;\s*/) : null;
   return (
@@ -905,7 +965,16 @@ function DatasetField({ label, value, color = SRHQ.ink, mono, multi }) {
   );
 }
 
+// `list` fields hold a real array (prose sentences — Notable features today)
+// and need their own truthiness check ([] is truthy as a value but has
+// nothing to show), so this runs before the generic `!raw` check below,
+// which would otherwise treat an empty array as present.
 function renderCardField(f, item, chipInfo, key) {
+  if (f.list) {
+    const items = item[f.key];
+    if (!Array.isArray(items) || !items.length) return null;
+    return <DatasetField key={key} label={f.label} value={items} list />;
+  }
   const altVal = f.altKey ? item[f.altKey] : undefined;
   let raw = item[f.key];
   if (!raw && altVal) raw = altVal;
@@ -923,11 +992,23 @@ function renderCardField(f, item, chipInfo, key) {
   const value = f.format ? f.format(raw, item) : raw;
   const color = f.colorFromChip && chipInfo ? chipInfo.color : f.color;
   if (f.link) {
+    // Matches map.html's OWN sidebar link convention exactly (.db-links a),
+    // not a new style: mono, 13px, uppercase, letter-spacing 1px, turquoise,
+    // no underline (map.html's global `a{text-decoration:none}` base rule),
+    // and no arrow glyph — map.html's own CSS has none. Rendered as its own
+    // row, no separate caption above it: the sidebar's link rows are just
+    // the link itself (see dbBottomLinksHtml()/dbWikipediaAttributionHtml()
+    // in map.html — "Wikipedia"/"Google Map"/"Official website" IS the
+    // visible text, there's no second "WIKIPEDIA" caption above it), so
+    // this skips DatasetField's usual label-above-value wrapper entirely.
     return (
-      <DatasetField key={key} label={label} value={
+      <div key={key} style={{ marginBottom: 14 }}>
         <a href={raw} target="_blank" rel="noreferrer noopener"
-           style={{ color: SRHQ.turq, textDecoration: 'underline' }}>{raw}</a>
-      } />
+           style={{ fontFamily: SRHQ.mono, fontSize: 13, letterSpacing: 1,
+                    textTransform: 'uppercase', color: SRHQ.turq, textDecoration: 'none' }}>
+          {f.linkText || label}
+        </a>
+      </div>
     );
   }
   return <DatasetField key={key} label={label} value={value} mono={f.mono} multi={f.multi} color={color} />;
@@ -1091,12 +1172,26 @@ function makeFilterItem(config, chipValue, statusValue, query) {
 }
 
 function DatasetExplorer({ config, header, onNavigate }) {
-  const { data, err } = useDatasetLoader(config);
+  const { data, err, ensureLazySource } = useDatasetLoader(config);
   const [active, setActive] = React.useState('all');
   const [query, setQuery] = React.useState('');
   const [chipValue, setChipValue] = React.useState(config.chip ? config.chip.values[0] : null);
   const [statusValue, setStatusValue] = React.useState(
     new Set((config.statusFilter && config.statusFilter.default) || []));
+
+  // Lazy data sources (e.g. Stations' historical-stations.geojson, 3.8MB) —
+  // fetched only once their trigger condition is actually true, so a user
+  // who never selects Closed never pays that cost. Re-checked on every
+  // statusValue change; ensureLazySource() itself is idempotent (no-ops
+  // once a source is loaded or loading), so this harmlessly re-runs on
+  // every toggle rather than needing to track "did Closed specifically
+  // just turn on".
+  React.useEffect(() => {
+    if (!config.lazyDataSources || !ensureLazySource) return;
+    for (const src of config.lazyDataSources) {
+      if (src.trigger && src.trigger(statusValue)) ensureLazySource(src.key);
+    }
+  }, [statusValue, config, ensureLazySource]);
 
   // A deep link (e.g. map.html's Fleet chips, '#fleet-{slug}') arrives before
   // the data file has loaded, so the browser's native on-load fragment

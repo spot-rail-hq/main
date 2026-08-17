@@ -688,16 +688,22 @@ const STATION_CONFIG = {
     { key: 'regions', candidates: ['data/station-regions.json', '../data/station-regions.json', '/data/station-regions.json'] },
     { key: 'content', candidates: ['stations-content.json', '../stations-content.json', '/stations-content.json'] },
     { key: 'operators', candidates: ['operators-content.json', '../operators-content.json', '/operators-content.json'], optional: true },
-    // scripts/output/historical-stations.geojson (8,884 entries, ~3.8MB) —
-    // tracked in git (map.html already fetches it client-side for History
-    // mode), but optional here: the default view is Open-only (see
-    // statusFilter below), so a station missing/failing to load shouldn't
-    // block the page — Closed just shows nothing until it loads.
-    // KNOWN COST, not fixed here: this fetches eagerly on every page load
-    // regardless of whether the user ever opens the Closed filter — a real
-    // candidate for lazy-loading on first Closed-filter click, deferred
-    // (see the flag list).
-    { key: 'historical', candidates: ['scripts/output/historical-stations.geojson', '../scripts/output/historical-stations.geojson', '/scripts/output/historical-stations.geojson'], optional: true },
+  ],
+  // scripts/output/historical-stations.geojson (8,884 entries, ~3.8MB) —
+  // tracked in git (map.html already fetches it client-side for History
+  // mode) — LAZY, not eager: only fetched once the Closed status filter is
+  // actually switched on (`trigger`), so a user who never opens Closed
+  // never pays the 3.8MB cost. adapt() below already treats `historical` as
+  // optional (an `if (historical...)` guard, same shape `operators` already
+  // needed for its own optional eager source), so nothing there had to
+  // change to make it lazy-safe — it already tolerated the key being absent.
+  lazyDataSources: [
+    {
+      key: 'historical',
+      candidates: ['scripts/output/historical-stations.geojson', '../scripts/output/historical-stations.geojson', '/scripts/output/historical-stations.geojson'],
+      optional: true,
+      trigger: (statusValue) => statusValue.has('Closed'),
+    },
   ],
   adapt({ stations, regions, content, operators, historical }) {
     if (!stations || !Array.isArray(stations) || !regions || !regions.current || !regions.regions) return null;
@@ -722,7 +728,7 @@ const STATION_CONFIG = {
         platforms: c.platforms != null ? String(c.platforms) : '',
         opened_year: c.opened_year || '', listed_status: c.listed_status || '',
         operators: (c.operators || []).join('; '),
-        notable_features: (c.notable_features || []).join('; '),
+        notable_features: c.notable_features || [],
         wikipediaUrl: (c._wikipedia && c._wikipedia.url) || '',
         photo: c.photo || null,
         yearsServed: openFlat ? historicalOperatingRangeLabel(openFlat) : '',
@@ -847,7 +853,7 @@ const STATION_CONFIG = {
       { key: 'listed_status', label: 'Listed status' },
     ],
     full: [
-      { key: 'notable_features', label: 'Notable features', multi: true },
+      { key: 'notable_features', label: 'Notable features', list: true },
       { key: 'googleMapUrl', label: 'Google Map', link: true },
       { key: 'wikipediaUrl', label: 'Wikipedia', link: true },
       { derive: 'related' },
@@ -977,7 +983,7 @@ const OPERATOR_CONFIG = {
         regions_other: ((o.regions_served && o.regions_served.other) || []).join('; '),
         fleet_classes: o.fleet_classes || [],
         stations_operated: o.stations_operated != null ? String(o.stations_operated) : '',
-        notable_features: (o.notable_features || []).join('; '),
+        notable_features: o.notable_features || [],
         website: o.website || '',
         wikipediaUrl: (o._wikipedia && o._wikipedia.url) || '',
         _group: sectorFor(code),
@@ -1056,7 +1062,7 @@ const OPERATOR_CONFIG = {
       { key: 'stations_operated', label: 'Stations operated', mono: true },
     ],
     full: [
-      { key: 'notable_features', label: 'Notable features', multi: true },
+      { key: 'notable_features', label: 'Notable features', list: true },
       { key: 'website', label: 'Official website', link: true },
       { key: 'wikipediaUrl', label: 'Wikipedia', link: true },
       { derive: 'related' },
