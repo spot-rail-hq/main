@@ -427,21 +427,30 @@ const LOCOMOTIVE_GROUP_SHORT_LABELS = {
 };
 
 const LOCOMOTIVE_CONFIG = {
-  dataSources: ['data/site-data.json', '../data/site-data.json', '/data/site-data.json'],
+  // Multi-source form (2026-08-31): operators-content.json added, `optional`,
+  // purely to resolve each class's `operators` name list into real
+  // cross-tab links for the new "Operators" related-chips row — nothing
+  // else about this dataset changed. If it fails to load, adapt() below
+  // just gets an empty index and the row renders no chips, same as before
+  // this existed; nothing else on the card is affected.
+  dataSources: [
+    { key: 'site', candidates: ['data/site-data.json', '../data/site-data.json', '/data/site-data.json'] },
+    { key: 'operators', candidates: ['operators-content.json', '../operators-content.json', '/operators-content.json'], optional: true },
+  ],
   // data/site-data.json already arrives pre-grouped (categories[].classes,
   // built by scripts/build-locomotive-data.mjs, cross-listed classes already
   // duplicated with their own domId per group). adapt() just flattens that
   // into DatasetExplorer's { items, groups } shape — one array of every row
   // instance, each tagged with which group it came from, plus one metadata
   // record per group (subtitle/count/label are data-sourced, not config).
-  adapt(json) {
-    if (!json || !Array.isArray(json.categories)) return null;
+  adapt({ site, operators }) {
+    if (!site || !Array.isArray(site.categories)) return null;
     const items = [];
-    const groups = json.categories.map((c) => {
+    const groups = site.categories.map((c) => {
       for (const cls of c.classes) items.push({ ...cls, _group: c.slug });
       return { key: c.slug, label: c.name, subtitle: c.subtitle, count: c.count };
     });
-    return { items, groups };
+    return { items, groups, extra: { operatorIndex: operatorNameIndex(operators || {}) } };
   },
   topNavCurrent: '/database',
   loadErrorText: 'Could not load the rolling-stock data file (data/site-data.json). Make sure the data folder is uploaded alongside the site.',
@@ -547,12 +556,586 @@ const LOCOMOTIVE_CONFIG = {
       // data/rolling-stock-overrides.json, which the build script already
       // passes through onto the class object.
       { key: 'wikipediaUrl', label: 'Wikipedia', link: true },
+      { derive: 'related' },
     ],
+    // locomotive -> its operators (2026-08-31). `k.operators` is a
+    // semicolon-joined name string (e.g. "ScotRail; Colas Rail"), same as
+    // every other multi-value field in this schema — split it the same way,
+    // resolve each name through the operators-content.json index built in
+    // adapt() above, and skip any name that doesn't resolve (an operator
+    // string this dataset carries that isn't itself in operators-content.json
+    // yet — e.g. a heritage operator) rather than link to nothing.
+    relatedEntities(item, allData) {
+      const index = (allData && allData.extra && allData.extra.operatorIndex) || {};
+      const names = (item.operators || '').split(';').map((s) => s.trim()).filter(Boolean);
+      const chips = names
+        .map((name) => index[name] && { text: name, mode: 'operators', domId: 'operator-' + fleetClassSlug(index[name]) })
+        .filter(Boolean);
+      return chips.length ? [{ label: 'Operators', chips }] : null;
+    },
   },
 };
 
+// ═══════════════════════════════════════════════════════════════════════
+// STATIONS
+// ═══════════════════════════════════════════════════════════════════════
+
+function StationsHeader() {
+  return (
+    <section style={{ maxWidth: 1280, margin: '0 auto', padding: '56px 32px 24px' }}>
+      <div style={{ fontFamily: SRHQ.mono, fontSize: 11, letterSpacing: 3,
+                    textTransform: 'uppercase', color: SRHQ.turq }}>Station database</div>
+      <h1 style={{ fontFamily: SRHQ.display, fontSize: 'clamp(40px, 5vw, 72px)',
+                   fontWeight: 700, letterSpacing: -2.4, lineHeight: 1,
+                   margin: '14px 0 0' }}>
+        Every station on the<br/>
+        <span style={{ color: SRHQ.turq, fontWeight: 500 }}>British</span> railway.
+      </h1>
+      <p style={{ fontSize: 17, color: SRHQ.inkDim, maxWidth: 620,
+                  marginTop: 20, lineHeight: 1.55 }}>
+        Filter by region or mode. Open stations by default — closed and heritage are one
+        click away. Click any row to open the full entry.
+      </p>
+    </section>
+  );
+}
+
+// Station photo — unlike TrainImage's Wikimedia-guessing (rolling stock has
+// no per-row photographer/license/sourceUrl fields yet), stations-content.json
+// already stores a resolved {url, photographer, source, license, sourceUrl}
+// object directly (scripts/fetch-station-photos.mjs), so this just renders
+// it — no fetch, no loading state. Same visual treatment as TrainImage's
+// current (2026-08-16) credit placement: a plain line below the frame, not
+// overlaid — see that component's own comment for why.
+function StationImage({ photo, name, accent }) {
+  const wrap = {
+    position: 'relative', borderRadius: 12, overflow: 'hidden',
+    background: `linear-gradient(135deg, ${colorAlpha(accent, '10')}, rgba(var(--line-rgb),0.02))`,
+    border: `1px solid ${SRHQ.line}`, aspectRatio: '16/10',
+  };
+  if (!photo || !photo.url) {
+    return (
+      <div style={{ ...wrap, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: SRHQ.inkMute, fontFamily: SRHQ.mono, fontSize: 11,
+                    letterSpacing: 2, textTransform: 'uppercase',
+                    backgroundImage: `repeating-linear-gradient(45deg, ${colorAlpha(accent, '10')} 0 10px, transparent 10px 20px)` }}>
+        no image available
+      </div>
+    );
+  }
+  const creditText = photo.photographer
+    ? `${photo.photographer} – ${photo.source || 'Wikimedia Commons'} – ${photo.license || 'CC'}`
+    : (photo.source || 'Wikimedia Commons');
+  return (
+    <div>
+      <div style={wrap}>
+        <img src={photo.url} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+      </div>
+      <div style={{ fontSize: 13, color: SRHQ.ink, marginTop: 4 }}>
+        {photo.sourceUrl
+          ? <a href={photo.sourceUrl} target="_blank" rel="noreferrer noopener" style={{ color: SRHQ.ink, textDecoration: 'none' }}>{creditText}</a>
+          : creditText}
+      </div>
+    </div>
+  );
+}
+
+// Mode chip axis — station-list.json's 7-value `mode` enum. Colours are
+// fresh picks (no CVD gate-check run, per instruction — colour polish is
+// deliberately deferred until the UI itself is settled), except `rail`,
+// which reuses the site's existing "National Rail = turquoise" convention
+// (see CLAUDE.md's Database-mode legend) rather than picking a new one for
+// a relationship that's already established elsewhere in this app.
+const STATION_MODE_COLORS = {
+  rail: SRHQ.turq, tram: '#9D7CFF', underground: '#B565D8', heritage: SRHQ.coral,
+  metro: '#7C93FF', dlr: '#5CD6C4', subway: '#C77DFF',
+};
+const STATION_MODE_LABELS = {
+  rail: 'Rail', tram: 'Tram', underground: 'Underground', heritage: 'Heritage',
+  metro: 'Metro', dlr: 'DLR', subway: 'Subway',
+};
+function stationModeClassify(mode) {
+  const key = String(mode || '').toLowerCase();
+  return { label: STATION_MODE_LABELS[key] || 'Other', color: STATION_MODE_COLORS[key] || SRHQ.inkMute };
+}
+
+// Region grouping axis — the 11 NPTG regions data/station-regions.json's own
+// `regions` map defines. ORDER here is a loose south-to-north geographic
+// read; station-regions.json's own key order is not meaningful (a plain
+// object), so this is the one place display order is decided. Colours are
+// fresh picks, same "no CVD check yet" scope as the mode chips above.
+const STATION_REGION_ORDER = ['L', 'SE', 'SW', 'EA', 'EM', 'WM', 'NW', 'NE', 'Y', 'W', 'S'];
+const STATION_REGION_COLORS = {
+  L: '#F25CC1', SE: '#F5B84B', SW: '#4EE8A0', EA: '#B8F266', EM: '#E8B84E',
+  WM: '#FF7A6B', NW: '#9D7CFF', NE: '#5C9DF2', Y: '#F25C8C', W: '#6BE894', S: '#5CD6F2',
+};
+
+// station-list.json's own `name` carries generic NaPTAN suffixes
+// ("Birmingham New Street Rail Station") that stations-content.json's
+// curated `name` never does ("Birmingham New Street") — same gap map.html's
+// own stripStationNameSuffix() fixed (2026-08-17); ported verbatim here
+// rather than reintroducing the bug in a second place. Used only as the
+// fallback for the ~7% of stations with no stations-content.json record at
+// all — content.name wins whenever it exists.
+function stripStationNameSuffix(name) {
+  const stripped = (name || '').replace(/\s+(?:Rail|Railway|Metro)?\s*Station$/i, '').trim();
+  return stripped || name;
+}
+
+const STATION_CONFIG = {
+  dataSources: [
+    { key: 'stations', candidates: ['station-list.json', '../station-list.json', '/station-list.json'] },
+    { key: 'regions', candidates: ['data/station-regions.json', '../data/station-regions.json', '/data/station-regions.json'] },
+    { key: 'content', candidates: ['stations-content.json', '../stations-content.json', '/stations-content.json'] },
+    { key: 'operators', candidates: ['operators-content.json', '../operators-content.json', '/operators-content.json'], optional: true },
+    // scripts/output/historical-stations.geojson (8,884 entries, ~3.8MB) —
+    // tracked in git (map.html already fetches it client-side for History
+    // mode), but optional here: the default view is Open-only (see
+    // statusFilter below), so a station missing/failing to load shouldn't
+    // block the page — Closed just shows nothing until it loads.
+    // KNOWN COST, not fixed here: this fetches eagerly on every page load
+    // regardless of whether the user ever opens the Closed filter — a real
+    // candidate for lazy-loading on first Closed-filter click, deferred
+    // (see the flag list).
+    { key: 'historical', candidates: ['scripts/output/historical-stations.geojson', '../scripts/output/historical-stations.geojson', '/scripts/output/historical-stations.geojson'], optional: true },
+  ],
+  adapt({ stations, regions, content, operators, historical }) {
+    if (!stations || !Array.isArray(stations) || !regions || !regions.current || !regions.regions) return null;
+    const items = [];
+    const operatorIndex = operatorNameIndex(operators || {});
+
+    for (const st of stations) {
+      const key = regionKeyFor(st);
+      const regionEntry = key && regions.current[key];
+      const regionCode = regionEntry ? regionEntry.region : null;
+      const contentKey = st.crs || st.atco;
+      const c = (content && content[contentKey]) || {};
+      const idSlug = fleetClassSlug(st.crs || st.atco || st.name);
+      const openFlat = openStationFlatProps(c.opened_year);
+      items.push({
+        name: c.name || stripStationNameSuffix(st.name), crs: st.crs || '', atco: st.atco || '', mode: st.mode, network: st.network,
+        lat: st.lat, lon: st.lon,
+        status: st.mode === 'heritage' ? 'Heritage' : 'Open',
+        region: regionCode, regionName: (regions.regions[regionCode] && regions.regions[regionCode].name) || '',
+        _group: regionCode || 'unknown',
+        headline: c.headline || '', location: c.location || '', managed_by: c.managed_by || '',
+        platforms: c.platforms != null ? String(c.platforms) : '',
+        opened_year: c.opened_year || '', listed_status: c.listed_status || '',
+        operators: (c.operators || []).join('; '),
+        notable_features: (c.notable_features || []).join('; '),
+        wikipediaUrl: (c._wikipedia && c._wikipedia.url) || '',
+        photo: c.photo || null,
+        yearsServed: openFlat ? historicalOperatingRangeLabel(openFlat) : '',
+        googleMapUrl: (c._google && c._google.placeId)
+          ? 'https://www.google.com/maps/place/?q=place_id:' + encodeURIComponent(c._google.placeId)
+          : (st.lat && st.lon ? `https://www.google.com/maps/search/?api=1&query=${st.lat},${st.lon}` : ''),
+        domId: 'station-' + idSlug,
+      });
+    }
+
+    if (historical && Array.isArray(historical.features)) {
+      for (const f of historical.features) {
+        const p = f.properties || {};
+        const qid = p.wikidata_qid;
+        // Historical stations resolve region through a DIFFERENT key than
+        // current ones — station-regions.json's `historical` map is keyed
+        // by wikidata_qid, not atco/crs, because most of these predate
+        // NaPTAN entirely (see CLAUDE.md's station-regions note). regionKeyFor()
+        // only ever resolves the CURRENT map's atco-or-crs: key — it has
+        // nothing to say here, so this reads `regions.historical` directly.
+        const regionEntry = qid && regions.historical && regions.historical[qid];
+        const regionCode = regionEntry ? regionEntry.region : null;
+        const coords = f.geometry && f.geometry.coordinates;
+        const flat = periodsToFlatProps(p.periods);
+        items.push({
+          name: p.name, crs: p.crs || '', wikidata_qid: qid || '',
+          lat: coords ? coords[1] : null, lon: coords ? coords[0] : null,
+          status: 'Closed',
+          region: regionCode, regionName: (regions.regions[regionCode] && regions.regions[regionCode].name) || '',
+          _group: regionCode || 'unknown',
+          yearsServed: historicalOperatingRangeLabel(flat),
+          wikipediaUrl: p.wikipedia_title
+            ? `https://en.wikipedia.org/wiki/${encodeURIComponent(p.wikipedia_title.replace(/ /g, '_'))}` : '',
+          googleMapUrl: coords ? `https://www.google.com/maps/search/?api=1&query=${coords[1]},${coords[0]}` : '',
+          domId: 'station-hist-' + fleetClassSlug(qid || p.name),
+        });
+      }
+    }
+
+    const groups = STATION_REGION_ORDER.map((code) => {
+      const meta = regions.regions[code] || { name: code };
+      return { key: code, label: meta.name, subtitle: '', count: items.filter((i) => i._group === code).length };
+    });
+
+    return { items, groups, extra: { operatorIndex } };
+  },
+  topNavCurrent: '/database',
+  loadErrorText: 'Could not load the station data files. Make sure station-list.json, data/station-regions.json and stations-content.json are uploaded alongside the site.',
+  searchPlaceholder: 'Search station, location…',
+  emptyStateText: 'No stations match those filters.',
+  deepLinkPrefix: 'station-',
+  dedupeKey: (item) => item.domId,
+  searchFields: ['name', 'location', 'managed_by', 'operators', 'notable_features'],
+  // Region sections range 87–613+ entries (larger once Closed is included) —
+  // collapsed by default, unlike locomotives' Infinity (always open).
+  collapseThreshold: 0,
+  grouping: {
+    field: '_group',
+    values: STATION_REGION_ORDER,
+    colors: STATION_REGION_COLORS,
+    allLabel: 'All regions',
+    showCountOnlyWhenFiltered: true,
+  },
+  chip: {
+    field: 'mode',
+    classify: stationModeClassify,
+    values: ['All', 'Rail', 'Tram', 'Underground', 'Heritage', 'Metro', 'DLR', 'Subway'],
+    colors: {
+      Rail: STATION_MODE_COLORS.rail, Tram: STATION_MODE_COLORS.tram, Underground: STATION_MODE_COLORS.underground,
+      Heritage: STATION_MODE_COLORS.heritage, Metro: STATION_MODE_COLORS.metro, DLR: STATION_MODE_COLORS.dlr,
+      Subway: STATION_MODE_COLORS.subway,
+    },
+  },
+  // Open/Closed/Heritage, default Open-only. Closed = historical-stations.geojson
+  // (8,884). Heritage = station-list.json's own `mode: 'heritage'` stations
+  // (currently operating heritage-railway stations — a DIFFERENT thing from
+  // Closed: these are open today, just not National Rail). Multi-select
+  // toggle (the component's existing statusFilter mechanism, unwired until
+  // now) — clicking Closed ADDS it alongside whatever's already selected,
+  // so the default Open-only view is never silently replaced, only added to.
+  statusFilter: {
+    field: 'status',
+    values: ['Open', 'Closed', 'Heritage'],
+    default: ['Open'],
+    colors: { Open: SRHQ.turq, Closed: SRHQ.inkMute, Heritage: SRHQ.coral },
+  },
+  card: {
+    renderImage: (item, groupColor, displayName) => <StationImage photo={item.photo} name={displayName} accent={groupColor} />,
+    summary: {
+      gridTemplate: '136px 1fr 130px 110px 90px 1fr 28px',
+      headers: [
+        { text: 'Station', className: 'col-class' },
+        { text: 'Name / location' },
+        { text: 'Mode' },
+        { text: 'Opened', className: 'col-year' },
+        { text: 'Status', className: 'col-speed' },
+        { text: 'Lead operator', className: 'col-op' },
+        { text: '' },
+      ],
+      classField: 'crs',
+      nameFields: ['name'],
+      subtitleField: 'location',
+      yearFields: ['opened_year'],
+      speedField: 'status',
+      speedFormat: (v) => v,
+      speedFallbackField: null,
+      runnerFields: ['operators'],
+    },
+    // Left column: Mode → Location → Managed by → Platforms → Station code
+    left: [
+      { key: 'mode', label: 'Mode', colorFromChip: true, always: true, format: (v) => stationModeClassify(v).label },
+      { key: 'location', label: 'Location' },
+      { key: 'managed_by', label: 'Managed by' },
+      { key: 'platforms', label: 'Platforms' },
+      { key: 'crs', label: 'Station code', mono: true },
+    ],
+    // Right column: Region (new) → Years served (new) → Year opened → Listed status
+    right: [
+      { key: 'regionName', label: 'Region' },
+      { key: 'yearsServed', label: 'Years served', mono: true },
+      { key: 'opened_year', label: 'Year opened', mono: true },
+      { key: 'listed_status', label: 'Listed status' },
+    ],
+    full: [
+      { key: 'notable_features', label: 'Notable features', multi: true },
+      { key: 'googleMapUrl', label: 'Google Map', link: true },
+      { key: 'wikipediaUrl', label: 'Wikipedia', link: true },
+      { derive: 'related' },
+    ],
+    // station -> its operators. `regionKeyFor()`-equivalent care applies to
+    // ANY station keying, per instruction — this cross-link keys purely off
+    // the item's own domId (already resolved through regionKeyFor()-safe
+    // logic in adapt() above), never a raw atco, so the 7 crs:-only stations
+    // still link correctly.
+    relatedEntities(item, allData) {
+      const index = (allData && allData.extra && allData.extra.operatorIndex) || {};
+      const names = (item.operators || '').split(';').map((s) => s.trim()).filter(Boolean);
+      const chips = names
+        .map((name) => index[name] && { text: name, mode: 'operators', domId: 'operator-' + fleetClassSlug(index[name]) })
+        .filter(Boolean);
+      return chips.length ? [{ label: 'Operators', chips }] : null;
+    },
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════════════
+// OPERATORS
+// ═══════════════════════════════════════════════════════════════════════
+
+function OperatorsHeader() {
+  return (
+    <section style={{ maxWidth: 1280, margin: '0 auto', padding: '56px 32px 24px' }}>
+      <div style={{ fontFamily: SRHQ.mono, fontSize: 11, letterSpacing: 3,
+                    textTransform: 'uppercase', color: SRHQ.turq }}>Operator database</div>
+      <h1 style={{ fontFamily: SRHQ.display, fontSize: 'clamp(40px, 5vw, 72px)',
+                   fontWeight: 700, letterSpacing: -2.4, lineHeight: 1,
+                   margin: '14px 0 0' }}>
+        Every operator on the<br/>
+        <span style={{ color: SRHQ.turq, fontWeight: 500 }}>British</span> railway.
+      </h1>
+      <p style={{ fontSize: 17, color: SRHQ.inkDim, maxWidth: 620,
+                  marginTop: 20, lineHeight: 1.55 }}>
+        Filter by sector or ownership. Click any row to open the full entry.
+      </p>
+    </section>
+  );
+}
+
+// Sector grouping axis — derived from data/operator-colors.json's own
+// toc/metro/heritage/tfl_lines categorisation (per instruction, not a new
+// classification). Note: `heritage` legitimately has ZERO entries from
+// operators-content.json today — that file has no per-operator heritage
+// railway records at all (heritage-railways.json is the separate dataset
+// for those), only operator-colors.json's single shared heritage colour
+// for map rendering. The section still exists in the tab (accurate to the
+// underlying category structure this derives from), it's just always empty
+// until/unless individual heritage operators get their own
+// operators-content.json entries.
+const OPERATOR_SECTOR_META = {
+  toc: { label: 'Train Operating Companies', short: 'TOC' },
+  metro: { label: 'Light Rail & Metro', short: 'Metro' },
+  heritage: { label: 'Heritage', short: 'Heritage' },
+  tfl_lines: { label: 'TfL Lines', short: 'TfL' },
+};
+const OPERATOR_SECTOR_ORDER = ['toc', 'metro', 'tfl_lines', 'heritage'];
+// toc reuses the "National Rail = turquoise" convention already established
+// (same reasoning as the Rail mode chip above). metro/heritage reuse this
+// app's existing purple/coral category colours. tfl_lines gets a fresh pick
+// anchored to TfL's own iconic Central-line red (already a real value in
+// operator-colors.json's own tfl_lines.Central) rather than inventing an
+// unrelated hue for "TfL as a sector".
+const OPERATOR_SECTOR_COLORS = { toc: SRHQ.turq, metro: '#9D7CFF', heritage: SRHQ.coral, tfl_lines: '#E32017' };
+
+// Ownership-status chip axis — operators-content.json's 8-value enum
+// (resolveOwnershipStatus()'s `status` field in map.html). Fresh colour
+// picks, same "no CVD check yet" scope as Stations' axes above.
+const OWNERSHIP_LABELS = {
+  public_dft: 'Public (DfT)', private_contract: 'Private contract', concession: 'Concession',
+  open_access: 'Open access', devolved_public: 'Devolved public', public_operating_company: 'Public operating co.',
+  tfl_direct: 'TfL direct', not_applicable: 'Not applicable',
+};
+const OWNERSHIP_COLORS = {
+  public_dft: SRHQ.turq, private_contract: SRHQ.amber, concession: SRHQ.lime, open_access: SRHQ.coral,
+  devolved_public: '#9D7CFF', public_operating_company: '#5C9DF2', tfl_direct: '#F25C8C', not_applicable: SRHQ.inkMute,
+};
+function ownershipClassify(status) {
+  const key = status || 'not_applicable';
+  return { label: OWNERSHIP_LABELS[key] || key, color: OWNERSHIP_COLORS[key] || SRHQ.inkMute };
+}
+
+const OPERATOR_CONFIG = {
+  dataSources: [
+    { key: 'content', candidates: ['operators-content.json', '../operators-content.json', '/operators-content.json'] },
+    { key: 'colors', candidates: ['data/operator-colors.json', '../data/operator-colors.json', '/data/operator-colors.json'] },
+    // Only for the operator -> stations cross-link's reverse index (each
+    // station's own `operators` name list) — see relatedEntities() below.
+    { key: 'stationsContent', candidates: ['stations-content.json', '../stations-content.json', '/stations-content.json'], optional: true },
+  ],
+  adapt({ content, colors, stationsContent }) {
+    if (!content || !colors) return null;
+    const sectorFor = (code) => {
+      if (colors.toc && colors.toc[code]) return 'toc';
+      if (colors.metro && colors.metro[code]) return 'metro';
+      if (colors.tfl_lines && colors.tfl_lines[code]) return 'tfl_lines';
+      return 'heritage'; // no per-operator heritage entries today — see OPERATOR_SECTOR_META's comment
+    };
+    // station NAME -> [{key, name}] — the only per-station record of which
+    // operators serve it (operators-content.json's own `stations_operated`
+    // is a bare count, see Step 0's report). Keyed by stations-content.json's
+    // own top-level key, which IS already the station's crs-or-atco
+    // identity — matches STATION_CONFIG's domId scheme directly, no
+    // separate regionKeyFor()-style resolution needed here.
+    const stationsByOperatorName = {};
+    if (stationsContent) {
+      for (const [key, s] of Object.entries(stationsContent)) {
+        if (key === '_notes' || !s || !Array.isArray(s.operators)) continue;
+        for (const name of s.operators) {
+          (stationsByOperatorName[name] = stationsByOperatorName[name] || []).push({ key, name: s.name });
+        }
+      }
+    }
+
+    const items = [];
+    for (const [code, o] of Object.entries(content)) {
+      if (code === '_notes' || !o || typeof o !== 'object') continue;
+      items.push({
+        code, name: o.name || code, headline: o.headline || '',
+        parent_company: o.parent_company || '', legal_entity: o.legal_entity || '',
+        ownership_status: (o.ownership_status && o.ownership_status.status) || '',
+        franchises: (o.franchises || []).map((f) => `${f.name} (${f.start || '?'}–${f.end || 'present'})`).join('; '),
+        regions_main: ((o.regions_served && o.regions_served.main) || []).join('; '),
+        regions_other: ((o.regions_served && o.regions_served.other) || []).join('; '),
+        fleet_classes: o.fleet_classes || [],
+        stations_operated: o.stations_operated != null ? String(o.stations_operated) : '',
+        notable_features: (o.notable_features || []).join('; '),
+        website: o.website || '',
+        wikipediaUrl: (o._wikipedia && o._wikipedia.url) || '',
+        _group: sectorFor(code),
+        sectorLabel: OPERATOR_SECTOR_META[sectorFor(code)].short,
+        _stationsServed: stationsByOperatorName[o.name] || [],
+        domId: 'operator-' + fleetClassSlug(code),
+      });
+    }
+
+    const groups = OPERATOR_SECTOR_ORDER.map((key) => ({
+      key, label: OPERATOR_SECTOR_META[key].label, subtitle: '',
+      count: items.filter((i) => i._group === key).length,
+    }));
+
+    return { items, groups };
+  },
+  topNavCurrent: '/database',
+  loadErrorText: 'Could not load the operator data files. Make sure operators-content.json and data/operator-colors.json are uploaded alongside the site.',
+  searchPlaceholder: 'Search operator, parent company…',
+  emptyStateText: 'No operators match those filters.',
+  deepLinkPrefix: 'operator-',
+  dedupeKey: (item) => item.domId,
+  searchFields: ['name', 'parent_company', 'legal_entity', 'notable_features'],
+  // ~58 total, same "always open" treatment as locomotives — no equivalent
+  // of Stations' hundreds-per-section problem here.
+  collapseThreshold: Infinity,
+  grouping: {
+    field: '_group',
+    values: OPERATOR_SECTOR_ORDER,
+    shortLabels: { toc: OPERATOR_SECTOR_META.toc.short, metro: OPERATOR_SECTOR_META.metro.short, heritage: OPERATOR_SECTOR_META.heritage.short, tfl_lines: OPERATOR_SECTOR_META.tfl_lines.short },
+    colors: OPERATOR_SECTOR_COLORS,
+    allLabel: 'All sectors',
+    showCountOnlyWhenFiltered: true,
+  },
+  chip: {
+    field: 'ownership_status',
+    classify: ownershipClassify,
+    values: ['All', ...Object.keys(OWNERSHIP_LABELS).map((k) => OWNERSHIP_LABELS[k])],
+    colors: Object.fromEntries(Object.keys(OWNERSHIP_LABELS).map((k) => [OWNERSHIP_LABELS[k], OWNERSHIP_COLORS[k]])),
+  },
+  // Shape only, unwired — Stations' pre-filter is the one populated "for
+  // now" per instruction; Operators has no equivalent status concept today.
+  statusFilter: { field: null, values: [], default: [] },
+  card: {
+    summary: {
+      gridTemplate: '136px 1fr 130px 110px 90px 1fr 28px',
+      headers: [
+        { text: 'Code', className: 'col-class' },
+        { text: 'Name / parent' },
+        { text: 'Ownership' },
+        { text: 'Sector', className: 'col-year' },
+        { text: 'Stations', className: 'col-speed' },
+        { text: 'Regions', className: 'col-op' },
+        { text: '' },
+      ],
+      classField: 'code',
+      nameFields: ['name'],
+      subtitleField: 'parent_company',
+      yearFields: ['sectorLabel'],
+      speedField: 'stations_operated',
+      speedFormat: (v) => v,
+      speedFallbackField: null,
+      runnerFields: ['regions_main', 'regions_other'],
+    },
+    // Left column: Ownership status → Parent company → Legal entity
+    left: [
+      { key: 'ownership_status', label: 'Ownership', colorFromChip: true, always: true, format: (v) => ownershipClassify(v).label },
+      { key: 'parent_company', label: 'Parent company' },
+      { key: 'legal_entity', label: 'Legal entity' },
+    ],
+    // Right column: Regions served → Franchises → Stations operated
+    right: [
+      { key: 'regions_main', label: 'Main regions', multi: true },
+      { key: 'regions_other', label: 'Other regions', multi: true },
+      { key: 'franchises', label: 'Franchises', multi: true },
+      { key: 'stations_operated', label: 'Stations operated', mono: true },
+    ],
+    full: [
+      { key: 'notable_features', label: 'Notable features', multi: true },
+      { key: 'website', label: 'Official website', link: true },
+      { key: 'wikipediaUrl', label: 'Wikipedia', link: true },
+      { derive: 'related' },
+    ],
+    // operator -> fleet classes (existing #fleet-{slug} anchors, unchanged)
+    // and -> stations served (via the reverse index built in adapt() above).
+    relatedEntities(item) {
+      const out = [];
+      if (item.fleet_classes && item.fleet_classes.length) {
+        out.push({ label: 'Fleet', chips: item.fleet_classes.map((c) => ({ text: c.display, mode: 'locomotives', domId: 'fleet-' + fleetClassSlug(c.id) })) });
+      }
+      if (item._stationsServed && item._stationsServed.length) {
+        out.push({ label: 'Stations served', chips: item._stationsServed.map((s) => ({ text: s.name, mode: 'stations', domId: 'station-' + fleetClassSlug(s.key) })) });
+      }
+      return out.length ? out : null;
+    },
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════════════
+// Mode switch — LOCOMOTIVE / STATION / OPERATOR, above the category tabs.
+// ═══════════════════════════════════════════════════════════════════════
+const APP_MODES = [
+  { key: 'locomotives', label: 'LOCOMOTIVE' },
+  { key: 'stations', label: 'STATION' },
+  { key: 'operators', label: 'OPERATOR' },
+];
+function ModeSwitch({ mode, onSelect }) {
+  return (
+    <div style={{ maxWidth: 1280, margin: '0 auto', padding: '20px 32px 0',
+                  display: 'flex', gap: 8 }}>
+      {APP_MODES.map((m) => {
+        const on = m.key === mode;
+        return (
+          <button key={m.key} onClick={() => onSelect(m.key)} style={{
+            padding: '9px 20px', borderRadius: 999,
+            fontFamily: SRHQ.mono, fontSize: 11, letterSpacing: 1.5, fontWeight: 600,
+            color: on ? SRHQ.bg : SRHQ.inkDim,
+            background: on ? SRHQ.turq : 'transparent',
+            border: `1px solid ${on ? SRHQ.turq : SRHQ.line}`,
+            cursor: 'pointer', transition: 'all .15s ease',
+          }}>{m.label}</button>
+        );
+      })}
+    </div>
+  );
+}
+
+const APP_MODE_CONFIGS = { locomotives: LOCOMOTIVE_CONFIG, stations: STATION_CONFIG, operators: OPERATOR_CONFIG };
+const APP_MODE_HEADERS = { locomotives: Header, stations: StationsHeader, operators: OperatorsHeader };
+// Initial mode from a deep-linked hash, e.g. an external '#operator-avanti'
+// link — otherwise defaults to Locomotives (this page's original, still
+// primary, dataset).
+function initialAppMode() {
+  const h = window.location.hash.slice(1);
+  if (h.startsWith('station-')) return 'stations';
+  if (h.startsWith('operator-')) return 'operators';
+  return 'locomotives';
+}
+
 function App() {
-  return <DatasetExplorer config={LOCOMOTIVE_CONFIG} header={<Header />} />;
+  const [mode, setMode] = React.useState(initialAppMode);
+  const HeaderComp = APP_MODE_HEADERS[mode];
+  // Cross-tab navigation (station->operators, operator->fleet/stations,
+  // locomotive->operators): set the hash to the target's own domId, then
+  // switch modes. `key={mode}` below fully remounts DatasetExplorer on a
+  // mode change, so its data loader re-fires for the new config and its
+  // EXISTING deep-link effect (unchanged from the single-dataset refactor)
+  // picks up the hash once that fresh data has loaded — no new expand/scroll
+  // mechanism needed, just the same one two more datasets now share.
+  const onNavigate = (targetMode, domId) => {
+    window.location.hash = '#' + domId;
+    setMode(targetMode);
+  };
+  return (
+    <DatasetExplorer key={mode} config={APP_MODE_CONFIGS[mode]}
+      header={<><ModeSwitch mode={mode} onSelect={setMode} /><HeaderComp /></>}
+      onNavigate={onNavigate} />
+  );
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(<App />);

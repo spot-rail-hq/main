@@ -103,20 +103,46 @@ const OUT_PATH = path.join(ROOT, 'data', 'operator-colors.json');
 //     covers that case without a per-operator special case.
 const priorPalette = existsSync(OUT_PATH) ? JSON.parse(readFileSync(OUT_PATH, 'utf8')) : null;
 
-// Hand-set colour overrides — GC's dark theme and Manchester Metrolink's
-// whole entry bypass this script's generic derivation, which produces
-// wrong values for both (see each entry's own `_note` in
-// data/operator-colors.json for the full reasoning: an all-black livery
-// can't be lifted into a dark basemap by lightness alone for GC; Metrolink
-// uses one real brand yellow in both themes, not a derived light/dark
-// pair). Keyed the same way each category already is — TOC code, metro
-// name — matching MODE_OVERRIDES' keyed-by-identity shape.
+// Hand-set colour overrides — bypass this script's generic derivation for
+// entries where it produces wrong (GC, Northern), incomplete (SX — not
+// derived at all, see below) or inapplicable (Metrolink) results. See each
+// entry's own `_note` in data/operator-colors.json for the full reasoning.
+// Keyed the same way each category already is — TOC code, metro name, TfL
+// line name — matching MODE_OVERRIDES' keyed-by-identity shape.
 const COLOR_OVERRIDES = {
   toc: {
     GC: { dark: '#B8AB7A' }, // light is correctly derived from REAL_TOC_COLORS.GC.primary — only dark needs the override
+    // Stansted Express (SX) is not in REAL_TOC_COLORS / tocOrder at all —
+    // added by hand directly to data/operator-colors.json on 2026-08-05,
+    // after this script had already been run, so it has never gone
+    // through any derivation this script performs. Without this override,
+    // generic passthrough (the toc/metro merge's "keys only in prior" path)
+    // still protects it on a REGENERATION — but a from-scratch run (no
+    // prior data/operator-colors.json on disk at all) would drop the whole
+    // entry, same failure this override already exists to prevent for GC
+    // and Metrolink. Confirmed live in scripts/output/line-segments.json
+    // (2026-08-17): SX operates 44 segments today.
+    SX: { dark: '#B5473F', light: '#A03A2E' },
   },
   metro: {
     'Manchester Metrolink': { dark: '#FFDC44', light: '#FFDC44' },
+  },
+  tfl_lines: {
+    // Hand-set 2026-07-22 (git 5c42e3f) — undocumented at the time (no
+    // `_note`, no commit message), but confirmed intentional 2026-08-17:
+    // that commit touched only this one value in this file (plus unrelated
+    // map.html changes), never the script, so it was a deliberate hand-
+    // edit, not a stray regen; and GC's own `_note` (added a week later,
+    // 2026-07-29) explicitly cites it as the established precedent for the
+    // same problem — "tfl_lines 'Northern' is #000000 in light and #FFFFFF
+    // in dark". Northern's real corporate colour is pure black, invisible
+    // against this map's dark basemap; the generic toDarkThemeFromOfficial()
+    // lift only reaches a dark grey (#6B6161), still low-contrast, so a
+    // full invert to white was chosen instead of a lightness lift — the
+    // same category of fix as GC's, independently reinvented for the same
+    // reason: a black livery cannot be lifted into a dark basemap by
+    // lightness alone.
+    Northern: { dark: '#FFFFFF' }, // light is TFL_LINE_COLORS.Northern's own real corporate black, unchanged
   },
 };
 
@@ -566,6 +592,15 @@ function toDarkThemeFromOfficial(hex) {
 }
 const tflDarkByKey = {};
 for (const [key, hex] of Object.entries(TFL_LINE_COLORS)) tflDarkByKey[key] = toDarkThemeFromOfficial(hex);
+// Northern override (see COLOR_OVERRIDES above) — applied right after the
+// derivation loop and before anything downstream reads tflDarkByKey (the
+// CVD report below included), so that report reflects the colour that
+// actually ships rather than a value nothing ever renders. Unlike toc/metro,
+// tfl_lines has no sequential gate-checked placement between keys — each
+// line's dark value is derived independently — so there's no equivalent of
+// the Manchester Metrolink leak found and fixed elsewhere in this file;
+// nothing else's derivation reads another line's dark value.
+tflDarkByKey.Northern = COLOR_OVERRIDES.tfl_lines.Northern.dark;
 const tflLightCloseCheck = [];
 {
   const keys = Object.keys(TFL_LINE_COLORS);

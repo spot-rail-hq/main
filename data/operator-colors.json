@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-15T08:10:17.905Z",
+  "generated_at": "2026-08-17T07:02:05.706Z",
   "_notes": "SUPERSEDES the earlier algorithmically-generated TOC palette. toc hex are now REAL corporate colors (see assignment_report for source/confidence per operator) — primary tried first, secondary/alternate brand shade if primary collides, algorithmic hue-nudge fallback (flagged) only if neither real option clears separation. Light theme is the anchor (real liveries/websites are designed for pale backgrounds); dark theme is derived by lifting lightness, preserving true hue. metro/heritage are out of scope for corporate research (not TOCs) and keep their prior hand-picked design, gate-checked against the new toc placements. tfl_lines unchanged from the prior round.",
   "toc": {
     "GR": {
@@ -211,7 +211,8 @@
     },
     "Northern": {
       "dark": "#FFFFFF",
-      "light": "#000000"
+      "light": "#000000",
+      "_note": "HAND-SET 2026-07-22 (git 5c42e3f) — was #6B6161 (toDarkThemeFromOfficial()'s generic lift from the real corporate black #000000), changed to a full invert to white instead. Undocumented at the time: no _note was added, and the commit message was just \"fix\" (bundled with unrelated map.html changes, GitHub Desktop auto-commit). Confirmed intentional rather than drift 2026-08-17, during the build-operator-palette.mjs read-merge-preserve audit: (1) that commit touched only this one value in this file plus unrelated light-theme/glow-ring/operator-search map.html changes — the script itself was not touched, so this was a direct hand-edit, not a stray regeneration; (2) Grand Central's own _note (added a week later, 2026-07-29) explicitly cites this as the established precedent for the same problem — \"tfl_lines 'Northern' is #000000 in light and #FFFFFF in dark\"; (3) it makes clear visual sense on its own terms: Northern's real colour is pure black, invisible against this map's dark basemap, and the generic lightness-lift only reaches a dark grey (#6B6161) — still low-contrast, whereas a full invert to white is unambiguously visible. Same category of fix as Grand Central's (a black livery cannot be lifted into a dark basemap by lightness alone), independently reached a week earlier for the same reason. Now protected by COLOR_OVERRIDES in scripts/build-operator-palette.mjs so it survives both a regeneration and a from-scratch run — see that constant for the code-side half of this reasoning."
     },
     "Piccadilly": {
       "dark": "#2C80FF",
@@ -263,9 +264,9 @@
     }
   },
   "heritage": {
-    "_note": "2026-07-27: was amber (#E79945/#C67620), changed to a warm coral/salmon because the amber clashed with West Midlands Railway — measured deltaE2000 4.5 in dark theme and 11.1 in light, the WORST pair in the whole palette for the old value. Coral separates cleanly in hue from WMR's amber, from the reserved turquoise --t (which means 'selected' everywhere and so cannot carry a resting state), and from BR rail blue; the warm/cool split also survives CVD better than an amber-vs-red split would. Measured against every toc/metro/tfl_lines entry in both themes and under protanopia and deuteranopia simulation: WMR separation rises to 21.4 (dark) / 21.5 (light), and the worst-case separation against ANY other operator improves from 4.1 to 6.3 (dark) and from 1.8 to 7.3 (light). Those worst cases are still below the palette's nominal 15 threshold, but so were the amber's — this palette is dense (221 flagged pairs overall, 0 of them known-adjacent) and the change is strictly better on every axis, not a new compromise. The remaining nearest neighbours are the TfL Central line (dark) and Transport for Wales (light); heritage now also renders DOTTED (see map.html's operator-lines-heritage layer), which no TfL line or TOC does, so the one genuinely adjacent case — the Epping Ongar Railway sitting at the end of the Central line — is separated by line pattern as well as hue. NOT derived by toVividLightTheme/toDarkThemeFromLight: those clamp saturation to >=72 and lightness into 38-54, which cannot express a coral at all (they pull it to a vivid red, measured worst-case CVD 3.2). Hand-set constants with the same gate check Blackpool Tramway already uses — see scripts/build-operator-palette.mjs.",
     "dark": "#FC7B64",
-    "light": "#DE6454"
+    "light": "#DE6454",
+    "_note": "2026-07-27: was amber (#E79945/#C67620), changed to a warm coral/salmon because the amber clashed with West Midlands Railway — measured deltaE2000 4.5 in dark theme and 11.1 in light, the WORST pair in the whole palette for the old value. Coral separates cleanly in hue from WMR's amber, from the reserved turquoise --t (which means 'selected' everywhere and so cannot carry a resting state), and from BR rail blue; the warm/cool split also survives CVD better than an amber-vs-red split would. Measured against every toc/metro/tfl_lines entry in both themes and under protanopia and deuteranopia simulation: WMR separation rises to 21.4 (dark) / 21.5 (light), and the worst-case separation against ANY other operator improves from 4.1 to 6.3 (dark) and from 1.8 to 7.3 (light). Those worst cases are still below the palette's nominal 15 threshold, but so were the amber's — this palette is dense (221 flagged pairs overall, 0 of them known-adjacent) and the change is strictly better on every axis, not a new compromise. The remaining nearest neighbours are the TfL Central line (dark) and Transport for Wales (light); heritage now also renders DOTTED (see map.html's operator-lines-heritage layer), which no TfL line or TOC does, so the one genuinely adjacent case — the Epping Ongar Railway sitting at the end of the Central line — is separated by line pattern as well as hue. NOT derived by toVividLightTheme/toDarkThemeFromLight: those clamp saturation to >=72 and lightness into 38-54, which cannot express a coral at all (they pull it to a vivid red, measured worst-case CVD 3.2). Hand-set constants with the same gate check Blackpool Tramway already uses — see scripts/build-operator-palette.mjs."
   },
   "assignment_report": [
     {
@@ -674,7 +675,7 @@
   ],
   "cvd_report": {
     "min_delta_e_threshold": 15,
-    "total_flagged_pairs": 221,
+    "total_flagged_pairs": 233,
     "known_adjacent_flagged": 0,
     "pairs": [
       {
@@ -699,6 +700,30 @@
         "a": "SN",
         "b": "GX",
         "deltaE_simulated": 1.5,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "ME",
+        "b": "Manchester Metrolink",
+        "deltaE_simulated": 1.5,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "ME",
+        "b": "Manchester Metrolink",
+        "deltaE_simulated": 1.9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "GC",
+        "b": "Glasgow Subway",
+        "deltaE_simulated": 2.7,
         "known_adjacent": false
       },
       {
@@ -779,6 +804,14 @@
         "a": "AW",
         "b": "LE",
         "deltaE_simulated": 4.5,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "SN",
+        "b": "GC",
+        "deltaE_simulated": 4.7,
         "known_adjacent": false
       },
       {
@@ -918,6 +951,14 @@
         "known_adjacent": false
       },
       {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "SN",
+        "b": "GC",
+        "deltaE_simulated": 6.5,
+        "known_adjacent": false
+      },
+      {
         "theme": "light",
         "cvd_type": "protanopia",
         "a": "LD",
@@ -935,17 +976,17 @@
       },
       {
         "theme": "light",
-        "cvd_type": "deuteranopia",
-        "a": "Transport for London",
-        "b": "Sheffield Supertram",
+        "cvd_type": "protanopia",
+        "a": "ME",
+        "b": "Manchester Metrolink",
         "deltaE_simulated": 6.7,
         "known_adjacent": false
       },
       {
         "theme": "light",
         "cvd_type": "deuteranopia",
-        "a": "Manchester Metrolink",
-        "b": "Edinburgh Trams",
+        "a": "Transport for London",
+        "b": "Sheffield Supertram",
         "deltaE_simulated": 6.7,
         "known_adjacent": false
       },
@@ -962,6 +1003,14 @@
         "cvd_type": "protanopia",
         "a": "SN",
         "b": "Glasgow Subway",
+        "deltaE_simulated": 6.9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "CC",
+        "b": "GC",
         "deltaE_simulated": 6.9,
         "known_adjacent": false
       },
@@ -987,6 +1036,14 @@
         "a": "GTR",
         "b": "LD",
         "deltaE_simulated": 7,
+        "known_adjacent": false
+      },
+      {
+        "theme": "light",
+        "cvd_type": "deuteranopia",
+        "a": "ME",
+        "b": "Manchester Metrolink",
+        "deltaE_simulated": 7.1,
         "known_adjacent": false
       },
       {
@@ -1038,14 +1095,6 @@
         "known_adjacent": false
       },
       {
-        "theme": "light",
-        "cvd_type": "protanopia",
-        "a": "Manchester Metrolink",
-        "b": "Edinburgh Trams",
-        "deltaE_simulated": 7.6,
-        "known_adjacent": false
-      },
-      {
         "theme": "dark",
         "cvd_type": "protanopia",
         "a": "GTR",
@@ -1070,6 +1119,14 @@
         "known_adjacent": false
       },
       {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "GC",
+        "b": "GX",
+        "deltaE_simulated": 7.8,
+        "known_adjacent": false
+      },
+      {
         "theme": "light",
         "cvd_type": "deuteranopia",
         "a": "Tyne and Wear Metro",
@@ -1080,16 +1137,16 @@
       {
         "theme": "dark",
         "cvd_type": "protanopia",
-        "a": "GX",
-        "b": "Glasgow Subway",
+        "a": "WMR",
+        "b": "Manchester Metrolink",
         "deltaE_simulated": 8,
         "known_adjacent": false
       },
       {
         "theme": "dark",
         "cvd_type": "protanopia",
-        "a": "LN",
-        "b": "Manchester Metrolink",
+        "a": "GX",
+        "b": "Glasgow Subway",
         "deltaE_simulated": 8,
         "known_adjacent": false
       },
@@ -1448,6 +1505,14 @@
       {
         "theme": "dark",
         "cvd_type": "deuteranopia",
+        "a": "WMR",
+        "b": "Manchester Metrolink",
+        "deltaE_simulated": 10,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
         "a": "Transport for London",
         "b": "Edinburgh Trams",
         "deltaE_simulated": 10,
@@ -1574,6 +1639,14 @@
         "known_adjacent": false
       },
       {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "GC",
+        "b": "Croydon Tramlink",
+        "deltaE_simulated": 10.8,
+        "known_adjacent": false
+      },
+      {
         "theme": "light",
         "cvd_type": "protanopia",
         "a": "AW",
@@ -1586,6 +1659,14 @@
         "cvd_type": "protanopia",
         "a": "LE",
         "b": "GR",
+        "deltaE_simulated": 10.9,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "GC",
+        "b": "TL",
         "deltaE_simulated": 10.9,
         "known_adjacent": false
       },
@@ -1642,6 +1723,14 @@
         "cvd_type": "deuteranopia",
         "a": "WMR",
         "b": "ME",
+        "deltaE_simulated": 11.2,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "GC",
+        "b": "Glasgow Subway",
         "deltaE_simulated": 11.2,
         "known_adjacent": false
       },
@@ -1918,11 +2007,11 @@
         "known_adjacent": false
       },
       {
-        "theme": "light",
-        "cvd_type": "protanopia",
-        "a": "LN",
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "HT",
         "b": "Manchester Metrolink",
-        "deltaE_simulated": 12.3,
+        "deltaE_simulated": 12.4,
         "known_adjacent": false
       },
       {
@@ -1947,6 +2036,14 @@
         "a": "AW",
         "b": "WMR",
         "deltaE_simulated": 12.6,
+        "known_adjacent": false
+      },
+      {
+        "theme": "dark",
+        "cvd_type": "deuteranopia",
+        "a": "GR",
+        "b": "Manchester Metrolink",
+        "deltaE_simulated": 12.7,
         "known_adjacent": false
       },
       {
@@ -2030,6 +2127,14 @@
         "known_adjacent": false
       },
       {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "GC",
+        "b": "Tyne and Wear Metro",
+        "deltaE_simulated": 13.2,
+        "known_adjacent": false
+      },
+      {
         "theme": "light",
         "cvd_type": "deuteranopia",
         "a": "GW",
@@ -2042,14 +2147,6 @@
         "cvd_type": "protanopia",
         "a": "GW",
         "b": "XR",
-        "deltaE_simulated": 13.3,
-        "known_adjacent": false
-      },
-      {
-        "theme": "dark",
-        "cvd_type": "deuteranopia",
-        "a": "Manchester Metrolink",
-        "b": "Croydon Tramlink",
         "deltaE_simulated": 13.3,
         "known_adjacent": false
       },
@@ -2158,6 +2255,14 @@
         "known_adjacent": false
       },
       {
+        "theme": "dark",
+        "cvd_type": "protanopia",
+        "a": "GC",
+        "b": "HT",
+        "deltaE_simulated": 13.9,
+        "known_adjacent": false
+      },
+      {
         "theme": "light",
         "cvd_type": "deuteranopia",
         "a": "NT",
@@ -2186,14 +2291,6 @@
         "cvd_type": "protanopia",
         "a": "SE",
         "b": "LD",
-        "deltaE_simulated": 14,
-        "known_adjacent": false
-      },
-      {
-        "theme": "dark",
-        "cvd_type": "protanopia",
-        "a": "Manchester Metrolink",
-        "b": "Croydon Tramlink",
         "deltaE_simulated": 14,
         "known_adjacent": false
       },
@@ -2360,17 +2457,17 @@
       {
         "theme": "dark",
         "cvd_type": "deuteranopia",
-        "a": "SE",
-        "b": "ES",
-        "deltaE_simulated": 14.7,
+        "a": "GC",
+        "b": "GX",
+        "deltaE_simulated": 14.6,
         "known_adjacent": false
       },
       {
-        "theme": "light",
+        "theme": "dark",
         "cvd_type": "deuteranopia",
-        "a": "Manchester Metrolink",
-        "b": "Croydon Tramlink",
-        "deltaE_simulated": 14.8,
+        "a": "SE",
+        "b": "ES",
+        "deltaE_simulated": 14.7,
         "known_adjacent": false
       },
       {

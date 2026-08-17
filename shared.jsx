@@ -93,6 +93,80 @@ function regionKeyFor(station) {
   return null;
 }
 
+// ═══ Ported from map.html (2026-08-31) ════════════════════════════════════
+// historicalPeriodList()/historicalOperatingRangeLabel() were already proven
+// decoupled there (three independent consumers reading the same flattened
+// p1_start/p1_end…p5_end scalar props off a vector tile feature) — moved
+// here verbatim, byte-for-byte identical logic, so the Stations tab's
+// "Years served" field and map.html's History panel render the exact same
+// rule rather than two copies that can drift.
+//
+// The one thing that DOES differ is the shape of the input: map.html reads
+// flattened scalars straight off a tile feature's properties (tiles have no
+// nested structures). scripts/output/historical-stations.geojson — the
+// source these two functions never had a reason to read directly before —
+// stores the same data as a NESTED `periods: [{start_year, end_year}]`
+// array instead. periodsToFlatProps() below is the shape adapter: given a
+// geojson feature's periods array, produces the flattened p1_start/p1_end…
+// object these ported functions expect, so they run completely unchanged.
+function historicalPeriodList(props) {
+  var periods = [];
+  for (var i = 1; i <= 5; i++) {
+    var s = props['p' + i + '_start'];
+    if (s === undefined) break;
+    var e = props['p' + i + '_end'];
+    periods.push({ start: s, end: e === undefined ? null : e });
+  }
+  return periods;
+}
+function historicalOperatingRangeLabel(props) {
+  var periods = historicalPeriodList(props);
+  if (!periods.length) return '';
+  function fmt(p) { return p.start + '–' + (p.end === null ? 'present' : p.end); }
+  if (periods.length === 1) return fmt(periods[0]);
+  if (periods.length === 2) return fmt(periods[0]) + ', ' + fmt(periods[1]);
+  var finalPeriod = periods[periods.length - 1];
+  return periods[0].start + '–' + (finalPeriod.end === null ? 'present' : finalPeriod.end) + ' (with breaks)';
+}
+// periods: [{start_year, end_year}] (historical-stations.geojson's own
+// shape, end_year null/undefined meaning still open) -> {p1_start, p1_end,
+// p2_start, ...} (what historicalPeriodList() above expects). Caps at 5
+// periods, matching the p1..p5 scalar limit the flattened tile shape itself
+// is bound by (the real dataset's max is 5 — see historicalOperatingRangeLabel's
+// own comment in map.html).
+function periodsToFlatProps(periods) {
+  const props = {};
+  (periods || []).slice(0, 5).forEach((p, i) => {
+    props['p' + (i + 1) + '_start'] = p.start_year;
+    props['p' + (i + 1) + '_end'] = p.end_year == null ? null : p.end_year;
+  });
+  return props;
+}
+// station.operators / rolling-stock's `operators` field are display names
+// ("Great Western Railway"), not operators-content.json keys ("GWR") — same
+// gap map.html's own operatorNameToCode already solves for its chips (see
+// that variable's own comment there). Same exact rule here: build once from
+// operatorsContent[code].name -> code, so a name resolves back to its real
+// key wherever a name-only field needs to become a cross-tab link.
+function operatorNameIndex(operatorsContent) {
+  const index = {};
+  for (const [code, o] of Object.entries(operatorsContent || {})) {
+    if (o && o.name) index[o.name] = code;
+  }
+  return index;
+}
+
+// A currently-OPEN station has no `periods` array at all (that shape is
+// historical-only) — just a single scalar `opened_year`, still running
+// today. Synthesizes the same one-period-open shape periodsToFlatProps()
+// would produce for a historical station whose single period never closed,
+// so historicalOperatingRangeLabel() renders "1854–present" for both cases
+// via the exact same code path rather than a separate open-station format.
+function openStationFlatProps(openedYear) {
+  if (!openedYear) return null;
+  return periodsToFlatProps([{ start_year: Number(openedYear), end_year: null }]);
+}
+
 // Logo placeholder — text-only wordmark (user will design the real one)
 function BrandMark({ size = 18, accent = SRHQ.turq }) {
   return (
@@ -612,12 +686,62 @@ function crossListLabel(item, groupKey, groupsByKey) {
   return `Also listed under ${names.join(' and ')}`;
 }
 
+// Fetches the first candidate URL that returns real, parseable JSON —
+// rejects hosts that answer an unknown path with an HTML 404 / SPA-fallback
+// 200 (which would otherwise hang forever). `validate`, if given, must also
+// pass for a candidate to count.
+async function fetchFirstValidJson(candidates, validate) {
+  for (const url of candidates) {
+    try {
+      const r = await fetch(url, { cache: 'no-cache' });
+      if (!r.ok) continue;
+      const text = await r.text();
+      let json;
+      try { json = JSON.parse(text); }
+      catch (e) { continue; } // got HTML / non-JSON — try the next path
+      if (json && (!validate || validate(json))) return json;
+    } catch (e) { /* network error — try the next candidate */ }
+  }
+  return null;
+}
+
+// `config.dataSources` supports two shapes:
+//   - a flat array of path strings (LOCOMOTIVE_CONFIG's original shape) —
+//     one dataset from one file, tried in order, first valid JSON wins.
+//   - an array of { key, candidates, optional?, validate? } — Stations and
+//     Operators each combine several independent files (station-list.json +
+//     station-regions.json + stations-content.json + optionally the
+//     historical geojson; operators-content.json + operator-colors.json),
+//     so `config.adapt()` needs a { [key]: json } map instead of one payload.
+//     `optional: true` sources may fail to load without aborting the whole
+//     dataset (config.adapt() sees `null` for that key and decides).
 function useDatasetLoader(config) {
   const [data, setData] = React.useState(null);
   const [err, setErr] = React.useState(null);
   React.useEffect(() => {
     let cancelled = false;
+    const isMultiSource = config.dataSources.length > 0 && typeof config.dataSources[0] === 'object';
     (async () => {
+      if (isMultiSource) {
+        const sources = {};
+        for (const src of config.dataSources) {
+          const json = await fetchFirstValidJson(src.candidates, src.validate);
+          if (!json && !src.optional) {
+            if (!cancelled) setErr(config.loadErrorText || `Could not load ${src.key}.`);
+            return;
+          }
+          sources[src.key] = json;
+        }
+        if (cancelled) return;
+        const adapted = config.adapt(sources);
+        if (adapted && Array.isArray(adapted.items) && Array.isArray(adapted.groups)) {
+          setData(adapted);
+        } else {
+          setErr(config.loadErrorText || 'Could not load the data file.');
+        }
+        return;
+      }
+      // Original single-source path — unchanged behavior for LOCOMOTIVE_CONFIG.
       for (const url of config.dataSources) {
         try {
           const r = await fetch(url, { cache: 'no-cache' });
@@ -826,7 +950,38 @@ function DatasetColumnHead({ config }) {
   );
 }
 
-function DatasetRow({ config, groupKey, groupsByKey, item }) {
+// Cross-link chip row — e.g. a station's "Operators" row, an operator's
+// "Fleet" / "Stations served" rows. Each chip is a plain button (never a
+// real <a>, so navigating never reloads the page) that hands off to
+// `onNavigate(mode, domId)`: switch the active tab if the target lives in a
+// different one, then set `location.hash` to the target's domId. Reuses
+// DatasetExplorer's EXISTING deep-link effect to do the actual expand +
+// scroll — that effect already re-runs whenever a tab's own `data` loads
+// and checks the current hash, so switching tabs and re-triggering it this
+// way needs no new mechanism, just the same one two datasets now share.
+function DatasetRelatedChips({ label, chips, onNavigate }) {
+  if (!chips || !chips.length) return null;
+  return (
+    <div style={{ marginBottom: 14 }}>
+      <div style={{ fontFamily: SRHQ.mono, fontSize: 10, letterSpacing: 2,
+                    textTransform: 'uppercase', color: SRHQ.inkMute }}>{label}</div>
+      <div style={{ marginTop: 6 }}>
+        {chips.map((c, i) => (
+          <button key={i} type="button"
+            onClick={() => onNavigate && onNavigate(c.mode, c.domId)}
+            style={{
+              display: 'inline-block', padding: '3px 8px', margin: '2px 4px 2px 0',
+              background: 'rgba(var(--line-rgb),0.04)', borderRadius: 6,
+              border: `1px solid ${SRHQ.line}`, fontSize: 12,
+              fontFamily: SRHQ.body, color: SRHQ.ink, cursor: 'pointer',
+            }}>{c.text}</button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function DatasetRow({ config, groupKey, groupsByKey, item, allData, onNavigate }) {
   const [open, setOpen] = React.useState(false);
   const s = config.card.summary;
   const chipInfo = config.chip ? config.chip.classify(item[config.chip.field]) : null;
@@ -836,11 +991,16 @@ function DatasetRow({ config, groupKey, groupsByKey, item }) {
   const runnerFirst = runner.split(';')[0].trim();
   const groupColor = config.grouping.colors[groupKey];
   const crossListText = crossListLabel(item, groupKey, groupsByKey);
+  const relatedGroups = config.card.relatedEntities ? config.card.relatedEntities(item, allData) : null;
 
-  const fullNodes = (config.card.full || []).map((f, i) => f.derive === 'crossList'
-    ? (crossListText ? <DatasetField key={'x' + i} label={f.label} value={crossListText} /> : null)
-    : renderCardField(f, item, chipInfo, 'f' + i));
-  const anyFull = fullNodes.some(Boolean);
+  const fullNodes = (config.card.full || []).map((f, i) => {
+    if (f.derive === 'crossList') return crossListText ? <DatasetField key={'x' + i} label={f.label} value={crossListText} /> : null;
+    if (f.derive === 'related') return (relatedGroups || []).map((g, j) => (
+      <DatasetRelatedChips key={'rel' + i + '-' + j} label={g.label} chips={g.chips} onNavigate={onNavigate} />
+    ));
+    return renderCardField(f, item, chipInfo, 'f' + i);
+  });
+  const anyFull = fullNodes.some((n) => Array.isArray(n) ? n.some(Boolean) : Boolean(n));
 
   return (
     <div id={item.domId} style={{ borderBottom: `1px solid ${SRHQ.line}` }}>
@@ -930,7 +1090,7 @@ function makeFilterItem(config, chipValue, statusValue, query) {
   };
 }
 
-function DatasetExplorer({ config, header }) {
+function DatasetExplorer({ config, header, onNavigate }) {
   const { data, err } = useDatasetLoader(config);
   const [active, setActive] = React.useState('all');
   const [query, setQuery] = React.useState('');
@@ -1047,10 +1207,18 @@ function DatasetExplorer({ config, header }) {
                                   letterSpacing: -0.5 }}>{g.label}</span>
                   {/* PER-GROUP count: items appearing in THIS group, so a
                       cross-listed item counts here and in its other groups.
-                      The global figure in the toolbar counts it once. */}
+                      The global figure in the toolbar counts it once.
+                      config.grouping.showCountOnlyWhenFiltered (default
+                      false, so locomotives — the original consumer —
+                      render identically to before this existed): when true,
+                      an UNFILTERED group shows just the total, not a
+                      redundant "463 / 463" — matches only appear once a
+                      filter actually narrows the group. */}
                   <span style={{ fontFamily: SRHQ.mono, fontSize: 11, color: SRHQ.inkMute,
                                   letterSpacing: 1 }}>
-                    {g.filtered.length} / {g.count}
+                    {config.grouping.showCountOnlyWhenFiltered && g.filtered.length === g.count
+                      ? g.count
+                      : `${g.filtered.length} / ${g.count}`}
                   </span>
                 </div>
                 <span style={{ fontSize: 13, color: SRHQ.inkDim, maxWidth: 540,
@@ -1058,7 +1226,7 @@ function DatasetExplorer({ config, header }) {
               </summary>
               <DatasetColumnHead config={config} />
               {g.filtered.map(item => (
-                <DatasetRow key={item.domId} config={config} groupKey={g.key} groupsByKey={groupsByKey} item={item} />
+                <DatasetRow key={item.domId} config={config} groupKey={g.key} groupsByKey={groupsByKey} item={item} allData={data} onNavigate={onNavigate} />
               ))}
             </details>
           );
@@ -1081,5 +1249,6 @@ function DatasetExplorer({ config, header }) {
 Object.assign(window, {
   SRHQ, BrandMark, TopNav, Footer, CookieConsent, colorAlpha, useTheme, logoSrc,
   regionKeyFor,
+  historicalPeriodList, historicalOperatingRangeLabel, periodsToFlatProps, openStationFlatProps, operatorNameIndex,
   DatasetExplorer,
 });
