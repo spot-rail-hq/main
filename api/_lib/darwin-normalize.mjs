@@ -111,15 +111,20 @@ const HHMM_RE = /^\d{1,2}:\d{2}$/;
 
 export function resolveStatus(service) {
   if (service.isCancelled === true || service.filterLocationCancelled === true) {
-    return { status: 'cancelled', estimatedTime: null };
+    return { status: 'cancelled', estimatedTime: null, rawEtd: null };
   }
   const etd = service.etd;
-  if (etd === 'On time') return { status: 'on-time', estimatedTime: null };
-  if (typeof etd === 'string' && HHMM_RE.test(etd)) return { status: 'delayed', estimatedTime: etd };
-  if (etd === 'Delayed') return { status: 'delayed-no-estimate', estimatedTime: null };
-  if (etd === 'Cancelled') return { status: 'cancelled', estimatedTime: null };
-  if (etd === 'No report') return { status: 'no-report', estimatedTime: null };
-  return { status: 'unknown', estimatedTime: null };
+  if (etd === 'On time') return { status: 'on-time', estimatedTime: null, rawEtd: null };
+  if (typeof etd === 'string' && HHMM_RE.test(etd)) return { status: 'delayed', estimatedTime: etd, rawEtd: null };
+  if (etd === 'Delayed') return { status: 'delayed-no-estimate', estimatedTime: null, rawEtd: null };
+  if (etd === 'Cancelled') return { status: 'cancelled', estimatedTime: null, rawEtd: null };
+  if (etd === 'No report') return { status: 'no-report', estimatedTime: null, rawEtd: null };
+  // Only the true fallback case keeps the raw value — every named status
+  // above is already fully described by its enum, so rawEtd would just be
+  // a redundant echo of information the label already carries. 'unknown' is
+  // the one state where the enum alone tells the reader nothing, so this is
+  // the only place worth the field.
+  return { status: 'unknown', estimatedTime: null, rawEtd: typeof etd === 'string' ? etd : null };
 }
 
 // ─── coach count ─────────────────────────────────────────────────────────
@@ -177,7 +182,7 @@ function normalizeCallingPointGroup(group) {
 }
 
 export function normalizeService(service) {
-  const { status, estimatedTime } = resolveStatus(service);
+  const { status, estimatedTime, rawEtd } = resolveStatus(service);
   const { coachCount, coachCountSource } = resolveCoachCount(service);
   const destArr = Array.isArray(service.destination) ? service.destination : [];
   const lastDest = destArr.length ? destArr[destArr.length - 1] : null;
@@ -197,6 +202,7 @@ export function normalizeService(service) {
     platform: service.platform || null,
     status,
     estimatedTime,
+    rawEtd,
     operator: service.operator || null,
     operatorCode: service.operatorCode || null,
     isCancelled: service.isCancelled === true,

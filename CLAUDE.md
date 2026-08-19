@@ -287,6 +287,17 @@ keys — **not interchangeable**, confirmed symmetrically (each key gets a
     station, which the board never exposes at all) alongside `std`/`etd`.
     Has no `formation`/coach data and no `origin`/`destination` fields at
     all — both present on the board, absent here.
+- **`fixtures/darwin-departures/normalized/` is a derived artifact, not
+  hand-curated.** It's the output of running the real `normalizeBoard()`
+  (`api/_lib/darwin-normalize.mjs`) over the raw fixtures via
+  `node scripts/build-darwin-fixture-previews.mjs` — departures.html's
+  `?fixture=<name>` preview mode (localhost-only) reads these pre-normalised
+  files directly rather than duplicating normaliser logic into the browser.
+  **Any change to `normalizeBoard()`/`resolveStatus()`/etc. must be followed
+  by re-running that script**, or the files under `normalized/` silently
+  drift out of sync with what the real normaliser now produces — the
+  fixture preview would then be showing a shape the live site can no longer
+  actually generate, with nothing flagging the mismatch.
 
 ## Saved routes (localStorage)
 - Key: srhq_saved_routes

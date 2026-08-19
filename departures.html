@@ -894,9 +894,14 @@ function startAutoRefresh() {
 }
 
 // ── INIT ─────────────────────────────────────────────────────────
+// Fixture preview must never activate on the live site — ?fixture= on
+// srhq.uk would let anyone see a fake departure board. Gated on hostname,
+// not on any build flag or env var (there's no build step to carry one).
+var IS_LOCALHOST = ['localhost', '127.0.0.1', '::1', '[::1]', ''].indexOf(location.hostname) !== -1;
+
 (function initFixtureMode() {
   var fx = new URLSearchParams(location.search).get('fixture');
-  if (fx) enterFixtureMode(fx);
+  if (fx && IS_LOCALHOST) enterFixtureMode(fx);
 })();
 
 updatePagerButton();

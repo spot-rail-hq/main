@@ -20,7 +20,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import { normalizeBoard } from '../../api/_lib/darwin-normalize.mjs';
+import { normalizeBoard, normalizeService } from '../../api/_lib/darwin-normalize.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(HERE, '../..');
@@ -124,6 +124,18 @@ for (const [name, fixturePath] of Object.entries(FIXTURES)) {
     const normDelayed = board.services.filter((s) => rawDelayed.some((r) => r.serviceID === s.serviceId));
     check(name + ': all 3 resolve to status "delayed-no-estimate"', normDelayed.length === 3 && normDelayed.every((s) => s.status === 'delayed-no-estimate'));
   }
+}
+
+// ── rawEtd passthrough — 'unknown' never occurs live (no real fixture has
+// it), so this is a hand-built synthetic service, not a captured payload. ──
+console.log('\n── synthetic: rawEtd passthrough on status "unknown" ──');
+{
+  const nonsense = normalizeService({ etd: 'Some Future Darwin Value', isCancelled: false });
+  check('synthetic: unrecognised etd resolves to status "unknown"', nonsense.status === 'unknown');
+  check('synthetic: rawEtd carries the exact raw string through', nonsense.rawEtd === 'Some Future Darwin Value');
+
+  const onTime = normalizeService({ etd: 'On time', isCancelled: false });
+  check('synthetic: rawEtd stays null on a named status (not populated everywhere)', onTime.status === 'on-time' && onTime.rawEtd === null);
 }
 
 console.log('\n' + '═'.repeat(70));
