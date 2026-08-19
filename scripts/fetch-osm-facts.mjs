@@ -289,20 +289,41 @@ async function enrichStation(crs) {
     }
   }
 
+  // wheelchair=* is a constrained OSM vocabulary (yes/no/limited/designated)
+  // — validated here (2026-08-19, after "5" was found live on COV/Coventry:
+  // a malformed upstream tag ingested verbatim with no check at all). An
+  // out-of-vocabulary value is treated exactly like a MISSING tag: `null`,
+  // which mergeOsmFields() below already skips writing (it only ever
+  // overwrites a field when the new value is non-null — see that function's
+  // own comment), so an invalid upstream value can never blank out a real,
+  // previously-good/curated one on a re-run. It just never gets treated as
+  // real data, same as if OSM had no tag at all.
+  const WHEELCHAIR_VALUES = new Set(['yes', 'no', 'limited', 'designated']);
+  const rawWheelchair = tags.wheelchair;
+  const wheelchairRejected = !!rawWheelchair && !WHEELCHAIR_VALUES.has(rawWheelchair);
+  const wheelchair = (rawWheelchair && !wheelchairRejected) ? rawWheelchair : null;
+
   const result = {
     platforms,
-    wheelchair: tags.wheelchair || null,
+    wheelchair,
     operators: operators.length ? operators : null,
   };
-  const incomplete = platforms == null || !tags.wheelchair || !operators.length;
+  const incomplete = platforms == null || !wheelchair || !operators.length;
   const notes = [];
   if (platforms == null) notes.push('no railway=platform ways/relations found nearby — platform count unset');
-  if (!tags.wheelchair) notes.push('station node has no wheelchair=* tag');
+  if (!rawWheelchair) notes.push('station node has no wheelchair=* tag');
+  // Logged as its own distinct note (not folded into the "no tag" case
+  // above) precisely so an invalid VALUE is visible as a different failure
+  // mode than a MISSING tag — both end up null, but "OSM has a bad tag"
+  // and "OSM has no tag" call for different follow-up (report upstream vs.
+  // nothing to do).
+  if (wheelchairRejected) notes.push(`station node's wheelchair=* tag has an invalid value ("${rawWheelchair}") — not one of yes/no/limited/designated; treated as absent`);
   if (!operators.length) notes.push('no route relations found stopping here — operators list unset');
   if (unverifiedRelations) notes.push(`${unverifiedRelations} relation(s) found via proximity but couldn't verify stop membership (no PTv2 stop-role tagging) — excluded, but manual review may find real coverage`);
   if (tags.wikipedia) notes.push(`hint: OSM tags this station's Wikipedia page as "${tags.wikipedia.replace(/^en:/, '')}" — consider setting wikipedia_title (not auto-applied)`);
 
-  console.log(`  platforms=${platforms}  wheelchair=${tags.wheelchair || '(none)'}  operators=${operators.join(', ') || '(none)'}`);
+  console.log(`  platforms=${platforms}  wheelchair=${wheelchairRejected ? `(REJECTED: "${rawWheelchair}")` : (wheelchair || '(none)')}  operators=${operators.join(', ') || '(none)'}`);
+  if (wheelchairRejected) console.warn(`  ⚑ ${crs}: invalid wheelchair value "${rawWheelchair}" rejected, stored as null`);
   if (notes.length) console.log(`  ⚑ ${notes.join(' / ')}`);
 
   return { crs, node_id: node.id, result, incomplete, notes: notes.join('; ') || null };
