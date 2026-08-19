@@ -1005,7 +1005,19 @@ function updateUrl() {
 }
 window.addEventListener('popstate', function (e) {
   var crs = (e.state && e.state.crs) || initialStationFromUrl();
-  if (!crs) return; // see showEmptyView()'s own note — Esc-clearing never touches the URL/history, so popstate never lands here from that path
+  if (!crs) {
+    // Landed on a crs-less history slot — either the pre-any-selection
+    // entry, or one an Esc replaceState() stripped ?crs= from. Render the
+    // empty view rather than leaving whatever board was last on screen: a
+    // stale board reflecting a DIFFERENT station than the URL now shows is
+    // worse than showing nothing. renderEmptyView() itself never touches
+    // the URL/history — right here, since the URL already reflects this
+    // state (that's what fired the event); it would be wrong to rewrite it.
+    stackPointer = -1;
+    renderEmptyView();
+    updateNavButtons();
+    return;
+  }
   stackPointer = (e.state && typeof e.state.navIndex === 'number') ? e.state.navIndex : 0;
   selectStationSilently(crs);
   updateNavButtons();
@@ -1072,12 +1084,11 @@ function renderEmptyView() {
 // history entry) — Esc is a clear, not a navigation, so it must not become
 // a back/forward-able position of its own; that's also why it never
 // touches visitedCrsStack/stackPointer (see that var's own comment).
-// Known small gap: because replaceState only overwrites the CURRENT entry,
-// a later Back/Forward that lands back on THIS particular history slot
+// A later Back/Forward that lands back on THIS particular history slot
 // (e.g. after picking a new station, then walking back far enough) arrives
-// with e.state.crs === null; popstate's `if (!crs) return;` guard no-ops
-// on that rather than re-rendering the empty view — the board just stays
-// whatever it last showed. Minor, not fixed here. ──
+// with e.state.crs === null — popstate's own handler renders the empty
+// view for that case rather than leaving a stale board on screen (was a
+// known gap here; fixed in the popstate handler itself, above). ──
 function showEmptyView() {
   if (currentFixture || !currentStation) return; // nothing to clear
   renderEmptyView();

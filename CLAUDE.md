@@ -328,6 +328,42 @@ the URLs still resolve.
   drift out of sync with what the real normaliser now produces — the
   fixture preview would then be showing a shape the live site can no longer
   actually generate, with nothing flagging the mismatch.
+- **`api/` files are bundled as CommonJS unless `package.json` sets
+  `"type": "module"`** — which this project deliberately does not (adding
+  it project-wide would put every existing `.js` function at risk of the
+  same failure, for the sake of the handful that actually need ESM).
+  **Any new function that imports an ESM module must use the `.mjs`
+  extension itself**, or Vercel's build bundles it to CommonJS and the
+  bundle's own `require()` of a real ESM module throws
+  `ERR_REQUIRE_ESM` — this exact bug shipped once already (`api/darwin-
+  departures.js` importing `api/_lib/darwin-normalize.mjs`), because
+  **`vercel dev` does not reproduce this bundling path** — it ran the
+  broken `.js` file locally without complaint, and only production 500'd.
+  Don't trust a clean `vercel dev` run alone as proof a new `api/`
+  function importing an `.mjs` module is safe.
+  Separately: **`vercel dev` builds its routing table at startup**, so
+  after renaming any file under `api/` (extension change included), the
+  running dev server 404s on the old route until it's restarted — a
+  restart is required to verify the rename actually resolved correctly,
+  not just a nicety.
+
+## Known divergence: station-search ranking (departures.html vs map.html)
+
+**Not intended design — flagged for reconciliation, not a decision to keep
+two behaviours.** departures.html's station search (added/rewritten
+2026-08-19) uses a four-tier model — CRS-prefix match, name-starts-with,
+word-boundary match (query starts some word within the name, delimited by
+space/hyphen/parenthesis/slash/ampersand), true mid-word substring — with
+major-station-then-length as the tiebreak within each tier, using the same
+curated set map.html already loads from `data/stations.geojson`. map.html's
+own `searchStations()` still has the original two-tier model (name-starts-
+with, then true substring) with a **pure name-length tiebreak** — no word-
+boundary tier, no major-station signal. That length-only tiebreak is a real,
+demonstrated bug there (e.g. "bir" ranks "Birkdale"/"Birkbeck" above
+"Birmingham New Street" today), not a difference in taste. departures.html
+was deliberately used as the testbed for the fix; map.html has not been
+touched and still has the old behaviour — this is debt to close, not two
+valid approaches living side by side.
 
 ## Saved routes (localStorage)
 - Key: srhq_saved_routes
