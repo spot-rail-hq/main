@@ -288,6 +288,22 @@ body.nav-open .nav-drawer { transform: translateX(0); box-shadow: -20px 0 60px r
 .dep-icon-btn:disabled { opacity: 0.32; cursor: not-allowed; }
 .dep-icon-btn:disabled:hover { color: var(--ink-mute); }
 
+/* Station title row — map.html's .sb-selection shape (title, flex:1, then
+   trailing action icons) at page scale: bigger than the sidebar's 22px
+   (this is a whole page's subject, not a compact row) but well under the
+   "Live Departures" hero H1's 36–64px (that stays the page heading; this
+   names which station within it). 28px sits deliberately between the two. */
+.dep-station-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  margin-bottom: 14px;
+}
+.dep-station-title {
+  font-family: 'Archivo', sans-serif; font-size: 28px; font-weight: 600;
+  letter-spacing: -0.5px; color: var(--ink); line-height: 1.15;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; flex: 1;
+}
+.dep-station-actions { display: flex; align-items: center; gap: 4px; flex: none; }
+
 .dep-bar {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
   flex-wrap: wrap;
@@ -585,7 +601,7 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
 <!-- HERO -->
 <section class="hero-sm">
   <div class="label">Live Departures</div>
-  <h1 id="dep-h1">Live Departures</h1>
+  <h1>Live Departures</h1>
   <p>Real-time UK train departures via National Rail's Darwin data feed — auto-refreshing every 30 seconds.</p>
 </section>
 
@@ -599,13 +615,22 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
       <div class="dep-ac-list" id="station-ac-list"></div>
     </div>
   </div>
-  <div class="dep-bar" id="dep-bar">
-    <span id="dep-updated">Last updated: —</span>
-    <span class="dep-bar-actions">
+  <!-- Station title row — same shape as map.html's .sb-selection (title +
+       share + star), just larger (this is a whole page, not a sidebar row)
+       and with back/forward folded in too, since departures.html has
+       nowhere else for them to live. Hidden until a station is selected. -->
+  <div class="dep-station-row" id="dep-station-row" style="display:none">
+    <span class="dep-station-title" id="dep-station-title"></span>
+    <span class="dep-station-actions">
       <button type="button" class="dep-icon-btn" id="dep-back-btn" aria-label="Back"><i class="ti ti-chevron-left"></i></button>
       <button type="button" class="dep-icon-btn" id="dep-forward-btn" aria-label="Forward"><i class="ti ti-chevron-right"></i></button>
       <button type="button" class="dep-icon-btn" id="dep-share-btn" aria-label="Share this station"><i class="ti ti-share-3"></i></button>
       <button type="button" class="dep-icon-btn" id="dep-star-btn" aria-label="Save this station" aria-pressed="false"><i class="ti ti-star"></i></button>
+    </span>
+  </div>
+  <div class="dep-bar" id="dep-bar">
+    <span id="dep-updated">Last updated: —</span>
+    <span class="dep-bar-actions">
       <button type="button" class="dep-pager-btn" id="dep-pager-btn">Next 2 hours</button>
       <span id="dep-refreshing" class="dep-refreshing">↻ Refreshing…</span>
     </span>
@@ -987,12 +1012,16 @@ window.addEventListener('popstate', function (e) {
 });
 // Used by popstate — the URL already reflects this state (that's what
 // fired the event), so pushing it again would double up history entries.
+function showStationRows() {
+  document.getElementById('dep-bar').style.display = '';
+  if (!currentFixture) document.getElementById('dep-station-row').style.display = '';
+}
 function selectStationSilently(crs) {
   currentStation = crs;
   currentStationName = crs; // corrected to the real name once the board loads (see renderDepartures)
-  document.getElementById('dep-bar').style.display = '';
+  showStationRows();
   document.getElementById('station-input').value = crs;
-  document.getElementById('dep-h1').textContent = crs;
+  document.getElementById('dep-station-title').textContent = crs;
   document.title = crs + ' — Live Departures | SRHQ — SpotRail HQ';
   currentOffset = 0;
   updatePagerButton();
@@ -1003,9 +1032,9 @@ function selectStationSilently(crs) {
 function selectStation(crs, name) {
   currentStation = crs.toUpperCase();
   currentStationName = name || currentStation;
-  document.getElementById('dep-bar').style.display = '';
+  showStationRows();
   document.getElementById('station-input').value = currentStationName;
-  document.getElementById('dep-h1').textContent = currentStationName;
+  document.getElementById('dep-station-title').textContent = currentStationName;
   document.title = currentStationName + ' — Live Departures | SRHQ — SpotRail HQ';
   updateUrl();
   currentOffset = 0;
@@ -1030,7 +1059,7 @@ function renderEmptyView() {
   if (refreshTimer) clearInterval(refreshTimer);
   refreshTimer = null;
   document.title = 'Live Departures | SRHQ — SpotRail HQ';
-  document.getElementById('dep-h1').textContent = 'Live Departures';
+  document.getElementById('dep-station-row').style.display = 'none';
   document.getElementById('dep-bar').style.display = 'none';
   document.getElementById('dep-table-wrap').innerHTML =
     '<div class="state-msg" style="background:var(--surface);border:1px solid rgba(var(--line-rgb),0.08);border-radius:12px">' +
@@ -1238,7 +1267,7 @@ function renderDepartures(board) {
   if (board && board.locationName && !currentFixture) {
     currentStationName = board.locationName;
     document.title = currentStationName + ' — Live Departures | SRHQ — SpotRail HQ';
-    document.getElementById('dep-h1').textContent = currentStationName;
+    document.getElementById('dep-station-title').textContent = currentStationName;
     var inputEl = document.getElementById('station-input');
     if (inputEl && document.activeElement !== inputEl) inputEl.value = currentStationName;
     updateStarButton();
@@ -1348,6 +1377,7 @@ function renderKeyMissing() {
   consecutiveFailures = 0; // this is a distinct, definitive "not configured" state, not a transient failure being counted
   if (refreshTimer) clearInterval(refreshTimer);
   refreshTimer = null;
+  document.getElementById('dep-station-row').style.display = 'none';
   document.getElementById('dep-bar').style.display = 'none';
   document.getElementById('dep-table-wrap').innerHTML =
     '<div class="state-msg" style="background:var(--surface);border:1px solid rgba(var(--line-rgb),0.08);border-radius:12px">' +
@@ -1408,10 +1438,7 @@ function enterFixtureMode(name) {
   document.getElementById('fixture-banner').innerHTML =
     '<div class="dep-fixture-banner">Fixture preview — <b>' + escHtml(name) + '</b>. No live API calls in this mode.</div>';
   document.getElementById('station-row').style.display = 'none';
-  document.getElementById('dep-share-btn').style.display = 'none';
-  document.getElementById('dep-star-btn').style.display = 'none';
-  document.getElementById('dep-back-btn').style.display = 'none';
-  document.getElementById('dep-forward-btn').style.display = 'none';
+  document.getElementById('dep-station-row').style.display = 'none'; // share/star/back/forward all live in here now
   updatePagerButton();
 }
 
@@ -1487,7 +1514,8 @@ var initialCrs = currentFixture ? null : initialStationFromUrl();
     currentStation = initialCrs;
     currentStationName = initialCrs;
     document.getElementById('station-input').value = initialCrs;
-    document.getElementById('dep-h1').textContent = initialCrs;
+    document.getElementById('dep-station-row').style.display = '';
+    document.getElementById('dep-station-title').textContent = initialCrs;
     document.title = initialCrs + ' — Live Departures | SRHQ — SpotRail HQ';
     visitedCrsStack = [initialCrs];
     stackPointer = 0;
