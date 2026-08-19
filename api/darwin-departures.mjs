@@ -1,11 +1,23 @@
 /**
- * api/darwin-departures.js  —  Vercel Serverless Function
+ * api/darwin-departures.mjs  —  Vercel Serverless Function
  * ─────────────────────────────────────────────────────────────────
  * Departures board via Darwin LDBWS REST on Rail Data Marketplace —
  * GetDepBoardWithDetails, product 1010-live-departure-board-dep1_2 (note:
  * the product name is plural, "board", the operation is singular,
  * "Board"). Calling points come back inline on this operation, so the
  * board never needs a per-service follow-up call.
+ *
+ * .mjs, not .js (renamed 2026-08-19): this file imports the ESM-only
+ * api/_lib/darwin-normalize.mjs. As a .js file with no "type": "module" in
+ * package.json (deliberately absent — see that file's own note on why),
+ * Vercel's Node builder bundled this to CommonJS and the bundle's own
+ * require() of a real .mjs file threw ERR_REQUIRE_ESM in production —
+ * vercel dev didn't reproduce it, so this shipped and broke live. The .mjs
+ * extension makes Vercel treat this file itself as ESM regardless of
+ * package.json, matching the normaliser it imports. Vercel's filesystem
+ * routing maps any api/<name>.{js,mjs,ts,...} to the same /api/<name> path,
+ * so this is a zero-behaviour-change fix — confirmed against a locally
+ * running `vercel dev`, not assumed.
  *
  * This is the departures.html data source going forward (see CLAUDE.md's
  * "planned" note on the RTT→Darwin move). It does NOT touch

@@ -1055,17 +1055,38 @@ function renderDepartures(board) {
     '</tr></thead><tbody>' + rows + '</tbody></table>';
 }
 
+// ── Failure backoff — incident 2026-08-19: a broken endpoint was retried
+// every 30s for half an hour straight (production 500 loop from the
+// ERR_REQUIRE_ESM bug, see this pass's fix above). After 3 CONSECUTIVE
+// failures, auto-refresh stops outright — Retry is the only way to try
+// again. A successful load (manual or automatic) resets the counter and,
+// if auto-refresh had been stopped, restarts it — see loadDepartures()'s
+// success branch. ──
+var MAX_CONSECUTIVE_FAILURES = 3;
+var consecutiveFailures = 0;
+
 function renderDepError() {
+  consecutiveFailures++;
+  var stopped = consecutiveFailures >= MAX_CONSECUTIVE_FAILURES;
+  if (stopped && refreshTimer) {
+    clearInterval(refreshTimer);
+    refreshTimer = null;
+  }
+  var message = stopped
+    ? "Couldn't load departures after " + consecutiveFailures + " tries in a row. Auto-refresh has stopped — tap Retry to try again."
+    : "Couldn't load departures right now — try again shortly";
   document.getElementById('dep-table-wrap').innerHTML =
     '<div class="state-msg" style="background:var(--surface);border:1px solid rgba(var(--line-rgb),0.08);border-radius:0 0 12px 12px">' +
-      "Couldn't load departures right now — try again shortly<br>" +
+      escHtml(message) + '<br>' +
       '<button class="btn-retry" id="dep-retry">Retry</button>' +
     '</div>';
   document.getElementById('dep-retry').addEventListener('click', loadDepartures);
 }
 
 function renderKeyMissing() {
+  consecutiveFailures = 0; // this is a distinct, definitive "not configured" state, not a transient failure being counted
   if (refreshTimer) clearInterval(refreshTimer);
+  refreshTimer = null;
   document.getElementById('dep-bar').style.display = 'none';
   document.getElementById('dep-table-wrap').innerHTML =
     '<div class="state-msg" style="background:var(--surface);border:1px solid rgba(var(--line-rgb),0.08);border-radius:12px">' +
@@ -1153,8 +1174,13 @@ function loadDepartures() {
         else renderDepError();
         return;
       }
+      consecutiveFailures = 0;
       renderDepartures(res.data);
       setLastUpdated();
+      // Recovers auto-refresh if a prior run of failures had stopped it —
+      // this success (whether from the 30s timer or a manual Retry click)
+      // is the signal the endpoint is working again.
+      if (!refreshTimer && !currentFixture) startAutoRefresh();
     })
     .catch(function () {
       setRefreshing(false);
