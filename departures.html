@@ -298,6 +298,78 @@ table.dep-table {
 .dep-table tbody tr:nth-child(even) td { background: var(--surface2); }
 .dep-mono { font-family: 'JetBrains Mono', monospace; }
 
+.dep-row { cursor: pointer; }
+.dep-row:hover td { background: rgba(var(--color-accent-turquoise-rgb),0.06); }
+.dep-row.expanded td { background: rgba(var(--color-accent-turquoise-rgb),0.06); }
+.dep-via { display: block; font-size: 11.5px; color: var(--ink-mute); margin-top: 2px; }
+.dep-status { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; }
+.dep-status-dot { width: 7px; height: 7px; border-radius: 50%; flex: none; background: currentColor; }
+.dep-status.is-muted { font-style: italic; }
+.dep-expand-hint { font-size: 11px; color: var(--ink-mute); margin-left: 6px; }
+
+.dep-detail-row td {
+  padding: 0; border-bottom: 1px solid rgba(var(--line-rgb),0.05);
+}
+.dep-detail {
+  padding: 14px 16px 18px; background: rgba(var(--line-rgb),0.02);
+  font-size: 13px; color: var(--ink-dim);
+}
+.dep-detail-reason {
+  padding: 8px 12px; margin-bottom: 12px; border-radius: 8px;
+  background: rgba(var(--color-accent-amber-rgb),0.08);
+  border: 1px solid rgba(var(--color-accent-amber-rgb),0.24);
+  color: var(--ink);
+}
+.dep-detail-reason.is-cancelled {
+  background: rgba(var(--color-accent-magenta-rgb),0.08);
+  border-color: rgba(var(--color-accent-magenta-rgb),0.24);
+}
+.dep-callingpoints { list-style: none; }
+.dep-callingpoints li {
+  display: flex; gap: 10px; align-items: baseline;
+  padding: 5px 0; border-bottom: 1px solid rgba(var(--line-rgb),0.04);
+}
+.dep-callingpoints li:last-child { border-bottom: none; }
+.dep-callingpoints .cp-time { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: var(--ink); flex: none; width: 44px; }
+.dep-callingpoints .cp-name { flex: 1; }
+.dep-callingpoints .cp-et { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--ink-mute); flex: none; }
+.dep-callingpoints .cp-cancelled .cp-name,
+.dep-callingpoints .cp-cancelled .cp-et { color: var(--color-accent-magenta); }
+.dep-no-callingpoints { color: var(--ink-mute); font-size: 12.5px; }
+
+.dep-coach-strip { display: flex; gap: 3px; margin-top: 10px; align-items: flex-end; height: 22px; }
+.dep-coach-seg {
+  width: 10px; border-radius: 2px 2px 0 0;
+  background: rgba(var(--line-rgb),0.1);
+  border: 1px solid rgba(var(--line-rgb),0.14);
+  position: relative; height: 100%;
+}
+.dep-coach-seg-fill {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  background: var(--color-accent-turquoise);
+  border-radius: 2px 2px 0 0;
+}
+.dep-coach-label { font-size: 10.5px; color: var(--ink-mute); margin-top: 4px; }
+
+.dep-pager-btn {
+  padding: 6px 12px; border-radius: 999px;
+  font-family: 'JetBrains Mono', monospace; font-size: 11.5px; font-weight: 500;
+  background: var(--surface); border: 1px solid rgba(var(--line-rgb),0.14);
+  color: var(--ink); cursor: pointer;
+}
+.dep-pager-btn.active { background: var(--color-accent-turquoise); color: #07090C; border-color: transparent; }
+.dep-pager-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.dep-fixture-banner {
+  padding: 10px 16px; margin-bottom: 12px; border-radius: 12px;
+  background: rgba(var(--color-accent-magenta-rgb),0.1);
+  border: 1px solid rgba(var(--color-accent-magenta-rgb),0.32);
+  font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--ink);
+}
+.dep-fixture-banner b { color: var(--color-accent-magenta); }
+
+.dep-footer-note { font-size: 0.75rem; color: var(--ink-mute); margin-top: 0.4rem; }
+
 /* Footer */
 .footer {
   border-top: 1px solid rgba(var(--line-rgb),0.08); margin-top: 80px;
@@ -453,6 +525,7 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
 
 <!-- DEPARTURES -->
 <div class="dep-wrap">
+  <div id="fixture-banner"></div>
   <div class="station-row" id="station-row">
     <div class="station-search">
       <input type="text" id="station-input" maxlength="3" placeholder="CRS" />
@@ -461,11 +534,14 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
   </div>
   <div class="dep-bar" id="dep-bar">
     <span id="dep-updated">Last updated: —</span>
-    <span id="dep-refreshing" class="dep-refreshing">↻ Refreshing…</span>
+    <span style="display:flex; align-items:center; gap:10px;">
+      <button type="button" class="dep-pager-btn" id="dep-pager-btn">+2 hr</button>
+      <span id="dep-refreshing" class="dep-refreshing">↻ Refreshing…</span>
+    </span>
   </div>
   <div class="dep-table-wrap" id="dep-table-wrap"></div>
-  <p style="font-size:0.75rem; color:#9AA4B2; margin-top:1rem;">
-    Live data provided by <a href="https://www.nationalrail.co.uk" target="_blank" rel="noopener noreferrer" style="color:#40E0D0;">National Rail</a> (Darwin)
+  <p class="dep-footer-note">
+    Live data provided by <a href="https://www.nationalrail.co.uk" target="_blank" rel="noopener noreferrer" style="color:var(--color-accent-turquoise);">National Rail</a> (Darwin) · showing up to 25 scheduled services per station
   </p>
 </div>
 
@@ -561,6 +637,8 @@ function selectStation(crs) {
   document.querySelectorAll('.station-btn').forEach(function (btn) {
     btn.classList.toggle('active', btn.dataset.crs === currentStation);
   });
+  currentOffset = 0;
+  updatePagerButton();
   loadDepartures();
   startAutoRefresh();
 }
@@ -578,8 +656,64 @@ var STATUS_DISPLAY = {
 
 function statusDisplay(s) {
   var d = STATUS_DISPLAY[s.status] || STATUS_DISPLAY.unknown;
-  var label = (s.status === 'delayed' && s.estimatedTime) ? (d.label + ' · ' + s.estimatedTime) : d.label;
-  return { label: label, color: d.color };
+  var label = d.label;
+  if (s.status === 'delayed' && s.estimatedTime) label = d.label + ' · ' + s.estimatedTime;
+  // normalizeBoard() (api/_lib/darwin-normalize.mjs) does not currently
+  // preserve the raw upstream etd string for services it can't classify —
+  // only the enum. This branch is ready for it (s.rawEtd) the moment that
+  // field exists; until then 'unknown' renders as a plain, honest label
+  // rather than fabricating text. See the delivery report for this gap.
+  if (s.status === 'unknown' && s.rawEtd) label = 'Unknown (' + s.rawEtd + ')';
+  var muted = s.status === 'no-report' || s.status === 'unknown';
+  return { label: label, color: d.color, muted: muted };
+}
+
+function coachStripHtml(formation) {
+  if (!formation || !Array.isArray(formation.coaches) || !formation.coaches.length) return '';
+  var anySpecified = formation.coaches.some(function (c) { return c.loadingSpecified; });
+  if (!anySpecified) return '';
+  var segs = formation.coaches.map(function (c) {
+    if (c.loadingSpecified && typeof c.loadingPercent === 'number') {
+      var pct = Math.max(0, Math.min(100, c.loadingPercent));
+      return '<span class="dep-coach-seg" title="Coach ' + escHtml(c.number || '') + ' — ' + pct + '%">' +
+        '<span class="dep-coach-seg-fill" style="height:' + pct + '%"></span></span>';
+    }
+    return '<span class="dep-coach-seg" title="Coach ' + escHtml(c.number || '') + '"></span>';
+  }).join('');
+  return '<div class="dep-coach-strip">' + segs + '</div><div class="dep-coach-label">Coach loading</div>';
+}
+
+function callingPointsHtml(service) {
+  var groups = Array.isArray(service.callingPointGroups) ? service.callingPointGroups : [];
+  var points = [];
+  groups.forEach(function (g) {
+    (Array.isArray(g.callingPoints) ? g.callingPoints : []).forEach(function (cp) { points.push(cp); });
+  });
+  if (!points.length) return '<div class="dep-no-callingpoints">No further calling points on record for this service.</div>';
+  var items = points.map(function (cp) {
+    var cancelled = cp.isCancelled === true;
+    var etText = cancelled ? 'Cancelled' : ((cp.et && cp.et !== cp.st) ? cp.et : '');
+    return '<li class="' + (cancelled ? 'cp-cancelled' : '') + '">' +
+      '<span class="cp-time">' + escHtml(cp.st || '—') + '</span>' +
+      '<span class="cp-name">' + escHtml(cp.locationName || '—') + '</span>' +
+      '<span class="cp-et">' + escHtml(etText) + '</span>' +
+    '</li>';
+  }).join('');
+  return '<ul class="dep-callingpoints">' + items + '</ul>';
+}
+
+function detailHtml(service) {
+  var reasonHtml = '';
+  if (service.status === 'cancelled' && service.cancelReason) {
+    reasonHtml = '<div class="dep-detail-reason is-cancelled">' + escHtml(service.cancelReason) + '</div>';
+  } else if (service.delayReason) {
+    reasonHtml = '<div class="dep-detail-reason">' + escHtml(service.delayReason) + '</div>';
+  } else if (service.status === 'no-report') {
+    reasonHtml = '<div class="dep-detail-reason">No status has been reported for this service yet.</div>';
+  } else if (service.status === 'unknown') {
+    reasonHtml = '<div class="dep-detail-reason">This service reported a status SpotRail HQ doesn’t recognise.</div>';
+  }
+  return '<div class="dep-detail">' + reasonHtml + callingPointsHtml(service) + coachStripHtml(service.formation) + '</div>';
 }
 
 function setLastUpdated() {
@@ -609,19 +743,34 @@ function renderDepartures(board) {
 
   if (!services.length) {
     document.getElementById('dep-table-wrap').innerHTML = nrccHtml +
-      '<div class="state-msg" style="background:var(--surface);border:1px solid rgba(var(--line-rgb),0.08);border-radius:0 0 12px 12px">No departures found for this station.</div>';
+      '<div class="state-msg" style="background:var(--surface);border:1px solid rgba(var(--line-rgb),0.08);border-radius:0 0 12px 12px">' +
+        'No departures currently showing for this station.<br>' +
+        '<span style="font-size:13px">That can mean the board is genuinely quiet right now, or nothing matched the current filter — not that something went wrong.</span>' +
+      '</div>';
     return;
   }
 
-  var rows = services.slice(0, 20).map(function (s) {
+  // 25 is Darwin's own hard ceiling on this endpoint (confirmed live, see
+  // CLAUDE.md) — .slice(0, 25) here is a defensive cap, not a UI choice
+  // trimming a longer list; the server never sends more than this anyway.
+  var rows = services.slice(0, 25).map(function (s, i) {
     var status = statusDisplay(s);
+    var rowId = 'r' + i;
     return (
-      '<tr>' +
+      '<tr class="dep-row" data-row="' + rowId + '">' +
         '<td class="dep-mono">' + escHtml(s.std || '—') + '</td>' +
-        '<td>' + escHtml(s.destination || '—') + '</td>' +
+        '<td>' + escHtml(s.destination || '—') +
+          (s.destinationVia ? '<span class="dep-via">' + escHtml(s.destinationVia) + '</span>' : '') +
+        '</td>' +
         '<td class="dep-mono">' + escHtml(s.platform || '—') + '</td>' +
-        '<td style="color:' + status.color + '">' + escHtml(status.label) + '</td>' +
-      '</tr>'
+        '<td>' +
+          '<span class="dep-status' + (status.muted ? ' is-muted' : '') + '" style="color:' + status.color + '">' +
+            '<span class="dep-status-dot"></span>' + escHtml(status.label) +
+          '</span>' +
+          '<span class="dep-expand-hint">▾</span>' +
+        '</td>' +
+      '</tr>' +
+      '<tr class="dep-detail-row" data-row="' + rowId + '" style="display:none"><td colspan="4">' + detailHtml(s) + '</td></tr>'
     );
   }).join('');
 
@@ -649,11 +798,76 @@ function renderKeyMissing() {
     '</div>';
 }
 
+// ── Row expand — pure client-side toggle, no API call. Attached once via
+// delegation on the wrap so it survives every renderDepartures() re-render. ──
+document.getElementById('dep-table-wrap').addEventListener('click', function (e) {
+  var row = e.target.closest('.dep-row');
+  if (!row) return;
+  var id = row.getAttribute('data-row');
+  var detail = document.querySelector('.dep-detail-row[data-row="' + id + '"]');
+  if (!detail) return;
+  var expanding = detail.style.display === 'none';
+  detail.style.display = expanding ? '' : 'none';
+  row.classList.toggle('expanded', expanding);
+  var hint = row.querySelector('.dep-expand-hint');
+  if (hint) hint.textContent = expanding ? '▴' : '▾';
+});
+
+// ── Time pager — a single "+2 hr" toggle, not an open-ended pager.
+// 119, not 120: Darwin's confirmed valid timeOffset range is -120..119
+// inclusive — exactly 120 gets a 400 (see CLAUDE.md's Darwin section). The
+// button reads "+2 hr" for the user; it requests 119 on the wire. ──
+var MAX_OFFSET = 119;
+var currentOffset = 0;
+
+function updatePagerButton() {
+  var btn = document.getElementById('dep-pager-btn');
+  if (!btn) return;
+  if (currentFixture) { btn.style.display = 'none'; return; }
+  btn.style.display = '';
+  btn.classList.toggle('active', currentOffset > 0);
+  btn.textContent = currentOffset > 0 ? 'Back to now' : '+2 hr';
+}
+
+document.getElementById('dep-pager-btn').addEventListener('click', function () {
+  currentOffset = currentOffset > 0 ? 0 : MAX_OFFSET;
+  updatePagerButton();
+  loadDepartures();
+});
+
+// ── Fixture preview mode — ?fixture=<name> loads a pre-normalised fixture
+// from disk instead of calling /api/darwin-departures. Zero live API calls
+// while active. See scripts/build-darwin-fixture-previews.mjs for how the
+// files under fixtures/darwin-departures/normalized/ are produced. ──
+var currentFixture = null;
+
+function enterFixtureMode(name) {
+  currentFixture = name;
+  document.getElementById('fixture-banner').innerHTML =
+    '<div class="dep-fixture-banner">Fixture preview — <b>' + escHtml(name) + '</b>. No live API calls in this mode.</div>';
+  document.getElementById('station-row').style.display = 'none';
+  updatePagerButton();
+}
+
 function loadDepartures() {
+  if (currentFixture === 'key-missing') {
+    // No board fixture exists for this — it's the { error: "upstream_unavailable" }
+    // contract, not a board shape, so this renders the real error state directly.
+    setRefreshing(false);
+    renderKeyMissing();
+    return;
+  }
+
   setRefreshing(true);
-  fetch('/api/darwin-departures?crs=' + encodeURIComponent(currentStation))
+  var url = currentFixture
+    ? '/fixtures/darwin-departures/normalized/' + encodeURIComponent(currentFixture) + '.json'
+    : '/api/darwin-departures?crs=' + encodeURIComponent(currentStation) + (currentOffset ? '&offset=' + currentOffset : '');
+
+  fetch(url)
     .then(function (r) {
-      return r.json().then(function (data) { return { ok: r.ok, data: data }; });
+      return r.json()
+        .then(function (data) { return { ok: r.ok, data: data }; })
+        .catch(function () { return { ok: false, data: null }; });
     })
     .then(function (res) {
       setRefreshing(false);
@@ -672,6 +886,7 @@ function loadDepartures() {
 }
 
 function startAutoRefresh() {
+  if (currentFixture) return; // static preview — nothing to refresh, no live calls
   if (refreshTimer) clearInterval(refreshTimer);
   refreshTimer = setInterval(function () {
     loadDepartures();
@@ -679,6 +894,12 @@ function startAutoRefresh() {
 }
 
 // ── INIT ─────────────────────────────────────────────────────────
+(function initFixtureMode() {
+  var fx = new URLSearchParams(location.search).get('fixture');
+  if (fx) enterFixtureMode(fx);
+})();
+
+updatePagerButton();
 loadDepartures();
 startAutoRefresh();
 </script>

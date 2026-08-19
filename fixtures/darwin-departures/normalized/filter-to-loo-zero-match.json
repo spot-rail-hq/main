@@ -1,0 +1,12 @@
+{
+  "crs": "BHM",
+  "locationName": "Birmingham New Street",
+  "generatedAt": "2026-08-19T12:40:34.3837575+01:00",
+  "platformAvailable": true,
+  "nrccMessages": [
+    {
+      "html": "Trains running to / from and through Basingstoke may be delayed by up to 20 minutes. Latest information can be found in <a href=\"https://www.nationalrail.co.uk/service-disruptions/basingstoke-20260818/\" target=\"_blank\" rel=\"noopener noreferrer\">Status and Disruptions</a>."
+    }
+  ],
+  "services": []
+}

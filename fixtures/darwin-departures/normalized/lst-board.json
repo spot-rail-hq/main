@@ -1,0 +1,1871 @@
+{
+  "crs": "LST",
+  "locationName": "London Liverpool Street",
+  "generatedAt": "2026-08-19T11:42:57.075883+01:00",
+  "platformAvailable": true,
+  "nrccMessages": [
+    {
+      "html": "<p>No trains between&nbsp;Shenfield and&nbsp;Southend Victoria, or between Wickford and Southminster. Latest information can be found in <a href=\"https://www.nationalrail.co.uk/service-disruptions/wickford-20260814/\" target=\"_blank\" rel=\"noopener noreferrer\">Status and Disruptions.</a></p>"
+    }
+  ],
+  "services": [
+    {
+      "serviceId": "7863994LIVSTLL_",
+      "std": "11:39",
+      "origin": [
+        {
+          "locationName": "Shenfield",
+          "crs": "SNF"
+        }
+      ],
+      "destination": "London Paddington",
+      "destinationVia": null,
+      "platform": "B",
+      "status": "delayed",
+      "estimatedTime": "11:45",
+      "operator": "Elizabeth Line",
+      "operatorCode": "XR",
+      "isCancelled": false,
+      "futureCancellation": false,
+      "futureDelay": true,
+      "isReverseFormation": false,
+      "detachFront": false,
+      "delayReason": "This service has been delayed by a road vehicle colliding with a bridge earlier today",
+      "cancelReason": null,
+      "rsid": null,
+      "coachCount": 9,
+      "coachCountSource": "formation",
+      "formation": {
+        "coaches": [
+          {
+            "number": "1",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "2",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "3",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "4",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "5",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "6",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "7",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "8",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "9",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          }
+        ]
+      },
+      "callingPointGroups": [
+        {
+          "serviceType": "train",
+          "serviceChangeRequired": false,
+          "assocIsCancelled": false,
+          "callingPoints": [
+            {
+              "locationName": "Farringdon",
+              "crs": "ZFD",
+              "st": "11:42",
+              "et": "11:46",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Tottenham Court Road",
+              "crs": "TCR",
+              "st": "11:45",
+              "et": "11:49",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Bond Street",
+              "crs": "BDS",
+              "st": "11:47",
+              "et": "11:51",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "London Paddington",
+              "crs": "PAD",
+              "st": "11:51",
+              "et": "11:54",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "serviceId": "7863773LIVSTLL_",
+      "std": "11:41",
+      "origin": [
+        {
+          "locationName": "London Paddington",
+          "crs": "PAD"
+        }
+      ],
+      "destination": "Shenfield",
+      "destinationVia": null,
+      "platform": "A",
+      "status": "on-time",
+      "estimatedTime": null,
+      "operator": "Elizabeth Line",
+      "operatorCode": "XR",
+      "isCancelled": false,
+      "futureCancellation": false,
+      "futureDelay": true,
+      "isReverseFormation": false,
+      "detachFront": false,
+      "delayReason": null,
+      "cancelReason": null,
+      "rsid": null,
+      "coachCount": 9,
+      "coachCountSource": "formation",
+      "formation": {
+        "coaches": [
+          {
+            "number": "1",
+            "coachClass": "Standard",
+            "loadingSpecified": true,
+            "loadingPercent": 26
+          },
+          {
+            "number": "2",
+            "coachClass": "Standard",
+            "loadingSpecified": true,
+            "loadingPercent": 19
+          },
+          {
+            "number": "3",
+            "coachClass": "Standard",
+            "loadingSpecified": true,
+            "loadingPercent": 19
+          },
+          {
+            "number": "4",
+            "coachClass": "Standard",
+            "loadingSpecified": true,
+            "loadingPercent": 14
+          },
+          {
+            "number": "5",
+            "coachClass": "Standard",
+            "loadingSpecified": true,
+            "loadingPercent": 8
+          },
+          {
+            "number": "6",
+            "coachClass": "Standard",
+            "loadingSpecified": true,
+            "loadingPercent": 7
+          },
+          {
+            "number": "7",
+            "coachClass": "Standard",
+            "loadingSpecified": true,
+            "loadingPercent": 13
+          },
+          {
+            "number": "8",
+            "coachClass": "Standard",
+            "loadingSpecified": true,
+            "loadingPercent": 10
+          },
+          {
+            "number": "9",
+            "coachClass": "Standard",
+            "loadingSpecified": true,
+            "loadingPercent": 14
+          }
+        ]
+      },
+      "callingPointGroups": [
+        {
+          "serviceType": "train",
+          "serviceChangeRequired": false,
+          "assocIsCancelled": false,
+          "callingPoints": [
+            {
+              "locationName": "Whitechapel",
+              "crs": "ZLW",
+              "st": "11:43",
+              "et": null,
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Stratford (London)",
+              "crs": "SRA",
+              "st": "11:49",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Maryland",
+              "crs": "MYL",
+              "st": "11:51",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Forest Gate",
+              "crs": "FOG",
+              "st": "11:53",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Manor Park",
+              "crs": "MNP",
+              "st": "11:56",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Ilford",
+              "crs": "IFD",
+              "st": "11:58",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Seven Kings",
+              "crs": "SVK",
+              "st": "12:01",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Goodmayes",
+              "crs": "GMY",
+              "st": "12:03",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Chadwell Heath",
+              "crs": "CTH",
+              "st": "12:05",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Romford",
+              "crs": "RMF",
+              "st": "12:09",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Gidea Park",
+              "crs": "GDP",
+              "st": "12:12",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Harold Wood",
+              "crs": "HRO",
+              "st": "12:15",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Brentwood",
+              "crs": "BRE",
+              "st": "12:19",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Shenfield",
+              "crs": "SNF",
+              "st": "12:25",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "serviceId": "7863426LIVSTLL_",
+      "std": "11:42",
+      "origin": [
+        {
+          "locationName": "Abbey Wood",
+          "crs": "ABW"
+        }
+      ],
+      "destination": "Heathrow Airport T4",
+      "destinationVia": null,
+      "platform": "B",
+      "status": "on-time",
+      "estimatedTime": null,
+      "operator": "Elizabeth Line",
+      "operatorCode": "XR",
+      "isCancelled": false,
+      "futureCancellation": false,
+      "futureDelay": false,
+      "isReverseFormation": false,
+      "detachFront": false,
+      "delayReason": null,
+      "cancelReason": null,
+      "rsid": null,
+      "coachCount": 9,
+      "coachCountSource": "formation",
+      "formation": {
+        "coaches": [
+          {
+            "number": "1",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "2",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "3",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "4",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "5",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "6",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "7",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "8",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "9",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          }
+        ]
+      },
+      "callingPointGroups": [
+        {
+          "serviceType": "train",
+          "serviceChangeRequired": false,
+          "assocIsCancelled": false,
+          "callingPoints": [
+            {
+              "locationName": "Farringdon",
+              "crs": "ZFD",
+              "st": "11:45",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Tottenham Court Road",
+              "crs": "TCR",
+              "st": "11:48",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Bond Street",
+              "crs": "BDS",
+              "st": "11:50",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "London Paddington",
+              "crs": "PAD",
+              "st": "11:54",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Acton Main Line",
+              "crs": "AML",
+              "st": "12:01",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Ealing Broadway",
+              "crs": "EAL",
+              "st": "12:04",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "West Ealing",
+              "crs": "WEA",
+              "st": "12:07",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Hanwell",
+              "crs": "HAN",
+              "st": "12:09",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Southall",
+              "crs": "STL",
+              "st": "12:12",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Hayes & Harlington",
+              "crs": "HAY",
+              "st": "12:15",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Heathrow Airport T123",
+              "crs": "HXX",
+              "st": "12:23",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Heathrow Airport T4",
+              "crs": "HAF",
+              "st": "12:28",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "serviceId": "7877909LIVST___",
+      "std": "11:43",
+      "origin": [
+        {
+          "locationName": "London Liverpool Street",
+          "crs": "LST"
+        }
+      ],
+      "destination": "Cheshunt",
+      "destinationVia": "via Seven Sisters",
+      "platform": "1",
+      "status": "on-time",
+      "estimatedTime": null,
+      "operator": "London Overground",
+      "operatorCode": "LO",
+      "isCancelled": false,
+      "futureCancellation": false,
+      "futureDelay": false,
+      "isReverseFormation": false,
+      "detachFront": false,
+      "delayReason": null,
+      "cancelReason": null,
+      "rsid": null,
+      "coachCount": null,
+      "coachCountSource": "none",
+      "formation": null,
+      "callingPointGroups": [
+        {
+          "serviceType": "train",
+          "serviceChangeRequired": false,
+          "assocIsCancelled": false,
+          "callingPoints": [
+            {
+              "locationName": "Bethnal Green",
+              "crs": "BET",
+              "st": "11:46",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Cambridge Heath",
+              "crs": "CBH",
+              "st": "11:48",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "London Fields",
+              "crs": "LOF",
+              "st": "11:50",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Hackney Downs",
+              "crs": "HAC",
+              "st": "11:52",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Rectory Road",
+              "crs": "REC",
+              "st": "11:55",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Stoke Newington",
+              "crs": "SKW",
+              "st": "11:56",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Stamford Hill",
+              "crs": "SMH",
+              "st": "11:58",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Seven Sisters",
+              "crs": "SVS",
+              "st": "12:01",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Bruce Grove",
+              "crs": "BCV",
+              "st": "12:03",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "White Hart Lane",
+              "crs": "WHL",
+              "st": "12:05",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Silver Street",
+              "crs": "SLV",
+              "st": "12:07",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Edmonton Green",
+              "crs": "EDR",
+              "st": "12:09",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Southbury",
+              "crs": "SBU",
+              "st": "12:12",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Turkey Street",
+              "crs": "TUR",
+              "st": "12:15",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Theobalds Grove",
+              "crs": "TEO",
+              "st": "12:17",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Cheshunt",
+              "crs": "CHN",
+              "st": "12:22",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "serviceId": "7863612LIVSTLL_",
+      "std": "11:45",
+      "origin": [
+        {
+          "locationName": "Heathrow Airport T4",
+          "crs": "HAF"
+        }
+      ],
+      "destination": "Abbey Wood",
+      "destinationVia": null,
+      "platform": "A",
+      "status": "on-time",
+      "estimatedTime": null,
+      "operator": "Elizabeth Line",
+      "operatorCode": "XR",
+      "isCancelled": false,
+      "futureCancellation": false,
+      "futureDelay": true,
+      "isReverseFormation": false,
+      "detachFront": false,
+      "delayReason": null,
+      "cancelReason": null,
+      "rsid": null,
+      "coachCount": 9,
+      "coachCountSource": "formation",
+      "formation": {
+        "coaches": [
+          {
+            "number": "1",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "2",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "3",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "4",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "5",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "6",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "7",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "8",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "9",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          }
+        ]
+      },
+      "callingPointGroups": [
+        {
+          "serviceType": "train",
+          "serviceChangeRequired": false,
+          "assocIsCancelled": false,
+          "callingPoints": [
+            {
+              "locationName": "Whitechapel",
+              "crs": "ZLW",
+              "st": "11:48",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Canary Wharf (Elizabeth line)",
+              "crs": "CWX",
+              "st": "11:52",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Custom House",
+              "crs": "CUS",
+              "st": "11:56",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Woolwich (Elizabeth line)",
+              "crs": "WWC",
+              "st": "12:00",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Abbey Wood",
+              "crs": "ABW",
+              "st": "12:06",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "serviceId": "7870993LIVST___",
+      "std": "11:46",
+      "origin": [
+        {
+          "locationName": "London Liverpool Street",
+          "crs": "LST"
+        }
+      ],
+      "destination": "Chingford",
+      "destinationVia": null,
+      "platform": "6",
+      "status": "on-time",
+      "estimatedTime": null,
+      "operator": "London Overground",
+      "operatorCode": "LO",
+      "isCancelled": false,
+      "futureCancellation": false,
+      "futureDelay": false,
+      "isReverseFormation": false,
+      "detachFront": false,
+      "delayReason": null,
+      "cancelReason": null,
+      "rsid": null,
+      "coachCount": null,
+      "coachCountSource": "none",
+      "formation": null,
+      "callingPointGroups": [
+        {
+          "serviceType": "train",
+          "serviceChangeRequired": false,
+          "assocIsCancelled": false,
+          "callingPoints": [
+            {
+              "locationName": "Bethnal Green",
+              "crs": "BET",
+              "st": "11:49",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Hackney Downs",
+              "crs": "HAC",
+              "st": "11:53",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Clapton",
+              "crs": "CPT",
+              "st": "11:56",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "St James Street",
+              "crs": "SJS",
+              "st": "11:59",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Walthamstow Central",
+              "crs": "WHC",
+              "st": "12:01",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Wood Street",
+              "crs": "WST",
+              "st": "12:04",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Highams Park",
+              "crs": "HIP",
+              "st": "12:07",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Chingford",
+              "crs": "CHI",
+              "st": "12:13",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "serviceId": "7863998LIVSTLL_",
+      "std": "11:46",
+      "origin": [
+        {
+          "locationName": "Shenfield",
+          "crs": "SNF"
+        }
+      ],
+      "destination": "London Paddington",
+      "destinationVia": null,
+      "platform": "B",
+      "status": "delayed",
+      "estimatedTime": "11:48",
+      "operator": "Elizabeth Line",
+      "operatorCode": "XR",
+      "isCancelled": false,
+      "futureCancellation": false,
+      "futureDelay": true,
+      "isReverseFormation": false,
+      "detachFront": false,
+      "delayReason": null,
+      "cancelReason": null,
+      "rsid": null,
+      "coachCount": 9,
+      "coachCountSource": "formation",
+      "formation": {
+        "coaches": [
+          {
+            "number": "1",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "2",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "3",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "4",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "5",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "6",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "7",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "8",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "9",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          }
+        ]
+      },
+      "callingPointGroups": [
+        {
+          "serviceType": "train",
+          "serviceChangeRequired": false,
+          "assocIsCancelled": false,
+          "callingPoints": [
+            {
+              "locationName": "Farringdon",
+              "crs": "ZFD",
+              "st": "11:49",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Tottenham Court Road",
+              "crs": "TCR",
+              "st": "11:52",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Bond Street",
+              "crs": "BDS",
+              "st": "11:54",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "London Paddington",
+              "crs": "PAD",
+              "st": "11:58",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "serviceId": "7879819LIVST___",
+      "std": "11:48",
+      "origin": [
+        {
+          "locationName": "London Liverpool Street",
+          "crs": "LST"
+        }
+      ],
+      "destination": "Braintree",
+      "destinationVia": null,
+      "platform": "12",
+      "status": "on-time",
+      "estimatedTime": null,
+      "operator": "Greater Anglia",
+      "operatorCode": "LE",
+      "isCancelled": false,
+      "futureCancellation": false,
+      "futureDelay": false,
+      "isReverseFormation": false,
+      "detachFront": false,
+      "delayReason": null,
+      "cancelReason": null,
+      "rsid": null,
+      "coachCount": 5,
+      "coachCountSource": "length",
+      "formation": null,
+      "callingPointGroups": [
+        {
+          "serviceType": "train",
+          "serviceChangeRequired": false,
+          "assocIsCancelled": false,
+          "callingPoints": [
+            {
+              "locationName": "Stratford (London)",
+              "crs": "SRA",
+              "st": "11:55",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 5,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Shenfield",
+              "crs": "SNF",
+              "st": "12:12",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 5,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Ingatestone",
+              "crs": "INT",
+              "st": "12:16",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 5,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Chelmsford",
+              "crs": "CHM",
+              "st": "12:23",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 5,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Witham",
+              "crs": "WTM",
+              "st": "12:33",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 5,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "White Notley",
+              "crs": "WNY",
+              "st": "12:41",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 5,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Cressing",
+              "crs": "CES",
+              "st": "12:44",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 5,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Braintree Freeport",
+              "crs": "BTP",
+              "st": "12:47",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 5,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Braintree",
+              "crs": "BTR",
+              "st": "12:51",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 5,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "serviceId": "7863776LIVSTLL_",
+      "std": "11:48",
+      "origin": [
+        {
+          "locationName": "London Paddington",
+          "crs": "PAD"
+        }
+      ],
+      "destination": "Shenfield",
+      "destinationVia": null,
+      "platform": "A",
+      "status": "on-time",
+      "estimatedTime": null,
+      "operator": "Elizabeth Line",
+      "operatorCode": "XR",
+      "isCancelled": false,
+      "futureCancellation": false,
+      "futureDelay": false,
+      "isReverseFormation": false,
+      "detachFront": false,
+      "delayReason": null,
+      "cancelReason": null,
+      "rsid": null,
+      "coachCount": 9,
+      "coachCountSource": "formation",
+      "formation": {
+        "coaches": [
+          {
+            "number": "1",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "2",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "3",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "4",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "5",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "6",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "7",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "8",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "9",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          }
+        ]
+      },
+      "callingPointGroups": [
+        {
+          "serviceType": "train",
+          "serviceChangeRequired": false,
+          "assocIsCancelled": false,
+          "callingPoints": [
+            {
+              "locationName": "Whitechapel",
+              "crs": "ZLW",
+              "st": "11:50",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Stratford (London)",
+              "crs": "SRA",
+              "st": "11:56",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Maryland",
+              "crs": "MYL",
+              "st": "11:58",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Forest Gate",
+              "crs": "FOG",
+              "st": "12:00",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Manor Park",
+              "crs": "MNP",
+              "st": "12:03",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Ilford",
+              "crs": "IFD",
+              "st": "12:05",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Seven Kings",
+              "crs": "SVK",
+              "st": "12:08",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Goodmayes",
+              "crs": "GMY",
+              "st": "12:10",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Chadwell Heath",
+              "crs": "CTH",
+              "st": "12:12",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Romford",
+              "crs": "RMF",
+              "st": "12:16",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Gidea Park",
+              "crs": "GDP",
+              "st": "12:19",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Harold Wood",
+              "crs": "HRO",
+              "st": "12:22",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Brentwood",
+              "crs": "BRE",
+              "st": "12:26",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Shenfield",
+              "crs": "SNF",
+              "st": "12:32",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "serviceId": "7863466LIVSTLL_",
+      "std": "11:50",
+      "origin": [
+        {
+          "locationName": "Abbey Wood",
+          "crs": "ABW"
+        }
+      ],
+      "destination": "Maidenhead",
+      "destinationVia": null,
+      "platform": "B",
+      "status": "on-time",
+      "estimatedTime": null,
+      "operator": "Elizabeth Line",
+      "operatorCode": "XR",
+      "isCancelled": false,
+      "futureCancellation": false,
+      "futureDelay": false,
+      "isReverseFormation": false,
+      "detachFront": false,
+      "delayReason": null,
+      "cancelReason": null,
+      "rsid": null,
+      "coachCount": 9,
+      "coachCountSource": "formation",
+      "formation": {
+        "coaches": [
+          {
+            "number": "1",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "2",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "3",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "4",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "5",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "6",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "7",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "8",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          },
+          {
+            "number": "9",
+            "coachClass": "Standard",
+            "loadingSpecified": false,
+            "loadingPercent": null
+          }
+        ]
+      },
+      "callingPointGroups": [
+        {
+          "serviceType": "train",
+          "serviceChangeRequired": false,
+          "assocIsCancelled": false,
+          "callingPoints": [
+            {
+              "locationName": "Farringdon",
+              "crs": "ZFD",
+              "st": "11:53",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Tottenham Court Road",
+              "crs": "TCR",
+              "st": "11:56",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Bond Street",
+              "crs": "BDS",
+              "st": "11:58",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "London Paddington",
+              "crs": "PAD",
+              "st": "12:02",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Ealing Broadway",
+              "crs": "EAL",
+              "st": "12:11",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Southall",
+              "crs": "STL",
+              "st": "12:16",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Hayes & Harlington",
+              "crs": "HAY",
+              "st": "12:20",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "West Drayton",
+              "crs": "WDT",
+              "st": "12:23",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Iver",
+              "crs": "IVR",
+              "st": "12:26",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Langley",
+              "crs": "LNY",
+              "st": "12:28",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Slough",
+              "crs": "SLO",
+              "st": "12:32",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Burnham",
+              "crs": "BNM",
+              "st": "12:36",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Maidenhead",
+              "crs": "MAI",
+              "st": "12:43",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

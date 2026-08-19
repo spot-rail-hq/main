@@ -27,6 +27,8 @@ const REPO_ROOT = path.resolve(HERE, '../..');
 const FIXTURES = {
   bhm: path.join(REPO_ROOT, 'fixtures/darwin-departures/bhm-board.json'),
   lst: path.join(REPO_ROOT, 'fixtures/darwin-departures/lst-board.json'),
+  cancelledLds: path.join(REPO_ROOT, 'fixtures/darwin-departures/cancelled-lds.json'),
+  delayedNoEstimateBri: path.join(REPO_ROOT, 'fixtures/darwin-departures/delayed-no-estimate-bri.json'),
 };
 
 const dumpArg = process.argv[2];
@@ -103,6 +105,24 @@ for (const [name, fixturePath] of Object.entries(FIXTURES)) {
     check(name + ': the live nationalrail.co.uk link survived sanitisation', keptALink);
   } else {
     console.log('  (no nrccMessages in this fixture — sanitiser checks skipped)');
+  }
+
+  // Real live disruption states, captured 2026-08-19 — pinned assertions so
+  // these don't quietly regress back to ad hoc-only verification. Each
+  // fixture also carries other, unrelated services (a full board), so these
+  // check the specific disrupted ones, not "every service in the file".
+  if (name === 'cancelledLds') {
+    const rawCancelled = raw.trainServices.filter((s) => s.isCancelled === true);
+    check(name + ': exactly 3 raw isCancelled:true services present (fixture didn\'t drift)', rawCancelled.length === 3);
+    const normCancelled = board.services.filter((s) => rawCancelled.some((r) => r.serviceID === s.serviceId));
+    check(name + ': all 3 resolve to status "cancelled"', normCancelled.length === 3 && normCancelled.every((s) => s.status === 'cancelled'));
+    check(name + ': all 3 carry a non-empty cancelReason', normCancelled.every((s) => typeof s.cancelReason === 'string' && s.cancelReason.length > 0));
+  }
+  if (name === 'delayedNoEstimateBri') {
+    const rawDelayed = raw.trainServices.filter((s) => s.etd === 'Delayed');
+    check(name + ': exactly 3 raw etd:"Delayed" services present (fixture didn\'t drift)', rawDelayed.length === 3);
+    const normDelayed = board.services.filter((s) => rawDelayed.some((r) => r.serviceID === s.serviceId));
+    check(name + ': all 3 resolve to status "delayed-no-estimate"', normDelayed.length === 3 && normDelayed.every((s) => s.status === 'delayed-no-estimate'));
   }
 }
 

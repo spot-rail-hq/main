@@ -1,0 +1,1142 @@
+{
+  "crs": "BHM",
+  "locationName": "Birmingham New Street",
+  "generatedAt": "2026-08-19T11:42:22.4304044+01:00",
+  "platformAvailable": true,
+  "nrccMessages": [
+    {
+      "html": "Trains running to / from and through Basingstoke may be delayed by up to 20 minutes. Latest information can be found in <a href=\"https://www.nationalrail.co.uk/service-disruptions/basingstoke-20260818/\" target=\"_blank\" rel=\"noopener noreferrer\">Status and Disruptions</a>."
+    }
+  ],
+  "services": [
+    {
+      "serviceId": "7873021BHAMNWS_",
+      "std": "11:41",
+      "origin": [
+        {
+          "locationName": "Walsall",
+          "crs": "WSL"
+        }
+      ],
+      "destination": "Wolverhampton",
+      "destinationVia": null,
+      "platform": "6B",
+      "status": "on-time",
+      "estimatedTime": null,
+      "operator": "LNR & WMR",
+      "operatorCode": "LM",
+      "isCancelled": false,
+      "futureCancellation": false,
+      "futureDelay": false,
+      "isReverseFormation": false,
+      "detachFront": false,
+      "delayReason": null,
+      "cancelReason": null,
+      "rsid": null,
+      "coachCount": null,
+      "coachCountSource": "none",
+      "formation": null,
+      "callingPointGroups": [
+        {
+          "serviceType": "train",
+          "serviceChangeRequired": false,
+          "assocIsCancelled": false,
+          "callingPoints": [
+            {
+              "locationName": "Smethwick Rolfe Street",
+              "crs": "SMR",
+              "st": "11:47",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Smethwick Galton Bridge",
+              "crs": "SGB",
+              "st": "11:49",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Sandwell & Dudley",
+              "crs": "SAD",
+              "st": "11:52",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Dudley Port",
+              "crs": "DDP",
+              "st": "11:56",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Tipton",
+              "crs": "TIP",
+              "st": "11:59",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Coseley",
+              "crs": "CSY",
+              "st": "12:02",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Wolverhampton",
+              "crs": "WVH",
+              "st": "12:07",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "serviceId": "7884499BHAMNWS_",
+      "std": "11:42",
+      "origin": [
+        {
+          "locationName": "Manchester Piccadilly",
+          "crs": "MAN"
+        }
+      ],
+      "destination": "Bristol Temple Meads",
+      "destinationVia": null,
+      "platform": "7A",
+      "status": "on-time",
+      "estimatedTime": null,
+      "operator": "CrossCountry",
+      "operatorCode": "XC",
+      "isCancelled": false,
+      "futureCancellation": false,
+      "futureDelay": false,
+      "isReverseFormation": false,
+      "detachFront": false,
+      "delayReason": null,
+      "cancelReason": null,
+      "rsid": null,
+      "coachCount": null,
+      "coachCountSource": "none",
+      "formation": null,
+      "callingPointGroups": [
+        {
+          "serviceType": "train",
+          "serviceChangeRequired": false,
+          "assocIsCancelled": false,
+          "callingPoints": [
+            {
+              "locationName": "Worcestershire Parkway",
+              "crs": "WOP",
+              "st": "12:12",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Cheltenham Spa",
+              "crs": "CNM",
+              "st": "12:33",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Bristol Parkway",
+              "crs": "BPW",
+              "st": "13:08",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Bristol Temple Meads",
+              "crs": "BRI",
+              "st": "13:21",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "serviceId": "7888667BHAMNWS_",
+      "std": "11:43",
+      "origin": [
+        {
+          "locationName": "Four Oaks",
+          "crs": "FOK"
+        }
+      ],
+      "destination": "Redditch",
+      "destinationVia": "via University",
+      "platform": "12",
+      "status": "on-time",
+      "estimatedTime": null,
+      "operator": "LNR & WMR",
+      "operatorCode": "LM",
+      "isCancelled": false,
+      "futureCancellation": false,
+      "futureDelay": false,
+      "isReverseFormation": false,
+      "detachFront": false,
+      "delayReason": null,
+      "cancelReason": null,
+      "rsid": null,
+      "coachCount": null,
+      "coachCountSource": "none",
+      "formation": null,
+      "callingPointGroups": [
+        {
+          "serviceType": "train",
+          "serviceChangeRequired": false,
+          "assocIsCancelled": false,
+          "callingPoints": [
+            {
+              "locationName": "Five Ways",
+              "crs": "FWY",
+              "st": "11:46",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "University",
+              "crs": "UNI",
+              "st": "11:50",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Selly Oak",
+              "crs": "SLY",
+              "st": "11:53",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Bournville",
+              "crs": "BRV",
+              "st": "11:56",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Kings Norton",
+              "crs": "KNN",
+              "st": "11:58",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Northfield",
+              "crs": "NFD",
+              "st": "12:02",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Longbridge",
+              "crs": "LOB",
+              "st": "12:05",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Barnt Green",
+              "crs": "BTG",
+              "st": "12:11",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Alvechurch",
+              "crs": "ALV",
+              "st": "12:18",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Redditch",
+              "crs": "RDC",
+              "st": "12:23",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "serviceId": "7884209BHAMNWS_",
+      "std": "11:45",
+      "origin": [
+        {
+          "locationName": "Birmingham International",
+          "crs": "BHI"
+        }
+      ],
+      "destination": "Rugeley Trent Valley",
+      "destinationVia": "via Walsall",
+      "platform": "4B",
+      "status": "on-time",
+      "estimatedTime": null,
+      "operator": "LNR & WMR",
+      "operatorCode": "LM",
+      "isCancelled": false,
+      "futureCancellation": false,
+      "futureDelay": false,
+      "isReverseFormation": false,
+      "detachFront": false,
+      "delayReason": null,
+      "cancelReason": null,
+      "rsid": null,
+      "coachCount": null,
+      "coachCountSource": "none",
+      "formation": null,
+      "callingPointGroups": [
+        {
+          "serviceType": "train",
+          "serviceChangeRequired": false,
+          "assocIsCancelled": false,
+          "callingPoints": [
+            {
+              "locationName": "Tame Bridge Parkway",
+              "crs": "TAB",
+              "st": "11:59",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Walsall",
+              "crs": "WSL",
+              "st": "12:07",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Bloxwich",
+              "crs": "BLX",
+              "st": "12:13",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Bloxwich North",
+              "crs": "BWN",
+              "st": "12:16",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Landywood",
+              "crs": "LAW",
+              "st": "12:20",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Cannock",
+              "crs": "CAO",
+              "st": "12:24",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Hednesford",
+              "crs": "HNF",
+              "st": "12:28",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Rugeley Town",
+              "crs": "RGT",
+              "st": "12:34",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Rugeley Trent Valley",
+              "crs": "RGL",
+              "st": "12:39",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "serviceId": "7883481BHAMNWS_",
+      "std": "11:46",
+      "origin": [
+        {
+          "locationName": "Redditch",
+          "crs": "RDC"
+        }
+      ],
+      "destination": "Four Oaks",
+      "destinationVia": null,
+      "platform": "8",
+      "status": "on-time",
+      "estimatedTime": null,
+      "operator": "LNR & WMR",
+      "operatorCode": "LM",
+      "isCancelled": false,
+      "futureCancellation": false,
+      "futureDelay": false,
+      "isReverseFormation": false,
+      "detachFront": false,
+      "delayReason": null,
+      "cancelReason": null,
+      "rsid": null,
+      "coachCount": null,
+      "coachCountSource": "none",
+      "formation": null,
+      "callingPointGroups": [
+        {
+          "serviceType": "train",
+          "serviceChangeRequired": false,
+          "assocIsCancelled": false,
+          "callingPoints": [
+            {
+              "locationName": "Aston",
+              "crs": "AST",
+              "st": "11:53",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Gravelly Hill",
+              "crs": "GVH",
+              "st": "11:56",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Erdington",
+              "crs": "ERD",
+              "st": "11:59",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Chester Road",
+              "crs": "CRD",
+              "st": "12:02",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Wylde Green",
+              "crs": "WYL",
+              "st": "12:04",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Sutton Coldfield",
+              "crs": "SUT",
+              "st": "12:07",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Four Oaks",
+              "crs": "FOK",
+              "st": "12:11",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "serviceId": "7866632BHAMNWS_",
+      "std": "11:49",
+      "origin": [
+        {
+          "locationName": "Birmingham New Street",
+          "crs": "BHM"
+        }
+      ],
+      "destination": "Nottingham",
+      "destinationVia": null,
+      "platform": "9A",
+      "status": "on-time",
+      "estimatedTime": null,
+      "operator": "CrossCountry",
+      "operatorCode": "XC",
+      "isCancelled": false,
+      "futureCancellation": false,
+      "futureDelay": false,
+      "isReverseFormation": false,
+      "detachFront": false,
+      "delayReason": null,
+      "cancelReason": null,
+      "rsid": null,
+      "coachCount": null,
+      "coachCountSource": "none",
+      "formation": null,
+      "callingPointGroups": [
+        {
+          "serviceType": "train",
+          "serviceChangeRequired": false,
+          "assocIsCancelled": false,
+          "callingPoints": [
+            {
+              "locationName": "Tamworth",
+              "crs": "TAM",
+              "st": "12:05",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Burton-on-Trent",
+              "crs": "BUT",
+              "st": "12:17",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Derby",
+              "crs": "DBY",
+              "st": "12:31",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Long Eaton",
+              "crs": "LGE",
+              "st": "12:45",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Beeston",
+              "crs": "BEE",
+              "st": "12:56",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Nottingham",
+              "crs": "NOT",
+              "st": "13:02",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "serviceId": "7884243BHAMNWS_",
+      "std": "11:50",
+      "origin": [
+        {
+          "locationName": "Rugeley Trent Valley",
+          "crs": "RGL"
+        }
+      ],
+      "destination": "Birmingham International",
+      "destinationVia": null,
+      "platform": "1A",
+      "status": "on-time",
+      "estimatedTime": null,
+      "operator": "LNR & WMR",
+      "operatorCode": "LM",
+      "isCancelled": false,
+      "futureCancellation": false,
+      "futureDelay": false,
+      "isReverseFormation": false,
+      "detachFront": false,
+      "delayReason": null,
+      "cancelReason": null,
+      "rsid": null,
+      "coachCount": null,
+      "coachCountSource": "none",
+      "formation": null,
+      "callingPointGroups": [
+        {
+          "serviceType": "train",
+          "serviceChangeRequired": false,
+          "assocIsCancelled": false,
+          "callingPoints": [
+            {
+              "locationName": "Adderley Park",
+              "crs": "ADD",
+              "st": "11:54",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Stechford",
+              "crs": "SCF",
+              "st": "11:58",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Lea Hall",
+              "crs": "LEH",
+              "st": "12:01",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Marston Green",
+              "crs": "MGN",
+              "st": "12:04",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Birmingham International",
+              "crs": "BHI",
+              "st": "12:08",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "serviceId": "7860270BHAMNWS_",
+      "std": "11:50",
+      "origin": [
+        {
+          "locationName": "Birmingham New Street",
+          "crs": "BHM"
+        }
+      ],
+      "destination": "Hereford",
+      "destinationVia": "via Worcester",
+      "platform": "10B",
+      "status": "on-time",
+      "estimatedTime": null,
+      "operator": "LNR & WMR",
+      "operatorCode": "LM",
+      "isCancelled": false,
+      "futureCancellation": false,
+      "futureDelay": false,
+      "isReverseFormation": false,
+      "detachFront": false,
+      "delayReason": null,
+      "cancelReason": null,
+      "rsid": null,
+      "coachCount": null,
+      "coachCountSource": "none",
+      "formation": null,
+      "callingPointGroups": [
+        {
+          "serviceType": "train",
+          "serviceChangeRequired": false,
+          "assocIsCancelled": false,
+          "callingPoints": [
+            {
+              "locationName": "University",
+              "crs": "UNI",
+              "st": "11:55",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Bromsgrove",
+              "crs": "BMV",
+              "st": "12:11",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Droitwich Spa",
+              "crs": "DTW",
+              "st": "12:24",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Worcester Foregate Street",
+              "crs": "WOF",
+              "st": "12:33",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Malvern Link",
+              "crs": "MVL",
+              "st": "12:43",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Great Malvern",
+              "crs": "GMV",
+              "st": "12:46",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Colwall",
+              "crs": "CWL",
+              "st": "12:51",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Ledbury",
+              "crs": "LED",
+              "st": "12:58",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Hereford",
+              "crs": "HFD",
+              "st": "13:17",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "serviceId": "7866672BHAMNWS_",
+      "std": "11:52",
+      "origin": [
+        {
+          "locationName": "Birmingham New Street",
+          "crs": "BHM"
+        }
+      ],
+      "destination": "Leicester",
+      "destinationVia": null,
+      "platform": "10A",
+      "status": "on-time",
+      "estimatedTime": null,
+      "operator": "CrossCountry",
+      "operatorCode": "XC",
+      "isCancelled": false,
+      "futureCancellation": false,
+      "futureDelay": false,
+      "isReverseFormation": false,
+      "detachFront": false,
+      "delayReason": null,
+      "cancelReason": null,
+      "rsid": null,
+      "coachCount": null,
+      "coachCountSource": "none",
+      "formation": null,
+      "callingPointGroups": [
+        {
+          "serviceType": "train",
+          "serviceChangeRequired": false,
+          "assocIsCancelled": false,
+          "callingPoints": [
+            {
+              "locationName": "Coleshill Parkway",
+              "crs": "CEH",
+              "st": "12:08",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Nuneaton",
+              "crs": "NUN",
+              "st": "12:23",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Hinckley",
+              "crs": "HNK",
+              "st": "12:30",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Narborough",
+              "crs": "NBR",
+              "st": "12:38",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "South Wigston",
+              "crs": "SWS",
+              "st": "12:43",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Leicester",
+              "crs": "LEI",
+              "st": "12:50",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "serviceId": "7860225BHAMNWS_",
+      "std": "11:52",
+      "origin": [
+        {
+          "locationName": "Birmingham New Street",
+          "crs": "BHM"
+        }
+      ],
+      "destination": "Shrewsbury",
+      "destinationVia": "via Wolverhampton & Telford Central",
+      "platform": "2B",
+      "status": "on-time",
+      "estimatedTime": null,
+      "operator": "LNR & WMR",
+      "operatorCode": "LM",
+      "isCancelled": false,
+      "futureCancellation": false,
+      "futureDelay": false,
+      "isReverseFormation": false,
+      "detachFront": false,
+      "delayReason": null,
+      "cancelReason": null,
+      "rsid": null,
+      "coachCount": null,
+      "coachCountSource": "none",
+      "formation": null,
+      "callingPointGroups": [
+        {
+          "serviceType": "train",
+          "serviceChangeRequired": false,
+          "assocIsCancelled": false,
+          "callingPoints": [
+            {
+              "locationName": "Smethwick Galton Bridge",
+              "crs": "SGB",
+              "st": "11:58",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Wolverhampton",
+              "crs": "WVH",
+              "st": "12:10",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Shifnal",
+              "crs": "SFN",
+              "st": "12:25",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Telford Central",
+              "crs": "TFC",
+              "st": "12:32",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Wellington (Shropshire)",
+              "crs": "WLN",
+              "st": "12:39",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Shrewsbury",
+              "crs": "SHR",
+              "st": "12:59",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

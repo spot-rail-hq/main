@@ -1,0 +1,3031 @@
+{
+  "crs": "LDS",
+  "locationName": "Leeds",
+  "generatedAt": "2026-08-19T12:46:18.2129187+01:00",
+  "platformAvailable": true,
+  "nrccMessages": [],
+  "services": [
+    {
+      "serviceId": "7861388LEEDS___",
+      "std": "12:45",
+      "origin": [
+        {
+          "locationName": "Redcar Central",
+          "crs": "RCC"
+        }
+      ],
+      "destination": "Manchester Airport",
+      "destinationVia": null,
+      "platform": "16A",
+      "status": "delayed",
+      "estimatedTime": "12:47",
+      "operator": "TransPennine Express",
+      "operatorCode": "TP",
+      "isCancelled": false,
+      "futureCancellation": false,
+      "futureDelay": false,
+      "isReverseFormation": false,
+      "detachFront": false,
+      "delayReason": null,
+      "cancelReason": null,
+      "rsid": null,
+      "coachCount": 3,
+      "coachCountSource": "length",
+      "formation": null,
+      "callingPointGroups": [
+        {
+          "serviceType": "train",
+          "serviceChangeRequired": false,
+          "assocIsCancelled": false,
+          "callingPoints": [
+            {
+              "locationName": "Dewsbury",
+              "crs": "DEW",
+              "st": "12:55",
+              "et": "12:57",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Huddersfield",
+              "crs": "HUD",
+              "st": "13:05",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Manchester Victoria",
+              "crs": "MCV",
+              "st": "13:36",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Manchester Oxford Road",
+              "crs": "MCO",
+              "st": "13:45",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Manchester Piccadilly",
+              "crs": "MAN",
+              "st": "13:49",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Manchester Airport",
+              "crs": "MIA",
+              "st": "14:08",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "serviceId": "7872195LEEDS___",
+      "std": "12:45",
+      "origin": [
+        {
+          "locationName": "Leeds",
+          "crs": "LDS"
+        }
+      ],
+      "destination": "Sheffield",
+      "destinationVia": null,
+      "platform": "11B",
+      "status": "cancelled",
+      "estimatedTime": null,
+      "operator": "Northern",
+      "operatorCode": "NT",
+      "isCancelled": true,
+      "futureCancellation": false,
+      "futureDelay": false,
+      "isReverseFormation": false,
+      "detachFront": false,
+      "delayReason": null,
+      "cancelReason": "This service has been cancelled because of more trains than usual needing repairs at the same time",
+      "rsid": null,
+      "coachCount": null,
+      "coachCountSource": "none",
+      "formation": null,
+      "callingPointGroups": [
+        {
+          "serviceType": "train",
+          "serviceChangeRequired": false,
+          "assocIsCancelled": false,
+          "callingPoints": [
+            {
+              "locationName": "Wakefield Westgate",
+              "crs": "WKF",
+              "st": "12:57",
+              "et": "Cancelled",
+              "isCancelled": true,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Sheffield",
+              "crs": "SHF",
+              "st": "13:31",
+              "et": "Cancelled",
+              "isCancelled": true,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "serviceId": "7877126LEEDS___",
+      "std": "12:47",
+      "origin": [
+        {
+          "locationName": "Leeds",
+          "crs": "LDS"
+        }
+      ],
+      "destination": "Brighouse",
+      "destinationVia": null,
+      "platform": "13B",
+      "status": "cancelled",
+      "estimatedTime": null,
+      "operator": "Northern",
+      "operatorCode": "NT",
+      "isCancelled": true,
+      "futureCancellation": false,
+      "futureDelay": false,
+      "isReverseFormation": false,
+      "detachFront": false,
+      "delayReason": null,
+      "cancelReason": "This service has been cancelled because of a fault on this train",
+      "rsid": null,
+      "coachCount": null,
+      "coachCountSource": "none",
+      "formation": null,
+      "callingPointGroups": [
+        {
+          "serviceType": "train",
+          "serviceChangeRequired": false,
+          "assocIsCancelled": false,
+          "callingPoints": [
+            {
+              "locationName": "Cottingley",
+              "crs": "COT",
+              "st": "12:53",
+              "et": "Cancelled",
+              "isCancelled": true,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Morley",
+              "crs": "MLY",
+              "st": "12:57",
+              "et": "Cancelled",
+              "isCancelled": true,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Batley",
+              "crs": "BTL",
+              "st": "13:02",
+              "et": "Cancelled",
+              "isCancelled": true,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Dewsbury",
+              "crs": "DEW",
+              "st": "13:05",
+              "et": "Cancelled",
+              "isCancelled": true,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Mirfield",
+              "crs": "MIR",
+              "st": "13:12",
+              "et": "Cancelled",
+              "isCancelled": true,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Brighouse",
+              "crs": "BGH",
+              "st": "13:23",
+              "et": "Cancelled",
+              "isCancelled": true,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "serviceId": "7878135LEEDS___",
+      "std": "12:48",
+      "origin": [
+        {
+          "locationName": "Leeds",
+          "crs": "LDS"
+        }
+      ],
+      "destination": "Sheffield",
+      "destinationVia": null,
+      "platform": "10B",
+      "status": "cancelled",
+      "estimatedTime": null,
+      "operator": "Northern",
+      "operatorCode": "NT",
+      "isCancelled": true,
+      "futureCancellation": false,
+      "futureDelay": false,
+      "isReverseFormation": false,
+      "detachFront": false,
+      "delayReason": null,
+      "cancelReason": "This service has been cancelled because of more trains than usual needing repairs at the same time",
+      "rsid": null,
+      "coachCount": null,
+      "coachCountSource": "none",
+      "formation": null,
+      "callingPointGroups": [
+        {
+          "serviceType": "train",
+          "serviceChangeRequired": false,
+          "assocIsCancelled": false,
+          "callingPoints": [
+            {
+              "locationName": "Outwood",
+              "crs": "OUT",
+              "st": "13:00",
+              "et": "Cancelled",
+              "isCancelled": true,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Wakefield Westgate",
+              "crs": "WKF",
+              "st": "13:04",
+              "et": "Cancelled",
+              "isCancelled": true,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Sandal & Agbrigg",
+              "crs": "SNA",
+              "st": "13:08",
+              "et": "Cancelled",
+              "isCancelled": true,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Fitzwilliam",
+              "crs": "FZW",
+              "st": "13:14",
+              "et": "Cancelled",
+              "isCancelled": true,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Moorthorpe",
+              "crs": "MRP",
+              "st": "13:21",
+              "et": "Cancelled",
+              "isCancelled": true,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Thurnscoe",
+              "crs": "THC",
+              "st": "13:27",
+              "et": "Cancelled",
+              "isCancelled": true,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Goldthorpe",
+              "crs": "GOE",
+              "st": "13:30",
+              "et": "Cancelled",
+              "isCancelled": true,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Bolton-on-Dearne",
+              "crs": "BTD",
+              "st": "13:32",
+              "et": "Cancelled",
+              "isCancelled": true,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Swinton (South Yorkshire)",
+              "crs": "SWN",
+              "st": "13:37",
+              "et": "Cancelled",
+              "isCancelled": true,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Rotherham Central",
+              "crs": "RMC",
+              "st": "13:45",
+              "et": "Cancelled",
+              "isCancelled": true,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Meadowhall",
+              "crs": "MHS",
+              "st": "13:53",
+              "et": "Cancelled",
+              "isCancelled": true,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Sheffield",
+              "crs": "SHF",
+              "st": "14:01",
+              "et": "Cancelled",
+              "isCancelled": true,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "serviceId": "7861431LEEDS___",
+      "std": "12:51",
+      "origin": [
+        {
+          "locationName": "Liverpool Lime Street",
+          "crs": "LIV"
+        }
+      ],
+      "destination": "Newcastle",
+      "destinationVia": null,
+      "platform": "11D",
+      "status": "on-time",
+      "estimatedTime": null,
+      "operator": "TransPennine Express",
+      "operatorCode": "TP",
+      "isCancelled": false,
+      "futureCancellation": false,
+      "futureDelay": false,
+      "isReverseFormation": false,
+      "detachFront": false,
+      "delayReason": null,
+      "cancelReason": null,
+      "rsid": null,
+      "coachCount": 5,
+      "coachCountSource": "length",
+      "formation": null,
+      "callingPointGroups": [
+        {
+          "serviceType": "train",
+          "serviceChangeRequired": false,
+          "assocIsCancelled": false,
+          "callingPoints": [
+            {
+              "locationName": "York",
+              "crs": "YRK",
+              "st": "13:15",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 5,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Darlington",
+              "crs": "DAR",
+              "st": "13:49",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 5,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Durham",
+              "crs": "DHM",
+              "st": "14:07",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 5,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Chester-le-Street",
+              "crs": "CLS",
+              "st": "14:13",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 5,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Newcastle",
+              "crs": "NCL",
+              "st": "14:25",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 5,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "serviceId": "7877181LEEDS___",
+      "std": "12:54",
+      "origin": [
+        {
+          "locationName": "Halifax",
+          "crs": "HFX"
+        }
+      ],
+      "destination": "Hull",
+      "destinationVia": null,
+      "platform": "9D",
+      "status": "on-time",
+      "estimatedTime": null,
+      "operator": "Northern",
+      "operatorCode": "NT",
+      "isCancelled": false,
+      "futureCancellation": false,
+      "futureDelay": false,
+      "isReverseFormation": false,
+      "detachFront": false,
+      "delayReason": null,
+      "cancelReason": null,
+      "rsid": null,
+      "coachCount": 2,
+      "coachCountSource": "length",
+      "formation": null,
+      "callingPointGroups": [
+        {
+          "serviceType": "train",
+          "serviceChangeRequired": false,
+          "assocIsCancelled": false,
+          "callingPoints": [
+            {
+              "locationName": "Cross Gates",
+              "crs": "CRG",
+              "st": "13:00",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 2,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Garforth",
+              "crs": "GRF",
+              "st": "13:05",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 2,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "East Garforth",
+              "crs": "EGF",
+              "st": "13:08",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 2,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Micklefield",
+              "crs": "MIK",
+              "st": "13:11",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 2,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "South Milford",
+              "crs": "SOM",
+              "st": "13:17",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 2,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Selby",
+              "crs": "SBY",
+              "st": "13:27",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 2,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Brough",
+              "crs": "BUH",
+              "st": "13:48",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 2,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Hull",
+              "crs": "HUL",
+              "st": "14:01",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 2,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "serviceId": "7862357LEEDS___",
+      "std": "12:56",
+      "origin": [
+        {
+          "locationName": "Leeds",
+          "crs": "LDS"
+        }
+      ],
+      "destination": "Skipton",
+      "destinationVia": null,
+      "platform": "1B",
+      "status": "on-time",
+      "estimatedTime": null,
+      "operator": "Northern",
+      "operatorCode": "NT",
+      "isCancelled": false,
+      "futureCancellation": false,
+      "futureDelay": false,
+      "isReverseFormation": false,
+      "detachFront": false,
+      "delayReason": null,
+      "cancelReason": null,
+      "rsid": null,
+      "coachCount": 4,
+      "coachCountSource": "length",
+      "formation": null,
+      "callingPointGroups": [
+        {
+          "serviceType": "train",
+          "serviceChangeRequired": false,
+          "assocIsCancelled": false,
+          "callingPoints": [
+            {
+              "locationName": "Shipley",
+              "crs": "SHY",
+              "st": "13:07",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 4,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Saltaire",
+              "crs": "SAE",
+              "st": "13:10",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 4,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Bingley",
+              "crs": "BIY",
+              "st": "13:14",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 4,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Crossflatts",
+              "crs": "CFL",
+              "st": "13:17",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 4,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Keighley",
+              "crs": "KEI",
+              "st": "13:21",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 4,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Steeton & Silsden",
+              "crs": "SON",
+              "st": "13:26",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 4,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Cononley",
+              "crs": "CEY",
+              "st": "13:31",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 4,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Skipton",
+              "crs": "SKI",
+              "st": "13:39",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 4,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "serviceId": "7857959LEEDS___",
+      "std": "12:58",
+      "origin": [
+        {
+          "locationName": "London Kings Cross",
+          "crs": "KGX"
+        }
+      ],
+      "destination": "Harrogate",
+      "destinationVia": null,
+      "platform": "6",
+      "status": "on-time",
+      "estimatedTime": null,
+      "operator": "LNER",
+      "operatorCode": "GR",
+      "isCancelled": false,
+      "futureCancellation": false,
+      "futureDelay": false,
+      "isReverseFormation": false,
+      "detachFront": false,
+      "delayReason": null,
+      "cancelReason": null,
+      "rsid": null,
+      "coachCount": null,
+      "coachCountSource": "none",
+      "formation": null,
+      "callingPointGroups": [
+        {
+          "serviceType": "train",
+          "serviceChangeRequired": false,
+          "assocIsCancelled": false,
+          "callingPoints": [
+            {
+              "locationName": "Horsforth",
+              "crs": "HRS",
+              "st": "13:07",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Harrogate",
+              "crs": "HGT",
+              "st": "13:29",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "serviceId": "7871718LEEDS___",
+      "std": "12:58",
+      "origin": [
+        {
+          "locationName": "Leeds",
+          "crs": "LDS"
+        }
+      ],
+      "destination": "Knottingley",
+      "destinationVia": null,
+      "platform": "13B",
+      "status": "on-time",
+      "estimatedTime": null,
+      "operator": "Northern",
+      "operatorCode": "NT",
+      "isCancelled": false,
+      "futureCancellation": false,
+      "futureDelay": false,
+      "isReverseFormation": false,
+      "detachFront": false,
+      "delayReason": null,
+      "cancelReason": null,
+      "rsid": null,
+      "coachCount": 2,
+      "coachCountSource": "length",
+      "formation": null,
+      "callingPointGroups": [
+        {
+          "serviceType": "train",
+          "serviceChangeRequired": false,
+          "assocIsCancelled": false,
+          "callingPoints": [
+            {
+              "locationName": "Woodlesford",
+              "crs": "WDS",
+              "st": "13:07",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 2,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Castleford",
+              "crs": "CFD",
+              "st": "13:16",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 2,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Glasshoughton",
+              "crs": "GLH",
+              "st": "13:23",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 2,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Pontefract Monkhill",
+              "crs": "PFM",
+              "st": "13:28",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 2,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Knottingley",
+              "crs": "KNO",
+              "st": "13:35",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 2,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "serviceId": "7872010LEEDS___",
+      "std": "12:59",
+      "origin": [
+        {
+          "locationName": "York",
+          "crs": "YRK"
+        }
+      ],
+      "destination": "Blackpool North",
+      "destinationVia": null,
+      "platform": "12C",
+      "status": "on-time",
+      "estimatedTime": null,
+      "operator": "Northern",
+      "operatorCode": "NT",
+      "isCancelled": false,
+      "futureCancellation": false,
+      "futureDelay": false,
+      "isReverseFormation": false,
+      "detachFront": false,
+      "delayReason": null,
+      "cancelReason": null,
+      "rsid": null,
+      "coachCount": 3,
+      "coachCountSource": "length",
+      "formation": null,
+      "callingPointGroups": [
+        {
+          "serviceType": "train",
+          "serviceChangeRequired": false,
+          "assocIsCancelled": false,
+          "callingPoints": [
+            {
+              "locationName": "New Pudsey",
+              "crs": "NPD",
+              "st": "13:07",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Bradford Interchange",
+              "crs": "BDI",
+              "st": "13:16",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Halifax",
+              "crs": "HFX",
+              "st": "13:29",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Hebden Bridge",
+              "crs": "HBD",
+              "st": "13:41",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Burnley Manchester Road",
+              "crs": "BYM",
+              "st": "14:02",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Accrington",
+              "crs": "ACR",
+              "st": "14:11",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Blackburn",
+              "crs": "BBN",
+              "st": "14:20",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Preston",
+              "crs": "PRE",
+              "st": "14:38",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Kirkham & Wesham",
+              "crs": "KKM",
+              "st": "14:49",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Poulton-le-Fylde",
+              "crs": "PFY",
+              "st": "14:57",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Blackpool North",
+              "crs": "BPN",
+              "st": "15:04",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "serviceId": "7861373LEEDS___",
+      "std": "13:00",
+      "origin": [
+        {
+          "locationName": "Hull",
+          "crs": "HUL"
+        }
+      ],
+      "destination": "Liverpool Lime Street",
+      "destinationVia": null,
+      "platform": "16",
+      "status": "on-time",
+      "estimatedTime": null,
+      "operator": "TransPennine Express",
+      "operatorCode": "TP",
+      "isCancelled": false,
+      "futureCancellation": false,
+      "futureDelay": false,
+      "isReverseFormation": false,
+      "detachFront": false,
+      "delayReason": null,
+      "cancelReason": null,
+      "rsid": null,
+      "coachCount": 5,
+      "coachCountSource": "length",
+      "formation": null,
+      "callingPointGroups": [
+        {
+          "serviceType": "train",
+          "serviceChangeRequired": false,
+          "assocIsCancelled": false,
+          "callingPoints": [
+            {
+              "locationName": "Huddersfield",
+              "crs": "HUD",
+              "st": "13:19",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 5,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Stalybridge",
+              "crs": "SYB",
+              "st": "13:39",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 5,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Manchester Victoria",
+              "crs": "MCV",
+              "st": "13:50",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 5,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Lea Green",
+              "crs": "LEG",
+              "st": "14:16",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 5,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Liverpool Lime Street",
+              "crs": "LIV",
+              "st": "14:31",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 5,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "serviceId": "7862628LEEDS___",
+      "std": "13:03",
+      "origin": [
+        {
+          "locationName": "Leeds",
+          "crs": "LDS"
+        }
+      ],
+      "destination": "Ilkley",
+      "destinationVia": null,
+      "platform": "2C",
+      "status": "on-time",
+      "estimatedTime": null,
+      "operator": "Northern",
+      "operatorCode": "NT",
+      "isCancelled": false,
+      "futureCancellation": false,
+      "futureDelay": false,
+      "isReverseFormation": false,
+      "detachFront": false,
+      "delayReason": null,
+      "cancelReason": null,
+      "rsid": null,
+      "coachCount": 4,
+      "coachCountSource": "length",
+      "formation": null,
+      "callingPointGroups": [
+        {
+          "serviceType": "train",
+          "serviceChangeRequired": false,
+          "assocIsCancelled": false,
+          "callingPoints": [
+            {
+              "locationName": "Guiseley",
+              "crs": "GSY",
+              "st": "13:15",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 4,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Menston",
+              "crs": "MNN",
+              "st": "13:18",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 4,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Burley-in-Wharfedale",
+              "crs": "BUW",
+              "st": "13:21",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 4,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Ben Rhydding",
+              "crs": "BEY",
+              "st": "13:25",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 4,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Ilkley",
+              "crs": "ILK",
+              "st": "13:31",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 4,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "serviceId": "7862209LEEDS___",
+      "std": "13:06",
+      "origin": [
+        {
+          "locationName": "Leeds",
+          "crs": "LDS"
+        }
+      ],
+      "destination": "Poppleton",
+      "destinationVia": null,
+      "platform": "0A",
+      "status": "on-time",
+      "estimatedTime": null,
+      "operator": "Northern",
+      "operatorCode": "NT",
+      "isCancelled": false,
+      "futureCancellation": false,
+      "futureDelay": false,
+      "isReverseFormation": false,
+      "detachFront": false,
+      "delayReason": null,
+      "cancelReason": null,
+      "rsid": null,
+      "coachCount": 3,
+      "coachCountSource": "length",
+      "formation": null,
+      "callingPointGroups": [
+        {
+          "serviceType": "train",
+          "serviceChangeRequired": false,
+          "assocIsCancelled": false,
+          "callingPoints": [
+            {
+              "locationName": "Burley Park",
+              "crs": "BUY",
+              "st": "13:11",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Headingley",
+              "crs": "HDY",
+              "st": "13:14",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Horsforth",
+              "crs": "HRS",
+              "st": "13:18",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Weeton",
+              "crs": "WET",
+              "st": "13:27",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Pannal",
+              "crs": "PNL",
+              "st": "13:32",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Hornbeam Park",
+              "crs": "HBP",
+              "st": "13:38",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Harrogate",
+              "crs": "HGT",
+              "st": "13:41",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Starbeck",
+              "crs": "SBE",
+              "st": "13:47",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Knaresborough",
+              "crs": "KNA",
+              "st": "13:51",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Cattal",
+              "crs": "CTL",
+              "st": "14:00",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Hammerton",
+              "crs": "HMM",
+              "st": "14:04",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Poppleton",
+              "crs": "POP",
+              "st": "14:12",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "serviceId": "7872311LEEDS___",
+      "std": "13:09",
+      "origin": [
+        {
+          "locationName": "Leeds",
+          "crs": "LDS"
+        }
+      ],
+      "destination": "Nottingham",
+      "destinationVia": null,
+      "platform": "17B",
+      "status": "on-time",
+      "estimatedTime": null,
+      "operator": "Northern",
+      "operatorCode": "NT",
+      "isCancelled": false,
+      "futureCancellation": false,
+      "futureDelay": false,
+      "isReverseFormation": false,
+      "detachFront": false,
+      "delayReason": null,
+      "cancelReason": null,
+      "rsid": null,
+      "coachCount": 2,
+      "coachCountSource": "length",
+      "formation": null,
+      "callingPointGroups": [
+        {
+          "serviceType": "train",
+          "serviceChangeRequired": false,
+          "assocIsCancelled": false,
+          "callingPoints": [
+            {
+              "locationName": "Wakefield Kirkgate",
+              "crs": "WKK",
+              "st": "13:25",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 2,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Barnsley",
+              "crs": "BNY",
+              "st": "13:42",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 2,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Meadowhall",
+              "crs": "MHS",
+              "st": "13:57",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 2,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Sheffield",
+              "crs": "SHF",
+              "st": "14:05",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 2,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Dronfield",
+              "crs": "DRO",
+              "st": "14:16",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 2,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Chesterfield",
+              "crs": "CHD",
+              "st": "14:22",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 2,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Alfreton",
+              "crs": "ALF",
+              "st": "14:32",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 2,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Langley Mill",
+              "crs": "LGM",
+              "st": "14:39",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 2,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Ilkeston",
+              "crs": "ILN",
+              "st": "14:44",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 2,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Nottingham",
+              "crs": "NOT",
+              "st": "15:00",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 2,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "serviceId": "7866772LEEDS___",
+      "std": "13:10",
+      "origin": [
+        {
+          "locationName": "Plymouth",
+          "crs": "PLY"
+        }
+      ],
+      "destination": "Edinburgh",
+      "destinationVia": null,
+      "platform": "11",
+      "status": "on-time",
+      "estimatedTime": null,
+      "operator": "CrossCountry",
+      "operatorCode": "XC",
+      "isCancelled": false,
+      "futureCancellation": false,
+      "futureDelay": false,
+      "isReverseFormation": false,
+      "detachFront": false,
+      "delayReason": null,
+      "cancelReason": null,
+      "rsid": null,
+      "coachCount": null,
+      "coachCountSource": "none",
+      "formation": null,
+      "callingPointGroups": [
+        {
+          "serviceType": "train",
+          "serviceChangeRequired": false,
+          "assocIsCancelled": false,
+          "callingPoints": [
+            {
+              "locationName": "York",
+              "crs": "YRK",
+              "st": "13:32",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Darlington",
+              "crs": "DAR",
+              "st": "14:06",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Durham",
+              "crs": "DHM",
+              "st": "14:24",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Newcastle",
+              "crs": "NCL",
+              "st": "14:38",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Morpeth",
+              "crs": "MPT",
+              "st": "14:52",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Berwick-upon-Tweed",
+              "crs": "BWK",
+              "st": "15:25",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Edinburgh",
+              "crs": "EDB",
+              "st": "16:07",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "serviceId": "7857983LEEDS___",
+      "std": "13:10",
+      "origin": [
+        {
+          "locationName": "Harrogate",
+          "crs": "HGT"
+        }
+      ],
+      "destination": "London Kings Cross",
+      "destinationVia": null,
+      "platform": "TBC",
+      "status": "on-time",
+      "estimatedTime": null,
+      "operator": "LNER",
+      "operatorCode": "GR",
+      "isCancelled": false,
+      "futureCancellation": false,
+      "futureDelay": false,
+      "isReverseFormation": false,
+      "detachFront": false,
+      "delayReason": null,
+      "cancelReason": null,
+      "rsid": null,
+      "coachCount": null,
+      "coachCountSource": "none",
+      "formation": null,
+      "callingPointGroups": [
+        {
+          "serviceType": "train",
+          "serviceChangeRequired": false,
+          "assocIsCancelled": false,
+          "callingPoints": [
+            {
+              "locationName": "Wakefield Westgate",
+              "crs": "WKF",
+              "st": "13:21",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Doncaster",
+              "crs": "DON",
+              "st": "13:40",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Newark North Gate",
+              "crs": "NNG",
+              "st": "14:03",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Stevenage",
+              "crs": "SVG",
+              "st": "14:59",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "London Kings Cross",
+              "crs": "KGX",
+              "st": "15:23",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "serviceId": "7862522LEEDS___",
+      "std": "13:12",
+      "origin": [
+        {
+          "locationName": "Leeds",
+          "crs": "LDS"
+        }
+      ],
+      "destination": "Bradford Forster Square",
+      "destinationVia": null,
+      "platform": "3B",
+      "status": "on-time",
+      "estimatedTime": null,
+      "operator": "Northern",
+      "operatorCode": "NT",
+      "isCancelled": false,
+      "futureCancellation": false,
+      "futureDelay": false,
+      "isReverseFormation": false,
+      "detachFront": false,
+      "delayReason": null,
+      "cancelReason": null,
+      "rsid": null,
+      "coachCount": 4,
+      "coachCountSource": "length",
+      "formation": null,
+      "callingPointGroups": [
+        {
+          "serviceType": "train",
+          "serviceChangeRequired": false,
+          "assocIsCancelled": false,
+          "callingPoints": [
+            {
+              "locationName": "Kirkstall Forge",
+              "crs": "KLF",
+              "st": "13:18",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 4,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Apperley Bridge",
+              "crs": "APY",
+              "st": "13:23",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 4,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Shipley",
+              "crs": "SHY",
+              "st": "13:28",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 4,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Frizinghall",
+              "crs": "FZH",
+              "st": "13:32",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 4,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Bradford Forster Square",
+              "crs": "BDQ",
+              "st": "13:37",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 4,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "serviceId": "7872108LEEDS___",
+      "std": "13:12",
+      "origin": [
+        {
+          "locationName": "Leeds",
+          "crs": "LDS"
+        }
+      ],
+      "destination": "Manchester Victoria",
+      "destinationVia": null,
+      "platform": "5B",
+      "status": "on-time",
+      "estimatedTime": null,
+      "operator": "Northern",
+      "operatorCode": "NT",
+      "isCancelled": false,
+      "futureCancellation": false,
+      "futureDelay": false,
+      "isReverseFormation": false,
+      "detachFront": false,
+      "delayReason": null,
+      "cancelReason": null,
+      "rsid": null,
+      "coachCount": 3,
+      "coachCountSource": "length",
+      "formation": null,
+      "callingPointGroups": [
+        {
+          "serviceType": "train",
+          "serviceChangeRequired": false,
+          "assocIsCancelled": false,
+          "callingPoints": [
+            {
+              "locationName": "Bramley (West Yorkshire)",
+              "crs": "BLE",
+              "st": "13:19",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "New Pudsey",
+              "crs": "NPD",
+              "st": "13:22",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Bradford Interchange",
+              "crs": "BDI",
+              "st": "13:31",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Halifax",
+              "crs": "HFX",
+              "st": "13:45",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Hebden Bridge",
+              "crs": "HBD",
+              "st": "13:56",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Todmorden",
+              "crs": "TOD",
+              "st": "14:03",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Rochdale",
+              "crs": "RCD",
+              "st": "14:13",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Manchester Victoria",
+              "crs": "MCV",
+              "st": "14:29",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "serviceId": "7867951LEEDS___",
+      "std": "13:13",
+      "origin": [
+        {
+          "locationName": "Manchester Airport",
+          "crs": "MIA"
+        }
+      ],
+      "destination": "Redcar Central",
+      "destinationVia": null,
+      "platform": "15",
+      "status": "on-time",
+      "estimatedTime": null,
+      "operator": "TransPennine Express",
+      "operatorCode": "TP",
+      "isCancelled": false,
+      "futureCancellation": false,
+      "futureDelay": false,
+      "isReverseFormation": false,
+      "detachFront": false,
+      "delayReason": null,
+      "cancelReason": null,
+      "rsid": null,
+      "coachCount": 6,
+      "coachCountSource": "length",
+      "formation": null,
+      "callingPointGroups": [
+        {
+          "serviceType": "train",
+          "serviceChangeRequired": false,
+          "assocIsCancelled": false,
+          "callingPoints": [
+            {
+              "locationName": "York",
+              "crs": "YRK",
+              "st": "13:36",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 6,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Thirsk",
+              "crs": "THI",
+              "st": "13:55",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 6,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Northallerton",
+              "crs": "NTR",
+              "st": "14:03",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 6,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Yarm",
+              "crs": "YRM",
+              "st": "14:16",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 6,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Eaglescliffe",
+              "crs": "EAG",
+              "st": "14:22",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 6,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Thornaby",
+              "crs": "TBY",
+              "st": "14:28",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 6,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Middlesbrough",
+              "crs": "MBR",
+              "st": "14:36",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 6,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Redcar Central",
+              "crs": "RCC",
+              "st": "14:48",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 6,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "serviceId": "7867896LEEDS___",
+      "std": "13:15",
+      "origin": [
+        {
+          "locationName": "Scarborough",
+          "crs": "SCA"
+        }
+      ],
+      "destination": "Manchester Victoria",
+      "destinationVia": null,
+      "platform": "16A",
+      "status": "on-time",
+      "estimatedTime": null,
+      "operator": "TransPennine Express",
+      "operatorCode": "TP",
+      "isCancelled": false,
+      "futureCancellation": false,
+      "futureDelay": false,
+      "isReverseFormation": false,
+      "detachFront": false,
+      "delayReason": null,
+      "cancelReason": null,
+      "rsid": null,
+      "coachCount": 3,
+      "coachCountSource": "length",
+      "formation": null,
+      "callingPointGroups": [
+        {
+          "serviceType": "train",
+          "serviceChangeRequired": false,
+          "assocIsCancelled": false,
+          "callingPoints": [
+            {
+              "locationName": "Dewsbury",
+              "crs": "DEW",
+              "st": "13:25",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Huddersfield",
+              "crs": "HUD",
+              "st": "13:35",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Manchester Victoria",
+              "crs": "MCV",
+              "st": "14:09",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "serviceId": "7884505LEEDS___",
+      "std": "13:15",
+      "origin": [
+        {
+          "locationName": "Edinburgh",
+          "crs": "EDB"
+        }
+      ],
+      "destination": "Plymouth",
+      "destinationVia": null,
+      "platform": "12A",
+      "status": "on-time",
+      "estimatedTime": null,
+      "operator": "CrossCountry",
+      "operatorCode": "XC",
+      "isCancelled": false,
+      "futureCancellation": false,
+      "futureDelay": false,
+      "isReverseFormation": false,
+      "detachFront": false,
+      "delayReason": null,
+      "cancelReason": null,
+      "rsid": "XC167000",
+      "coachCount": null,
+      "coachCountSource": "none",
+      "formation": null,
+      "callingPointGroups": [
+        {
+          "serviceType": "train",
+          "serviceChangeRequired": false,
+          "assocIsCancelled": false,
+          "callingPoints": [
+            {
+              "locationName": "Wakefield Westgate",
+              "crs": "WKF",
+              "st": "13:26",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Sheffield",
+              "crs": "SHF",
+              "st": "13:55",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Chesterfield",
+              "crs": "CHD",
+              "st": "14:07",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Derby",
+              "crs": "DBY",
+              "st": "14:27",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Tamworth",
+              "crs": "TAM",
+              "st": "14:48",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Birmingham New Street",
+              "crs": "BHM",
+              "st": "15:06",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Cheltenham Spa",
+              "crs": "CNM",
+              "st": "15:50",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Bristol Parkway",
+              "crs": "BPW",
+              "st": "16:20",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Bristol Temple Meads",
+              "crs": "BRI",
+              "st": "16:31",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Taunton",
+              "crs": "TAU",
+              "st": "17:16",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Tiverton Parkway",
+              "crs": "TVP",
+              "st": "17:28",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Exeter St Davids",
+              "crs": "EXD",
+              "st": "17:46",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Newton Abbot",
+              "crs": "NTA",
+              "st": "18:07",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Totnes",
+              "crs": "TOT",
+              "st": "18:20",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Plymouth",
+              "crs": "PLY",
+              "st": "18:47",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 0,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "serviceId": "7877074LEEDS___",
+      "std": "13:17",
+      "origin": [
+        {
+          "locationName": "Leeds",
+          "crs": "LDS"
+        }
+      ],
+      "destination": "Wigan Wallgate",
+      "destinationVia": null,
+      "platform": "13B",
+      "status": "on-time",
+      "estimatedTime": null,
+      "operator": "Northern",
+      "operatorCode": "NT",
+      "isCancelled": false,
+      "futureCancellation": false,
+      "futureDelay": false,
+      "isReverseFormation": false,
+      "detachFront": false,
+      "delayReason": null,
+      "cancelReason": null,
+      "rsid": null,
+      "coachCount": 3,
+      "coachCountSource": "length",
+      "formation": null,
+      "callingPointGroups": [
+        {
+          "serviceType": "train",
+          "serviceChangeRequired": false,
+          "assocIsCancelled": false,
+          "callingPoints": [
+            {
+              "locationName": "Morley",
+              "crs": "MLY",
+              "st": "13:25",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Batley",
+              "crs": "BTL",
+              "st": "13:30",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Dewsbury",
+              "crs": "DEW",
+              "st": "13:34",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Mirfield",
+              "crs": "MIR",
+              "st": "13:40",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Brighouse",
+              "crs": "BGH",
+              "st": "13:50",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Sowerby Bridge",
+              "crs": "SOW",
+              "st": "14:00",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Mytholmroyd",
+              "crs": "MYT",
+              "st": "14:06",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Hebden Bridge",
+              "crs": "HBD",
+              "st": "14:09",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Todmorden",
+              "crs": "TOD",
+              "st": "14:17",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Walsden",
+              "crs": "WDN",
+              "st": "14:21",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Littleborough",
+              "crs": "LTL",
+              "st": "14:27",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Smithy Bridge",
+              "crs": "SMB",
+              "st": "14:30",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Rochdale",
+              "crs": "RCD",
+              "st": "14:35",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Manchester Victoria",
+              "crs": "MCV",
+              "st": "14:50",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Salford Central",
+              "crs": "SFD",
+              "st": "14:58",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Salford Crescent",
+              "crs": "SLD",
+              "st": "15:02",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Swinton (Manchester)",
+              "crs": "SNN",
+              "st": "15:09",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Moorside",
+              "crs": "MSD",
+              "st": "15:12",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Walkden",
+              "crs": "WKD",
+              "st": "15:16",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Atherton",
+              "crs": "ATN",
+              "st": "15:22",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Hag Fold",
+              "crs": "HGF",
+              "st": "15:25",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Daisy Hill",
+              "crs": "DSY",
+              "st": "15:28",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Hindley",
+              "crs": "HIN",
+              "st": "15:33",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Ince",
+              "crs": "INC",
+              "st": "15:36",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Wigan Wallgate",
+              "crs": "WGW",
+              "st": "15:40",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "serviceId": "7878843LEEDS___",
+      "std": "13:17",
+      "origin": [
+        {
+          "locationName": "Leeds",
+          "crs": "LDS"
+        }
+      ],
+      "destination": "York",
+      "destinationVia": null,
+      "platform": "7A",
+      "status": "on-time",
+      "estimatedTime": null,
+      "operator": "Northern",
+      "operatorCode": "NT",
+      "isCancelled": false,
+      "futureCancellation": false,
+      "futureDelay": false,
+      "isReverseFormation": false,
+      "detachFront": false,
+      "delayReason": null,
+      "cancelReason": null,
+      "rsid": null,
+      "coachCount": 3,
+      "coachCountSource": "length",
+      "formation": null,
+      "callingPointGroups": [
+        {
+          "serviceType": "train",
+          "serviceChangeRequired": false,
+          "assocIsCancelled": false,
+          "callingPoints": [
+            {
+              "locationName": "Cross Gates",
+              "crs": "CRG",
+              "st": "13:23",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Garforth",
+              "crs": "GRF",
+              "st": "13:28",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "East Garforth",
+              "crs": "EGF",
+              "st": "13:30",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Micklefield",
+              "crs": "MIK",
+              "st": "13:33",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "York",
+              "crs": "YRK",
+              "st": "13:48",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "serviceId": "7862405LEEDS___",
+      "std": "13:18",
+      "origin": [
+        {
+          "locationName": "Leeds",
+          "crs": "LDS"
+        }
+      ],
+      "destination": "Carlisle",
+      "destinationVia": null,
+      "platform": "5C",
+      "status": "on-time",
+      "estimatedTime": null,
+      "operator": "Northern",
+      "operatorCode": "NT",
+      "isCancelled": false,
+      "futureCancellation": false,
+      "futureDelay": false,
+      "isReverseFormation": false,
+      "detachFront": false,
+      "delayReason": null,
+      "cancelReason": null,
+      "rsid": null,
+      "coachCount": 3,
+      "coachCountSource": "length",
+      "formation": null,
+      "callingPointGroups": [
+        {
+          "serviceType": "train",
+          "serviceChangeRequired": false,
+          "assocIsCancelled": false,
+          "callingPoints": [
+            {
+              "locationName": "Shipley",
+              "crs": "SHY",
+              "st": "13:32",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Bingley",
+              "crs": "BIY",
+              "st": "13:37",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Keighley",
+              "crs": "KEI",
+              "st": "13:42",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Skipton",
+              "crs": "SKI",
+              "st": "13:55",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Hellifield",
+              "crs": "HLD",
+              "st": "14:09",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Settle",
+              "crs": "SET",
+              "st": "14:19",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Horton-in-Ribblesdale",
+              "crs": "HIR",
+              "st": "14:28",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Ribblehead",
+              "crs": "RHD",
+              "st": "14:35",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Dent",
+              "crs": "DNT",
+              "st": "14:45",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Garsdale",
+              "crs": "GSD",
+              "st": "14:50",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Kirkby Stephen",
+              "crs": "KSW",
+              "st": "15:02",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Appleby",
+              "crs": "APP",
+              "st": "15:14",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Langwathby",
+              "crs": "LGW",
+              "st": "15:29",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Lazonby & Kirkoswald",
+              "crs": "LZB",
+              "st": "15:35",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Armathwaite",
+              "crs": "AWT",
+              "st": "15:43",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            },
+            {
+              "locationName": "Carlisle",
+              "crs": "CAR",
+              "st": "16:00",
+              "et": "On time",
+              "isCancelled": false,
+              "length": 3,
+              "detachFront": false,
+              "affectedByDiversion": false,
+              "rerouteDelay": 0
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -190,6 +190,10 @@ export function normalizeService(service) {
       crs: o.crs || null,
     })),
     destination: (lastDest && lastDest.locationName) || null,
+    // "via Stoke-on-Trent" etc. — present on some live destinations, absent
+    // on most. Kept as its own field rather than folded into `destination`
+    // so the existing collapsed-string field doesn't change shape.
+    destinationVia: (lastDest && lastDest.via) || null,
     platform: service.platform || null,
     status,
     estimatedTime,
@@ -201,6 +205,13 @@ export function normalizeService(service) {
     isReverseFormation: service.isReverseFormation === true,
     detachFront: service.detachFront === true,
     delayReason: service.delayReason || null,
+    // Real, confirmed live on cancelled services (e.g. cancelled-lds.json) —
+    // same style/shape as delayReason, was previously dropped entirely.
+    cancelReason: service.cancelReason || null,
+    // Retail Service ID — real, confirmed live on both the board and
+    // GetServiceDetails (see fixtures/darwin-departures/service-details-
+    // via-rsid.json); not rendered anywhere yet, carried through as free data.
+    rsid: service.rsid || null,
     coachCount,
     coachCountSource,
     formation: normalizeFormation(service),

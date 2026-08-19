@@ -254,6 +254,40 @@ survives a re-run.
   OpenLDBWS. RTT's free tier is non-commercial; it must be retired before
   any monetisation.
 
+## Darwin LDBWS REST — verified constraints (confirmed live 2026-08-19)
+
+Three separate Rail Data Marketplace products, three separate `x-apikey`
+keys — **not interchangeable**, confirmed symmetrically (each key gets a
+`401 {"fault":{"faultstring":"Invalid ApiKey for given resource", ...
+"oauth.v2.InvalidApiKeyForGivenResource"}}` against either other product).
+`DARWIN_LDBWS_KEY` (board), `DARWIN_SERVICE_KEY` (service details),
+`DARWIN_NEXT_DEPARTURES_KEY` (next departures board).
+
+- **`numRows` hard ceiling is 25** on GetDepBoardWithDetails, regardless of
+  what's requested — confirmed identically at a quiet station (BHM) and one
+  of the busiest London termini (LST), both capped at exactly 25 even when
+  asked for 150.
+- **`timeOffset` valid range is -120 to 119 minutes inclusive** — 120 itself
+  is rejected: `400 {"Message":"Requested time range (120,240) falls
+  outside permitted time range (-120,False)"}` (the literal `False` is
+  Darwin's own error text, not a placeholder introduced here).
+  `timeWindow` isn't independently range-validated (no error up to 10000
+  observed) but doesn't extend reach past what `numRows`/service density
+  already caps — paging further ahead means advancing `timeOffset`, not
+  raising `timeWindow`.
+- **GetServiceDetails errors are two distinct, real modes, not one:**
+  - Stale-but-well-formed serviceID → `500 {"Message":"Unable to retrieve
+    the requested data"}` (reproduced twice on different hours-old IDs).
+  - Malformed serviceID (wrong format entirely) → `400 {"Message":"Invalid
+    Service ID"}`.
+  - Fresh serviceID → `200`, full shape in
+    `fixtures/darwin-departures/service-details-fresh.json`: has both
+    `previousCallingPoints` (new — the board never has this) and
+    `subsequentCallingPoints`, plus `sta`/`eta` (arrival at the queried
+    station, which the board never exposes at all) alongside `std`/`etd`.
+    Has no `formation`/coach data and no `origin`/`destination` fields at
+    all — both present on the board, absent here.
+
 ## Saved routes (localStorage)
 - Key: srhq_saved_routes
 - Value: JSON array of {name, crs, toc, line, addedAt}
