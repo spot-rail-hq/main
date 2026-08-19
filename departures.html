@@ -18,7 +18,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="/img/favicon-192.svg">
 <link rel="icon" type="image/png" sizes="512x512" href="/img/favicon-512.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="/img/apple-touch-icon.svg">
-<meta name="description" content="Real-time UK train departures via National Rail's Darwin data feed. Search any station by CRS code — auto-refreshing every 30 seconds." />
+<meta name="description" content="Real-time UK train departures via National Rail's Darwin data feed. Search any station by name or code — auto-refreshing every 30 seconds." />
 <meta name="robots" content="index, follow" />
 <meta name="author" content="SpotRail HQ" />
 <meta name="geo.region" content="GB">
@@ -28,7 +28,7 @@
 
 <!-- Open Graph -->
 <meta property="og:title" content="Live Departures | SRHQ — SpotRail HQ" />
-<meta property="og:description" content="Real-time UK train departures via National Rail's Darwin data feed. Search any station by CRS code." />
+<meta property="og:description" content="Real-time UK train departures via National Rail's Darwin data feed. Search any station by name or code." />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://srhq.uk/departures" />
 <meta property="og:site_name" content="SpotRail HQ" />
@@ -39,7 +39,7 @@
 <!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="Live Departures | SRHQ — SpotRail HQ" />
-<meta name="twitter:description" content="Real-time UK train departures via National Rail's Darwin data feed. Search any station by CRS code." />
+<meta name="twitter:description" content="Real-time UK train departures via National Rail's Darwin data feed. Search any station by name or code." />
 <meta name="twitter:image" content="https://srhq.uk/img/og-image.jpg" />
 
 <script type="application/ld+json">
@@ -47,7 +47,7 @@
   "@context": "https://schema.org",
   "@type": "WebApplication",
   "name": "Live Departures — SRHQ",
-  "description": "Real-time UK train departures via National Rail's Darwin data feed. Search any UK station by CRS code.",
+  "description": "Real-time UK train departures via National Rail's Darwin data feed. Search any UK station by name or code.",
   "url": "https://srhq.uk/departures",
   "applicationCategory": "TransportationApplication",
   "operatingSystem": "Web",
@@ -62,6 +62,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Manrope:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<!-- Same icon set map.html already loads for its search/star/share icons — reused here for UI parity, not a new dependency to the site. -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css" />
 <style>
 :root {
   --bg: #07090C;        --bg-rgb: 7,9,12;
@@ -96,8 +98,6 @@
   --color-text-secondary: #2D3748;
 }
 :root[data-theme="light"] .nav-link.active { color: #FFFFFF; }
-:root[data-theme="light"] .station-btn.active { color: #FFFFFF; }
-:root[data-theme="light"] .station-search button { color: #FFFFFF; }
 :root[data-theme="light"] .btn-retry { color: #FFFFFF; }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 *, *::before, *::after {
@@ -234,31 +234,57 @@ body.nav-open .nav-drawer { transform: translateX(0); box-shadow: -20px 0 60px r
 
 /* Departures */
 .dep-wrap { max-width: 1280px; margin: 0 auto; padding: 28px 32px 56px; }
-.station-row {
-  display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 20px;
+.station-row { margin-bottom: 20px; }
+
+/* Station search — ported from map.html's sb-search-field/sb-ac-* pattern
+   (same class shapes, same interaction model) so this page's search matches
+   the site's existing search UI rather than inventing a second one. Colours
+   translated to this page's own token names — map.html's --t/--ink-primary/
+   --ink/--sf/--brh map onto --color-accent-turquoise/--ink/--ink-dim/
+   rgba(--surface-rgb)/rgba(--color-accent-turquoise-rgb) here, confirmed by
+   comparing the actual hex values in both files' :root blocks. */
+.dep-search-wrap { position: relative; }
+.dep-search-field {
+  width: 100%; padding: 14px 44px 14px 16px; border-radius: 12px;
+  border: 0.5px solid rgba(var(--color-accent-turquoise-rgb),0.28);
+  background: var(--surface); color: var(--ink); font-size: 16px;
+  font-family: 'Manrope', sans-serif; outline: none;
 }
-.station-btn {
-  padding: 9px 16px; border-radius: 999px;
-  font-family: 'Manrope', sans-serif; font-size: 13px; font-weight: 500;
-  color: var(--ink); background: var(--surface);
-  border: 1px solid rgba(var(--line-rgb),0.08);
-  cursor: pointer; transition: all .15s ease;
+.dep-search-field::placeholder { color: var(--ink-mute); }
+.dep-search-field:focus { border-color: rgba(var(--color-accent-turquoise-rgb),0.5); }
+.dep-field-clear {
+  display: none; position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  background: transparent; border: none; color: var(--ink-mute); font-size: 20px; line-height: 1;
+  padding: 6px; cursor: pointer;
 }
-.station-btn.active { background: var(--color-accent-turquoise); color: #07090C; border-color: transparent; }
-.station-search { display: flex; gap: 8px; align-items: center; margin-left: auto; }
-.station-search input {
-  width: 90px; padding: 9px 12px; border-radius: 8px;
-  background: var(--surface); border: 1px solid rgba(var(--line-rgb),0.08);
-  color: var(--ink); font-family: 'JetBrains Mono', monospace;
-  font-size: 13px; text-transform: uppercase; outline: none;
+.dep-field-clear:hover { color: var(--ink); }
+.dep-ac-list {
+  display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 20;
+  max-height: 300px; overflow-y: auto;
+  background: rgba(var(--surface-rgb),0.96); border: 0.5px solid rgba(var(--color-accent-turquoise-rgb),0.28);
+  border-radius: 12px; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
 }
-.station-search input:focus { border-color: rgba(var(--color-accent-turquoise-rgb),0.5); }
-.station-search button {
-  padding: 9px 16px; border-radius: 8px;
-  background: var(--color-accent-turquoise); color: #07090C;
-  border: none; font-weight: 600; font-size: 13px; cursor: pointer;
+.dep-ac-list.open { display: block; }
+.dep-ac-item {
+  display: block; width: 100%; text-align: left; padding: 10px 16px; font-size: 15px;
+  color: var(--ink); background: transparent; border: none; cursor: pointer;
   font-family: 'Manrope', sans-serif;
 }
+.dep-ac-item.active, .dep-ac-item:hover { background: rgba(var(--color-accent-turquoise-rgb),0.08); color: var(--color-accent-turquoise); }
+.dep-ac-note { display: block; margin-top: 2px; font-size: 12px; color: var(--ink-mute); font-family: 'JetBrains Mono', monospace; }
+.dep-ac-group-label {
+  padding: 8px 16px 4px; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--ink-mute); font-family: 'JetBrains Mono', monospace;
+}
+
+.dep-bar-actions { display: flex; align-items: center; gap: 4px; }
+.dep-icon-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: transparent; border: none; color: var(--ink-mute); padding: 6px; cursor: pointer; font-size: 16px;
+}
+.dep-icon-btn:hover { color: var(--color-accent-turquoise); }
+.dep-icon-btn.starred { color: var(--color-accent-amber); }
+.dep-icon-btn.copied { color: var(--color-accent-turquoise); }
 
 .dep-bar {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
@@ -411,8 +437,6 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
 @media (max-width: 560px) {
   .nav-inner { padding: 0 20px; }
   .hero-sm, .dep-wrap { padding-left: 20px; padding-right: 20px; }
-  .station-search { margin-left: 0; width: 100%; }
-  .station-search input { flex: 1; width: auto; }
 }
 </style>
 </head>
@@ -527,15 +551,18 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
 <div class="dep-wrap">
   <div id="fixture-banner"></div>
   <div class="station-row" id="station-row">
-    <div class="station-search">
-      <input type="text" id="station-input" maxlength="3" placeholder="CRS" />
-      <button type="button" id="station-search-btn">Go</button>
+    <div class="dep-search-wrap sb-ac-wrap">
+      <input type="text" id="station-input" class="dep-search-field" placeholder="Search stations by name or code" aria-label="Search stations" autocomplete="off" />
+      <button type="button" class="dep-field-clear" id="station-clear-btn" aria-label="Clear search">×</button>
+      <div class="dep-ac-list" id="station-ac-list"></div>
     </div>
   </div>
   <div class="dep-bar" id="dep-bar">
     <span id="dep-updated">Last updated: —</span>
-    <span style="display:flex; align-items:center; gap:10px;">
-      <button type="button" class="dep-pager-btn" id="dep-pager-btn">+2 hr</button>
+    <span class="dep-bar-actions">
+      <button type="button" class="dep-icon-btn" id="dep-share-btn" aria-label="Share this station"><i class="ti ti-share-3"></i></button>
+      <button type="button" class="dep-icon-btn" id="dep-star-btn" aria-label="Save this station" aria-pressed="false"><i class="ti ti-star"></i></button>
+      <button type="button" class="dep-pager-btn" id="dep-pager-btn">Next 2 hours</button>
       <span id="dep-refreshing" class="dep-refreshing">↻ Refreshing…</span>
     </span>
   </div>
@@ -597,51 +624,287 @@ function escHtml(s) {
 }
 
 // ── LIVE DEPARTURES ──────────────────────────────────────────────
-var STATIONS = [
-  { crs: 'EUS', name: 'London Euston' },
-  { crs: 'MAN', name: 'Manchester Piccadilly' },
-  { crs: 'BHM', name: 'Birmingham New Street' },
-  { crs: 'LDS', name: 'Leeds' },
-  { crs: 'EDB', name: 'Edinburgh Waverley' },
-  { crs: 'BRI', name: 'Bristol Temple Meads' },
-  { crs: 'GLC', name: 'Glasgow Central' }
-];
-var currentStation = 'EUS';
+var DEFAULT_CRS = 'EUS';
+var DEFAULT_NAME = 'London Euston';
+var currentStation = DEFAULT_CRS;
+var currentStationName = DEFAULT_NAME;
 var refreshTimer = null;
 
-(function buildStationRow() {
-  var row = document.getElementById('station-row');
-  var searchDiv = row.querySelector('.station-search');
-  STATIONS.forEach(function (st) {
-    var btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'station-btn' + (st.crs === currentStation ? ' active' : '');
-    btn.dataset.crs = st.crs;
-    btn.textContent = st.name + ' (' + st.crs + ')';
-    btn.addEventListener('click', function () { selectStation(st.crs); });
-    row.insertBefore(btn, searchDiv);
-  });
-})();
-
-document.getElementById('station-search-btn').addEventListener('click', function () {
-  var input = document.getElementById('station-input');
-  var crs = input.value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
-  if (crs.length === 3) selectStation(crs);
-});
-document.getElementById('station-input').addEventListener('keydown', function (e) {
-  if (e.key === 'Enter') document.getElementById('station-search-btn').click();
+// ── Station search — ported from map.html's searchStations()/
+// stripStationNameSuffix()/wireAutocomplete(), same station-list.json
+// source, same match/sort logic, same keyboard model. Simplified to one
+// field (departures.html has no from/to/operator tabs to share the
+// generic version across) and narrowed to CRS-bearing stations only —
+// a station with no CRS cannot have a Darwin departure board at all, so
+// unlike the map's plain station search, that filter is unconditional
+// here, not just for a from/to picker. Size/acceptability of loading the
+// full station-list.json here (vs. a trimmed build-time subset) is
+// reported separately, not decided in this pass.
+var stationList = [];
+fetch('/station-list.json').then(function (r) {
+  if (!r.ok) throw new Error('station-list.json missing');
+  return r.json();
+}).then(function (data) {
+  stationList = (Array.isArray(data) ? data : []).filter(function (s) { return !!s.crs; });
+  stationList.forEach(function (s) { s.name = stripStationNameSuffix(s.name); });
+}).catch(function (e) {
+  console.warn('station-list.json unavailable — station search disabled', e);
 });
 
-function selectStation(crs) {
-  currentStation = crs.toUpperCase();
-  document.querySelectorAll('.station-btn').forEach(function (btn) {
-    btn.classList.toggle('active', btn.dataset.crs === currentStation);
+function stripStationNameSuffix(name) {
+  var stripped = (name || '').replace(/\s+(?:Rail|Railway|Metro)?\s*Station$/i, '').trim();
+  return stripped || name;
+}
+
+function searchDepartureStations(query, limit) {
+  query = (query || '').trim().toLowerCase();
+  if (!query) return [];
+  var matches = stationList.filter(function (s) {
+    var nameHit = s.name && s.name.toLowerCase().indexOf(query) !== -1;
+    var codeHit = s.crs && s.crs.toLowerCase().indexOf(query) === 0;
+    return nameHit || codeHit;
   });
+  matches.sort(function (a, b) {
+    var aCode = a.crs.toLowerCase().indexOf(query) === 0 ? 0 : 1;
+    var bCode = b.crs.toLowerCase().indexOf(query) === 0 ? 0 : 1;
+    if (aCode !== bCode) return aCode - bCode;
+    var aStarts = a.name.toLowerCase().indexOf(query) === 0 ? 0 : 1;
+    var bStarts = b.name.toLowerCase().indexOf(query) === 0 ? 0 : 1;
+    if (aStarts !== bStarts) return aStarts - bStarts;
+    return a.name.length - b.name.length;
+  });
+  return matches.slice(0, limit || 8);
+}
+
+function wireStationSearch(inputEl, dropdownEl, clearBtn, onPick) {
+  var currentMatches = [];
+  var highlightedIndex = -1;
+
+  inputEl.setAttribute('role', 'combobox');
+  inputEl.setAttribute('aria-autocomplete', 'list');
+  inputEl.setAttribute('aria-expanded', 'false');
+  inputEl.setAttribute('aria-controls', dropdownEl.id);
+  dropdownEl.setAttribute('role', 'listbox');
+
+  function optionId(i) { return dropdownEl.id + '-opt-' + i; }
+
+  function closeDropdown() {
+    currentMatches = [];
+    highlightedIndex = -1;
+    dropdownEl.classList.remove('open');
+    dropdownEl.innerHTML = '';
+    inputEl.setAttribute('aria-expanded', 'false');
+    inputEl.removeAttribute('aria-activedescendant');
+  }
+  function applyHighlight() {
+    Array.prototype.forEach.call(dropdownEl.querySelectorAll('.dep-ac-item'), function (btn, i) {
+      var active = i === highlightedIndex;
+      btn.classList.toggle('active', active);
+      btn.setAttribute('aria-selected', active ? 'true' : 'false');
+      if (active) btn.scrollIntoView({ block: 'nearest' });
+    });
+    if (highlightedIndex >= 0) inputEl.setAttribute('aria-activedescendant', optionId(highlightedIndex));
+    else inputEl.removeAttribute('aria-activedescendant');
+  }
+  function pick(idx) {
+    var picked = currentMatches[idx];
+    if (!picked) return;
+    inputEl.value = picked.name;
+    closeDropdown();
+    onPick(picked);
+  }
+  function renderDropdown(groupLabel) {
+    if (!currentMatches.length) { closeDropdown(); return; }
+    highlightedIndex = -1;
+    var label = groupLabel ? '<div class="dep-ac-group-label">' + escHtml(groupLabel) + '</div>' : '';
+    dropdownEl.innerHTML = label + currentMatches.map(function (s, i) {
+      return '<button type="button" class="dep-ac-item" id="' + optionId(i) + '" role="option" aria-selected="false">' +
+        escHtml(s.name) + '<span class="dep-ac-note">' + escHtml(s.crs) + '</span>' +
+      '</button>';
+    }).join('');
+    dropdownEl.classList.add('open');
+    inputEl.setAttribute('aria-expanded', 'true');
+    Array.prototype.forEach.call(dropdownEl.querySelectorAll('.dep-ac-item'), function (btn, i) {
+      btn.addEventListener('mousedown', function (e) { e.preventDefault(); pick(i); });
+      btn.addEventListener('mouseenter', function () { highlightedIndex = i; applyHighlight(); });
+    });
+  }
+  // Empty, focused field shows saved stations rather than nothing — same
+  // "quick access to what you starred" spirit as map.html's saved list,
+  // without building a whole separate browse view for it.
+  function showSaved() {
+    currentMatches = getSavedStations().map(function (r) { return { name: r.name, crs: r.crs }; });
+    renderDropdown(currentMatches.length ? 'Saved stations' : '');
+  }
+  function syncClearButton() { clearBtn.style.display = inputEl.value ? '' : 'none'; }
+  function clearField() {
+    inputEl.value = '';
+    closeDropdown();
+    syncClearButton();
+    inputEl.focus();
+  }
+  clearBtn.addEventListener('mousedown', function (e) { e.preventDefault(); clearField(); });
+  syncClearButton();
+
+  var justFocused = false;
+  inputEl.addEventListener('focus', function () {
+    justFocused = true;
+    if (inputEl.value) {
+      inputEl.select();
+      currentMatches = searchDepartureStations(inputEl.value, 8);
+      renderDropdown();
+    } else {
+      showSaved();
+    }
+  });
+  inputEl.addEventListener('mouseup', function (e) { if (justFocused) { e.preventDefault(); justFocused = false; } });
+
+  inputEl.addEventListener('input', function () {
+    currentMatches = searchDepartureStations(inputEl.value, 8);
+    renderDropdown();
+    syncClearButton();
+  });
+
+  inputEl.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      if (dropdownEl.classList.contains('open')) { closeDropdown(); return; }
+      if (inputEl.value) { clearField(); return; }
+      inputEl.blur();
+      return;
+    }
+    if (e.key === 'ArrowDown') {
+      if (!currentMatches.length) return;
+      e.preventDefault();
+      highlightedIndex = highlightedIndex < currentMatches.length - 1 ? highlightedIndex + 1 : 0;
+      applyHighlight();
+      return;
+    }
+    if (e.key === 'ArrowUp') {
+      if (!currentMatches.length) return;
+      e.preventDefault();
+      highlightedIndex = highlightedIndex > 0 ? highlightedIndex - 1 : currentMatches.length - 1;
+      applyHighlight();
+      return;
+    }
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (highlightedIndex >= 0) { pick(highlightedIndex); return; }
+      var top = currentMatches[0] || searchDepartureStations(inputEl.value, 1)[0];
+      if (top) { inputEl.value = top.name; closeDropdown(); onPick(top); }
+    }
+  });
+  inputEl.addEventListener('blur', function () {
+    setTimeout(closeDropdown, 120); // delay lets the mousedown pick above register first
+  });
+}
+
+wireStationSearch(
+  document.getElementById('station-input'),
+  document.getElementById('station-ac-list'),
+  document.getElementById('station-clear-btn'),
+  function (picked) { if (picked) selectStation(picked.crs, picked.name); }
+);
+
+// ── URL sync — ?crs=BHM loads that station directly and selecting a new
+// one updates the URL so it's shareable/bookmarkable, same pattern as
+// map.html's pushState/popstate handling. ──
+function initialStationFromUrl() {
+  var crs = (new URLSearchParams(location.search).get('crs') || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  return crs.length === 3 ? crs : null;
+}
+function updateUrl() {
+  if (currentFixture) return;
+  var url = new URL(location.href);
+  url.searchParams.set('crs', currentStation);
+  history.pushState({ crs: currentStation }, '', url.pathname + url.search);
+}
+window.addEventListener('popstate', function () {
+  var crs = initialStationFromUrl();
+  if (crs) selectStationSilently(crs);
+});
+// Used by popstate — the URL already reflects this state (that's what
+// fired the event), so pushing it again would double up history entries.
+function selectStationSilently(crs) {
+  currentStation = crs;
+  currentStationName = crs; // corrected to the real name once the board loads (see renderDepartures)
+  document.getElementById('station-input').value = crs;
   currentOffset = 0;
   updatePagerButton();
+  updateStarButton();
   loadDepartures();
   startAutoRefresh();
 }
+function selectStation(crs, name) {
+  currentStation = crs.toUpperCase();
+  currentStationName = name || currentStation;
+  document.getElementById('station-input').value = currentStationName;
+  document.title = currentStationName + ' — Live Departures | SRHQ — SpotRail HQ';
+  updateUrl();
+  currentOffset = 0;
+  updatePagerButton();
+  updateStarButton();
+  loadDepartures();
+  startAutoRefresh();
+}
+
+// ── Saved stations + share — same localStorage contract as map.html
+// (srhq_saved_routes), so a station saved here shows up there too. ──
+var SAVED_KEY = 'srhq_saved_routes';
+function getSavedStations() {
+  try { return JSON.parse(localStorage.getItem(SAVED_KEY)) || []; } catch (e) { return []; }
+}
+function setSavedStations(list) {
+  try { localStorage.setItem(SAVED_KEY, JSON.stringify(list)); } catch (e) {}
+}
+function isStarred(crs) {
+  return getSavedStations().some(function (r) { return (r.crs || r.id) === crs; });
+}
+function updateStarButton() {
+  var btn = document.getElementById('dep-star-btn');
+  if (!btn) return;
+  var icon = btn.querySelector('i');
+  var starred = isStarred(currentStation);
+  btn.classList.toggle('starred', starred);
+  btn.setAttribute('aria-pressed', String(starred));
+  icon.className = starred ? 'ti ti-star-filled' : 'ti ti-star';
+}
+document.getElementById('dep-star-btn').addEventListener('click', function () {
+  if (currentFixture) return;
+  var list = getSavedStations();
+  var idx = list.findIndex(function (r) { return (r.crs || r.id) === currentStation; });
+  if (idx !== -1) list.splice(idx, 1);
+  else list.push({ name: currentStationName, crs: currentStation, addedAt: new Date().toISOString() });
+  setSavedStations(list);
+  updateStarButton();
+});
+
+var shareBtn = document.getElementById('dep-share-btn');
+function buildShareUrl() {
+  var url = new URL(location.origin + '/departures');
+  url.searchParams.set('crs', currentStation);
+  return url.toString();
+}
+function shareCurrentStation() {
+  var url = buildShareUrl();
+  var title = currentStationName + ' — Live Departures';
+  if (navigator.share) {
+    navigator.share({ title: title, url: url }).catch(function () {}); // user-cancelled share sheet — not an error
+    return;
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url).then(flashShareCopied);
+    return;
+  }
+  window.prompt('Copy this link:', url); // last-resort fallback, no Clipboard API available
+}
+function flashShareCopied() {
+  var icon = shareBtn.querySelector('i');
+  var original = icon.className;
+  icon.className = 'ti ti-check';
+  shareBtn.classList.add('copied');
+  setTimeout(function () { icon.className = original; shareBtn.classList.remove('copied'); }, 1400);
+}
+shareBtn.addEventListener('click', shareCurrentStation);
 
 // Darwin's `std` is already a plain "HH:MM" string — no ISO/"T"-split
 // parsing needed (that was an RTT-specific quirk).
@@ -731,6 +994,18 @@ function renderDepartures(board) {
   var services = (board && Array.isArray(board.services)) ? board.services : [];
   var nrccMessages = (board && Array.isArray(board.nrccMessages)) ? board.nrccMessages : [];
 
+  // Corrects the title/search-field/star-identity to the real station name
+  // once the board actually loads — the authoritative source, since a
+  // direct ?crs=BHM link (or a popstate) only ever had the bare code to
+  // start with, not a name from a search pick.
+  if (board && board.locationName && !currentFixture) {
+    currentStationName = board.locationName;
+    document.title = currentStationName + ' — Live Departures | SRHQ — SpotRail HQ';
+    var inputEl = document.getElementById('station-input');
+    if (inputEl && document.activeElement !== inputEl) inputEl.value = currentStationName;
+    updateStarButton();
+  }
+
   // Sanitised server-side by normalizeBoard() (api/_lib/darwin-normalize.mjs)
   // — only allowlisted <p>/<a href="nationalrail.co.uk..."> survive, so this
   // is safe to set directly rather than escHtml()'d, unlike every other
@@ -813,10 +1088,10 @@ document.getElementById('dep-table-wrap').addEventListener('click', function (e)
   if (hint) hint.textContent = expanding ? '▴' : '▾';
 });
 
-// ── Time pager — a single "+2 hr" toggle, not an open-ended pager.
+// ── Time pager — a single "Next 2 hours" toggle, not an open-ended pager.
 // 119, not 120: Darwin's confirmed valid timeOffset range is -120..119
 // inclusive — exactly 120 gets a 400 (see CLAUDE.md's Darwin section). The
-// button reads "+2 hr" for the user; it requests 119 on the wire. ──
+// button reads "Next 2 hours" for the user; it requests 119 on the wire. ──
 var MAX_OFFSET = 119;
 var currentOffset = 0;
 
@@ -826,7 +1101,7 @@ function updatePagerButton() {
   if (currentFixture) { btn.style.display = 'none'; return; }
   btn.style.display = '';
   btn.classList.toggle('active', currentOffset > 0);
-  btn.textContent = currentOffset > 0 ? 'Back to now' : '+2 hr';
+  btn.textContent = currentOffset > 0 ? 'Back to now' : 'Next 2 hours';
 }
 
 document.getElementById('dep-pager-btn').addEventListener('click', function () {
@@ -846,6 +1121,8 @@ function enterFixtureMode(name) {
   document.getElementById('fixture-banner').innerHTML =
     '<div class="dep-fixture-banner">Fixture preview — <b>' + escHtml(name) + '</b>. No live API calls in this mode.</div>';
   document.getElementById('station-row').style.display = 'none';
+  document.getElementById('dep-share-btn').style.display = 'none';
+  document.getElementById('dep-star-btn').style.display = 'none';
   updatePagerButton();
 }
 
@@ -904,7 +1181,23 @@ var IS_LOCALHOST = ['localhost', '127.0.0.1', '::1', '[::1]', ''].indexOf(locati
   if (fx && IS_LOCALHOST) enterFixtureMode(fx);
 })();
 
+// ?crs=BHM loads that station directly. Name is provisionally the code
+// itself until the board response's own locationName corrects it (see
+// renderDepartures) — same bootstrap gap a fresh popstate has.
+(function initStationFromUrl() {
+  if (currentFixture) return;
+  var crs = initialStationFromUrl();
+  if (crs) {
+    currentStation = crs;
+    currentStationName = crs;
+    document.getElementById('station-input').value = crs;
+  } else {
+    document.getElementById('station-input').value = currentStationName;
+  }
+})();
+
 updatePagerButton();
+updateStarButton();
 loadDepartures();
 startAutoRefresh();
 </script>

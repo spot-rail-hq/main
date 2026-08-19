@@ -260,8 +260,38 @@ Three separate Rail Data Marketplace products, three separate `x-apikey`
 keys — **not interchangeable**, confirmed symmetrically (each key gets a
 `401 {"fault":{"faultstring":"Invalid ApiKey for given resource", ...
 "oauth.v2.InvalidApiKeyForGivenResource"}}` against either other product).
-`DARWIN_LDBWS_KEY` (board), `DARWIN_SERVICE_KEY` (service details),
-`DARWIN_NEXT_DEPARTURES_KEY` (next departures board).
+
+| Product (as named on RDM) | Base URL (incl. slug) | API version | Operation | Key env var |
+|---|---|---|---|---|
+| Live Departure Board | `https://api1.raildata.org.uk/1010-live-departure-board-dep1_2/LDBWS/api/20220120/GetDepBoardWithDetails` | `20220120` | `GetDepBoardWithDetails` | `DARWIN_LDBWS_KEY` |
+| Service Details | `https://api1.raildata.org.uk/1010-service-details1_2/LDBWS/api/20220120/GetServiceDetails` | `20220120` | `GetServiceDetails` | `DARWIN_SERVICE_KEY` |
+| Live Next Departures Board | `https://api1.raildata.org.uk/1010-live-next-departure-board1_1/LDBWS/api/20220120/GetNextDepartures` | `20220120` | `GetNextDepartures` | `DARWIN_NEXT_DEPARTURES_KEY` |
+
+**Sourcing note, since only one of these three is actually wired into code
+today**: the Live Departure Board row is verified straight from
+`api/darwin-departures.js`'s `BOARD_URL_BASE` constant — the only one of the
+three this repo actually calls. The other two rows are **not** implemented
+in any file; they're transcribed verbatim from the exact URLs given directly
+in chat during the verification passes (Service Details: the original task
+spec; Next Departures Board: a later correction after an initial guess was
+wrong — see the "5 real guesses, all clean 404s" investigation), not
+reconstructed from memory. If either is ever wired into code, that
+constant becomes the source of truth over this table.
+
+Same API date-version segment (`20220120`) across all three despite
+different product-slug version suffixes (`1_2`, `1_2`, `1_1`) — the slug
+version and the API date-version are two independent things that happen to
+mostly agree here, not one number.
+
+**Assumption, not established fact — check this when the subscription is
+renewed**: the three base URLs/slugs above are expected to survive a
+resubscription unchanged (a slug identifies the product, not a specific
+purchase), but the three keys almost certainly will not — a new
+subscription typically issues fresh credentials. This has never actually
+been tested against a real renewal; it's inferred from how the RDM portal
+behaved during initial subscription, not confirmed. Don't assume a renewed
+key can just be dropped into `.env` under the same slug without checking
+the URLs still resolve.
 
 - **`numRows` hard ceiling is 25** on GetDepBoardWithDetails, regardless of
   what's requested — confirmed identically at a quiet station (BHM) and one
