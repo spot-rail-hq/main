@@ -2125,6 +2125,54 @@
   // always gets that station first; any unrelated name hits the same query
   // happens to substring-match still appear, just lower in the list, not
   // mislabeled as if they were a code match.
+  // Reconciles the divergence CLAUDE.md flagged 2026-08-19: departures.html
+  // got this four-tier model first (as a testbed, on a smaller CRS-only
+  // candidate pool); this ports the same model here, onto the full list.
+  //
+  // Populated once majorCrsPromise resolves (see the .then() wired onto it
+  // below, near where majorCrsPromise itself is declared — no second fetch,
+  // same /data/stations.geojson the marker-tiering code already loads).
+  // NOT guaranteed resolved before the very first keystroke — the search
+  // field is interactive immediately on page load, before any fetch has
+  // necessarily completed. Until it resolves, majorCrsSet is empty, so the
+  // major-station tiebreak below silently no-ops (every candidate ties at
+  // "not major", falling through to the length tiebreak alone — the exact
+  // old behaviour) rather than throwing or ranking wrong; it corrects
+  // itself on the next keystroke once the fetch lands, same graceful-
+  // degradation shape as stationList/getStationList()'s own fallback.
+  var majorCrsSet = new Set();
+
+  // Delimiters a query is considered to "start a word" after — space,
+  // hyphen, parenthesis (either side), slash, ampersand. Verified against
+  // real station names carrying each of these (hyphenated "Ashton-under-
+  // Lyne"-style names, parenthetical "Adlington (Cheshire)"-style names,
+  // "&"-joined names) — all behaved as expected. Slash never actually
+  // occurs in the current data — kept for robustness, not because it's
+  // exercised today. Identical to departures.html's copy of this regex.
+  var WORD_DELIM_RE = /[\s\-()\/&]/;
+
+  function queryStartsWordIn(nameLc, query) {
+    var idx = nameLc.indexOf(query, 1); // start at 1 — index 0 is tier 1 (name-starts), not this tier
+    while (idx !== -1) {
+      if (WORD_DELIM_RE.test(nameLc.charAt(idx - 1))) return true;
+      idx = nameLc.indexOf(query, idx + 1);
+    }
+    return false;
+  }
+
+  // Tier 0: CRS prefix match. Tier 1: name starts with query. Tier 2: query
+  // starts some other word within the name (word-boundary). Tier 3: true
+  // mid-word substring — searchStations()'s own filter guarantees anything
+  // reaching this function already matched one of the four.
+  function stationMatchTier(s, query) {
+    var crs = (s.crs || '').toLowerCase();
+    var name = s.name.toLowerCase();
+    if (crs.indexOf(query) === 0) return 0;
+    if (name.indexOf(query) === 0) return 1;
+    if (queryStartsWordIn(name, query)) return 2;
+    return 3;
+  }
+
   function searchStations(query, limit) {
     query = (query || '').trim().toLowerCase();
     if (!query) return [];
@@ -2134,12 +2182,16 @@
       return nameHit || codeHit;
     });
     matches.sort(function (a, b) {
-      var aCode = a.crs && a.crs.toLowerCase().indexOf(query) === 0 ? 0 : 1;
-      var bCode = b.crs && b.crs.toLowerCase().indexOf(query) === 0 ? 0 : 1;
-      if (aCode !== bCode) return aCode - bCode;
-      var aStarts = a.name.toLowerCase().indexOf(query) === 0 ? 0 : 1;
-      var bStarts = b.name.toLowerCase().indexOf(query) === 0 ? 0 : 1;
-      if (aStarts !== bStarts) return aStarts - bStarts;
+      var aTier = stationMatchTier(a, query), bTier = stationMatchTier(b, query);
+      if (aTier !== bTier) return aTier - bTier;
+      // Within a tier: major stations first (data/stations.geojson's
+      // curated set — the same one this file's own marker tiering already
+      // uses), then shorter names. Length was the ONLY tiebreak before this
+      // pass, which is what let e.g. "Birkdale"/"Birkbeck" outrank
+      // "Birmingham New Street" for "bir" — major-first fixes that directly.
+      var aMajor = majorCrsSet.has(a.crs) ? 0 : 1;
+      var bMajor = majorCrsSet.has(b.crs) ? 0 : 1;
+      if (aMajor !== bMajor) return aMajor - bMajor;
       return a.name.length - b.name.length;
     });
     return matches.slice(0, limit || 7);
@@ -5220,6 +5272,13 @@
     console.warn('Could not load the major-station list (/data/stations.geojson) — every marker will render as a ranked non-major tier only', e);
     return new Set();
   });
+  // Populates majorCrsSet (declared up near searchStations(), which reads it
+  // synchronously on every keystroke) — no second fetch, same promise the
+  // marker-tiering Promise.all below already depends on. Wired here, right
+  // after majorCrsPromise itself is assigned, rather than up at
+  // majorCrsSet's own declaration, because this line needs majorCrsPromise
+  // to already exist.
+  majorCrsPromise.then(function (set) { majorCrsSet = set; });
   Promise.all([stationListPromise, majorCrsPromise, stationsContentPromise]).then(function (results) {
     var list = results[0], majorCrs = results[1], content = results[2] || {};
     if (!list.length) return;

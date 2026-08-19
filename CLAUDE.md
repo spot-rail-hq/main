@@ -347,23 +347,32 @@ the URLs still resolve.
   restart is required to verify the rename actually resolved correctly,
   not just a nicety.
 
-## Known divergence: station-search ranking (departures.html vs map.html)
+## Station-search ranking (departures.html and map.html)
 
-**Not intended design — flagged for reconciliation, not a decision to keep
-two behaviours.** departures.html's station search (added/rewritten
-2026-08-19) uses a four-tier model — CRS-prefix match, name-starts-with,
-word-boundary match (query starts some word within the name, delimited by
-space/hyphen/parenthesis/slash/ampersand), true mid-word substring — with
-major-station-then-length as the tiebreak within each tier, using the same
-curated set map.html already loads from `data/stations.geojson`. map.html's
-own `searchStations()` still has the original two-tier model (name-starts-
-with, then true substring) with a **pure name-length tiebreak** — no word-
-boundary tier, no major-station signal. That length-only tiebreak is a real,
-demonstrated bug there (e.g. "bir" ranks "Birkdale"/"Birkbeck" above
-"Birmingham New Street" today), not a difference in taste. departures.html
-was deliberately used as the testbed for the fix; map.html has not been
-touched and still has the old behaviour — this is debt to close, not two
-valid approaches living side by side.
+**Reconciled 2026-08-19** — both files now run the same four-tier model in
+`searchStations()`/`searchDepartureStations()`: CRS-prefix match, name-
+starts-with, word-boundary match (query starts some word within the name,
+delimited by space/hyphen/parenthesis/slash/ampersand), true mid-word
+substring, with major-station-then-length as the tiebreak within each tier
+— both reading the same curated set from `data/stations.geojson`, no second
+source of truth. Confirmed via the real "bir" case that motivated the fix:
+"Birmingham New Street" now ranks first on both, not buried behind
+"Birkdale"/"Birkbeck" as it was under the old pure-length tiebreak.
+
+**Two things genuinely still differ, deliberately, not by oversight:**
+- **Candidate pool.** departures.html's search is CRS-only (a station with
+  no CRS can't have a Darwin board at all, so it's filtered out before
+  ranking). map.html's plain station search runs over the full list
+  (Underground/DLR/tram/etc included) — correct for the map, those are real
+  features on it, and left unchanged.
+- **Cap.** departures.html raised its dropdown cap to 10. map.html's stays
+  at 7 — **not raised**, left as an open decision rather than assumed: its
+  `.sb-ac-list` has a fixed 220px `max-height` shared by both desktop and
+  the mobile bottom sheet, and even the existing cap of 7 already exceeds
+  that (rows are ~36px, so ~6 fit before scrolling) — raising it doesn't
+  break anything (`overflow-y: auto` already handles it) but does mean more
+  scrolling in the already-tightest case. Traced and reported, not decided
+  silently.
 
 ## Saved routes (localStorage)
 - Key: srhq_saved_routes
