@@ -18,7 +18,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="/img/favicon-192.svg">
 <link rel="icon" type="image/png" sizes="512x512" href="/img/favicon-512.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="/img/apple-touch-icon.svg">
-<meta name="description" content="Real-time UK train departures powered by Realtime Trains. Search any station by CRS code — auto-refreshing every 30 seconds." />
+<meta name="description" content="Real-time UK train departures via National Rail's Darwin data feed. Search any station by CRS code — auto-refreshing every 30 seconds." />
 <meta name="robots" content="index, follow" />
 <meta name="author" content="SpotRail HQ" />
 <meta name="geo.region" content="GB">
@@ -28,7 +28,7 @@
 
 <!-- Open Graph -->
 <meta property="og:title" content="Live Departures | SRHQ — SpotRail HQ" />
-<meta property="og:description" content="Real-time UK train departures powered by Realtime Trains. Search any station by CRS code." />
+<meta property="og:description" content="Real-time UK train departures via National Rail's Darwin data feed. Search any station by CRS code." />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://srhq.uk/departures" />
 <meta property="og:site_name" content="SpotRail HQ" />
@@ -39,7 +39,7 @@
 <!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="Live Departures | SRHQ — SpotRail HQ" />
-<meta name="twitter:description" content="Real-time UK train departures powered by Realtime Trains. Search any station by CRS code." />
+<meta name="twitter:description" content="Real-time UK train departures via National Rail's Darwin data feed. Search any station by CRS code." />
 <meta name="twitter:image" content="https://srhq.uk/img/og-image.jpg" />
 
 <script type="application/ld+json">
@@ -47,7 +47,7 @@
   "@context": "https://schema.org",
   "@type": "WebApplication",
   "name": "Live Departures — SRHQ",
-  "description": "Real-time UK train departures powered by Realtime Trains. Search any UK station by CRS code.",
+  "description": "Real-time UK train departures via National Rail's Darwin data feed. Search any UK station by CRS code.",
   "url": "https://srhq.uk/departures",
   "applicationCategory": "TransportationApplication",
   "operatingSystem": "Web",
@@ -271,6 +271,16 @@ body.nav-open .nav-drawer { transform: translateX(0); box-shadow: -20px 0 60px r
 }
 .dep-refreshing { color: var(--color-accent-turquoise); display: none; }
 
+.dep-nrcc {
+  padding: 12px 16px; margin-bottom: 12px;
+  background: rgba(var(--color-accent-amber-rgb),0.08);
+  border: 1px solid rgba(var(--color-accent-amber-rgb),0.28);
+  border-radius: 12px;
+  font-size: 13px; line-height: 1.5; color: var(--ink);
+}
+.dep-nrcc-item + .dep-nrcc-item { margin-top: 8px; }
+.dep-nrcc a { color: var(--color-accent-turquoise); }
+
 .dep-table-wrap { overflow-x: auto; }
 table.dep-table {
   width: 100%; min-width: 620px; border-collapse: collapse;
@@ -430,7 +440,7 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
 <noscript>
   <div style="max-width:1280px;margin:0 auto;padding:32px;line-height:1.6">
     <h1>Live Departures — SpotRail HQ</h1>
-    <p>Real-time UK train departures powered by Realtime Trains — auto-refreshing every 30 seconds.</p>
+    <p>Real-time UK train departures via National Rail's Darwin data feed — auto-refreshing every 30 seconds.</p>
   </div>
 </noscript>
 
@@ -438,7 +448,7 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
 <section class="hero-sm">
   <div class="label">Live Departures</div>
   <h1>Live Departures</h1>
-  <p>Real-time UK train departures powered by Realtime Trains — auto-refreshing every 30 seconds.</p>
+  <p>Real-time UK train departures via National Rail's Darwin data feed — auto-refreshing every 30 seconds.</p>
 </section>
 
 <!-- DEPARTURES -->
@@ -455,7 +465,7 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
   </div>
   <div class="dep-table-wrap" id="dep-table-wrap"></div>
   <p style="font-size:0.75rem; color:#9AA4B2; margin-top:1rem;">
-    Live data provided by <a href="https://realtimetrains.co.uk" target="_blank" rel="noopener noreferrer" style="color:#40E0D0;">Realtime Trains</a>
+    Live data provided by <a href="https://www.nationalrail.co.uk" target="_blank" rel="noopener noreferrer" style="color:#40E0D0;">National Rail</a> (Darwin)
   </p>
 </div>
 
@@ -555,22 +565,21 @@ function selectStation(crs) {
   startAutoRefresh();
 }
 
-function formatTime(iso) {
-  if (!iso) return '—';
-  var s = String(iso);
-  var t = s.indexOf('T');
-  return t === -1 ? '—' : s.slice(t + 1, t + 6);
-}
+// Darwin's `std` is already a plain "HH:MM" string — no ISO/"T"-split
+// parsing needed (that was an RTT-specific quirk).
+var STATUS_DISPLAY = {
+  'on-time': { label: 'On time', color: 'var(--color-accent-lime)' },
+  'delayed': { label: 'Delayed', color: 'var(--color-accent-amber)' },
+  'delayed-no-estimate': { label: 'Delayed', color: 'var(--color-accent-amber)' },
+  'cancelled': { label: 'Cancelled', color: 'var(--color-accent-magenta)' },
+  'no-report': { label: 'No report', color: 'var(--ink-mute)' },
+  'unknown': { label: 'Unknown', color: 'var(--ink-mute)' }
+};
 
-function getStatus(temporalData, dep) {
-  if (temporalData.displayAs === 'CANCELLED_CALL' || (dep && dep.isCancelled)) {
-    return { label: 'Cancelled', color: 'var(--color-accent-magenta)' };
-  }
-  if (dep && dep.realtimeForecast) {
-    if (dep.realtimeForecast !== dep.scheduleAdvertised) return { label: 'Delayed', color: 'var(--color-accent-amber)' };
-    return { label: 'On time', color: 'var(--color-accent-lime)' };
-  }
-  return { label: 'Scheduled', color: 'var(--ink-mute)' };
+function statusDisplay(s) {
+  var d = STATUS_DISPLAY[s.status] || STATUS_DISPLAY.unknown;
+  var label = (s.status === 'delayed' && s.estimatedTime) ? (d.label + ' · ' + s.estimatedTime) : d.label;
+  return { label: label, color: d.color };
 }
 
 function setLastUpdated() {
@@ -584,45 +593,39 @@ function setRefreshing(state) {
   document.getElementById('dep-refreshing').style.display = state ? 'inline' : 'none';
 }
 
-function renderDepartures(data) {
-  var services = (data && Array.isArray(data.services)) ? data.services : [];
+function renderDepartures(board) {
+  var services = (board && Array.isArray(board.services)) ? board.services : [];
+  var nrccMessages = (board && Array.isArray(board.nrccMessages)) ? board.nrccMessages : [];
 
-  if (services.length) {
-    console.log('First service raw:', JSON.stringify(services[0]));
-  }
-
-  // Only services with a "departure" leg are actual departures from this station
-  // (terminating services only have an "arrival" leg).
-  services = services.filter(function (s) {
-    return s.temporalData && s.temporalData.departure;
-  }).slice(0, 20);
+  // Sanitised server-side by normalizeBoard() (api/_lib/darwin-normalize.mjs)
+  // — only allowlisted <p>/<a href="nationalrail.co.uk..."> survive, so this
+  // is safe to set directly rather than escHtml()'d, unlike every other
+  // field on this page.
+  var nrccHtml = nrccMessages.length
+    ? '<div class="dep-nrcc">' + nrccMessages.map(function (m) {
+        return '<div class="dep-nrcc-item">' + m.html + '</div>';
+      }).join('') + '</div>'
+    : '';
 
   if (!services.length) {
-    document.getElementById('dep-table-wrap').innerHTML =
+    document.getElementById('dep-table-wrap').innerHTML = nrccHtml +
       '<div class="state-msg" style="background:var(--surface);border:1px solid rgba(var(--line-rgb),0.08);border-radius:0 0 12px 12px">No departures found for this station.</div>';
     return;
   }
 
-  var rows = services.map(function (s) {
-    var temporalData = s.temporalData || {};
-    var dep = temporalData.departure || {};
-    var destArr = s.destination || [];
-    var lastDest = destArr.length ? destArr[destArr.length - 1] : null;
-    var dest = (lastDest && lastDest.location && lastDest.location.description) || '—';
-    var platformInfo = (s.locationMetadata && s.locationMetadata.platform) || {};
-    var platform = platformInfo.actual || platformInfo.forecast || platformInfo.planned || '—';
-    var status = getStatus(temporalData, dep);
+  var rows = services.slice(0, 20).map(function (s) {
+    var status = statusDisplay(s);
     return (
       '<tr>' +
-        '<td class="dep-mono">' + escHtml(formatTime(dep.scheduleAdvertised)) + '</td>' +
-        '<td>' + escHtml(dest) + '</td>' +
-        '<td class="dep-mono">' + escHtml(platform) + '</td>' +
+        '<td class="dep-mono">' + escHtml(s.std || '—') + '</td>' +
+        '<td>' + escHtml(s.destination || '—') + '</td>' +
+        '<td class="dep-mono">' + escHtml(s.platform || '—') + '</td>' +
         '<td style="color:' + status.color + '">' + escHtml(status.label) + '</td>' +
       '</tr>'
     );
   }).join('');
 
-  document.getElementById('dep-table-wrap').innerHTML =
+  document.getElementById('dep-table-wrap').innerHTML = nrccHtml +
     '<table class="dep-table"><thead><tr>' +
       '<th>Scheduled</th><th>Destination</th><th>Platform</th><th>Status</th>' +
     '</tr></thead><tbody>' + rows + '</tbody></table>';
@@ -648,14 +651,14 @@ function renderKeyMissing() {
 
 function loadDepartures() {
   setRefreshing(true);
-  fetch('/api/departures?station=' + encodeURIComponent(currentStation))
+  fetch('/api/darwin-departures?crs=' + encodeURIComponent(currentStation))
     .then(function (r) {
       return r.json().then(function (data) { return { ok: r.ok, data: data }; });
     })
     .then(function (res) {
       setRefreshing(false);
       if (!res.ok) {
-        if (res.data && res.data.error === 'RTT_KEY_MISSING') renderKeyMissing();
+        if (res.data && res.data.error === 'upstream_unavailable') renderKeyMissing();
         else renderDepError();
         return;
       }
