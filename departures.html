@@ -277,6 +277,47 @@ body.nav-open .nav-drawer { transform: translateX(0); box-shadow: -20px 0 60px r
   color: var(--ink-mute); font-family: 'JetBrains Mono', monospace;
 }
 
+/* Saved-station chip row — sits under the search bar, above the station
+   title row, always visible (even with nothing selected) so it's a
+   persistent quick-access strip, not tied to the current board. Pill shape
+   matches .dep-callingpoints li's rgba(--line-rgb,0.04) chip convention;
+   accent border echoes .dep-search-field's turquoise-at-0.28 treatment. */
+.dep-chip-row-wrap { margin-bottom: 20px; }
+.dep-chip-hint {
+  font-size: 10.5px; color: var(--ink-mute); margin-bottom: 6px;
+  font-family: 'Manrope', sans-serif;
+}
+.dep-chip-empty { font-size: 12.5px; color: var(--ink-mute); padding: 2px 0; }
+.dep-chip-scroll {
+  display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px;
+  scrollbar-width: none; touch-action: pan-y;
+}
+.dep-chip-scroll::-webkit-scrollbar { display: none; }
+.dep-chip {
+  display: inline-flex; align-items: center; gap: 4px; flex: none;
+  padding: 6px 8px 6px 12px; border-radius: 999px; cursor: pointer; user-select: none;
+  background: var(--surface); border: 0.5px solid rgba(var(--color-accent-turquoise-rgb),0.2);
+  font-size: 13px; color: var(--ink);
+}
+.dep-chip:hover { border-color: rgba(var(--color-accent-turquoise-rgb),0.4); }
+.dep-chip.is-dragging { opacity: 0.5; }
+/* Type-aware scaffolding (see chip renderer's own comment) — 'route' has
+   no producer yet, so this accent is currently unreachable, not decorative
+   dead weight: it's here so a future route-saving pass needs zero rework
+   of the renderer itself. */
+.dep-chip.is-route { border-color: rgba(var(--color-accent-magenta-rgb),0.28); }
+.dep-chip-type-icon { font-size: 12px; color: var(--ink-mute); flex: none; }
+.dep-chip.is-route .dep-chip-type-icon { color: var(--color-accent-magenta); }
+.dep-chip-name { white-space: nowrap; }
+.dep-chip-default-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 20px; height: 20px; border-radius: 50%; flex: none; padding: 0;
+  background: transparent; border: none; color: var(--ink-mute); cursor: pointer;
+  font-family: inherit; font-size: 12px; box-sizing: border-box;
+}
+.dep-chip-default-btn:hover { color: var(--color-accent-amber); }
+.dep-chip-default-btn.is-default { color: var(--color-accent-amber); }
+
 .dep-bar-actions { display: flex; align-items: center; gap: 4px; }
 .dep-icon-btn {
   display: inline-flex; align-items: center; justify-content: center;
@@ -614,6 +655,15 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
       <button type="button" class="dep-field-clear" id="station-clear-btn" aria-label="Clear search">×</button>
       <div class="dep-ac-list" id="station-ac-list"></div>
     </div>
+  </div>
+  <!-- Saved-station chips — reads/writes the same srhq_saved_routes contract
+       as the star button below and map.html's own saved list. Always
+       rendered (empty-state message swaps in when there's nothing saved),
+       independent of whatever station is currently loaded. -->
+  <div class="dep-chip-row-wrap" id="dep-chip-row-wrap">
+    <div class="dep-chip-hint" id="dep-chip-hint" style="display:none">Drag to reorder</div>
+    <div class="dep-chip-empty" id="dep-chip-empty" style="display:none">Save a station — tap the star once you're viewing its board — to see it here.</div>
+    <div class="dep-chip-scroll" id="dep-chip-scroll"></div>
   </div>
   <!-- Station title row — same shape as map.html's .sb-selection (title +
        share + star), just larger (this is a whole page, not a sidebar row)
@@ -1149,11 +1199,184 @@ document.getElementById('dep-star-btn').addEventListener('click', function () {
   if (currentFixture) return;
   var list = getSavedStations();
   var idx = list.findIndex(function (r) { return (r.type || 'station') === 'station' && (r.crs || r.id) === currentStation; });
-  if (idx !== -1) list.splice(idx, 1);
-  else list.push({ type: 'station', name: currentStationName, crs: currentStation, addedAt: new Date().toISOString() });
+  if (idx !== -1) {
+    list.splice(idx, 1); // isDefault, if set, goes with it — leaves no default, not an error state
+  } else {
+    // First-ever save (list was empty) auto-defaults, removing friction for
+    // the common single-station case — see the isDefault block below.
+    list.push({ type: 'station', name: currentStationName, crs: currentStation, isDefault: list.length === 0, addedAt: new Date().toISOString() });
+  }
   setSavedStations(list);
   updateStarButton();
+  renderSavedChips();
 });
+
+// ── Saved-station chips (isDefault schema + chip row, added this pass) ──
+//
+// isDefault: boolean, added to entries in the same shared srhq_saved_routes
+// list. Only one entry across the WHOLE list (map.html's own saves included)
+// may be true at once — setSavedDefault() below is the only place that ever
+// sets it, and it unsets every other entry in the same write. A missing
+// field reads as false (`r.isDefault === true`, never assumed). Removing the
+// default entry (star-click splice above, or a future unsave elsewhere)
+// simply removes it — nothing reassigns a new default automatically, "no
+// default" is a valid steady state, not an error.
+//
+// Scope boundary, deliberate: only THIS file's write paths (the star button
+// above, and the chip default-marker below) ever set isDefault. map.html's
+// own star-save path (checked in step 1, not modified — see that section's
+// comment) never sets it, so a station saved for the first time via
+// map.html does not auto-default. That's a real, intentional gap, not an
+// oversight: this task's brief was to build the chip UI and its schema
+// here, not to edit map.html.
+function savedRowId(r) { return (r && (r.crs || r.id)) || null; }
+function setSavedDefault(id, makeDefault) {
+  var list = getSavedStations();
+  list.forEach(function (r) { r.isDefault = makeDefault ? (savedRowId(r) === id) : false; });
+  setSavedStations(list);
+  return list;
+}
+function getDefaultSavedStation() {
+  // CRS-only, matching this page's own established candidate-pool rule (see
+  // CLAUDE.md's "Station-search ranking" section) — a non-CRS entry (an
+  // Underground/DLR/tram stop saved via map.html) has no Darwin board and
+  // can never be a meaningful default HERE, so it's excluded from being a
+  // load-on-boot candidate rather than left to fail silently at load time.
+  return getSavedStations().find(function (r) { return r.isDefault === true && (r.type || 'station') === 'station' && r.crs; }) || null;
+}
+
+// Type-aware rendering: only type:'station' entries exist today (checked
+// live), but the renderer branches on `r.type` now so a future route-saving
+// pass needs no rework here — 'route' is real branch code, just currently
+// unreachable (no producer writes it yet). No route-creation UI is added by
+// this pass, per scope.
+var SAVED_CHIP_TYPE_META = {
+  station: { icon: 'ti-train', cls: '' },
+  route: { icon: 'ti-route', cls: 'is-route' }
+};
+// Only CRS'd station entries are rendered as LOADABLE chips — same
+// CRS-only boundary as getDefaultSavedStation() above, and for the same
+// reason (no Darwin board to load without one). A non-CRS saved stop still
+// exists in the shared list (map.html renders it fine on its own saved-list
+// view) but has no useful action on this page, so it's left out of the
+// chip row entirely rather than shown disabled/dead.
+function renderableSavedRows() {
+  return getSavedStations().filter(function (r) { return (r.type || 'station') === 'station' && r.crs; });
+}
+var CHIP_HINT_SEEN_KEY = 'srhq_chip_drag_hint_seen';
+function chipHintSeen() {
+  try { return localStorage.getItem(CHIP_HINT_SEEN_KEY) === '1'; } catch (e) { return true; }
+}
+function markChipHintSeen() {
+  try { localStorage.setItem(CHIP_HINT_SEEN_KEY, '1'); } catch (e) {}
+  var hintEl = document.getElementById('dep-chip-hint');
+  if (hintEl) hintEl.style.display = 'none';
+}
+function renderSavedChips() {
+  var emptyEl = document.getElementById('dep-chip-empty');
+  var scrollEl = document.getElementById('dep-chip-scroll');
+  var hintEl = document.getElementById('dep-chip-hint');
+  var rows = renderableSavedRows();
+  emptyEl.style.display = rows.length ? 'none' : '';
+  // Reorder-drag is meaningless with 0-1 chips, and the notice is one-time
+  // (localStorage-gated) — never shown again once seen, matching the map
+  // page's own bottom-hint convention of hiding once its action has served
+  // its purpose (there: tapped; here: enough chips exist to act on).
+  hintEl.style.display = (rows.length > 1 && !chipHintSeen()) ? '' : 'none';
+  scrollEl.innerHTML = rows.map(function (r) {
+    var meta = SAVED_CHIP_TYPE_META[r.type || 'station'] || SAVED_CHIP_TYPE_META.station;
+    var id = savedRowId(r);
+    var isDefault = r.isDefault === true;
+    return '<div class="dep-chip ' + meta.cls + '" data-id="' + escHtml(id) + '" data-name="' + escHtml(r.name || r.crs) + '">' +
+      '<i class="ti ' + meta.icon + ' dep-chip-type-icon"></i>' +
+      '<span class="dep-chip-name">' + escHtml(r.name || r.crs) + '</span>' +
+      '<button type="button" class="dep-chip-default-btn' + (isDefault ? ' is-default' : '') + '" ' +
+        'aria-label="' + (isDefault ? 'Unset as default station' : 'Set as default station') + '" aria-pressed="' + isDefault + '">' +
+        '<i class="ti ti-pin"></i>' +
+      '</button>' +
+    '</div>';
+  }).join('');
+}
+(function wireSavedChips() {
+  var rowEl = document.getElementById('dep-chip-scroll');
+  var down = false, dragging = false, moved = false, startX = 0, pointerId = null, threshold = 5, draggedEl = null;
+
+  function persistChipOrder() {
+    var domIds = Array.prototype.map.call(rowEl.querySelectorAll('.dep-chip'), function (c) { return c.dataset.id; });
+    var list = getSavedStations();
+    var byId = {};
+    list.forEach(function (r) {
+      if ((r.type || 'station') === 'station' && r.crs) byId[savedRowId(r)] = r;
+    });
+    var reordered = domIds.map(function (id) { return byId[id]; }).filter(Boolean);
+    var ri = 0;
+    // Splice the reordered rendered subset back into the FULL list at the
+    // positions the rendered subset originally occupied — preserves
+    // interleaving with any non-CRS entries (not shown as chips, but still
+    // present in the shared list) rather than bunching them to one end.
+    var result = list.map(function (r) {
+      return ((r.type || 'station') === 'station' && r.crs) ? reordered[ri++] : r;
+    });
+    setSavedStations(result);
+  }
+
+  rowEl.addEventListener('pointerdown', function (e) {
+    var chip = e.target.closest('.dep-chip');
+    // The default-marker button is its own hit-target, separate from the
+    // chip's drag surface — same exclusion shape as wireSheet's
+    // `input, .sb-ac-list` check and enableDragToScroll's button handling
+    // in map.html: a control living inside a draggable area must opt out
+    // of STARTING a drag, or it can never be tapped on a touchscreen.
+    if (!chip || e.target.closest('.dep-chip-default-btn')) return;
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    down = true; dragging = false; moved = false;
+    draggedEl = chip; startX = e.clientX; pointerId = e.pointerId;
+    threshold = e.pointerType === 'mouse' ? 5 : 10; // touch gets more slack — same split used for every other drag gesture in this codebase
+  });
+  rowEl.addEventListener('pointermove', function (e) {
+    if (!down || !draggedEl) return;
+    var dx = e.clientX - startX;
+    if (!dragging && Math.abs(dx) > threshold) {
+      dragging = true; moved = true;
+      draggedEl.classList.add('is-dragging');
+      try { draggedEl.setPointerCapture(pointerId); } catch (err) {}
+    }
+    if (!dragging) return;
+    var siblings = Array.prototype.filter.call(rowEl.querySelectorAll('.dep-chip'), function (c) { return c !== draggedEl; });
+    var x = e.clientX, placed = false;
+    for (var i = 0; i < siblings.length; i++) {
+      var r = siblings[i].getBoundingClientRect();
+      if (x < r.left + r.width / 2) { rowEl.insertBefore(draggedEl, siblings[i]); placed = true; break; }
+    }
+    if (!placed) rowEl.appendChild(draggedEl);
+  });
+  function endDrag() {
+    if (!down) return;
+    down = false;
+    try { if (pointerId != null && draggedEl) draggedEl.releasePointerCapture(pointerId); } catch (err) {}
+    if (!dragging) { draggedEl = null; return; }
+    dragging = false;
+    draggedEl.classList.remove('is-dragging');
+    draggedEl = null;
+    persistChipOrder();
+    markChipHintSeen(); // one-time notice — hidden for good once a real drag has happened, same "hidden once used" shape as the map page's bottom hints
+  }
+  rowEl.addEventListener('pointerup', endDrag);
+  rowEl.addEventListener('pointercancel', endDrag);
+  rowEl.addEventListener('click', function (e) {
+    if (moved) { e.preventDefault(); e.stopPropagation(); return; } // a real drag must not also load a station
+    var defaultBtn = e.target.closest('.dep-chip-default-btn');
+    var chip = e.target.closest('.dep-chip');
+    if (!chip) return;
+    if (defaultBtn) {
+      setSavedDefault(chip.dataset.id, !defaultBtn.classList.contains('is-default'));
+      renderSavedChips();
+      return;
+    }
+    if (currentFixture) return;
+    selectStation(chip.dataset.id, chip.dataset.name);
+  }, true);
+})();
 
 var shareBtn = document.getElementById('dep-share-btn');
 function buildShareUrl() {
@@ -1515,21 +1738,38 @@ var IS_LOCALHOST = ['localhost', '127.0.0.1', '::1', '[::1]', ''].indexOf(locati
 
 // ?crs=BHM loads that station directly. Name is provisionally the code
 // itself until the board response's own locationName corrects it (see
-// renderDepartures) — same bootstrap gap a fresh popstate has. No ?crs= at
-// all -> the empty state (item 2: EUS default removed), no load, no
-// auto-refresh started.
+// renderDepartures) — same bootstrap gap a fresh popstate has.
+//
+// Precedence (this pass — supersedes, doesn't reverse, item 2's EUS-default
+// removal): ?crs= first; else the isDefault:true saved station, if one
+// exists; else the empty state. No hardcoded station name anywhere in this
+// path — the fallback is only ever a station the user themselves marked
+// default, via the star button's first-save auto-default or a chip's own
+// default-marker.
 var initialCrs = currentFixture ? null : initialStationFromUrl();
+var defaultSaved = (currentFixture || initialCrs) ? null : getDefaultSavedStation();
+var bootCrs = initialCrs || (defaultSaved && defaultSaved.crs) || null;
 (function initStationFromUrl() {
   if (currentFixture) return;
-  if (initialCrs) {
-    currentStation = initialCrs;
-    currentStationName = initialCrs;
-    document.getElementById('station-input').value = initialCrs;
+  if (bootCrs) {
+    currentStation = bootCrs;
+    currentStationName = (defaultSaved && !initialCrs && defaultSaved.name) || bootCrs;
+    document.getElementById('station-input').value = currentStationName;
     document.getElementById('dep-station-row').style.display = '';
-    document.getElementById('dep-station-title').textContent = initialCrs;
-    document.title = initialCrs + ' — Live Departures | SRHQ — SpotRail HQ';
-    visitedCrsStack = [initialCrs];
+    document.getElementById('dep-station-title').textContent = currentStationName;
+    document.title = currentStationName + ' — Live Departures | SRHQ — SpotRail HQ';
+    visitedCrsStack = [bootCrs];
     stackPointer = 0;
+    // Default-loaded (no ?crs= in the incoming URL) needs the URL brought
+    // in sync by hand — the ?crs= branch already matches, nothing to do
+    // there. replaceState, not pushState: this is the page's initial
+    // position, not a new navigation, so it must not create a second
+    // history entry a Back press would land on.
+    if (!initialCrs) {
+      var url = new URL(location.href);
+      url.searchParams.set('crs', bootCrs);
+      history.replaceState({ crs: bootCrs, navIndex: 0 }, '', url.pathname + url.search);
+    }
   } else {
     renderEmptyView();
   }
@@ -1538,7 +1778,8 @@ var initialCrs = currentFixture ? null : initialStationFromUrl();
 updatePagerButton();
 updateStarButton();
 updateNavButtons();
-if (currentFixture || initialCrs) {
+renderSavedChips();
+if (currentFixture || bootCrs) {
   loadDepartures();
   startAutoRefresh();
 }
