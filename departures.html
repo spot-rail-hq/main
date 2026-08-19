@@ -285,6 +285,8 @@ body.nav-open .nav-drawer { transform: translateX(0); box-shadow: -20px 0 60px r
 .dep-icon-btn:hover { color: var(--color-accent-turquoise); }
 .dep-icon-btn.starred { color: var(--color-accent-amber); }
 .dep-icon-btn.copied { color: var(--color-accent-turquoise); }
+.dep-icon-btn:disabled { opacity: 0.32; cursor: not-allowed; }
+.dep-icon-btn:disabled:hover { color: var(--ink-mute); }
 
 .dep-bar {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
@@ -560,6 +562,8 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
   <div class="dep-bar" id="dep-bar">
     <span id="dep-updated">Last updated: —</span>
     <span class="dep-bar-actions">
+      <button type="button" class="dep-icon-btn" id="dep-back-btn" aria-label="Back"><i class="ti ti-chevron-left"></i></button>
+      <button type="button" class="dep-icon-btn" id="dep-forward-btn" aria-label="Forward"><i class="ti ti-chevron-right"></i></button>
       <button type="button" class="dep-icon-btn" id="dep-share-btn" aria-label="Share this station"><i class="ti ti-share-3"></i></button>
       <button type="button" class="dep-icon-btn" id="dep-star-btn" aria-label="Save this station" aria-pressed="false"><i class="ti ti-star"></i></button>
       <button type="button" class="dep-pager-btn" id="dep-pager-btn">Next 2 hours</button>
@@ -629,6 +633,11 @@ var DEFAULT_NAME = 'London Euston';
 var currentStation = DEFAULT_CRS;
 var currentStationName = DEFAULT_NAME;
 var refreshTimer = null;
+// Which rows are expanded, keyed by serviceID — survives renderDepartures()
+// re-runs (auto-refresh) so an open row stays open with fresh data inside,
+// rather than collapsing every 30s. Pruned of departed services inside
+// renderDepartures() itself (see its own comment).
+var expandedServiceIds = {};
 
 // ── Station search — ported from map.html's searchStations()/
 // stripStationNameSuffix()/wireAutocomplete(), same station-list.json
@@ -767,8 +776,14 @@ function wireStationSearch(inputEl, dropdownEl, clearBtn, onPick) {
 
   inputEl.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') {
+      // Three stages, same shape as map.html's field-level Escape chain:
+      // close an open dropdown -> clear leftover text -> nothing left at
+      // the field level, fall through to clearing the whole selection
+      // (showEmptyView(), declared further down — hoisted, safe to call
+      // here; only ever actually invoked later, on a real keypress).
       if (dropdownEl.classList.contains('open')) { closeDropdown(); return; }
       if (inputEl.value) { clearField(); return; }
+      if (currentStation) { showEmptyView(); return; }
       inputEl.blur();
       return;
     }
@@ -812,21 +827,63 @@ function initialStationFromUrl() {
   var crs = (new URLSearchParams(location.search).get('crs') || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
   return crs.length === 3 ? crs : null;
 }
+
+// ── Back/forward — ported from map.html's sb-back-btn/sb-forward-btn,
+// which are two one-line listeners calling history.back()/history.forward()
+// directly — no separate station-visit stack there at all (checked by
+// reading the actual wiring, not assumed). That means these compose
+// cleanly with the pushState/popstate this page already had before this
+// pass: same single model (real browser session history), nothing to
+// reconcile.
+//
+// Disabled-state indication is NOT something map.html's own buttons do —
+// grepped for it, there's no disabled/enabled handling there at all; they
+// always fire and rely on the browser's native no-op when there's nowhere
+// to go. The task here explicitly wants a visible disabled state, and the
+// History API has no standard way to ask "can I go back/forward" — so
+// this adds a small same-page-only position tracker purely to drive the
+// two buttons' disabled attribute. It does NOT replace history.back()/
+// forward() as the actual navigation (clicking still calls those) — it
+// only decides whether the click is offered. Scoped to this page load
+// only: a fresh load always starts both disabled, even if the browser's
+// real history has earlier entries from whatever linked here — there is
+// no API to see those, so this can't claim to know about them.
+var visitedCrsStack = [currentStation];
+var stackPointer = 0;
+
+function updateNavButtons() {
+  var backBtn = document.getElementById('dep-back-btn');
+  var forwardBtn = document.getElementById('dep-forward-btn');
+  if (!backBtn || !forwardBtn) return;
+  backBtn.disabled = stackPointer <= 0;
+  forwardBtn.disabled = stackPointer >= visitedCrsStack.length - 1;
+}
+document.getElementById('dep-back-btn').addEventListener('click', function () { history.back(); });
+document.getElementById('dep-forward-btn').addEventListener('click', function () { history.forward(); });
+
 function updateUrl() {
   if (currentFixture) return;
+  visitedCrsStack = visitedCrsStack.slice(0, stackPointer + 1);
+  visitedCrsStack.push(currentStation);
+  stackPointer = visitedCrsStack.length - 1;
   var url = new URL(location.href);
   url.searchParams.set('crs', currentStation);
-  history.pushState({ crs: currentStation }, '', url.pathname + url.search);
+  history.pushState({ crs: currentStation, navIndex: stackPointer }, '', url.pathname + url.search);
+  updateNavButtons();
 }
-window.addEventListener('popstate', function () {
-  var crs = initialStationFromUrl();
-  if (crs) selectStationSilently(crs);
+window.addEventListener('popstate', function (e) {
+  var crs = (e.state && e.state.crs) || initialStationFromUrl();
+  if (!crs) return; // see showEmptyView()'s own note — Esc-clearing never touches the URL/history, so popstate never lands here from that path
+  stackPointer = (e.state && typeof e.state.navIndex === 'number') ? e.state.navIndex : 0;
+  selectStationSilently(crs);
+  updateNavButtons();
 });
 // Used by popstate — the URL already reflects this state (that's what
 // fired the event), so pushing it again would double up history entries.
 function selectStationSilently(crs) {
   currentStation = crs;
   currentStationName = crs; // corrected to the real name once the board loads (see renderDepartures)
+  document.getElementById('dep-bar').style.display = '';
   document.getElementById('station-input').value = crs;
   currentOffset = 0;
   updatePagerButton();
@@ -837,6 +894,7 @@ function selectStationSilently(crs) {
 function selectStation(crs, name) {
   currentStation = crs.toUpperCase();
   currentStationName = name || currentStation;
+  document.getElementById('dep-bar').style.display = '';
   document.getElementById('station-input').value = currentStationName;
   document.title = currentStationName + ' — Live Departures | SRHQ — SpotRail HQ';
   updateUrl();
@@ -846,6 +904,44 @@ function selectStation(crs, name) {
   loadDepartures();
   startAutoRefresh();
 }
+
+// Voice matched to map.html's own empty-state hint ("Tap a station on the
+// map, or search for a station, route, or operator above.") — proposed
+// wording, not final, see the delivery report.
+var EMPTY_STATE_COPY = 'Search for a station above to see its live departures.';
+
+// ── Esc → empty view. Does NOT touch the URL/history — ?crs= (if present)
+// stays in the address bar even though the board is cleared, and no new
+// history entry is created either way. Flagged, not decided silently: see
+// the delivery report for the tradeoffs (URL/UI going out of sync vs. the
+// history-entry questions either alternative raises). ──
+function showEmptyView() {
+  if (currentFixture || !currentStation) return; // nothing to clear
+  currentStation = null;
+  currentStationName = null;
+  consecutiveFailures = 0;
+  expandedServiceIds = {};
+  if (refreshTimer) clearInterval(refreshTimer);
+  refreshTimer = null;
+  document.title = 'Live Departures | SRHQ — SpotRail HQ';
+  document.getElementById('dep-bar').style.display = 'none';
+  document.getElementById('dep-table-wrap').innerHTML =
+    '<div class="state-msg" style="background:var(--surface);border:1px solid rgba(var(--line-rgb),0.08);border-radius:12px">' +
+      escHtml(EMPTY_STATE_COPY) +
+    '</div>';
+  document.getElementById('station-input').value = '';
+  document.getElementById('station-input').focus();
+}
+document.addEventListener('keydown', function (e) {
+  if (e.key !== 'Escape') return;
+  var active = document.activeElement;
+  // A focused field handles its own Escape (see wireStationSearch's own
+  // keydown handler, which falls through to showEmptyView() at its final
+  // stage) — same split map.html uses between its field-level Escape
+  // chains and this document-level one for "nothing focused".
+  if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) return;
+  showEmptyView();
+});
 
 // ── Saved stations + share — same localStorage contract as map.html
 // (srhq_saved_routes), so a station saved here shows up there too. ──
@@ -1025,14 +1121,32 @@ function renderDepartures(board) {
     return;
   }
 
+  // Drop expanded-state for any serviceID no longer on this board (silent —
+  // no message, it just stops being tracked) before rendering, so a row
+  // that departed between refreshes doesn't leave a dead entry sitting in
+  // expandedServiceIds forever.
+  var liveServiceIds = {};
+  services.forEach(function (s) { if (s.serviceId) liveServiceIds[s.serviceId] = true; });
+  Object.keys(expandedServiceIds).forEach(function (id) {
+    if (!liveServiceIds[id]) delete expandedServiceIds[id];
+  });
+
   // 25 is Darwin's own hard ceiling on this endpoint (confirmed live, see
   // CLAUDE.md) — .slice(0, 25) here is a defensive cap, not a UI choice
   // trimming a longer list; the server never sends more than this anyway.
+  //
+  // Keyed on serviceID, not row position (rowId used to be 'r' + i — a
+  // service departing/reordering between refreshes silently pointed the
+  // old index at a DIFFERENT service). A service with no serviceId (should
+  // not happen live, but the normaliser allows null) never persists across
+  // a refresh — nothing stable to key it on — but still expands/collapses
+  // fine within a single render.
   var rows = services.slice(0, 25).map(function (s, i) {
     var status = statusDisplay(s);
-    var rowId = 'r' + i;
+    var rowId = s.serviceId || ('_idx' + i);
+    var isExpanded = !!expandedServiceIds[rowId];
     return (
-      '<tr class="dep-row" data-row="' + rowId + '">' +
+      '<tr class="dep-row' + (isExpanded ? ' expanded' : '') + '" data-row="' + escHtml(rowId) + '">' +
         '<td class="dep-mono">' + escHtml(s.std || '—') + '</td>' +
         '<td>' + escHtml(s.destination || '—') +
           (s.destinationVia ? '<span class="dep-via">' + escHtml(s.destinationVia) + '</span>' : '') +
@@ -1042,10 +1156,10 @@ function renderDepartures(board) {
           '<span class="dep-status' + (status.muted ? ' is-muted' : '') + '" style="color:' + status.color + '">' +
             '<span class="dep-status-dot"></span>' + escHtml(status.label) +
           '</span>' +
-          '<span class="dep-expand-hint">▾</span>' +
+          '<span class="dep-expand-hint">' + (isExpanded ? '▴' : '▾') + '</span>' +
         '</td>' +
       '</tr>' +
-      '<tr class="dep-detail-row" data-row="' + rowId + '" style="display:none"><td colspan="4">' + detailHtml(s) + '</td></tr>'
+      '<tr class="dep-detail-row" data-row="' + escHtml(rowId) + '" style="display:' + (isExpanded ? '' : 'none') + '"><td colspan="4">' + detailHtml(s) + '</td></tr>'
     );
   }).join('');
 
@@ -1095,7 +1209,10 @@ function renderKeyMissing() {
 }
 
 // ── Row expand — pure client-side toggle, no API call. Attached once via
-// delegation on the wrap so it survives every renderDepartures() re-render. ──
+// delegation on the wrap so it survives every renderDepartures() re-render.
+// The click only flips the DOM + expandedServiceIds; renderDepartures()
+// itself is what actually renders a tracked id already-open on its next
+// call, with whatever fresh data that render carries. ──
 document.getElementById('dep-table-wrap').addEventListener('click', function (e) {
   var row = e.target.closest('.dep-row');
   if (!row) return;
@@ -1105,6 +1222,8 @@ document.getElementById('dep-table-wrap').addEventListener('click', function (e)
   var expanding = detail.style.display === 'none';
   detail.style.display = expanding ? '' : 'none';
   row.classList.toggle('expanded', expanding);
+  if (expanding) expandedServiceIds[id] = true;
+  else delete expandedServiceIds[id];
   var hint = row.querySelector('.dep-expand-hint');
   if (hint) hint.textContent = expanding ? '▴' : '▾';
 });
@@ -1144,6 +1263,8 @@ function enterFixtureMode(name) {
   document.getElementById('station-row').style.display = 'none';
   document.getElementById('dep-share-btn').style.display = 'none';
   document.getElementById('dep-star-btn').style.display = 'none';
+  document.getElementById('dep-back-btn').style.display = 'none';
+  document.getElementById('dep-forward-btn').style.display = 'none';
   updatePagerButton();
 }
 
@@ -1217,6 +1338,8 @@ var IS_LOCALHOST = ['localhost', '127.0.0.1', '::1', '[::1]', ''].indexOf(locati
     currentStation = crs;
     currentStationName = crs;
     document.getElementById('station-input').value = crs;
+    visitedCrsStack = [crs]; // re-seed: the module-level init above ran before this URL check
+    stackPointer = 0;
   } else {
     document.getElementById('station-input').value = currentStationName;
   }
@@ -1224,6 +1347,7 @@ var IS_LOCALHOST = ['localhost', '127.0.0.1', '::1', '[::1]', ''].indexOf(locati
 
 updatePagerButton();
 updateStarButton();
+updateNavButtons();
 loadDepartures();
 startAutoRefresh();
 </script>
