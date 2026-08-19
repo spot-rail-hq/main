@@ -83,7 +83,9 @@ Everything floats over the map as absolutely positioned panels.
 - Triggered by clicking a station marker
 - Shows next 4–5 departures: time (JetBrains Mono) | destination | platform | status badge
 - Status badges: On time (turquoise), +N min (amber), Cancelled (magenta)
-- Data source: GET /api/departures?crs=BHM via Huxley2 proxy (or Darwin REST)
+- Data source: GET /api/map-departures?crs=BHM — Realtime Trains (RTT) NG API
+  (data.rtt.io) via RTT_API_KEY. Switched from Huxley2/Darwin 2026-07-09,
+  after the public Huxley2 instance's Darwin backend became unreliable.
 - Station name shown in header alongside "Departures" label
 
 ### Map controls (top right)
@@ -227,11 +229,30 @@ survives a re-run.
 
 ## Live news / incidents data
 - Source: GET /api/incidents (polls every 60s)
-- /api/incidents fetches from National Rail Knowledgebase incidents endpoint
-- Requires DARWIN_TOKEN env var
+- /api/incidents fetches from the Rail Data Marketplace (RDM) Knowledgebase
+  Incidents XML feed (RSPS5050 §10, schema v5.0)
+- Requires KNOWLEDGEBASE_API_KEY env var
 - Returns: [{id, summary, region, toc, severity, timestamp, affectedCRS:[]}]
 - Urgent = severity >= 2
-- News items from existing api/news.js RSS aggregator
+- News items from existing api/news.js RSS aggregator — key-less (public RSS
+  feeds, no auth)
+
+## /api/ keys, by function (corrected against the code 2026-08-31)
+- api/departures.js (?station=, departures.html) and api/map-departures.js
+  (?crs=, map.html's departure board — see that section above): Realtime
+  Trains (RTT) NG API (data.rtt.io) via RTT_API_KEY. Switched from
+  Huxley2/Darwin 2026-07-09, after the public Huxley2 instance's Darwin
+  backend became unreliable.
+- api/incidents.js: KNOWLEDGEBASE_API_KEY (see above).
+- api/spotlight.js: ANTHROPIC_API_KEY.
+- api/news.js: key-less (public RSS feeds).
+- api/config.js: key-less itself — it only relays the already-documented
+  STADIA_API_KEY to the client (see the map page's tile section above), it
+  does not require a secret of its own.
+- **Planned**: the departures page is moving to Darwin LDBWS REST on Rail
+  Data Marketplace — the modern REST/JSON endpoint, not the retired SOAP
+  OpenLDBWS. RTT's free tier is non-commercial; it must be retired before
+  any monetisation.
 
 ## Saved routes (localStorage)
 - Key: srhq_saved_routes
