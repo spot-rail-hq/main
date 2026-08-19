@@ -330,6 +330,7 @@ table.dep-table {
 .dep-row:hover td { background: rgba(var(--color-accent-turquoise-rgb),0.06); }
 .dep-row.expanded td { background: rgba(var(--color-accent-turquoise-rgb),0.06); }
 .dep-via { display: block; font-size: 11.5px; color: var(--ink-mute); margin-top: 2px; }
+.dep-via-mobile { display: none; } /* shown only under the reflow breakpoint below, alongside platform */
 .dep-status { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; }
 .dep-status-dot { width: 7px; height: 7px; border-radius: 50%; flex: none; background: currentColor; }
 .dep-status.is-muted { font-style: italic; }
@@ -352,16 +353,23 @@ table.dep-table {
   background: rgba(var(--color-accent-magenta-rgb),0.08);
   border-color: rgba(var(--color-accent-magenta-rgb),0.24);
 }
-.dep-callingpoints { list-style: none; }
+/* Inline wrapping time+name pairs, not one row per stop — a long-distance
+   service's calling-point list (30+ stops) made the old one-per-line <li>
+   layout enormous. Each <li> is now one inline chip; the list wraps like a
+   paragraph. */
+.dep-callingpoints { list-style: none; display: flex; flex-wrap: wrap; gap: 6px 4px; }
 .dep-callingpoints li {
-  display: flex; gap: 10px; align-items: baseline;
-  padding: 5px 0; border-bottom: 1px solid rgba(var(--line-rgb),0.04);
+  display: inline-flex; align-items: baseline; gap: 5px;
+  padding: 2px 8px; border-radius: 999px;
+  background: rgba(var(--line-rgb),0.04);
+  font-size: 12px; line-height: 1.4;
 }
-.dep-callingpoints li:last-child { border-bottom: none; }
-.dep-callingpoints .cp-time { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: var(--ink); flex: none; width: 44px; }
-.dep-callingpoints .cp-name { flex: 1; }
-.dep-callingpoints .cp-et { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--ink-mute); flex: none; }
+.dep-callingpoints .cp-time { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--ink-mute); flex: none; }
+.dep-callingpoints .cp-name { color: var(--ink); }
+.dep-callingpoints .cp-et { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-mute); flex: none; }
+.dep-callingpoints .cp-cancelled { background: rgba(var(--color-accent-magenta-rgb),0.08); }
 .dep-callingpoints .cp-cancelled .cp-name,
+.dep-callingpoints .cp-cancelled .cp-time,
 .dep-callingpoints .cp-cancelled .cp-et { color: var(--color-accent-magenta); }
 .dep-no-callingpoints { color: var(--ink-mute); font-size: 12.5px; }
 
@@ -439,6 +447,38 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
 @media (max-width: 560px) {
   .nav-inner { padding: 0 20px; }
   .hero-sm, .dep-wrap { padding-left: 20px; padding-right: 20px; }
+}
+
+/* Departures table reflow — its own breakpoint (480px), deliberately
+   tighter than the general 560px one above: this is about the width the
+   4-column table itself stops fitting (phone portrait widths, ~320–430px
+   in practice), not the page's general padding, which already looks fine
+   down to 560px. Verified at 380px and 320px. Below this width the table
+   no longer scrolls horizontally (status — the single most important
+   field — was being cropped off-screen entirely); instead every row
+   reflows to two lines: time/destination/status, then platform+via underneath. */
+@media (max-width: 480px) {
+  .dep-table-wrap { overflow-x: visible; }
+  table.dep-table { min-width: 0; }
+  .dep-table thead { display: none; } /* column headers are meaningless once reflowed */
+  table.dep-table, table.dep-table tbody { display: block; }
+  .dep-row {
+    display: flex; flex-wrap: wrap; align-items: baseline;
+    padding: 10px 14px; gap: 2px 8px;
+  }
+  .dep-row td { display: block; padding: 0; border: none; background: transparent !important; }
+  .dep-col-time { order: 1; flex: none; }
+  .dep-col-dest { order: 2; flex: 1 1 auto; min-width: 0; }
+  .dep-col-status { order: 3; flex: none; margin-left: auto; text-align: right; }
+  .dep-col-platform {
+    order: 4; flex: 0 0 100%;
+    font-size: 12px; color: var(--ink-mute); margin-top: 2px;
+  }
+  /* Via moves from under destination (line 1) to beside platform (line 2)
+     at this width — same data, shown once, not twice. */
+  .dep-col-dest .dep-via { display: none; }
+  .dep-col-platform .dep-via-mobile { display: inline; margin-left: 6px; font-size: inherit; color: inherit; }
+  .dep-detail-row td { display: block; }
 }
 </style>
 </head>
@@ -545,7 +585,7 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
 <!-- HERO -->
 <section class="hero-sm">
   <div class="label">Live Departures</div>
-  <h1>Live Departures</h1>
+  <h1 id="dep-h1">Live Departures</h1>
   <p>Real-time UK train departures via National Rail's Darwin data feed — auto-refreshing every 30 seconds.</p>
 </section>
 
@@ -628,10 +668,11 @@ function escHtml(s) {
 }
 
 // ── LIVE DEPARTURES ──────────────────────────────────────────────
-var DEFAULT_CRS = 'EUS';
-var DEFAULT_NAME = 'London Euston';
-var currentStation = DEFAULT_CRS;
-var currentStationName = DEFAULT_NAME;
+// No default station any more (was EUS — removed). With no ?crs= the page
+// opens on the empty state; see initStationFromUrl()/renderEmptyView() in
+// the INIT block at the bottom.
+var currentStation = null;
+var currentStationName = null;
 var refreshTimer = null;
 // Which rows are expanded, keyed by serviceID — survives renderDepartures()
 // re-runs (auto-refresh) so an open row stays open with fresh data inside,
@@ -660,10 +701,63 @@ fetch('/station-list.json').then(function (r) {
   console.warn('station-list.json unavailable — station search disabled', e);
 });
 
+// Same curated major-station set map.html already loads from
+// data/stations.geojson for its own marker tiering — reused here as a
+// ranking tiebreaker rather than standing up a second "which stations
+// matter" source of truth. Tiny: 53 features, ~9KB raw / ~1.5KB gzipped
+// (measured directly against the real file) — negligible next to
+// station-list.json's own ~552KB/~114KB.
+var majorCrsSet = new Set();
+fetch('/data/stations.geojson').then(function (r) {
+  if (!r.ok) throw new Error('stations.geojson missing');
+  return r.json();
+}).then(function (gj) {
+  (gj.features || []).forEach(function (f) {
+    if (f.properties && f.properties.crs) majorCrsSet.add(f.properties.crs);
+  });
+}).catch(function (e) {
+  console.warn('stations.geojson unavailable — search ranking loses the major-station tiebreak, filter/other tiers unaffected', e);
+});
+
 function stripStationNameSuffix(name) {
   var stripped = (name || '').replace(/\s+(?:Rail|Railway|Metro)?\s*Station$/i, '').trim();
   return stripped || name;
 }
+
+// Delimiters a query is considered to "start a word" after — space, hyphen,
+// parenthesis (either side), slash, ampersand. Verified against every real
+// station name in station-list.json carrying one of these (hyphenated
+// "Ashton-under-Lyne"-style names, parenthetical "Adlington (Cheshire)"-
+// style names, "&"-joined names) — all behaved as expected; see the
+// delivery report for the traced cases. Slash never actually occurs in the
+// current data (checked) — kept for robustness against future entries,
+// not because it's exercised today.
+var WORD_DELIM_RE = /[\s\-()\/&]/;
+
+function queryStartsWordIn(nameLc, query) {
+  var idx = nameLc.indexOf(query, 1); // start at 1 — index 0 is tier 1 (name-starts), not this tier
+  while (idx !== -1) {
+    if (WORD_DELIM_RE.test(nameLc.charAt(idx - 1))) return true;
+    idx = nameLc.indexOf(query, idx + 1);
+  }
+  return false;
+}
+
+// Tier 0: CRS prefix match. Tier 1: name starts with query. Tier 2: query
+// starts some other word within the name (word-boundary). Tier 3: true
+// mid-word substring — the filter below guarantees anything reaching this
+// function already matched one of the four, so this is a safe fallback,
+// not a silent "didn't match" case.
+function matchTier(s, query) {
+  var crs = (s.crs || '').toLowerCase();
+  var name = s.name.toLowerCase();
+  if (crs.indexOf(query) === 0) return 0;
+  if (name.indexOf(query) === 0) return 1;
+  if (queryStartsWordIn(name, query)) return 2;
+  return 3;
+}
+
+var SEARCH_CAP = 10;
 
 function searchDepartureStations(query, limit) {
   query = (query || '').trim().toLowerCase();
@@ -674,15 +768,18 @@ function searchDepartureStations(query, limit) {
     return nameHit || codeHit;
   });
   matches.sort(function (a, b) {
-    var aCode = a.crs.toLowerCase().indexOf(query) === 0 ? 0 : 1;
-    var bCode = b.crs.toLowerCase().indexOf(query) === 0 ? 0 : 1;
-    if (aCode !== bCode) return aCode - bCode;
-    var aStarts = a.name.toLowerCase().indexOf(query) === 0 ? 0 : 1;
-    var bStarts = b.name.toLowerCase().indexOf(query) === 0 ? 0 : 1;
-    if (aStarts !== bStarts) return aStarts - bStarts;
+    var aTier = matchTier(a, query), bTier = matchTier(b, query);
+    if (aTier !== bTier) return aTier - bTier;
+    // Within a tier: major stations first (same curated set map.html
+    // uses), then shorter names — length was the ONLY tiebreaker before
+    // this pass, which is what let "Birkdale"/"Birkbeck" outrank
+    // "Birmingham New Street" for "bir". Major-first fixes that directly.
+    var aMajor = majorCrsSet.has(a.crs) ? 0 : 1;
+    var bMajor = majorCrsSet.has(b.crs) ? 0 : 1;
+    if (aMajor !== bMajor) return aMajor - bMajor;
     return a.name.length - b.name.length;
   });
-  return matches.slice(0, limit || 8);
+  return matches.slice(0, limit || SEARCH_CAP);
 }
 
 function wireStationSearch(inputEl, dropdownEl, clearBtn, onPick) {
@@ -742,7 +839,13 @@ function wireStationSearch(inputEl, dropdownEl, clearBtn, onPick) {
   // "quick access to what you starred" spirit as map.html's saved list,
   // without building a whole separate browse view for it.
   function showSaved() {
-    currentMatches = getSavedStations().map(function (r) { return { name: r.name, crs: r.crs }; });
+    // Untyped legacy entries are treated as 'station' — see setSavedStations'
+    // own note. A future 'route' entry wouldn't have a station-shaped
+    // {name, crs} to offer here, so it's filtered out rather than rendered
+    // wrong.
+    currentMatches = getSavedStations()
+      .filter(function (r) { return (r.type || 'station') === 'station'; })
+      .map(function (r) { return { name: r.name, crs: r.crs }; });
     renderDropdown(currentMatches.length ? 'Saved stations' : '');
   }
   function syncClearButton() { clearBtn.style.display = inputEl.value ? '' : 'none'; }
@@ -760,7 +863,7 @@ function wireStationSearch(inputEl, dropdownEl, clearBtn, onPick) {
     justFocused = true;
     if (inputEl.value) {
       inputEl.select();
-      currentMatches = searchDepartureStations(inputEl.value, 8);
+      currentMatches = searchDepartureStations(inputEl.value, SEARCH_CAP);
       renderDropdown();
     } else {
       showSaved();
@@ -769,7 +872,7 @@ function wireStationSearch(inputEl, dropdownEl, clearBtn, onPick) {
   inputEl.addEventListener('mouseup', function (e) { if (justFocused) { e.preventDefault(); justFocused = false; } });
 
   inputEl.addEventListener('input', function () {
-    currentMatches = searchDepartureStations(inputEl.value, 8);
+    currentMatches = searchDepartureStations(inputEl.value, SEARCH_CAP);
     renderDropdown();
     syncClearButton();
   });
@@ -848,8 +951,12 @@ function initialStationFromUrl() {
 // only: a fresh load always starts both disabled, even if the browser's
 // real history has earlier entries from whatever linked here — there is
 // no API to see those, so this can't claim to know about them.
-var visitedCrsStack = [currentStation];
-var stackPointer = 0;
+// Empty (no null placeholder) — there's no default station to seed this
+// with any more. Esc-clearing (showEmptyView()) deliberately does NOT push
+// onto this stack either (see its own comment) — it's a clear, not a
+// navigation, so it never becomes a position here.
+var visitedCrsStack = [];
+var stackPointer = -1;
 
 function updateNavButtons() {
   var backBtn = document.getElementById('dep-back-btn');
@@ -885,6 +992,8 @@ function selectStationSilently(crs) {
   currentStationName = crs; // corrected to the real name once the board loads (see renderDepartures)
   document.getElementById('dep-bar').style.display = '';
   document.getElementById('station-input').value = crs;
+  document.getElementById('dep-h1').textContent = crs;
+  document.title = crs + ' — Live Departures | SRHQ — SpotRail HQ';
   currentOffset = 0;
   updatePagerButton();
   updateStarButton();
@@ -896,6 +1005,7 @@ function selectStation(crs, name) {
   currentStationName = name || currentStation;
   document.getElementById('dep-bar').style.display = '';
   document.getElementById('station-input').value = currentStationName;
+  document.getElementById('dep-h1').textContent = currentStationName;
   document.title = currentStationName + ' — Live Departures | SRHQ — SpotRail HQ';
   updateUrl();
   currentOffset = 0;
@@ -905,18 +1015,14 @@ function selectStation(crs, name) {
   startAutoRefresh();
 }
 
-// Voice matched to map.html's own empty-state hint ("Tap a station on the
-// map, or search for a station, route, or operator above.") — proposed
-// wording, not final, see the delivery report.
+// Approved wording, matching map.html's empty-state voice.
 var EMPTY_STATE_COPY = 'Search for a station above to see its live departures.';
 
-// ── Esc → empty view. Does NOT touch the URL/history — ?crs= (if present)
-// stays in the address bar even though the board is cleared, and no new
-// history entry is created either way. Flagged, not decided silently: see
-// the delivery report for the tradeoffs (URL/UI going out of sync vs. the
-// history-entry questions either alternative raises). ──
-function showEmptyView() {
-  if (currentFixture || !currentStation) return; // nothing to clear
+// Shared render for "no station selected" — used both by the initial page
+// load (no ?crs=) and by showEmptyView() (Esc). Doesn't touch focus, the
+// URL, or history itself — callers decide those, since the two callers
+// want different things there (INIT wants neither; Esc wants both).
+function renderEmptyView() {
   currentStation = null;
   currentStationName = null;
   consecutiveFailures = 0;
@@ -924,13 +1030,32 @@ function showEmptyView() {
   if (refreshTimer) clearInterval(refreshTimer);
   refreshTimer = null;
   document.title = 'Live Departures | SRHQ — SpotRail HQ';
+  document.getElementById('dep-h1').textContent = 'Live Departures';
   document.getElementById('dep-bar').style.display = 'none';
   document.getElementById('dep-table-wrap').innerHTML =
     '<div class="state-msg" style="background:var(--surface);border:1px solid rgba(var(--line-rgb),0.08);border-radius:12px">' +
       escHtml(EMPTY_STATE_COPY) +
     '</div>';
   document.getElementById('station-input').value = '';
+}
+
+// ── Esc → empty view. Strips ?crs= via history.replaceState (no new
+// history entry) — Esc is a clear, not a navigation, so it must not become
+// a back/forward-able position of its own; that's also why it never
+// touches visitedCrsStack/stackPointer (see that var's own comment).
+// Known small gap: because replaceState only overwrites the CURRENT entry,
+// a later Back/Forward that lands back on THIS particular history slot
+// (e.g. after picking a new station, then walking back far enough) arrives
+// with e.state.crs === null; popstate's `if (!crs) return;` guard no-ops
+// on that rather than re-rendering the empty view — the board just stays
+// whatever it last showed. Minor, not fixed here. ──
+function showEmptyView() {
+  if (currentFixture || !currentStation) return; // nothing to clear
+  renderEmptyView();
   document.getElementById('station-input').focus();
+  var url = new URL(location.href);
+  url.searchParams.delete('crs');
+  history.replaceState({ crs: null }, '', url.pathname + (url.search || ''));
 }
 document.addEventListener('keydown', function (e) {
   if (e.key !== 'Escape') return;
@@ -944,7 +1069,23 @@ document.addEventListener('keydown', function (e) {
 });
 
 // ── Saved stations + share — same localStorage contract as map.html
-// (srhq_saved_routes), so a station saved here shows up there too. ──
+// (srhq_saved_routes), so a station saved here shows up there too.
+//
+// `type` schema (added this pass): every entry this file WRITES now
+// carries `type: 'station'`. This is one ordered list meant to eventually
+// hold both stations and routes, interleaved — 'station' is the only type
+// this file ever produces (route-saving doesn't exist anywhere yet; no
+// chip UI in this pass either, schema only). Reads treat a MISSING `type`
+// as 'station' explicitly (`r.type || 'station'`) — every entry map.html
+// or a prior version of this file already wrote has no `type` field at
+// all, and they are real, existing stations, not a different kind of
+// record; this is not a migration, just what the field always implicitly
+// meant before it existed. Investigated map.html's own read path first
+// (getSavedRoutes/savedIdOf/isStarred/savedListRowsHtml/wireSavedListRows)
+// before adding this: none of it enumerates an entry's keys or rejects an
+// unrecognised one, they only ever read the specific named fields they
+// each use (name/toc/crs/id) — so an extra `type` field is inert to every
+// one of them. Confirmed safe without changing map.html. ──
 var SAVED_KEY = 'srhq_saved_routes';
 function getSavedStations() {
   try { return JSON.parse(localStorage.getItem(SAVED_KEY)) || []; } catch (e) { return []; }
@@ -953,7 +1094,7 @@ function setSavedStations(list) {
   try { localStorage.setItem(SAVED_KEY, JSON.stringify(list)); } catch (e) {}
 }
 function isStarred(crs) {
-  return getSavedStations().some(function (r) { return (r.crs || r.id) === crs; });
+  return getSavedStations().some(function (r) { return (r.type || 'station') === 'station' && (r.crs || r.id) === crs; });
 }
 function updateStarButton() {
   var btn = document.getElementById('dep-star-btn');
@@ -967,9 +1108,9 @@ function updateStarButton() {
 document.getElementById('dep-star-btn').addEventListener('click', function () {
   if (currentFixture) return;
   var list = getSavedStations();
-  var idx = list.findIndex(function (r) { return (r.crs || r.id) === currentStation; });
+  var idx = list.findIndex(function (r) { return (r.type || 'station') === 'station' && (r.crs || r.id) === currentStation; });
   if (idx !== -1) list.splice(idx, 1);
-  else list.push({ name: currentStationName, crs: currentStation, addedAt: new Date().toISOString() });
+  else list.push({ type: 'station', name: currentStationName, crs: currentStation, addedAt: new Date().toISOString() });
   setSavedStations(list);
   updateStarButton();
 });
@@ -1097,6 +1238,7 @@ function renderDepartures(board) {
   if (board && board.locationName && !currentFixture) {
     currentStationName = board.locationName;
     document.title = currentStationName + ' — Live Departures | SRHQ — SpotRail HQ';
+    document.getElementById('dep-h1').textContent = currentStationName;
     var inputEl = document.getElementById('station-input');
     if (inputEl && document.activeElement !== inputEl) inputEl.value = currentStationName;
     updateStarButton();
@@ -1147,12 +1289,17 @@ function renderDepartures(board) {
     var isExpanded = !!expandedServiceIds[rowId];
     return (
       '<tr class="dep-row' + (isExpanded ? ' expanded' : '') + '" data-row="' + escHtml(rowId) + '">' +
-        '<td class="dep-mono">' + escHtml(s.std || '—') + '</td>' +
-        '<td>' + escHtml(s.destination || '—') +
+        '<td class="dep-mono dep-col-time">' + escHtml(s.std || '—') + '</td>' +
+        '<td class="dep-col-dest">' + escHtml(s.destination || '—') +
           (s.destinationVia ? '<span class="dep-via">' + escHtml(s.destinationVia) + '</span>' : '') +
         '</td>' +
-        '<td class="dep-mono">' + escHtml(s.platform || '—') + '</td>' +
-        '<td>' +
+        '<td class="dep-mono dep-col-platform">' + escHtml(s.platform || '—') +
+          // Duplicate of .dep-via above, shown only at the mobile reflow
+          // breakpoint (platform+via share line 2 there) — the desktop one
+          // stays under destination, unchanged. See the media query.
+          (s.destinationVia ? '<span class="dep-via-mobile">' + escHtml(s.destinationVia) + '</span>' : '') +
+        '</td>' +
+        '<td class="dep-col-status">' +
           '<span class="dep-status' + (status.muted ? ' is-muted' : '') + '" style="color:' + status.color + '">' +
             '<span class="dep-status-dot"></span>' + escHtml(status.label) +
           '</span>' +
@@ -1330,26 +1477,32 @@ var IS_LOCALHOST = ['localhost', '127.0.0.1', '::1', '[::1]', ''].indexOf(locati
 
 // ?crs=BHM loads that station directly. Name is provisionally the code
 // itself until the board response's own locationName corrects it (see
-// renderDepartures) — same bootstrap gap a fresh popstate has.
+// renderDepartures) — same bootstrap gap a fresh popstate has. No ?crs= at
+// all -> the empty state (item 2: EUS default removed), no load, no
+// auto-refresh started.
+var initialCrs = currentFixture ? null : initialStationFromUrl();
 (function initStationFromUrl() {
   if (currentFixture) return;
-  var crs = initialStationFromUrl();
-  if (crs) {
-    currentStation = crs;
-    currentStationName = crs;
-    document.getElementById('station-input').value = crs;
-    visitedCrsStack = [crs]; // re-seed: the module-level init above ran before this URL check
+  if (initialCrs) {
+    currentStation = initialCrs;
+    currentStationName = initialCrs;
+    document.getElementById('station-input').value = initialCrs;
+    document.getElementById('dep-h1').textContent = initialCrs;
+    document.title = initialCrs + ' — Live Departures | SRHQ — SpotRail HQ';
+    visitedCrsStack = [initialCrs];
     stackPointer = 0;
   } else {
-    document.getElementById('station-input').value = currentStationName;
+    renderEmptyView();
   }
 })();
 
 updatePagerButton();
 updateStarButton();
 updateNavButtons();
-loadDepartures();
-startAutoRefresh();
+if (currentFixture || initialCrs) {
+  loadDepartures();
+  startAutoRefresh();
+}
 </script>
 </body>
 </html>
