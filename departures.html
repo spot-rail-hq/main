@@ -357,9 +357,33 @@ body.nav-open .nav-drawer { transform: translateX(0); box-shadow: -20px 0 60px r
   flex-wrap: wrap;
   padding: 12px 16px; margin-bottom: 0;
   background: var(--surface2); border: 1px solid rgba(var(--line-rgb),0.08);
-  border-bottom: none; border-radius: 12px 12px 0 0;
+  border-radius: 12px;
   font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--ink-mute);
-  /* Was position:sticky; top:72px (pinned just below the nav's own sticky
+  /* Full border + all-corners radius — was square-bottomed with NO
+     border-bottom at all (border-radius: 12px 12px 0 0; border-bottom:
+     none), a shape that only reads as "complete" when something with a
+     matching square top sits flush against it (which table.dep-table,
+     directly below, used to). .dep-nrcc breaking that assumption (see its
+     own comment) already forced a real gap in here; with a gap now
+     unconditional in every case — nrcc present or not — dep-bar can no
+     longer borrow its closing edge from whatever follows it. Missing a
+     whole border edge is what actually read as "cut off", not just the
+     square corners; giving it a complete border on all sides (the
+     border-radius alone wouldn't have fixed that) makes it a self-
+     contained box exactly like .dep-nrcc, so it looks finished regardless
+     of neighbour.
+     The gap itself is NOT this element's own margin-bottom — that was
+     tried first and measured live at TWO different sizes depending on
+     breakpoint: 12px on mobile, 24px on desktop. #dep-table-wrap's
+     overflow-x switches from visible (≤700px) to auto (wider), and only
+     `visible` fails to establish a block-formatting context — so this
+     margin collapsed through into .dep-nrcc's own margin-top on mobile,
+     but stacked with it (12+12) on desktop where the BFC blocks collapse.
+     Rather than depend on that, the gap now lives as #dep-table-wrap's own
+     padding-top (padding never collapses, so it's one deterministic value
+     everywhere) — see that rule. .dep-bar's margin-bottom is 0 again;
+     the border/radius fix above is independent of where the gap comes from.
+     Was position:sticky; top:72px (pinned just below the nav's own sticky
      72px). Removed — this bar is a direct child of .dep-wrap, which spans
      the WHOLE page down to the footer, so nothing bounded how long it
      stayed stuck: it stayed pinned at that screen position for the entire
@@ -376,19 +400,15 @@ body.nav-open .nav-drawer { transform: translateX(0); box-shadow: -20px 0 60px r
 }
 .dep-refreshing { color: var(--color-accent-turquoise); display: none; }
 
-/* margin-top, not just -bottom: .dep-bar (directly above, when a station's
-   loaded) has square bottom corners and no border-bottom by design — it's
-   meant to flow seamlessly into table.dep-table's square top when nothing
-   sits between them. .dep-nrcc breaks that assumption: it's rounded on
-   ALL four corners with its own full border, so placing it flush against
-   dep-bar's square-cornered, borderless edge (the old margin-bottom-only
-   version did exactly this) reads as the banner's rounded corners cutting
-   into the bar above. A real gap here removes the collision outright
-   rather than trying to reconcile two incompatible corner treatments; when
-   dep-bar isn't present at all (no station selected), this just adds a
-   normal top gap before the banner, which is not a regression of anything. */
+/* Rounded on all four corners with its own full border — the gap above it
+   (against .dep-bar or the page top when no station's loaded) comes from
+   #dep-table-wrap's own padding-top now, not a margin-top here (see that
+   rule and .dep-bar's own comment for why margin was dropped). Only
+   margin-bottom stays on this element: the nrcc→table gap has no
+   equivalent collapse-ambiguity risk, since .dep-table-wrap has no other
+   content between nrcc and the table for a collapse to reach across. */
 .dep-nrcc {
-  padding: 12px var(--dep-box-pad-x); margin: 12px 0;
+  padding: 12px var(--dep-box-pad-x); margin-bottom: 12px;
   background: rgba(var(--color-accent-amber-rgb),0.08);
   border: 1px solid rgba(var(--color-accent-amber-rgb),0.28);
   border-radius: 12px;
@@ -397,7 +417,16 @@ body.nav-open .nav-drawer { transform: translateX(0); box-shadow: -20px 0 60px r
 .dep-nrcc-item + .dep-nrcc-item { margin-top: 8px; }
 .dep-nrcc a { color: var(--color-accent-turquoise); }
 
-.dep-table-wrap { overflow-x: auto; }
+/* padding-top, not a margin on .dep-bar/.dep-nrcc — this is the ONE
+   deterministic place for the dep-bar-to-first-child gap (see .dep-bar's
+   own comment for the measured 12px/24px margin-collapse inconsistency
+   this replaced). Applies whether the first child is .dep-nrcc or
+   table.dep-table directly (no station's disruption message today, still
+   correct tomorrow if one appears) — padding never collapses, so this is
+   the same 12px at every breakpoint and in every browser, not dependent on
+   #dep-table-wrap's own overflow-x (auto vs visible) happening to
+   establish a block-formatting context or not. */
+.dep-table-wrap { overflow-x: auto; padding-top: 12px; }
 table.dep-table {
   width: 100%; min-width: 620px; border-collapse: collapse;
   background: var(--surface); border: 1px solid rgba(var(--line-rgb),0.08);
@@ -604,6 +633,13 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
     order: 4; flex: 0 0 100%;
     font-size: 12px; color: var(--ink-mute); margin-top: 2px;
   }
+  /* Reflowed view has no column headers at all (thead is display:none —
+     they'd be meaningless once every row is its own flex layout), so the
+     bare platform number read as an unlabelled floating digit here, unlike
+     desktop where the PLATFORM header column still names it. Label only
+     added at this breakpoint — on desktop it would just duplicate the
+     header for every row. */
+  .dep-col-platform::before { content: "Platform "; }
   /* Via moves from under destination (line 1) to beside platform (line 2)
      at this width — same data, shown once, not twice. */
   .dep-col-dest .dep-via { display: none; }
