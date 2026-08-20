@@ -567,15 +567,27 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
   .hero-sm, .dep-wrap { padding-left: 20px; padding-right: 20px; }
 }
 
-/* Departures table reflow — its own breakpoint (480px), deliberately
-   tighter than the general 560px one above: this is about the width the
-   4-column table itself stops fitting (phone portrait widths, ~320–430px
-   in practice), not the page's general padding, which already looks fine
-   down to 560px. Verified at 380px and 320px. Below this width the table
-   no longer scrolls horizontally (status — the single most important
+/* Departures table reflow — was 480px, RAISED to 700px (2026-08-20) to
+   close a real dead zone, found via a desktop-window resize that reproduced
+   horizontal scrolling at real narrow widths: table.dep-table's own
+   min-width is 620px, and .dep-wrap's padding is 32px each side above the
+   560px breakpoint (20px at/below it) — so the unreflowed table only
+   genuinely fits without overflow once the viewport reaches roughly
+   620 + 64 = 684px. Anywhere from 480px (the old breakpoint) up to just
+   under 684px, NEITHER layout actually fit: not narrow enough to trigger
+   this reflow, not wide enough for the 620px table to sit inside
+   .dep-wrap's content box — confirmed live (Playwright/Chromium) at 500px
+   and 560px, both showing #dep-table-wrap's scrollWidth exceeding its
+   clientWidth. 700px, not the precise 684px boundary, to leave margin for
+   a classic (non-overlay) vertical scrollbar shaving a little more off the
+   usable width on platforms that use one — this file has no other signal
+   for that, so a fixed buffer is the safest bet. Below this breakpoint the
+   table no longer scrolls horizontally (status — the single most important
    field — was being cropped off-screen entirely); instead every row
-   reflows to two lines: time/destination/status, then platform+via underneath. */
-@media (max-width: 480px) {
+   reflows to two lines: time/destination/status, then platform+via
+   underneath. Verified (this pass) at 390/414/480/500/560/600/620/700/900px
+   — see scratchpad verification script, not committed to this repo. */
+@media (max-width: 700px) {
   .dep-table-wrap { overflow-x: visible; }
   table.dep-table { min-width: 0; }
   .dep-table thead { display: none; } /* column headers are meaningless once reflowed */
