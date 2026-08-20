@@ -233,7 +233,15 @@ body.nav-open .nav-drawer { transform: translateX(0); box-shadow: -20px 0 60px r
 }
 
 /* Departures */
-.dep-wrap { max-width: 1280px; margin: 0 auto; padding: 28px 32px 56px; }
+.dep-wrap {
+  max-width: 1280px; margin: 0 auto; padding: 28px 32px 56px;
+  /* Shared horizontal inset for every box inside #dep-table-wrap that's
+     meant to line up on the same edge (.dep-nrcc, .dep-detail, and the
+     calling-points table's own edge columns below) — one value instead of
+     each box hardcoding its own 16px, so a future change to one can't
+     silently drift from the others the way the calling-points table did. */
+  --dep-box-pad-x: 16px;
+}
 .station-row { margin-bottom: 20px; }
 
 /* Station search — ported from map.html's sb-search-field/sb-ac-* pattern
@@ -351,12 +359,25 @@ body.nav-open .nav-drawer { transform: translateX(0); box-shadow: -20px 0 60px r
   background: var(--surface2); border: 1px solid rgba(var(--line-rgb),0.08);
   border-bottom: none; border-radius: 12px 12px 0 0;
   font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--ink-mute);
-  position: sticky; top: 72px; z-index: 5;
+  /* Was position:sticky; top:72px (pinned just below the nav's own sticky
+     72px). Removed — this bar is a direct child of .dep-wrap, which spans
+     the WHOLE page down to the footer, so nothing bounded how long it
+     stayed stuck: it stayed pinned at that screen position for the entire
+     scroll through the board, painting over (z-index:5, the only stacked
+     element in that region) whatever normal-flow content scrolled up
+     underneath it — the disruption banner first (it sits right below with
+     almost no gap, so this was visible on nearly any scroll at all), and
+     further down, departure rows and — since the calling-points revert —
+     much taller expanded rows too. See the investigation note above this
+     rule's old position for the full trace. Properly bounding a sticky
+     bar to "stick only while its own table is on screen" needs a tighter
+     wrapping container it doesn't have today; removing sticky entirely is
+     the direct fix for the reported overlap, not a scoped version of it. */
 }
 .dep-refreshing { color: var(--color-accent-turquoise); display: none; }
 
 .dep-nrcc {
-  padding: 12px 16px; margin-bottom: 12px;
+  padding: 12px var(--dep-box-pad-x); margin-bottom: 12px;
   background: rgba(var(--color-accent-amber-rgb),0.08);
   border: 1px solid rgba(var(--color-accent-amber-rgb),0.28);
   border-radius: 12px;
@@ -396,7 +417,7 @@ table.dep-table {
   padding: 0; border-bottom: 1px solid rgba(var(--line-rgb),0.05);
 }
 .dep-detail {
-  padding: 14px 16px 18px; background: rgba(var(--line-rgb),0.02);
+  padding: 14px var(--dep-box-pad-x) 18px; background: rgba(var(--line-rgb),0.02);
   font-size: 13px; color: var(--ink-dim);
 }
 .dep-detail-reason {
@@ -418,12 +439,32 @@ table.dep-table {
    default; word-break:break-word is belt-and-suspenders for the rare
    unbroken-long-word case (no viewport-edge overflow at any width tested:
    390/414/480px). */
-.dep-cp-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+/* Full container width via negative margin — escapes .dep-detail's own
+   --dep-box-pad-x padding rather than sitting inset a second time inside
+   it (that double-inset was the actual mobile bug: the table never reached
+   the row's real right edge, so the right-aligned status column read as
+   not properly right-aligned). The same --dep-box-pad-x is then re-applied
+   directly on the edge cells (cp-time's left, cp-et's right) so the VISIBLE
+   text inset ends up identical to .dep-nrcc's own padding — one shared
+   value drives both boxes' edges at every width, not two hardcoded numbers
+   that can drift apart again. */
+.dep-cp-table {
+  width: calc(100% + var(--dep-box-pad-x) * 2); margin: 0 calc(var(--dep-box-pad-x) * -1);
+  border-collapse: collapse; table-layout: fixed;
+}
 .dep-cp-table td { padding: 5px 4px; font-size: 12.5px; line-height: 1.4; vertical-align: baseline; border-bottom: 1px solid rgba(var(--line-rgb),0.05); }
 .dep-cp-table tr:last-child td { border-bottom: none; }
-.dep-cp-table .cp-time { width: 50px; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--ink-mute); white-space: nowrap; }
+/* box-sizing:border-box is global in this file (see the universal reset
+   near the top), so `width` on these cells includes their padding — bumping
+   the edge padding to --dep-box-pad-x would otherwise silently steal 12px
+   of content room from a 5-character time / "Cancelled" status without
+   this compensating +var(--dep-box-pad-x)-4px, which keeps the actual
+   available content width exactly what it was (50px/64px minus the
+   original generic 4px edge padding) regardless of what --dep-box-pad-x
+   is set to. */
+.dep-cp-table .cp-time { width: calc(50px + var(--dep-box-pad-x) - 4px); padding-left: var(--dep-box-pad-x); font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--ink-mute); white-space: nowrap; }
 .dep-cp-table .cp-name { color: var(--ink); word-break: break-word; }
-.dep-cp-table .cp-et { width: 64px; text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-mute); white-space: nowrap; }
+.dep-cp-table .cp-et { width: calc(64px + var(--dep-box-pad-x) - 4px); padding-right: var(--dep-box-pad-x); text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-mute); white-space: nowrap; }
 .dep-cp-table tr.cp-cancelled { background: rgba(var(--color-accent-magenta-rgb),0.08); }
 .dep-cp-table tr.cp-cancelled .cp-name,
 .dep-cp-table tr.cp-cancelled .cp-time,
