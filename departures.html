@@ -279,9 +279,8 @@ body.nav-open .nav-drawer { transform: translateX(0); box-shadow: -20px 0 60px r
 
 /* Saved-station chip row — sits under the search bar, above the station
    title row, always visible (even with nothing selected) so it's a
-   persistent quick-access strip, not tied to the current board. Pill shape
-   matches .dep-callingpoints li's rgba(--line-rgb,0.04) chip convention;
-   accent border echoes .dep-search-field's turquoise-at-0.28 treatment. */
+   persistent quick-access strip, not tied to the current board. Accent
+   border echoes .dep-search-field's turquoise-at-0.28 treatment. */
 .dep-chip-row-wrap { margin-bottom: 20px; }
 .dep-chip-hint {
   font-size: 10.5px; color: var(--ink-mute); margin-bottom: 6px;
@@ -393,7 +392,7 @@ table.dep-table {
 .dep-status.is-muted { font-style: italic; }
 .dep-expand-hint { font-size: 11px; color: var(--ink-mute); margin-left: 6px; }
 
-.dep-detail-row td {
+.dep-detail-row > td {
   padding: 0; border-bottom: 1px solid rgba(var(--line-rgb),0.05);
 }
 .dep-detail {
@@ -410,24 +409,25 @@ table.dep-table {
   background: rgba(var(--color-accent-magenta-rgb),0.08);
   border-color: rgba(var(--color-accent-magenta-rgb),0.24);
 }
-/* Inline wrapping time+name pairs, not one row per stop — a long-distance
-   service's calling-point list (30+ stops) made the old one-per-line <li>
-   layout enormous. Each <li> is now one inline chip; the list wraps like a
-   paragraph. */
-.dep-callingpoints { list-style: none; display: flex; flex-wrap: wrap; gap: 6px 4px; }
-.dep-callingpoints li {
-  display: inline-flex; align-items: baseline; gap: 5px;
-  padding: 2px 8px; border-radius: 999px;
-  background: rgba(var(--line-rgb),0.04);
-  font-size: 12px; line-height: 1.4;
-}
-.dep-callingpoints .cp-time { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--ink-mute); flex: none; }
-.dep-callingpoints .cp-name { color: var(--ink); }
-.dep-callingpoints .cp-et { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-mute); flex: none; }
-.dep-callingpoints .cp-cancelled { background: rgba(var(--color-accent-magenta-rgb),0.08); }
-.dep-callingpoints .cp-cancelled .cp-name,
-.dep-callingpoints .cp-cancelled .cp-time,
-.dep-callingpoints .cp-cancelled .cp-et { color: var(--color-accent-magenta); }
+/* Reverted to row-per-stop (was a flex/wrap pill list — read as messy, and
+   see the mobile-overflow investigation above: a pill's content doesn't
+   wrap without min-width:0 on its flex children, so one long station name
+   could force a single pill wider than the viewport with no way to shrink).
+   table-layout:fixed with two fixed narrow columns means cp-name gets
+   "the rest" and — being a real <td>, not a flex item — wraps normally by
+   default; word-break:break-word is belt-and-suspenders for the rare
+   unbroken-long-word case (no viewport-edge overflow at any width tested:
+   390/414/480px). */
+.dep-cp-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.dep-cp-table td { padding: 5px 4px; font-size: 12.5px; line-height: 1.4; vertical-align: baseline; border-bottom: 1px solid rgba(var(--line-rgb),0.05); }
+.dep-cp-table tr:last-child td { border-bottom: none; }
+.dep-cp-table .cp-time { width: 50px; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--ink-mute); white-space: nowrap; }
+.dep-cp-table .cp-name { color: var(--ink); word-break: break-word; }
+.dep-cp-table .cp-et { width: 64px; text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-mute); white-space: nowrap; }
+.dep-cp-table tr.cp-cancelled { background: rgba(var(--color-accent-magenta-rgb),0.08); }
+.dep-cp-table tr.cp-cancelled .cp-name,
+.dep-cp-table tr.cp-cancelled .cp-time,
+.dep-cp-table tr.cp-cancelled .cp-et { color: var(--color-accent-magenta); }
 .dep-no-callingpoints { color: var(--ink-mute); font-size: 12.5px; }
 
 .dep-coach-strip { display: flex; gap: 3px; margin-top: 10px; align-items: flex-end; height: 22px; }
@@ -535,7 +535,23 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
      at this width — same data, shown once, not twice. */
   .dep-col-dest .dep-via { display: none; }
   .dep-col-platform .dep-via-mobile { display: inline; margin-left: 6px; font-size: inherit; color: inherit; }
-  .dep-detail-row td { display: block; }
+  /* The row itself, not just its cell — `table.dep-table`/`tbody` above are
+     forced to display:block, but a <tr> left at its default display:table-row
+     inside a block-display tbody makes the browser generate an anonymous
+     table wrapper around it (CSS table layout algorithm) to keep the table
+     model consistent. That synthetic box doesn't inherit dep-table's own
+     min-width:0/overflow overrides, so it can force the row wider than the
+     viewport independently of whatever's inside the cell — the actual cause
+     of the still-scrolling expanded row this pass investigated, not the
+     calling-points content itself (though that compounded it — see
+     .dep-cp-table below, which replaces the old non-wrapping flex pills). */
+  .dep-detail-row { display: block; }
+  /* Direct child only (>), not a bare descendant selector — the calling-
+     points table nested inside (.dep-cp-table) has its own <td> cells that
+     must stay real table cells, not get flattened to display:block by a
+     selector that was only ever meant to reach the single outer
+     <td colspan="4"> wrapping the whole expanded-row detail. */
+  .dep-detail-row > td { display: block; }
 }
 </style>
 </head>
@@ -661,7 +677,7 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
        rendered (empty-state message swaps in when there's nothing saved),
        independent of whatever station is currently loaded. -->
   <div class="dep-chip-row-wrap" id="dep-chip-row-wrap">
-    <div class="dep-chip-hint" id="dep-chip-hint" style="display:none">Drag to reorder</div>
+    <div class="dep-chip-hint" id="dep-chip-hint" style="display:none">Drag to reorder · tap the pin to set your default</div>
     <div class="dep-chip-empty" id="dep-chip-empty" style="display:none">Save a station — tap the star once you're viewing its board — to see it here.</div>
     <div class="dep-chip-scroll" id="dep-chip-scroll"></div>
   </div>
@@ -1078,11 +1094,28 @@ function showStationRows() {
   document.getElementById('dep-bar').style.display = '';
   if (!currentFixture) document.getElementById('dep-station-row').style.display = '';
 }
+// The search field's own displayed value is purely cosmetic once a station
+// is selected — checked every consumer of station-input's value (the
+// autocomplete/typing logic only ever reads it while the field itself is
+// being typed into; the refresh cycle, share link, and back/forward all key
+// off currentStation/history state, never this field). Nothing depends on
+// it still showing the station name, and leaving it populated only
+// duplicates the title row right below it. Clearing it back to placeholder
+// text also hides the × clear button (display toggles on a truthy value)
+// and — as a side effect of wireStationSearch's existing focus handler —
+// means focusing the empty field afterward offers the saved-stations list
+// again, rather than the old station name sitting there to be retyped over.
+function clearSearchField() {
+  var input = document.getElementById('station-input');
+  input.value = '';
+  var clearBtn = document.getElementById('station-clear-btn');
+  if (clearBtn) clearBtn.style.display = 'none';
+}
 function selectStationSilently(crs) {
   currentStation = crs;
   currentStationName = crs; // corrected to the real name once the board loads (see renderDepartures)
   showStationRows();
-  document.getElementById('station-input').value = crs;
+  clearSearchField();
   document.getElementById('dep-station-title').textContent = crs;
   document.title = crs + ' — Live Departures | SRHQ — SpotRail HQ';
   currentOffset = 0;
@@ -1093,9 +1126,19 @@ function selectStationSilently(crs) {
 }
 function selectStation(crs, name) {
   currentStation = crs.toUpperCase();
-  currentStationName = name || currentStation;
+  // Applied here, not just at the search-list load: a saved chip's stored
+  // `name` (or a default-loaded one, see INIT below) can be stale — carrying
+  // the raw "…Rail Station" suffix from before this stripping existed, or
+  // from a future write path that forgets to strip it. Darwin's own
+  // locationName (renderDepartures(), below) never carries that suffix, so
+  // an unstripped stored name flashed full-then-short once the board loaded
+  // and corrected it. Stripping on READ here fixes every already-saved chip
+  // immediately, not just newly-saved ones. Same rule map.html already
+  // applies to its own stationList (see that file's stripStationNameSuffix
+  // comment) — closing the gap, not a new naming decision.
+  currentStationName = stripStationNameSuffix(name || currentStation);
   showStationRows();
-  document.getElementById('station-input').value = currentStationName;
+  clearSearchField();
   document.getElementById('dep-station-title').textContent = currentStationName;
   document.title = currentStationName + ' — Live Departures | SRHQ — SpotRail HQ';
   updateUrl();
@@ -1127,7 +1170,7 @@ function renderEmptyView() {
     '<div class="state-msg" style="background:var(--surface);border:1px solid rgba(var(--line-rgb),0.08);border-radius:12px">' +
       escHtml(EMPTY_STATE_COPY) +
     '</div>';
-  document.getElementById('station-input').value = '';
+  clearSearchField();
 }
 
 // ── Esc → empty view. Strips ?crs= via history.replaceState (no new
@@ -1278,17 +1321,24 @@ function renderSavedChips() {
   var hintEl = document.getElementById('dep-chip-hint');
   var rows = renderableSavedRows();
   emptyEl.style.display = rows.length ? 'none' : '';
-  // Reorder-drag is meaningless with 0-1 chips, and the notice is one-time
+  // One combined notice covers both chip actions (drag-to-reorder AND the
+  // pin) rather than two separate call-outs — the pin half is useful even
+  // with a single chip, so this only gates on having any chips at all, not
+  // on rows.length > 1 the way a drag-only notice would. One-time
   // (localStorage-gated) — never shown again once seen, matching the map
   // page's own bottom-hint convention of hiding once its action has served
-  // its purpose (there: tapped; here: enough chips exist to act on).
-  hintEl.style.display = (rows.length > 1 && !chipHintSeen()) ? '' : 'none';
+  // its purpose (there: tapped; here: a drag OR a pin-tap, see both call
+  // sites of markChipHintSeen()).
+  hintEl.style.display = (rows.length >= 1 && !chipHintSeen()) ? '' : 'none';
   scrollEl.innerHTML = rows.map(function (r) {
     var meta = SAVED_CHIP_TYPE_META[r.type || 'station'] || SAVED_CHIP_TYPE_META.station;
     var id = savedRowId(r);
     var isDefault = r.isDefault === true;
+    // meta.icon is deliberately unused here — no leading type icon for now
+    // (reported as visual clutter). meta.cls (route accenting) stays; the
+    // icon field itself stays defined in SAVED_CHIP_TYPE_META so it needs no
+    // rework if/when a route chip actually wants one back.
     return '<div class="dep-chip ' + meta.cls + '" data-id="' + escHtml(id) + '" data-name="' + escHtml(r.name || r.crs) + '">' +
-      '<i class="ti ' + meta.icon + ' dep-chip-type-icon"></i>' +
       '<span class="dep-chip-name">' + escHtml(r.name || r.crs) + '</span>' +
       '<button type="button" class="dep-chip-default-btn' + (isDefault ? ' is-default' : '') + '" ' +
         'aria-label="' + (isDefault ? 'Unset as default station' : 'Set as default station') + '" aria-pressed="' + isDefault + '">' +
@@ -1370,6 +1420,7 @@ function renderSavedChips() {
     if (!chip) return;
     if (defaultBtn) {
       setSavedDefault(chip.dataset.id, !defaultBtn.classList.contains('is-default'));
+      markChipHintSeen(); // the combined notice covers the pin too — a pin-tap dismisses it same as a drag does
       renderSavedChips();
       return;
     }
@@ -1453,16 +1504,16 @@ function callingPointsHtml(service) {
     (Array.isArray(g.callingPoints) ? g.callingPoints : []).forEach(function (cp) { points.push(cp); });
   });
   if (!points.length) return '<div class="dep-no-callingpoints">No further calling points on record for this service.</div>';
-  var items = points.map(function (cp) {
+  var rows = points.map(function (cp) {
     var cancelled = cp.isCancelled === true;
     var etText = cancelled ? 'Cancelled' : ((cp.et && cp.et !== cp.st) ? cp.et : '');
-    return '<li class="' + (cancelled ? 'cp-cancelled' : '') + '">' +
-      '<span class="cp-time">' + escHtml(cp.st || '—') + '</span>' +
-      '<span class="cp-name">' + escHtml(cp.locationName || '—') + '</span>' +
-      '<span class="cp-et">' + escHtml(etText) + '</span>' +
-    '</li>';
+    return '<tr class="' + (cancelled ? 'cp-cancelled' : '') + '">' +
+      '<td class="cp-time">' + escHtml(cp.st || '—') + '</td>' +
+      '<td class="cp-name">' + escHtml(cp.locationName || '—') + '</td>' +
+      '<td class="cp-et">' + escHtml(etText) + '</td>' +
+    '</tr>';
   }).join('');
-  return '<ul class="dep-callingpoints">' + items + '</ul>';
+  return '<table class="dep-cp-table"><tbody>' + rows + '</tbody></table>';
 }
 
 function detailHtml(service) {
@@ -1494,16 +1545,17 @@ function renderDepartures(board) {
   var services = (board && Array.isArray(board.services)) ? board.services : [];
   var nrccMessages = (board && Array.isArray(board.nrccMessages)) ? board.nrccMessages : [];
 
-  // Corrects the title/search-field/star-identity to the real station name
-  // once the board actually loads — the authoritative source, since a
-  // direct ?crs=BHM link (or a popstate) only ever had the bare code to
-  // start with, not a name from a search pick.
+  // Corrects the title/star-identity to the real station name once the
+  // board actually loads — the authoritative source, since a direct
+  // ?crs=BHM link (or a popstate) only ever had the bare code to start
+  // with, not a name from a search pick. The search field itself is no
+  // longer part of this correction — it's cleared back to placeholder text
+  // at selection time (see clearSearchField()) and never repopulated with
+  // the station name at all, so there's nothing left here to fix.
   if (board && board.locationName && !currentFixture) {
     currentStationName = board.locationName;
     document.title = currentStationName + ' — Live Departures | SRHQ — SpotRail HQ';
     document.getElementById('dep-station-title').textContent = currentStationName;
-    var inputEl = document.getElementById('station-input');
-    if (inputEl && document.activeElement !== inputEl) inputEl.value = currentStationName;
     updateStarButton();
   }
 
@@ -1753,8 +1805,11 @@ var bootCrs = initialCrs || (defaultSaved && defaultSaved.crs) || null;
   if (currentFixture) return;
   if (bootCrs) {
     currentStation = bootCrs;
-    currentStationName = (defaultSaved && !initialCrs && defaultSaved.name) || bootCrs;
-    document.getElementById('station-input').value = currentStationName;
+    // Same stale-name guard as selectStation() above — a default-saved
+    // station's stored name is read here too, before Darwin's own
+    // locationName ever gets a chance to correct it.
+    currentStationName = stripStationNameSuffix((defaultSaved && !initialCrs && defaultSaved.name) || bootCrs);
+    clearSearchField();
     document.getElementById('dep-station-row').style.display = '';
     document.getElementById('dep-station-title').textContent = currentStationName;
     document.title = currentStationName + ' — Live Departures | SRHQ — SpotRail HQ';
