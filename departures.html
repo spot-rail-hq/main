@@ -512,7 +512,20 @@ table.dep-table {
    original generic 4px edge padding) regardless of what --dep-box-pad-x
    is set to. */
 .dep-cp-table .cp-time { width: calc(50px + var(--dep-box-pad-x) - 4px); padding-left: var(--dep-box-pad-x); font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--ink-mute); white-space: nowrap; }
-.dep-cp-table .cp-name { color: var(--ink); word-break: break-word; }
+/* Explicit width, not "leave it unset and let table-layout:fixed give it
+   the rest" — that was tried first and measured live (Playwright, real
+   column geometry, not just the table's own outer width) to leave a ~60px
+   BLANK gap after cp-et instead of filling it: cp-name sized itself to
+   its own content (shrink-to-fit) rather than the remaining table width.
+   table-layout:fixed's spec text says an unset column should absorb
+   leftover space, but that's not what Chromium actually did here — a
+   known real-world gotcha with this exact pattern, not a spec violation.
+   Computed explicitly instead: 100% minus cp-time's and cp-et's own
+   calc()'d widths (50+64=114px fixed, minus their shared 2×4px base
+   padding, plus 2×--dep-box-pad-x for their real edge padding) — same
+   numbers those two rules already use, just solved for the third column
+   instead of assumed. */
+.dep-cp-table .cp-name { width: calc(100% - 106px - var(--dep-box-pad-x) * 2); color: var(--ink); word-break: break-word; }
 .dep-cp-table .cp-et { width: calc(64px + var(--dep-box-pad-x) - 4px); padding-right: var(--dep-box-pad-x); text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-mute); white-space: nowrap; }
 .dep-cp-table tr.cp-cancelled { background: rgba(var(--color-accent-magenta-rgb),0.08); }
 .dep-cp-table tr.cp-cancelled .cp-name,
@@ -620,7 +633,22 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
   .dep-table-wrap { overflow-x: visible; }
   table.dep-table { min-width: 0; }
   .dep-table thead { display: none; } /* column headers are meaningless once reflowed */
-  table.dep-table, table.dep-table tbody { display: block; }
+  /* > (direct child), not a bare descendant tbody selector — the old
+     `table.dep-table tbody` matched ANY tbody anywhere inside
+     table.dep-table, including .dep-cp-table's own nested <tbody>, many
+     levels down through .dep-detail-row > td > .dep-detail. That forced
+     the nested table's tbody to display:block while its own <tr>/<td>
+     children stayed at their table defaults — the same mismatched-display
+     anonymous-box problem .dep-detail-row's own fix (above) already
+     solved once, just for a selector that fix didn't reach. Confirmed via
+     real column geometry (Playwright): the outer .dep-cp-table correctly
+     measured 100% width, but its first <tr> measured ~80px narrower than
+     the table — the row itself wasn't being stretched to fill it, which
+     is what actually produced the "table not touching the right edge"
+     symptom. table.dep-table's OWN tbody is a genuine direct child (real
+     HTML always nests tbody directly under table), so this scoping change
+     costs nothing there. */
+  table.dep-table, table.dep-table > tbody { display: block; }
   .dep-row {
     display: flex; flex-wrap: wrap; align-items: baseline;
     padding: 10px 14px; gap: 2px 8px;
