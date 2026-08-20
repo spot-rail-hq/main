@@ -376,8 +376,19 @@ body.nav-open .nav-drawer { transform: translateX(0); box-shadow: -20px 0 60px r
 }
 .dep-refreshing { color: var(--color-accent-turquoise); display: none; }
 
+/* margin-top, not just -bottom: .dep-bar (directly above, when a station's
+   loaded) has square bottom corners and no border-bottom by design — it's
+   meant to flow seamlessly into table.dep-table's square top when nothing
+   sits between them. .dep-nrcc breaks that assumption: it's rounded on
+   ALL four corners with its own full border, so placing it flush against
+   dep-bar's square-cornered, borderless edge (the old margin-bottom-only
+   version did exactly this) reads as the banner's rounded corners cutting
+   into the bar above. A real gap here removes the collision outright
+   rather than trying to reconcile two incompatible corner treatments; when
+   dep-bar isn't present at all (no station selected), this just adds a
+   normal top gap before the banner, which is not a regression of anything. */
 .dep-nrcc {
-  padding: 12px var(--dep-box-pad-x); margin-bottom: 12px;
+  padding: 12px var(--dep-box-pad-x); margin: 12px 0;
   background: rgba(var(--color-accent-amber-rgb),0.08);
   border: 1px solid rgba(var(--color-accent-amber-rgb),0.28);
   border-radius: 12px;
@@ -416,12 +427,24 @@ table.dep-table {
 .dep-detail-row > td {
   padding: 0; border-bottom: 1px solid rgba(var(--line-rgb),0.05);
 }
+/* .dep-detail itself carries NO horizontal padding (moved to each child's
+   own margin, below) — a calc()-width + negative-margin "breakout" table
+   was tried here first and confirmed to render differently between Blink
+   (desktop Chrome/Edge) and WebKit (Safari AND "Chrome" on iOS — Apple
+   requires every iOS browser to use WebKit under the hood, so that's not
+   really a second engine to separately support): Blink left the reflowed
+   table too wide to fit (needed horizontal scroll), WebKit left it short of
+   the right edge. Rather than chase that combination further, each child
+   below insets itself by the same --dep-box-pad-x directly — plain
+   margins/padding, no calc()'d width or negative margins anywhere, which
+   sidesteps the cross-engine table-sizing difference entirely instead of
+   trying to out-guess it. */
 .dep-detail {
-  padding: 14px var(--dep-box-pad-x) 18px; background: rgba(var(--line-rgb),0.02);
+  padding: 14px 0 18px; background: rgba(var(--line-rgb),0.02);
   font-size: 13px; color: var(--ink-dim);
 }
 .dep-detail-reason {
-  padding: 8px 12px; margin-bottom: 12px; border-radius: 8px;
+  padding: 8px 12px; margin: 0 var(--dep-box-pad-x) 12px; border-radius: 8px;
   background: rgba(var(--color-accent-amber-rgb),0.08);
   border: 1px solid rgba(var(--color-accent-amber-rgb),0.24);
   color: var(--ink);
@@ -439,18 +462,15 @@ table.dep-table {
    default; word-break:break-word is belt-and-suspenders for the rare
    unbroken-long-word case (no viewport-edge overflow at any width tested:
    390/414/480px). */
-/* Full container width via negative margin — escapes .dep-detail's own
-   --dep-box-pad-x padding rather than sitting inset a second time inside
-   it (that double-inset was the actual mobile bug: the table never reached
-   the row's real right edge, so the right-aligned status column read as
-   not properly right-aligned). The same --dep-box-pad-x is then re-applied
-   directly on the edge cells (cp-time's left, cp-et's right) so the VISIBLE
-   text inset ends up identical to .dep-nrcc's own padding — one shared
-   value drives both boxes' edges at every width, not two hardcoded numbers
-   that can drift apart again. */
+/* Plain 100% width — .dep-detail carries no horizontal padding of its own
+   any more (see that rule's comment above), so this table's container is
+   already exactly the row's full inner width; no breakout trick needed.
+   Edge-cell padding (cp-time left, cp-et right) supplies the same
+   --dep-box-pad-x inset .dep-nrcc uses, so the visible text lines up with
+   it at every width — one shared value, not two hardcoded numbers that can
+   drift apart again. */
 .dep-cp-table {
-  width: calc(100% + var(--dep-box-pad-x) * 2); margin: 0 calc(var(--dep-box-pad-x) * -1);
-  border-collapse: collapse; table-layout: fixed;
+  width: 100%; border-collapse: collapse; table-layout: fixed;
 }
 .dep-cp-table td { padding: 5px 4px; font-size: 12.5px; line-height: 1.4; vertical-align: baseline; border-bottom: 1px solid rgba(var(--line-rgb),0.05); }
 .dep-cp-table tr:last-child td { border-bottom: none; }
@@ -469,9 +489,9 @@ table.dep-table {
 .dep-cp-table tr.cp-cancelled .cp-name,
 .dep-cp-table tr.cp-cancelled .cp-time,
 .dep-cp-table tr.cp-cancelled .cp-et { color: var(--color-accent-magenta); }
-.dep-no-callingpoints { color: var(--ink-mute); font-size: 12.5px; }
+.dep-no-callingpoints { color: var(--ink-mute); font-size: 12.5px; margin: 0 var(--dep-box-pad-x); }
 
-.dep-coach-strip { display: flex; gap: 3px; margin-top: 10px; align-items: flex-end; height: 22px; }
+.dep-coach-strip { display: flex; gap: 3px; margin: 10px var(--dep-box-pad-x) 0; align-items: flex-end; height: 22px; }
 .dep-coach-seg {
   width: 10px; border-radius: 2px 2px 0 0;
   background: rgba(var(--line-rgb),0.1);
@@ -483,7 +503,7 @@ table.dep-table {
   background: var(--color-accent-turquoise);
   border-radius: 2px 2px 0 0;
 }
-.dep-coach-label { font-size: 10.5px; color: var(--ink-mute); margin-top: 4px; }
+.dep-coach-label { font-size: 10.5px; color: var(--ink-mute); margin: 4px var(--dep-box-pad-x) 0; }
 
 .dep-pager-btn {
   padding: 6px 12px; border-radius: 999px;
