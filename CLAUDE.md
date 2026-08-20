@@ -347,6 +347,38 @@ the URLs still resolve.
   restart is required to verify the rename actually resolved correctly,
   not just a nicety.
 
+## SCHEDULE ↔ Darwin join — three permanent coverage gaps (findings only)
+
+Not implemented anywhere yet — this is a finding from investigating a real
+CSA journey router built against the SCHEDULE backfill (a VPS-side Postgres
+project, not this repo; see `scratchpad/darwin-schedule-join-investigation.md`
+and `scratchpad/csa-router.py` for the full detail). Recorded here because
+it's a durable fact about the data, not scoped to that one build.
+
+`darwin_movements` (real-time Push Port data) carries no train UID,
+headcode, TOC, or date field at all — the only reliable join to a SCHEDULE
+record is `resolve_schedule(train_uid, date)` (STP-resolved) followed by a
+match on tiploc + scheduled time, never a direct key. Three categories of
+"no live Darwin match" are permanent and expected, not a join bug or a data
+quality problem:
+
+- **Non-GB-network services present in the SCHEDULE feed.** Some entries
+  carry a mainline ATOC tag but describe journeys entirely outside Great
+  Britain's Darwin-covered network — confirmed real examples: the Isle of
+  Man Steam Railway (tagged `VT`) and a Holyhead→Dublin ferry-port boat
+  train (tagged `AW`). These will never have a `darwin_movements`
+  counterpart, regardless of join correctness.
+- **VSTP-created same-day services.** The SCHEDULE backfill only ingests
+  the full weekly CIF extract, not the separate, more-frequent VSTP feed.
+  A same-day schedule amendment/addition made via VSTP has no SCHEDULE-side
+  counterpart at all (confirmed real example: a Weybridge 08:41 departure
+  recorded in `darwin_movements` with no matching calling point anywhere in
+  the ingested SCHEDULE data).
+- **Non-passenger workings.** ~24% of schedules with an origin calling
+  point have no public time at all (ECS/freight/departmental/bus-
+  replacement categories) and structurally can't appear in Darwin, which
+  only ever carries public-facing running information.
+
 ## Station-search ranking (departures.html and map.html)
 
 **Reconciled 2026-08-19** — both files now run the same four-tier model in
