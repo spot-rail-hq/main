@@ -11,6 +11,7 @@ verify_bulk_resolve_matches_function()).
 """
 import argparse
 import os
+import pickle
 import sys
 import time
 from collections import defaultdict
@@ -22,6 +23,14 @@ import psycopg2.extras
 DATABASE_URL = os.environ["DATABASE_URL"]
 
 MIN_TRANSFER_MINUTES = 5
+
+# Every invocation of this script is a fresh, ephemeral process (see
+# scratchpad/csa-router-caching.md) -- there is no long-lived process to hold
+# an in-memory cache. The one thing that *does* survive between invocations
+# is the bind-mounted host directory this script itself lives in, so the
+# per-date connection graph is cached there as a file instead: built once,
+# read by every later search for that date until the underlying data changes.
+CACHE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cache")
 
 STP_ORDER_SQL = "CASE stp_indicator WHEN 'C' THEN 0 WHEN 'N' THEN 1 WHEN 'O' THEN 2 WHEN 'P' THEN 3 END"
 
@@ -103,6 +112,51 @@ def fetch_calling_points(conn, schedule_ids):
 
 def hhmm_to_minutes(s):
     return int(s[:2]) * 60 + int(s[2:4])
+
+
+def data_fingerprint(conn):
+    """Cheap, robust proxy for 'has the underlying SCHEDULE data changed'.
+
+    max(id) is drawn from a sequence that only ever advances -- a fresh
+    backfill (the only invalidation trigger that exists today, per the ask)
+    inserts brand-new IDs even for logically-identical schedules, so this
+    always changes on a real re-ingest without needing a schema change to
+    track it explicitly.
+    """
+    cur = conn.cursor()
+    cur.execute("SELECT count(*), max(id) FROM schedules")
+    return cur.fetchone()
+
+
+def get_connections_for_date(conn, date_obj, fingerprint):
+    """Materialized per-date connection graph, cached to disk.
+
+    Returns (connections, cache_hit: bool). A hit means today's cached file
+    matched the current data fingerprint and was loaded straight from disk
+    with no bulk_resolve/calling-points query at all.
+    """
+    os.makedirs(CACHE_DIR, exist_ok=True)
+    cache_path = os.path.join(CACHE_DIR, f"conns_{date_obj.isoformat()}.pkl")
+
+    if os.path.exists(cache_path):
+        try:
+            with open(cache_path, "rb") as f:
+                cached_fingerprint, conns = pickle.load(f)
+            if cached_fingerprint == fingerprint:
+                return conns, True
+        except (EOFError, pickle.UnpicklingError):
+            pass  # treat a corrupt/partial cache file as a miss
+
+    resolved = bulk_resolve(conn, date_obj.isoformat())
+    meta = {row[0]: (row[1], row[2]) for row in resolved}
+    conns = build_connections_for_date(conn, meta, datetime.combine(date_obj, datetime.min.time()))
+
+    tmp_path = cache_path + f".tmp{os.getpid()}"
+    with open(tmp_path, "wb") as f:
+        pickle.dump((fingerprint, conns), f)
+    os.replace(tmp_path, cache_path)  # atomic, safe if another invocation races
+
+    return conns, False
 
 
 def build_connections_for_date(conn, meta_by_id, base_date):
@@ -242,14 +296,11 @@ def search(conn, origin_q, dest_q, depart_after_str, verbose=True):
     d0 = depart_after.date()
     d1 = d0 + timedelta(days=1)
 
-    resolved_d0 = bulk_resolve(conn, d0.isoformat())
-    resolved_d1 = bulk_resolve(conn, d1.isoformat())
+    fingerprint = data_fingerprint(conn)
+    t_fp = time.time()
 
-    meta_d0 = {row[0]: (row[1], row[2]) for row in resolved_d0}
-    meta_d1 = {row[0]: (row[1], row[2]) for row in resolved_d1}
-
-    conns_d0 = build_connections_for_date(conn, meta_d0, datetime.combine(d0, datetime.min.time()))
-    conns_d1 = build_connections_for_date(conn, meta_d1, datetime.combine(d1, datetime.min.time()))
+    conns_d0, hit_d0 = get_connections_for_date(conn, d0, fingerprint)
+    conns_d1, hit_d1 = get_connections_for_date(conn, d1, fingerprint)
     all_conns = conns_d0 + conns_d1
 
     t_build = time.time()
@@ -259,10 +310,12 @@ def search(conn, origin_q, dest_q, depart_after_str, verbose=True):
     t_csa = time.time()
 
     if verbose:
-        print(f"[perf] origin/dest resolve + bulk_resolve + connection build: {t_build - t0:.2f}s "
-              f"({len(resolved_d0)} + {len(resolved_d1)} resolved schedules, {len(all_conns)} connections)")
-        print(f"[perf] CSA scan: {t_csa - t_build:.2f}s")
-        print(f"[perf] total: {t_csa - t0:.2f}s")
+        cache_state = f"d0={'HIT' if hit_d0 else 'MISS'} d1={'HIT' if hit_d1 else 'MISS'}"
+        print(f"[perf] fingerprint check: {t_fp - t0:.3f}s")
+        print(f"[perf] connection graph ({cache_state}): {t_build - t_fp:.3f}s "
+              f"({len(all_conns)} connections)")
+        print(f"[perf] CSA scan: {t_csa - t_build:.3f}s")
+        print(f"[perf] total: {t_csa - t0:.3f}s")
 
     if chain is None:
         print(f"No itinerary found: {origin_q} -> {dest_q} after {depart_after_str}")
