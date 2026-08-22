@@ -144,6 +144,49 @@ any walk leg's own (tiploc, time) pair.
 
 ---
 
+## Addendum — origin-walk (pre-scan relaxation) path, verified live
+
+None of the 4 cases above ever exercise the pre-scan relaxation added in
+part 2a (walking *from the origin*, before boarding anything) — every walk
+found so far sits between two train legs. Checked this directly rather
+than assuming the untested code path was fine: tried 10 candidate
+origin/destination pairs across 6 times of day (60 real `search()` calls,
+2026-08-24), specifically choosing destinations only sensibly reached via
+whichever of Moor Street/New Street the origin *isn't* (Chiltern-operated
+Dorridge/Warwick/Stratford-upon-Avon/Solihull from New Street; the reverse
+direction from Moor Street).
+
+**Common, not rare: 51 of 60 tried combinations produced a walk-first
+chain.** Reported plainly since it could have gone either way — this
+wasn't forced. First one found:
+
+```
+Birmingham New Street -> Dorridge, 2026-08-24 07:00
+  WALK  BHAMNWS -> BHAMMRS  07:00 -> 07:12  (762s)
+  TRAIN BHAMMRS -> DORIDGE  07:20 -> 07:34   uid=L37369 atoc=CH
+  total: 0:34:00
+```
+
+Confirmed exactly the three things asked:
+
+- **Walk renders correctly as `legs[0]`**: `type: "walk"`, `walk_seconds:
+  762`, no `live_status`/`train_uid`/`atoc_code` — same shape as every
+  other walk leg, asserted programmatically, not just eyeballed.
+- **Risk badge falls back correctly, doesn't error or misattach a status**:
+  `changes[0]` (walk → first train) returns exactly the edge case built in
+  investigation 2 — `{"risk": "unknown", "reason": "no preceding scheduled
+  service before this walk -- nothing live to check delay against"}` —
+  because `last_real_arrival_status()` walks backward from the walk leg,
+  finds no preceding leg at all (it's `legs[0]`), and returns `None` by
+  design rather than raising or fabricating a Darwin lookup.
+- **Darwin call count still holds**: exactly 2 calls (for the 1 real train
+  leg), 0 matching the walk leg's own tiploc+time — asserted, not assumed.
+
+No code changes were needed for this — it's the same logic already built
+in part 2b, now exercised by a real case instead of only by inspection.
+
+---
+
 ## Not done, per scope
 
 Nothing beyond what was asked. The VPS test directory (which briefly held
