@@ -364,7 +364,12 @@ body.nav-open .nav-drawer { transform: translateX(0); box-shadow: -20px 0 60px r
    the same breakpoint the departures table itself already reflows at. */
 .plan-search-row { display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap; margin-bottom: 24px; }
 .plan-search-row .dep-search-wrap { flex: 1 1 220px; min-width: 180px; }
-.plan-depart-field { flex: 0 0 200px; }
+/* Wraps the datetime-local input + the new "now" button beside it (native
+   inputs can't take injected child elements, so this sits alongside it,
+   not inside it) — flex-sizing lives on the wrapper now, not the bare
+   field, so the row layout and the 700px stack below both still work. */
+.plan-depart-wrap { display: flex; align-items: center; gap: 4px; flex: 0 0 auto; }
+.plan-depart-field { width: 170px; }
 .plan-search-btn {
   padding: 14px 22px; border-radius: 12px; background: var(--color-accent-turquoise);
   color: #07090C; border: none; font-weight: 600; font-size: 14px;
@@ -373,7 +378,19 @@ body.nav-open .nav-drawer { transform: translateX(0); box-shadow: -20px 0 60px r
 .plan-search-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 @media (max-width: 700px) {
   .plan-search-row { flex-direction: column; align-items: stretch; }
-  .plan-search-row .dep-search-wrap, .plan-depart-field, .plan-search-btn { flex: none; width: 100%; }
+  .plan-search-row .dep-search-wrap, .plan-depart-wrap, .plan-search-btn { flex: none; width: 100%; }
+  .plan-depart-field { flex: 1; width: auto; }
+}
+
+/* Plan a Journey — trip summary (between the search bar and the first leg
+   card). .dep-station-title is reused verbatim for the route line, not a
+   new class — it's the one place on this page already styled as "a station
+   name, prominently, as the result of a search" (28px/600/Archivo), which
+   is exactly what a trip's Origin -> Destination headline is here too. */
+.plan-trip-summary { margin-bottom: 16px; }
+.plan-trip-meta {
+  display: flex; gap: 16px; margin-top: 6px;
+  font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: var(--ink-dim);
 }
 
 /* Plan a Journey — results */
@@ -935,7 +952,10 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
         <button type="button" class="dep-field-clear" id="plan-dest-clear-btn" aria-label="Clear destination">×</button>
         <div class="dep-ac-list" id="plan-dest-ac-list"></div>
       </div>
-      <input type="datetime-local" id="plan-depart-input" class="dep-search-field plan-depart-field" aria-label="Depart after" />
+      <div class="plan-depart-wrap">
+        <input type="datetime-local" id="plan-depart-input" class="dep-search-field plan-depart-field" aria-label="Depart after" />
+        <button type="button" class="dep-icon-btn" id="plan-depart-now-btn" aria-label="Set to now" title="Now"><i class="ti ti-clock"></i></button>
+      </div>
       <button type="button" class="plan-search-btn" id="plan-search-btn" disabled>Search</button>
     </div>
     <div id="plan-results">
@@ -1774,6 +1794,11 @@ function nowForDatetimeLocal() {
   return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
 }
 document.getElementById('plan-depart-input').value = nowForDatetimeLocal();
+// "Now" button — just populates the field, same as typing a value by hand;
+// no search-logic change, doesn't trigger a search itself.
+document.getElementById('plan-depart-now-btn').addEventListener('click', function () {
+  document.getElementById('plan-depart-input').value = nowForDatetimeLocal();
+});
 
 // type:'route' chip tap lands here (see wireSavedChips' click handler
 // above) — populates both fields and searches immediately with a fresh
@@ -1880,6 +1905,24 @@ function planInterchangeHtml(change) {
   '</div>';
 }
 
+// Origin/destination for the summary come from the first/last leg's own
+// resolved names (origin_name/destination_name — the real tiploc-resolved
+// station names, same fix as the display-bug pass), not origin_query/
+// destination_query (the raw text the user typed/searched, which can be a
+// bare CRS code or differ from what actually resolved) — this is the more
+// accurate, already-established source for a station name on this page.
+function planTripSummaryHtml(data) {
+  var first = data.legs[0], last = data.legs[data.legs.length - 1];
+  var route = titleCaseStationName(first.origin_name || first.origin_tiploc) +
+    ' → ' + titleCaseStationName(last.destination_name || last.destination_tiploc);
+  var changeCount = data.changes.length;
+  var changeLabel = changeCount === 0 ? 'Direct — no changes' : changeCount + (changeCount === 1 ? ' change' : ' changes');
+  return '<div class="plan-trip-summary">' +
+    '<div class="dep-station-title">' + escHtml(route) + '</div>' +
+    '<div class="plan-trip-meta"><span>' + escHtml(changeLabel) + '</span><span>' + escHtml(data.total_journey_time) + ' total</span></div>' +
+  '</div>';
+}
+
 function renderPlanResults(data) {
   var el = document.getElementById('plan-results');
   if (!data || data.error) {
@@ -1890,12 +1933,15 @@ function renderPlanResults(data) {
     el.innerHTML = '<p class="plan-empty">No itinerary found for that search.</p>';
     return;
   }
-  var html = '';
+  // Total journey time now lives in the summary above (see
+  // planTripSummaryHtml) — the old bottom-of-results line was the exact
+  // same figure repeated with nothing new added by being at the end too,
+  // so it's removed here rather than kept as a second copy.
+  var html = planTripSummaryHtml(data);
   data.legs.forEach(function (leg, i) {
     html += planLegHtml(leg);
     if (data.changes[i]) html += planInterchangeHtml(data.changes[i]);
   });
-  html += '<p class="dep-footer-note" style="margin-top:12px">Total journey time: ' + escHtml(data.total_journey_time) + '</p>';
   el.innerHTML = html;
 }
 
