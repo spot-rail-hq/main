@@ -369,7 +369,13 @@ body.nav-open .nav-drawer { transform: translateX(0); box-shadow: -20px 0 60px r
    not inside it) — flex-sizing lives on the wrapper now, not the bare
    field, so the row layout and the 700px stack below both still work. */
 .plan-depart-wrap { display: flex; align-items: center; gap: 4px; flex: 0 0 auto; }
-.plan-depart-field { width: 170px; }
+/* .dep-search-field's own padding reserves 44px on the right for the "x"
+   clear button used by the origin/destination text fields -- this field
+   has no clear button at all, so that reserved space was just dead room
+   pushing the native calendar affordance away from the value and leaving
+   too little width for the time portion to render. Own right padding +
+   a wider fixed width fixes both. */
+.plan-depart-field { width: 230px; padding-right: 16px; }
 .plan-search-btn {
   padding: 14px 22px; border-radius: 12px; background: var(--color-accent-turquoise);
   color: #07090C; border: none; font-weight: 600; font-size: 14px;
@@ -406,6 +412,16 @@ body.nav-open .nav-drawer { transform: translateX(0); box-shadow: -20px 0 60px r
    above/below it. */
 .plan-interchange { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; margin-bottom: 8px; font-size: 12.5px; color: var(--ink-dim); }
 .plan-risk-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+/* "No wait" (connection_risk.risk === "n/a") — deliberately plain text,
+   not a badge: there's no risk judgement being made here at all. */
+.plan-nowait-label { font-size: 11px; font-weight: 600; color: var(--ink-mute); }
+
+/* Walk leg (footpath transfer) — lighter weight than .plan-leg on purpose,
+   see planWalkLegHtml(). Never uses the train-card shape. */
+.plan-leg-walk { display: flex; align-items: center; gap: 8px; padding: 8px 16px; margin-bottom: 8px; font-size: 12.5px; color: var(--ink-dim); }
+.plan-leg-walk-icon { font-size: 14px; color: var(--ink-mute); flex: none; }
+.plan-leg-walk-label { font-weight: 600; color: var(--ink); flex: none; white-space: nowrap; }
+.plan-leg-walk-route { color: var(--ink-mute); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .plan-empty { color: var(--ink-dim); font-size: 14px; padding: 24px 0; text-align: center; }
 
 .dep-bar-actions { display: flex; align-items: center; gap: 4px; }
@@ -1865,7 +1881,23 @@ function titleCaseStationName(s) {
   return String(s || '').toLowerCase().replace(/\b[a-z]/g, function (c) { return c.toUpperCase(); });
 }
 
+// Walk leg (footpath transfer) — deliberately NOT the train-leg card shape
+// below: no clock-style dep/arr times (a walk has no scheduled precision to
+// imply) and no train_uid/atoc_code badge (there's no service or operator).
+// Lighter weight than .plan-leg on purpose; walk_seconds is the only real
+// figure a walk has, shown rounded to the nearest minute.
+function planWalkLegHtml(leg) {
+  var mins = Math.round((leg.walk_seconds || 0) / 60);
+  var minsLabel = mins <= 0 ? '<1 min walk' : mins + ' min walk';
+  return '<div class="plan-leg-walk">' +
+    '<i class="ti ti-walk plan-leg-walk-icon" aria-hidden="true"></i>' +
+    '<span class="plan-leg-walk-label">' + escHtml(minsLabel) + '</span>' +
+    '<span class="plan-leg-walk-route">' + escHtml(titleCaseStationName(leg.origin_name || leg.origin_tiploc)) + ' → ' + escHtml(titleCaseStationName(leg.destination_name || leg.destination_tiploc)) + '</span>' +
+  '</div>';
+}
+
 function planLegHtml(leg) {
+  if (leg.type === 'walk') return planWalkLegHtml(leg);
   var dep = planEventStatusDisplay(leg.live_status && leg.live_status.departure);
   var arr = planEventStatusDisplay(leg.live_status && leg.live_status.arrival);
   // `|| tiploc` fallback: this frontend and the srhq-journey-search backend
@@ -1895,13 +1927,34 @@ function planLegHtml(leg) {
 // (planLegHtml above renders those; this never touches that markup).
 function planInterchangeHtml(change) {
   var r = (change && change.connection_risk) || {};
+
+  // "n/a" (e.g. train -> walk, wait is always 0:00:00) means there is
+  // nothing to actually miss -- a walk has no scheduled departure a delay
+  // could cause you to lose. Previously this fell through to the same
+  // generic RISK_DISPLAY.unknown lookup as a genuine "no live data" case;
+  // kept deliberately distinct here, and deliberately NOT styled as a risk
+  // badge at all (no pill, no border, no color-coding) since it isn't a
+  // risk judgement in the first place.
+  if (r.risk === 'n/a') {
+    return '<div class="plan-interchange">' +
+      '<span>Change at ' + escHtml(titleCaseStationName(change.interchange_name || change.interchange_tiploc)) + '</span>' +
+      '<span class="plan-nowait-label">No wait</span>' +
+    '</div>';
+  }
+
   var risk = RISK_DISPLAY[r.risk] || RISK_DISPLAY.unknown;
   var style = risk.rgb
     ? 'color:' + risk.color + ';background:rgba(' + risk.rgb + ',0.14);border:1px solid rgba(' + risk.rgb + ',0.4)'
     : 'color:' + risk.color + ';background:rgba(var(--line-rgb),0.06);border:1px solid rgba(var(--line-rgb),0.08)';
+  // "unknown" keeps the same quiet/unalarming badge as before, but now
+  // carries the backend's own `reason` string as a tooltip -- so a
+  // first-time user can learn this means "no live data yet", not
+  // "something's wrong", without writing new copy (reusing what the
+  // backend already sends, per the brief).
+  var titleAttr = (r.risk === 'unknown' && r.reason) ? ' title="' + escHtml(r.reason) + '"' : '';
   return '<div class="plan-interchange">' +
     '<span>Change at ' + escHtml(titleCaseStationName(change.interchange_name || change.interchange_tiploc)) + ' · wait ' + escHtml(change.wait) + '</span>' +
-    '<span class="plan-risk-badge" style="' + style + '">' + escHtml(risk.label) + '</span>' +
+    '<span class="plan-risk-badge"' + titleAttr + ' style="' + style + '">' + escHtml(risk.label) + '</span>' +
   '</div>';
 }
 
