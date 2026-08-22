@@ -394,6 +394,10 @@ body.nav-open .nav-drawer { transform: translateX(0); box-shadow: -20px 0 60px r
    name, prominently, as the result of a search" (28px/600/Archivo), which
    is exactly what a trip's Origin -> Destination headline is here too. */
 .plan-trip-summary { margin-bottom: 16px; }
+/* Same row shape as .dep-station-row (title, flex-space-between, trailing
+   icon button) so the save-route star sits with the same visual language
+   as the existing station-save star (.dep-star-btn) it's modeled on. */
+.plan-trip-title-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .plan-trip-meta {
   display: flex; gap: 16px; margin-top: 6px;
   font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: var(--ink-dim);
@@ -1964,6 +1968,65 @@ function planInterchangeHtml(change) {
 // destination_query (the raw text the user typed/searched, which can be a
 // bare CRS code or differ from what actually resolved) — this is the more
 // accurate, already-established source for a station name on this page.
+// Route entries on the trip-summary star, and consumed unmodified by the
+// pre-existing isRenderableSavedRow/renderSavedChips/selectPlanRoute code
+// (see that section's own comments -- this was already built as reachable
+// branch code with no producer). `id` is a real field this producer adds,
+// not decoration: savedRowId() (used for both the chip's data-id and
+// persistChipOrder()'s reorder-by-id map) only ever reads `r.crs || r.id`,
+// and a route entry has neither at top level from the schema sketched
+// there (only nested origin.crs/destination.crs) -- every saved route
+// would otherwise collide onto the same empty id the moment a second one
+// existed. Composite, not a bare CRS, so it can never collide with a real
+// station entry's own 3-letter `crs`.
+function routeSaveId(originCrs, destCrs) { return originCrs + '_' + destCrs; }
+function isRouteSaved(originCrs, destCrs) {
+  return getSavedStations().some(function (r) {
+    return r.type === 'route' && r.origin && r.origin.crs === originCrs && r.destination && r.destination.crs === destCrs;
+  });
+}
+function updatePlanRouteStarButton(btn, originCrs, destCrs) {
+  if (!btn) return;
+  var icon = btn.querySelector('i');
+  var starred = isRouteSaved(originCrs, destCrs);
+  btn.classList.toggle('starred', starred);
+  btn.setAttribute('aria-pressed', String(starred));
+  icon.className = starred ? 'ti ti-star-filled' : 'ti ti-star';
+}
+// Wired fresh after every render (renderPlanResults replaces the whole
+// results HTML each search, so there's never a stale listener to worry
+// about). Reads planOrigin/planDest directly -- the same {crs, name}
+// picks this exact search was already run with, and exactly the shape
+// selectPlanRoute()/isRenderableSavedRow() already expect -- rather than
+// re-deriving origin/destination from leg data (which is tiploc-based,
+// not CRS-based, and a different concept from "what the user searched").
+function wirePlanRouteStarButton() {
+  var btn = document.querySelector('.plan-route-star-btn');
+  if (!btn || !planOrigin || !planDest) return;
+  var originCrs = planOrigin.crs, destCrs = planDest.crs;
+  updatePlanRouteStarButton(btn, originCrs, destCrs);
+  btn.addEventListener('click', function () {
+    var list = getSavedStations();
+    var idx = list.findIndex(function (r) {
+      return r.type === 'route' && r.origin && r.origin.crs === originCrs && r.destination && r.destination.crs === destCrs;
+    });
+    if (idx !== -1) {
+      list.splice(idx, 1); // same "just remove it, no reassignment" shape as unsaving a station
+    } else {
+      list.push({
+        type: 'route',
+        id: routeSaveId(originCrs, destCrs),
+        origin: { crs: originCrs, name: planOrigin.name },
+        destination: { crs: destCrs, name: planDest.name },
+        addedAt: new Date().toISOString()
+      });
+    }
+    setSavedStations(list);
+    updatePlanRouteStarButton(btn, originCrs, destCrs);
+    renderSavedChips();
+  });
+}
+
 function planTripSummaryHtml(data) {
   var first = data.legs[0], last = data.legs[data.legs.length - 1];
   var route = titleCaseStationName(first.origin_name || first.origin_tiploc) +
@@ -1971,7 +2034,10 @@ function planTripSummaryHtml(data) {
   var changeCount = data.changes.length;
   var changeLabel = changeCount === 0 ? 'Direct — no changes' : changeCount + (changeCount === 1 ? ' change' : ' changes');
   return '<div class="plan-trip-summary">' +
-    '<div class="dep-station-title">' + escHtml(route) + '</div>' +
+    '<div class="plan-trip-title-row">' +
+      '<div class="dep-station-title">' + escHtml(route) + '</div>' +
+      '<button type="button" class="dep-icon-btn plan-route-star-btn" aria-label="Save this route" aria-pressed="false"><i class="ti ti-star"></i></button>' +
+    '</div>' +
     '<div class="plan-trip-meta"><span>' + escHtml(changeLabel) + '</span><span>' + escHtml(data.total_journey_time) + ' total</span></div>' +
   '</div>';
 }
@@ -1996,6 +2062,7 @@ function renderPlanResults(data) {
     if (data.changes[i]) html += planInterchangeHtml(data.changes[i]);
   });
   el.innerHTML = html;
+  wirePlanRouteStarButton();
 }
 
 function performPlanSearch() {
