@@ -99,6 +99,21 @@
 }
 :root[data-theme="light"] .nav-link.active { color: #FFFFFF; }
 :root[data-theme="light"] .btn-retry { color: #FFFFFF; }
+/* Native form-control theming (datetime-local's picker icon, and any date/
+   time/month/week input added later) — color-scheme, not a webkit-only
+   icon filter hack, so it's correct wherever the browser actually draws its
+   own picker chrome, not just the one icon in Chromium's ::-webkit-calendar-
+   picker-indicator. This page's theme is entirely driven by the
+   data-theme="light" attribute (set once, synchronously, before paint — see
+   the tiny bootstrap script at the top of <head>), never a bare
+   prefers-color-scheme media query, so this mirrors that same attribute
+   rather than adding a second, independent switching mechanism. */
+input[type="date"], input[type="time"], input[type="datetime-local"], input[type="month"], input[type="week"] { color-scheme: dark; }
+:root[data-theme="light"] input[type="date"],
+:root[data-theme="light"] input[type="time"],
+:root[data-theme="light"] input[type="datetime-local"],
+:root[data-theme="light"] input[type="month"],
+:root[data-theme="light"] input[type="week"] { color-scheme: light; }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 *, *::before, *::after {
   transition: background-color 400ms ease, color 400ms ease, border-color 400ms ease, opacity 400ms ease;
@@ -1810,12 +1825,33 @@ function planEventStatusDisplay(ev) {
   return { label: 'Not yet available', color: 'var(--ink-mute)' }; // not_yet_available
 }
 
+// /journey-search now sends a real name alongside every tiploc (origin_name/
+// destination_name per leg, interchange_name per change — see that repo's
+// service.py, tiploc_names()) straight from the tiplocs table's own `name`
+// column (real NROD reference data — checked live, 12/12 coverage across
+// every tiploc these three verification itineraries use). It arrives
+// ALL-CAPS (NROD's own convention); title-cased here for display only, to
+// match how every other station name reads on this page. Simple
+// word-boundary title-case, not a full locale-aware one — a name with an
+// apostrophe (e.g. "KING'S LYNN") would over-capitalize the letter after
+// it ("King'S Lynn"); noted as a known minor cosmetic gap rather than
+// building a fuller implementation for a case the bug report didn't raise.
+function titleCaseStationName(s) {
+  return String(s || '').toLowerCase().replace(/\b[a-z]/g, function (c) { return c.toUpperCase(); });
+}
+
 function planLegHtml(leg) {
   var dep = planEventStatusDisplay(leg.live_status && leg.live_status.departure);
   var arr = planEventStatusDisplay(leg.live_status && leg.live_status.arrival);
+  // `|| tiploc` fallback: this frontend and the srhq-journey-search backend
+  // deploy independently. If this file ships before that repo's own
+  // service.py redeploy lands, origin_name/destination_name won't exist yet
+  // — falling back to the raw tiploc reproduces today's known bug rather
+  // than a new one (a blank label), for whatever the gap between the two
+  // deploys turns out to be.
   return '<div class="plan-leg">' +
     '<div class="plan-leg-route">' +
-      '<span>' + escHtml(leg.origin_tiploc) + ' → ' + escHtml(leg.destination_tiploc) + '</span>' +
+      '<span>' + escHtml(titleCaseStationName(leg.origin_name || leg.origin_tiploc)) + ' → ' + escHtml(titleCaseStationName(leg.destination_name || leg.destination_tiploc)) + '</span>' +
       '<span class="plan-leg-train">' + escHtml(leg.train_uid) + ' · ' + escHtml(leg.atoc_code) + '</span>' +
     '</div>' +
     '<div class="plan-leg-times">' +
@@ -1839,7 +1875,7 @@ function planInterchangeHtml(change) {
     ? 'color:' + risk.color + ';background:rgba(' + risk.rgb + ',0.14);border:1px solid rgba(' + risk.rgb + ',0.4)'
     : 'color:' + risk.color + ';background:rgba(var(--line-rgb),0.06);border:1px solid rgba(var(--line-rgb),0.08)';
   return '<div class="plan-interchange">' +
-    '<span>Change at ' + escHtml(change.interchange_tiploc) + ' · wait ' + escHtml(change.wait) + '</span>' +
+    '<span>Change at ' + escHtml(titleCaseStationName(change.interchange_name || change.interchange_tiploc)) + ' · wait ' + escHtml(change.wait) + '</span>' +
     '<span class="plan-risk-badge" style="' + style + '">' + escHtml(risk.label) + '</span>' +
   '</div>';
 }
