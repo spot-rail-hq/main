@@ -325,6 +325,57 @@ body.nav-open .nav-drawer { transform: translateX(0); box-shadow: -20px 0 60px r
 .dep-chip-default-btn:hover { color: var(--color-accent-amber); }
 .dep-chip-default-btn.is-default { color: var(--color-accent-amber); }
 
+/* Tab bar — Live Departures / Plan a Journey. Vanilla and standalone: read
+   shared.jsx first (per the brief) and its only tab-shaped component,
+   DatasetTabs, is hard-bound to the rolling-stock dataset's category/color/
+   count props and is JSX (React+Babel) — CLAUDE.md scopes that stack
+   exception to database.html only ("do not copy this pattern to any other
+   page"), and departures.html has no React/Babel anywhere. So this is
+   visually modeled on DatasetTabs' pill styling (same padding/radius/
+   active-fill treatment), not a shared/reused component. */
+.dep-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+.dep-tab {
+  padding: 10px 16px; border-radius: 999px; font-family: inherit; box-sizing: border-box;
+  font-size: 13.5px; font-weight: 500;
+  color: var(--ink); background: rgba(var(--line-rgb),0.04);
+  border: 1px solid rgba(var(--line-rgb),0.08); cursor: pointer; transition: all .15s ease;
+}
+.dep-tab.active {
+  color: var(--bg); background: var(--color-accent-turquoise);
+  border-color: var(--color-accent-turquoise);
+}
+
+/* Plan a Journey — origin/destination/depart-after row. Stacks below 700px,
+   the same breakpoint the departures table itself already reflows at. */
+.plan-search-row { display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap; margin-bottom: 24px; }
+.plan-search-row .dep-search-wrap { flex: 1 1 220px; min-width: 180px; }
+.plan-depart-field { flex: 0 0 200px; }
+.plan-search-btn {
+  padding: 14px 22px; border-radius: 12px; background: var(--color-accent-turquoise);
+  color: #07090C; border: none; font-weight: 600; font-size: 14px;
+  font-family: inherit; box-sizing: border-box; cursor: pointer; flex: none;
+}
+.plan-search-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+@media (max-width: 700px) {
+  .plan-search-row { flex-direction: column; align-items: stretch; }
+  .plan-search-row .dep-search-wrap, .plan-depart-field, .plan-search-btn { flex: none; width: 100%; }
+}
+
+/* Plan a Journey — results */
+.plan-leg { background: var(--surface); border: 1px solid rgba(var(--line-rgb),0.08); border-radius: 12px; padding: 14px 16px; margin-bottom: 8px; }
+.plan-leg-route { display: flex; justify-content: space-between; align-items: center; font-size: 14.5px; font-weight: 600; gap: 12px; }
+.plan-leg-train { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--ink-mute); margin-top: 2px; }
+.plan-leg-times { display: flex; justify-content: space-between; margin-top: 8px; font-size: 13px; color: var(--ink-dim); }
+.plan-status-row { display: flex; gap: 14px; margin-top: 8px; flex-wrap: wrap; }
+.plan-status-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-family: 'JetBrains Mono', monospace; }
+.plan-status-dot { width: 7px; height: 7px; border-radius: 50%; flex: none; display: inline-block; }
+/* Interchange row — its own risk badge, deliberately separate from (never
+   overwriting) the two adjacent legs' own departure/arrival status badges
+   above/below it. */
+.plan-interchange { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; margin-bottom: 8px; font-size: 12.5px; color: var(--ink-dim); }
+.plan-risk-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+.plan-empty { color: var(--ink-dim); font-size: 14px; padding: 24px 0; text-align: center; }
+
 .dep-bar-actions { display: flex; align-items: center; gap: 4px; }
 .dep-icon-btn {
   display: inline-flex; align-items: center; justify-content: center;
@@ -801,47 +852,81 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
 
 <!-- DEPARTURES -->
 <div class="dep-wrap">
-  <div id="fixture-banner"></div>
-  <div class="station-row" id="station-row">
-    <div class="dep-search-wrap sb-ac-wrap">
-      <input type="text" id="station-input" class="dep-search-field" placeholder="Search stations by name or code" aria-label="Search stations" autocomplete="off" />
-      <button type="button" class="dep-field-clear" id="station-clear-btn" aria-label="Clear search">×</button>
-      <div class="dep-ac-list" id="station-ac-list"></div>
-    </div>
-  </div>
-  <!-- Saved-station chips — reads/writes the same srhq_saved_routes contract
-       as the star button below and map.html's own saved list. Always
-       rendered (empty-state message swaps in when there's nothing saved),
-       independent of whatever station is currently loaded. -->
+  <!-- Saved chips — shared across BOTH tabs, sits above the tab bar per the
+       locked mockup. type:'station' chips jump to Live Departures;
+       type:'route' chips jump to Plan a Journey (see wireSavedChips' click
+       handler below). Reads/writes the same srhq_saved_routes contract as
+       the star button and map.html's own saved list. Always rendered
+       (empty-state message swaps in when there's nothing saved). -->
   <div class="dep-chip-row-wrap" id="dep-chip-row-wrap">
     <div class="dep-chip-hint" id="dep-chip-hint" style="display:none">Drag to reorder · tap the pin to set your default</div>
     <div class="dep-chip-empty" id="dep-chip-empty" style="display:none">Save a station — tap the star once you're viewing its board — to see it here.</div>
     <div class="dep-chip-scroll" id="dep-chip-scroll"></div>
   </div>
-  <!-- Station title row — same shape as map.html's .sb-selection (title +
-       share + star), just larger (this is a whole page, not a sidebar row)
-       and with back/forward folded in too, since departures.html has
-       nowhere else for them to live. Hidden until a station is selected. -->
-  <div class="dep-station-row" id="dep-station-row" style="display:none">
-    <span class="dep-station-title" id="dep-station-title"></span>
-    <span class="dep-station-actions">
-      <button type="button" class="dep-icon-btn" id="dep-back-btn" aria-label="Back"><i class="ti ti-chevron-left"></i></button>
-      <button type="button" class="dep-icon-btn" id="dep-forward-btn" aria-label="Forward"><i class="ti ti-chevron-right"></i></button>
-      <button type="button" class="dep-icon-btn" id="dep-share-btn" aria-label="Share this station"><i class="ti ti-share-3"></i></button>
-      <button type="button" class="dep-icon-btn" id="dep-star-btn" aria-label="Save this station" aria-pressed="false"><i class="ti ti-star"></i></button>
-    </span>
+
+  <!-- Both panels start hidden (inline style) so the JS can pick the
+       correct one before first paint, per the single global default-tab
+       flag (see PLAN_JOURNEY_IS_DEFAULT_TAB) — avoids a flash of the
+       non-default tab. -->
+  <div class="dep-tabs" id="dep-tabs" role="tablist">
+    <button type="button" class="dep-tab" id="dep-tab-live" data-tab="live" role="tab" aria-selected="false">Live Departures</button>
+    <button type="button" class="dep-tab" id="dep-tab-plan" data-tab="plan" role="tab" aria-selected="false">Plan a Journey</button>
   </div>
-  <div class="dep-bar" id="dep-bar">
-    <span id="dep-updated">Last updated: —</span>
-    <span class="dep-bar-actions">
-      <button type="button" class="dep-pager-btn" id="dep-pager-btn">Next 2 hours</button>
-      <span id="dep-refreshing" class="dep-refreshing">↻ Refreshing…</span>
-    </span>
+
+  <div class="dep-tab-panel" id="dep-panel-live" style="display:none">
+    <div id="fixture-banner"></div>
+    <div class="station-row" id="station-row">
+      <div class="dep-search-wrap sb-ac-wrap">
+        <input type="text" id="station-input" class="dep-search-field" placeholder="Search stations by name or code" aria-label="Search stations" autocomplete="off" />
+        <button type="button" class="dep-field-clear" id="station-clear-btn" aria-label="Clear search">×</button>
+        <div class="dep-ac-list" id="station-ac-list"></div>
+      </div>
+    </div>
+    <!-- Station title row — same shape as map.html's .sb-selection (title +
+         share + star), just larger (this is a whole page, not a sidebar row)
+         and with back/forward folded in too, since departures.html has
+         nowhere else for them to live. Hidden until a station is selected. -->
+    <div class="dep-station-row" id="dep-station-row" style="display:none">
+      <span class="dep-station-title" id="dep-station-title"></span>
+      <span class="dep-station-actions">
+        <button type="button" class="dep-icon-btn" id="dep-back-btn" aria-label="Back"><i class="ti ti-chevron-left"></i></button>
+        <button type="button" class="dep-icon-btn" id="dep-forward-btn" aria-label="Forward"><i class="ti ti-chevron-right"></i></button>
+        <button type="button" class="dep-icon-btn" id="dep-share-btn" aria-label="Share this station"><i class="ti ti-share-3"></i></button>
+        <button type="button" class="dep-icon-btn" id="dep-star-btn" aria-label="Save this station" aria-pressed="false"><i class="ti ti-star"></i></button>
+      </span>
+    </div>
+    <div class="dep-bar" id="dep-bar">
+      <span id="dep-updated">Last updated: —</span>
+      <span class="dep-bar-actions">
+        <button type="button" class="dep-pager-btn" id="dep-pager-btn">Next 2 hours</button>
+        <span id="dep-refreshing" class="dep-refreshing">↻ Refreshing…</span>
+      </span>
+    </div>
+    <div class="dep-table-wrap" id="dep-table-wrap"></div>
+    <p class="dep-footer-note">
+      Live data provided by <a href="https://www.nationalrail.co.uk" target="_blank" rel="noopener noreferrer" style="color:var(--color-accent-turquoise);">National Rail</a> (Darwin) · showing up to 25 scheduled services per station
+    </p>
   </div>
-  <div class="dep-table-wrap" id="dep-table-wrap"></div>
-  <p class="dep-footer-note">
-    Live data provided by <a href="https://www.nationalrail.co.uk" target="_blank" rel="noopener noreferrer" style="color:var(--color-accent-turquoise);">National Rail</a> (Darwin) · showing up to 25 scheduled services per station
-  </p>
+
+  <div class="dep-tab-panel" id="dep-panel-plan" style="display:none">
+    <div class="plan-search-row">
+      <div class="dep-search-wrap sb-ac-wrap">
+        <input type="text" id="plan-origin-input" class="dep-search-field" placeholder="Origin station" aria-label="Origin station" autocomplete="off" />
+        <button type="button" class="dep-field-clear" id="plan-origin-clear-btn" aria-label="Clear origin">×</button>
+        <div class="dep-ac-list" id="plan-origin-ac-list"></div>
+      </div>
+      <div class="dep-search-wrap sb-ac-wrap">
+        <input type="text" id="plan-dest-input" class="dep-search-field" placeholder="Destination station" aria-label="Destination station" autocomplete="off" />
+        <button type="button" class="dep-field-clear" id="plan-dest-clear-btn" aria-label="Clear destination">×</button>
+        <div class="dep-ac-list" id="plan-dest-ac-list"></div>
+      </div>
+      <input type="datetime-local" id="plan-depart-input" class="dep-search-field plan-depart-field" aria-label="Depart after" />
+      <button type="button" class="plan-search-btn" id="plan-search-btn" disabled>Search</button>
+    </div>
+    <div id="plan-results">
+      <p class="plan-empty">Choose an origin and destination above to plan a journey.</p>
+    </div>
+  </div>
 </div>
 
 </main>
@@ -894,6 +979,31 @@ function escHtml(s) {
     return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
   });
 }
+
+// ── TABS — Live Departures / Plan a Journey ─────────────────────
+// One global flag decides which tab loads first — deliberately NOT a
+// per-chip or per-session (localStorage-remembered) variant, per the brief.
+// There is no UI to change it; flip this constant to change the site-wide
+// default. Named distinctly from the *different*, pre-existing per-chip
+// `isDefault` (which marks a single saved STATION as the one to auto-load —
+// see getDefaultSavedStation()) to avoid confusing the two concepts.
+var PLAN_JOURNEY_IS_DEFAULT_TAB = false; // false = Live Departures loads first (existing behavior, untouched)
+
+function switchTab(tab) {
+  document.getElementById('dep-panel-live').style.display = tab === 'live' ? '' : 'none';
+  document.getElementById('dep-panel-plan').style.display = tab === 'plan' ? '' : 'none';
+  ['live', 'plan'].forEach(function (t) {
+    var btn = document.getElementById('dep-tab-' + t);
+    var on = t === tab;
+    btn.classList.toggle('active', on);
+    btn.setAttribute('aria-selected', String(on));
+  });
+}
+document.getElementById('dep-tab-live').addEventListener('click', function () { switchTab('live'); });
+document.getElementById('dep-tab-plan').addEventListener('click', function () { switchTab('plan'); });
+// Applied immediately (both panels start display:none in the HTML) so
+// there's no flash of the non-default tab before this runs.
+switchTab(PLAN_JOURNEY_IS_DEFAULT_TAB ? 'plan' : 'live');
 
 // ── LIVE DEPARTURES ──────────────────────────────────────────────
 // No default station any more (was EUS — removed). With no ?crs= the page
@@ -1082,6 +1192,11 @@ function wireStationSearch(inputEl, dropdownEl, clearBtn, onPick) {
     closeDropdown();
     syncClearButton();
     inputEl.focus();
+    // onPick(null) on clear — a no-op for every existing caller (Live
+    // Departures' own onPick already guards with `if (picked)`), but needed
+    // for Plan a Journey's origin/destination fields, whose onPick tracks
+    // {crs} state the Search button's enabled-ness depends on.
+    onPick(null);
   }
   clearBtn.addEventListener('mousedown', function (e) { e.preventDefault(); clearField(); });
   syncClearButton();
@@ -1434,14 +1549,27 @@ var SAVED_CHIP_TYPE_META = {
   station: { icon: 'ti-train', cls: '' },
   route: { icon: 'ti-route', cls: 'is-route' }
 };
-// Only CRS'd station entries are rendered as LOADABLE chips — same
-// CRS-only boundary as getDefaultSavedStation() above, and for the same
-// reason (no Darwin board to load without one). A non-CRS saved stop still
+// Only CRS'd station entries, or route entries carrying both endpoints, are
+// rendered as LOADABLE chips — same CRS-only boundary as
+// getDefaultSavedStation() above, and for the same reason (no Darwin board/
+// journey-search call possible without one). A non-CRS saved stop still
 // exists in the shared list (map.html renders it fine on its own saved-list
 // view) but has no useful action on this page, so it's left out of the
 // chip row entirely rather than shown disabled/dead.
+//
+// route entries have no producer anywhere yet (no save/star action for a
+// planned journey exists in this pass — building one would need new fields,
+// `origin`/`destination`, on the shared srhq_saved_routes schema, which is
+// exactly the kind of new-schema-field addition flagged rather than added;
+// see the delivery report). This is real, reachable branch code for the
+// day a producer exists, not dead weight — same shape as the pre-existing
+// is-route CSS accent it sits alongside.
+function isRenderableSavedRow(r) {
+  if ((r.type || 'station') === 'station') return !!r.crs;
+  return r.type === 'route' && r.origin && r.origin.crs && r.destination && r.destination.crs;
+}
 function renderableSavedRows() {
-  return getSavedStations().filter(function (r) { return (r.type || 'station') === 'station' && r.crs; });
+  return getSavedStations().filter(isRenderableSavedRow);
 }
 var CHIP_HINT_SEEN_KEY = 'srhq_chip_drag_hint_seen';
 function chipHintSeen() {
@@ -1468,19 +1596,38 @@ function renderSavedChips() {
   // sites of markChipHintSeen()).
   hintEl.style.display = (rows.length >= 1 && !chipHintSeen()) ? '' : 'none';
   scrollEl.innerHTML = rows.map(function (r) {
-    var meta = SAVED_CHIP_TYPE_META[r.type || 'station'] || SAVED_CHIP_TYPE_META.station;
+    var type = r.type || 'station';
+    var meta = SAVED_CHIP_TYPE_META[type] || SAVED_CHIP_TYPE_META.station;
     var id = savedRowId(r);
     var isDefault = r.isDefault === true;
-    // meta.icon is deliberately unused here — no leading type icon for now
-    // (reported as visual clutter). meta.cls (route accenting) stays; the
-    // icon field itself stays defined in SAVED_CHIP_TYPE_META so it needs no
-    // rework if/when a route chip actually wants one back.
-    return '<div class="dep-chip ' + meta.cls + '" data-id="' + escHtml(id) + '" data-name="' + escHtml(r.name || r.crs) + '">' +
-      '<span class="dep-chip-name">' + escHtml(r.name || r.crs) + '</span>' +
-      '<button type="button" class="dep-chip-default-btn' + (isDefault ? ' is-default' : '') + '" ' +
-        'aria-label="' + (isDefault ? 'Unset as default station' : 'Set as default station') + '" aria-pressed="' + isDefault + '">' +
-        '<i class="ti ti-pin"></i>' +
-      '</button>' +
+    // meta.icon is deliberately unused here — no leading type icon for
+    // EITHER type (reported as visual clutter for station chips; route
+    // chips get exactly the same treatment — the brief's own "no separate
+    // icon" for type:'route' is already what this line does for everything).
+    // meta.cls (route accenting) stays.
+    var label = type === 'route'
+      ? escHtml(r.origin.name || r.origin.crs) + ' → ' + escHtml(r.destination.name || r.destination.crs)
+      : escHtml(r.name || r.crs);
+    // Default-pin only for station chips — "default" here means "the one
+    // station to auto-load on boot" (getDefaultSavedStation()), a concept
+    // that doesn't extend to a saved route in this brief; not rendered for
+    // type:'route' rather than reusing isDefault for an undefined meaning.
+    var pinHtml = type === 'station'
+      ? '<button type="button" class="dep-chip-default-btn' + (isDefault ? ' is-default' : '') + '" ' +
+          'aria-label="' + (isDefault ? 'Unset as default station' : 'Set as default station') + '" aria-pressed="' + isDefault + '">' +
+          '<i class="ti ti-pin"></i>' +
+        '</button>'
+      : '';
+    var dataAttrs = 'data-id="' + escHtml(id) + '" data-type="' + type + '"';
+    if (type === 'route') {
+      dataAttrs += ' data-origin-crs="' + escHtml(r.origin.crs) + '" data-origin-name="' + escHtml(r.origin.name || r.origin.crs) + '"' +
+                   ' data-dest-crs="' + escHtml(r.destination.crs) + '" data-dest-name="' + escHtml(r.destination.name || r.destination.crs) + '"';
+    } else {
+      dataAttrs += ' data-name="' + escHtml(r.name || r.crs) + '"';
+    }
+    return '<div class="dep-chip ' + meta.cls + '" ' + dataAttrs + '>' +
+      '<span class="dep-chip-name">' + label + '</span>' +
+      pinHtml +
     '</div>';
   }).join('');
 }
@@ -1493,7 +1640,7 @@ function renderSavedChips() {
     var list = getSavedStations();
     var byId = {};
     list.forEach(function (r) {
-      if ((r.type || 'station') === 'station' && r.crs) byId[savedRowId(r)] = r;
+      if (isRenderableSavedRow(r)) byId[savedRowId(r)] = r;
     });
     var reordered = domIds.map(function (id) { return byId[id]; }).filter(Boolean);
     var ri = 0;
@@ -1502,7 +1649,7 @@ function renderSavedChips() {
     // interleaving with any non-CRS entries (not shown as chips, but still
     // present in the shared list) rather than bunching them to one end.
     var result = list.map(function (r) {
-      return ((r.type || 'station') === 'station' && r.crs) ? reordered[ri++] : r;
+      return isRenderableSavedRow(r) ? reordered[ri++] : r;
     });
     setSavedStations(result);
   }
@@ -1561,10 +1708,182 @@ function renderSavedChips() {
       renderSavedChips();
       return;
     }
+    // Tapping a chip jumps to its matching tab and populates that tab with
+    // the chip's own data — station chips -> Live Departures (existing
+    // behavior), route chips -> Plan a Journey (new).
+    if (chip.dataset.type === 'route') {
+      switchTab('plan');
+      selectPlanRoute(
+        { crs: chip.dataset.originCrs, name: chip.dataset.originName },
+        { crs: chip.dataset.destCrs, name: chip.dataset.destName }
+      );
+      return;
+    }
     if (currentFixture) return;
+    switchTab('live');
     selectStation(chip.dataset.id, chip.dataset.name);
   }, true);
 })();
+
+// ── PLAN A JOURNEY ───────────────────────────────────────────────
+// Calls /api/journey-search — POST, JSON body (not query params, per the
+// brief) — a pure Vercel proxy to the standalone srhq-journey-search CSA
+// router service. Origin/destination are sent as CRS codes, the same
+// unambiguous choice selectStation() already makes for Live Departures;
+// the router's own station resolver accepts a bare 3-letter CRS directly.
+var planOrigin = null; // {crs, name} | null — set by wireStationSearch's onPick below
+var planDest = null;   // {crs, name} | null
+
+function updatePlanSearchBtn() {
+  document.getElementById('plan-search-btn').disabled = !(planOrigin && planDest);
+}
+
+wireStationSearch(
+  document.getElementById('plan-origin-input'),
+  document.getElementById('plan-origin-ac-list'),
+  document.getElementById('plan-origin-clear-btn'),
+  function (picked) { planOrigin = picked ? { crs: picked.crs, name: picked.name } : null; updatePlanSearchBtn(); }
+);
+wireStationSearch(
+  document.getElementById('plan-dest-input'),
+  document.getElementById('plan-dest-ac-list'),
+  document.getElementById('plan-dest-clear-btn'),
+  function (picked) { planDest = picked ? { crs: picked.crs, name: picked.name } : null; updatePlanSearchBtn(); }
+);
+
+// Local (not UTC) "YYYY-MM-DDTHH:MM" — what <input type="datetime-local">
+// both expects and returns.
+function nowForDatetimeLocal() {
+  var d = new Date();
+  var pad = function (n) { return String(n).padStart(2, '0'); };
+  return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+}
+document.getElementById('plan-depart-input').value = nowForDatetimeLocal();
+
+// type:'route' chip tap lands here (see wireSavedChips' click handler
+// above) — populates both fields and searches immediately with a fresh
+// "now" rather than any stored time, since tapping a saved journey means
+// "show me this journey's next departure", not a frozen historical search.
+function selectPlanRoute(origin, dest) {
+  planOrigin = origin;
+  planDest = dest;
+  document.getElementById('plan-origin-input').value = origin.name || origin.crs;
+  document.getElementById('plan-dest-input').value = dest.name || dest.crs;
+  document.getElementById('plan-depart-input').value = nowForDatetimeLocal();
+  updatePlanSearchBtn();
+  performPlanSearch();
+}
+
+// Palette per the brief exactly: lime/amber/magenta/ink-gray, no new colors.
+// 'unknown' intentionally styled as a plain neutral pill (see
+// planInterchangeHtml below) rather than a colored one — "visually quiet/
+// unalarming", not an error state, since it's the common real-world case.
+var RISK_DISPLAY = {
+  fine:    { label: 'Fine',    color: 'var(--color-accent-lime)',    rgb: 'var(--color-accent-lime-rgb)' },
+  tight:   { label: 'Tight',   color: 'var(--color-accent-amber)',   rgb: 'var(--color-accent-amber-rgb)' },
+  at_risk: { label: 'At risk', color: 'var(--color-accent-magenta)', rgb: 'var(--color-accent-magenta-rgb)' },
+  unknown: { label: 'Unknown', color: 'var(--ink-mute)' } // no `rgb` -> planInterchangeHtml renders the plain neutral style
+};
+
+// live_status.departure/arrival -> a badge. NOT the same mapping as
+// RISK_DISPLAY above (that's the brief's own spec, for interchange risk
+// only) — this describes one calling-point event, which the brief doesn't
+// separately color-spec, so it reuses this page's own existing
+// STATUS_DISPLAY palette/spirit (delay-colored lime/amber, muted gray for
+// no live data) for consistency rather than inventing a second convention.
+function planEventStatusDisplay(ev) {
+  if (!ev) return { label: '—', color: 'var(--ink-mute)' };
+  if (ev.status === 'actual' || ev.status === 'forecast') {
+    var d = ev.delay_minutes;
+    var prefix = ev.status === 'forecast' ? 'Est. ' : '';
+    if (d > 0) return { label: prefix + '+' + d + ' min', color: 'var(--color-accent-amber)' };
+    if (d < 0) return { label: prefix + d + ' min early', color: 'var(--color-accent-lime)' };
+    return { label: prefix + 'On time', color: 'var(--color-accent-lime)' };
+  }
+  // expected_but_absent gets the magenta "something may be wrong" treatment
+  // (distinct from the muted not_yet_available/uncertain tiers) — but as
+  // "No live data", never "Cancelled": the backend's own classification is
+  // explicit that a confirmed cancellation was never actually observed for
+  // this case, so this label doesn't overclaim one either.
+  if (ev.status === 'expected_but_absent') return { label: 'No live data', color: 'var(--color-accent-magenta)' };
+  if (ev.status === 'uncertain') return { label: 'Uncertain', color: 'var(--ink-mute)' };
+  return { label: 'Not yet available', color: 'var(--ink-mute)' }; // not_yet_available
+}
+
+function planLegHtml(leg) {
+  var dep = planEventStatusDisplay(leg.live_status && leg.live_status.departure);
+  var arr = planEventStatusDisplay(leg.live_status && leg.live_status.arrival);
+  return '<div class="plan-leg">' +
+    '<div class="plan-leg-route">' +
+      '<span>' + escHtml(leg.origin_tiploc) + ' → ' + escHtml(leg.destination_tiploc) + '</span>' +
+      '<span class="plan-leg-train">' + escHtml(leg.train_uid) + ' · ' + escHtml(leg.atoc_code) + '</span>' +
+    '</div>' +
+    '<div class="plan-leg-times">' +
+      '<span>' + escHtml(leg.origin_time.slice(-5)) + ' dep</span>' +
+      '<span>' + escHtml(leg.destination_time.slice(-5)) + ' arr</span>' +
+    '</div>' +
+    '<div class="plan-status-row">' +
+      '<span class="plan-status-badge" style="color:' + dep.color + '"><span class="plan-status-dot" style="background:' + dep.color + '"></span>Dep: ' + escHtml(dep.label) + '</span>' +
+      '<span class="plan-status-badge" style="color:' + arr.color + '"><span class="plan-status-dot" style="background:' + arr.color + '"></span>Arr: ' + escHtml(arr.label) + '</span>' +
+    '</div>' +
+  '</div>';
+}
+
+// Its own risk badge per interchange — separate from, and never
+// overwriting, the two adjacent legs' own departure/arrival status badges
+// (planLegHtml above renders those; this never touches that markup).
+function planInterchangeHtml(change) {
+  var r = (change && change.connection_risk) || {};
+  var risk = RISK_DISPLAY[r.risk] || RISK_DISPLAY.unknown;
+  var style = risk.rgb
+    ? 'color:' + risk.color + ';background:rgba(' + risk.rgb + ',0.14);border:1px solid rgba(' + risk.rgb + ',0.4)'
+    : 'color:' + risk.color + ';background:rgba(var(--line-rgb),0.06);border:1px solid rgba(var(--line-rgb),0.08)';
+  return '<div class="plan-interchange">' +
+    '<span>Change at ' + escHtml(change.interchange_tiploc) + ' · wait ' + escHtml(change.wait) + '</span>' +
+    '<span class="plan-risk-badge" style="' + style + '">' + escHtml(risk.label) + '</span>' +
+  '</div>';
+}
+
+function renderPlanResults(data) {
+  var el = document.getElementById('plan-results');
+  if (!data || data.error) {
+    el.innerHTML = '<p class="plan-empty">Could not reach the journey planner. Please try again.</p>';
+    return;
+  }
+  if (!data.found) {
+    el.innerHTML = '<p class="plan-empty">No itinerary found for that search.</p>';
+    return;
+  }
+  var html = '';
+  data.legs.forEach(function (leg, i) {
+    html += planLegHtml(leg);
+    if (data.changes[i]) html += planInterchangeHtml(data.changes[i]);
+  });
+  html += '<p class="dep-footer-note" style="margin-top:12px">Total journey time: ' + escHtml(data.total_journey_time) + '</p>';
+  el.innerHTML = html;
+}
+
+function performPlanSearch() {
+  if (!planOrigin || !planDest) return;
+  var departValue = document.getElementById('plan-depart-input').value;
+  if (!departValue) return;
+  var el = document.getElementById('plan-results');
+  el.innerHTML = '<p class="plan-empty">Searching…</p>';
+  fetch('/api/journey-search', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      origin: planOrigin.crs,
+      destination: planDest.crs,
+      depart_after: departValue.replace('T', ' ')
+    })
+  }).then(function (r) { return r.json(); })
+    .then(renderPlanResults)
+    .catch(function () {
+      el.innerHTML = '<p class="plan-empty">Could not reach the journey planner. Please try again.</p>';
+    });
+}
+document.getElementById('plan-search-btn').addEventListener('click', performPlanSearch);
 
 var shareBtn = document.getElementById('dep-share-btn');
 function buildShareUrl() {
