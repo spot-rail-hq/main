@@ -403,6 +403,22 @@ body.nav-open .nav-drawer { transform: translateX(0); box-shadow: -20px 0 60px r
   font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: var(--ink-dim);
 }
 
+/* Multi-itinerary ranked search — one .plan-itinerary block per result
+   (1 or 2: /journey-search now returns data.itineraries, not a single
+   flat legs/changes/total_journey_time). Badge names which criteria this
+   itinerary won ("Fastest", "Fewest changes", or both when Step 4's
+   route-signature dedup found the same route wins on both). */
+.plan-itinerary-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 4px 4px 10px; }
+.plan-itinerary-badge {
+  display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 999px;
+  font-size: 11px; font-weight: 600; color: var(--color-accent-turquoise);
+  background: rgba(var(--color-accent-turquoise-rgb),0.14); border: 1px solid rgba(var(--color-accent-turquoise-rgb),0.4);
+}
+.plan-itinerary-badge.is-both { background: rgba(var(--color-accent-turquoise-rgb),0.28); }
+.plan-itinerary-meta { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: var(--ink-dim); }
+.plan-itinerary { margin-bottom: 8px; }
+.plan-itinerary + .plan-itinerary { margin-top: 12px; }
+
 /* Plan a Journey — results */
 .plan-leg { background: var(--surface); border: 1px solid rgba(var(--line-rgb),0.08); border-radius: 12px; padding: 14px 16px; margin-bottom: 8px; }
 .plan-leg-route { display: flex; justify-content: space-between; align-items: center; font-size: 14.5px; font-weight: 600; gap: 12px; }
@@ -2027,19 +2043,45 @@ function wirePlanRouteStarButton() {
   });
 }
 
+// Origin/destination for the summary come from the FIRST itinerary
+// (every itinerary in data.itineraries is an answer to the same origin/
+// destination search, so any of them would give the same route line —
+// the first is just the simplest to reach). Per-itinerary change count/
+// total time moved to planItineraryHtml() below, since /journey-search now
+// returns 1-2 ranked itineraries (see build_itinerary_json() in
+// service.py) rather than one flat legs/changes/total_journey_time.
 function planTripSummaryHtml(data) {
-  var first = data.legs[0], last = data.legs[data.legs.length - 1];
+  var firstItinerary = data.itineraries[0];
+  var first = firstItinerary.legs[0], last = firstItinerary.legs[firstItinerary.legs.length - 1];
   var route = titleCaseStationName(first.origin_name || first.origin_tiploc) +
     ' → ' + titleCaseStationName(last.destination_name || last.destination_tiploc);
-  var changeCount = data.changes.length;
-  var changeLabel = changeCount === 0 ? 'Direct — no changes' : changeCount + (changeCount === 1 ? ' change' : ' changes');
   return '<div class="plan-trip-summary">' +
     '<div class="plan-trip-title-row">' +
       '<div class="dep-station-title">' + escHtml(route) + '</div>' +
       '<button type="button" class="dep-icon-btn plan-route-star-btn" aria-label="Save this route" aria-pressed="false"><i class="ti ti-star"></i></button>' +
     '</div>' +
-    '<div class="plan-trip-meta"><span>' + escHtml(changeLabel) + '</span><span>' + escHtml(data.total_journey_time) + ' total</span></div>' +
   '</div>';
+}
+
+// criteria is the backend's own list ("fastest", "fewest_changes", or both
+// when Step 4's route-signature dedup found the same route wins on both —
+// see search()'s route_signature() in service.py).
+var PLAN_CRITERIA_LABELS = { fastest: 'Fastest', fewest_changes: 'Fewest changes' };
+function planItineraryHtml(itinerary) {
+  var badgeLabel = itinerary.criteria.map(function (c) { return PLAN_CRITERIA_LABELS[c] || c; }).join(' · ');
+  var badgeClass = 'plan-itinerary-badge' + (itinerary.criteria.length > 1 ? ' is-both' : '');
+  var changeCount = itinerary.changes.length;
+  var changeLabel = changeCount === 0 ? 'Direct — no changes' : changeCount + (changeCount === 1 ? ' change' : ' changes');
+  var html = '<div class="plan-itinerary">' +
+    '<div class="plan-itinerary-header">' +
+      '<span class="' + badgeClass + '">' + escHtml(badgeLabel) + '</span>' +
+      '<span class="plan-itinerary-meta">' + escHtml(changeLabel) + ' · ' + escHtml(itinerary.total_journey_time) + ' total</span>' +
+    '</div>';
+  itinerary.legs.forEach(function (leg, i) {
+    html += planLegHtml(leg);
+    if (itinerary.changes[i]) html += planInterchangeHtml(itinerary.changes[i]);
+  });
+  return html + '</div>';
 }
 
 function renderPlanResults(data) {
@@ -2052,14 +2094,9 @@ function renderPlanResults(data) {
     el.innerHTML = '<p class="plan-empty">No itinerary found for that search.</p>';
     return;
   }
-  // Total journey time now lives in the summary above (see
-  // planTripSummaryHtml) — the old bottom-of-results line was the exact
-  // same figure repeated with nothing new added by being at the end too,
-  // so it's removed here rather than kept as a second copy.
   var html = planTripSummaryHtml(data);
-  data.legs.forEach(function (leg, i) {
-    html += planLegHtml(leg);
-    if (data.changes[i]) html += planInterchangeHtml(data.changes[i]);
+  data.itineraries.forEach(function (itinerary) {
+    html += planItineraryHtml(itinerary);
   });
   el.innerHTML = html;
   wirePlanRouteStarButton();
