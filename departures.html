@@ -444,6 +444,42 @@ body.nav-open .nav-drawer { transform: translateX(0); box-shadow: -20px 0 60px r
 .plan-leg-walk-route { color: var(--ink-mute); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .plan-empty { color: var(--ink-dim); font-size: 14px; padding: 24px 0; text-align: center; }
 
+/* Point-to-point last-mile — an address/postcode resolved to a nearest
+   station (see resolveAddress()). Its own card rather than reusing
+   .plan-leg-walk directly: this describes how the origin/destination
+   FIELD itself resolved, shown above the search results (and can be
+   showing before any search has even run), not a leg inside a found
+   itinerary — but deliberately reuses the same icon/label/route visual
+   language as .plan-leg-walk so it doesn't invent a second "here is a
+   walk" convention. */
+.plan-last-mile { margin-bottom: 16px; }
+.plan-last-mile-card {
+  background: var(--surface); border: 1px solid rgba(var(--line-rgb),0.08);
+  border-radius: 12px; padding: 12px 16px; margin-bottom: 8px;
+}
+.plan-last-mile-row { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--ink-dim); }
+.plan-last-mile-icon { font-size: 14px; color: var(--ink-mute); flex: none; }
+.plan-last-mile-label { font-weight: 600; color: var(--ink); flex: none; white-space: nowrap; }
+.plan-last-mile-route { color: var(--ink-mute); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Amber, matching this codebase's existing "delays/warnings" token use
+   (RISK_DISPLAY.tight above uses the same color for the same "worth
+   noting, not urgent" register) — an informational nudge toward another
+   transport option, not an error state, so this deliberately does NOT use
+   magenta (reserved for Live/urgent per CLAUDE.md's design tokens). */
+.plan-affiliate-banner {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  padding: 10px 16px; margin-bottom: 8px; border-radius: 12px;
+  background: rgba(var(--color-accent-amber-rgb),0.1);
+  border: 1px solid rgba(var(--color-accent-amber-rgb),0.32);
+  font-size: 12.5px; color: var(--ink);
+}
+.plan-affiliate-banner a { color: var(--color-accent-amber); font-weight: 600; text-decoration: none; white-space: nowrap; }
+.plan-affiliate-banner a:hover { text-decoration: underline; }
+/* Address-fallback dropdown row — visually distinct from a real station
+   row (.dep-ac-item) since picking it doesn't select a known station
+   directly, it kicks off a geocoding lookup. */
+.dep-ac-item-address { font-style: italic; color: var(--ink-dim); }
+
 .dep-bar-actions { display: flex; align-items: center; gap: 4px; }
 .dep-icon-btn {
   display: inline-flex; align-items: center; justify-content: center;
@@ -994,6 +1030,7 @@ a.footer-item:hover { color: var(--color-accent-turquoise); }
       </div>
       <button type="button" class="plan-search-btn" id="plan-search-btn" disabled>Search</button>
     </div>
+    <div id="plan-last-mile"></div>
     <div id="plan-results">
       <p class="plan-empty">Choose an origin and destination above to plan a journey.</p>
     </div>
@@ -1168,6 +1205,14 @@ function matchTier(s, query) {
 
 var SEARCH_CAP = 10;
 
+// UK postcode pattern (outward + inward code, tolerant of missing/extra
+// whitespace and case) — used only to pick a clearer address-fallback
+// dropdown label ("Use postcode" vs "Search as address"). A false
+// negative here just shows the generic label; resolution always goes
+// through the same /api/resolve-address geocoding call either way, so
+// this is a labeling nicety, not a gate on functionality.
+var UK_POSTCODE_RE = /^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i;
+
 function searchDepartureStations(query, limit) {
   query = (query || '').trim().toLowerCase();
   if (!query) return [];
@@ -1191,7 +1236,15 @@ function searchDepartureStations(query, limit) {
   return matches.slice(0, limit || SEARCH_CAP);
 }
 
-function wireStationSearch(inputEl, dropdownEl, clearBtn, onPick) {
+// addressFallback (optional, 5th param) — Plan a Journey's origin/
+// destination fields only (see the two call sites below); the Live
+// Departures single-field call site omits it and is completely unaffected
+// (every branch below is guarded by `if (addressFallback)`). When free
+// text matches no known station, this is invoked as
+// addressFallback(query, dropdownEl, inputEl) instead of onPick — the
+// caller owns what happens next (calling /api/resolve-address, updating
+// its own state), this function only decides WHEN to hand off.
+function wireStationSearch(inputEl, dropdownEl, clearBtn, onPick, addressFallback) {
   var currentMatches = [];
   var highlightedIndex = -1;
 
@@ -1228,8 +1281,34 @@ function wireStationSearch(inputEl, dropdownEl, clearBtn, onPick) {
     closeDropdown();
     onPick(picked);
   }
+  // Hands off to addressFallback when nothing matched — either via this
+  // dropdown row (mousedown below) or directly from the Enter handler
+  // further down. `query` comes from the caller in both cases (already
+  // trimmed there), not re-read here.
+  function pickAddressFallback(query) {
+    if (!addressFallback || !query) return;
+    closeDropdown();
+    addressFallback(query, dropdownEl, inputEl);
+  }
   function renderDropdown(groupLabel) {
-    if (!currentMatches.length) { closeDropdown(); return; }
+    if (!currentMatches.length) {
+      var q = inputEl.value.trim();
+      if (addressFallback && q.length >= 2) {
+        highlightedIndex = -1;
+        var addrLabel = UK_POSTCODE_RE.test(q) ? 'Use postcode' : 'Search as address';
+        dropdownEl.innerHTML = '<button type="button" class="dep-ac-item dep-ac-item-address" role="option" aria-selected="false">' +
+          escHtml(addrLabel) + ': "' + escHtml(q) + '"</button>';
+        dropdownEl.classList.add('open');
+        inputEl.setAttribute('aria-expanded', 'true');
+        dropdownEl.querySelector('.dep-ac-item-address').addEventListener('mousedown', function (e) {
+          e.preventDefault();
+          pickAddressFallback(q);
+        });
+        return;
+      }
+      closeDropdown();
+      return;
+    }
     highlightedIndex = -1;
     var label = groupLabel ? '<div class="dep-ac-group-label">' + escHtml(groupLabel) + '</div>' : '';
     dropdownEl.innerHTML = label + currentMatches.map(function (s, i) {
@@ -1322,7 +1401,8 @@ function wireStationSearch(inputEl, dropdownEl, clearBtn, onPick) {
       e.preventDefault();
       if (highlightedIndex >= 0) { pick(highlightedIndex); return; }
       var top = currentMatches[0] || searchDepartureStations(inputEl.value, 1)[0];
-      if (top) { inputEl.value = top.name; closeDropdown(); onPick(top); }
+      if (top) { inputEl.value = top.name; closeDropdown(); onPick(top); return; }
+      pickAddressFallback(inputEl.value.trim());
     }
   });
   inputEl.addEventListener('blur', function () {
@@ -1804,22 +1884,92 @@ function renderSavedChips() {
 // the router's own station resolver accepts a bare 3-letter CRS directly.
 var planOrigin = null; // {crs, name} | null — set by wireStationSearch's onPick below
 var planDest = null;   // {crs, name} | null
+// Last-mile info (walk/cycle estimate, banner flag) — set only when
+// planOrigin/planDest came from the address fallback below, not a plain
+// station pick; null otherwise. Kept separate from planOrigin/planDest
+// themselves since it describes HOW the field resolved, not part of the
+// {crs, name} shape performPlanSearch()/selectPlanRoute() already expect.
+var planOriginLastMile = null;
+var planDestLastMile = null;
 
 function updatePlanSearchBtn() {
   document.getElementById('plan-search-btn').disabled = !(planOrigin && planDest);
+}
+
+// ── Point-to-point last-mile: address/postcode fallback ─────────────────
+// Fires only for Plan a Journey's origin/destination fields (see the
+// addressFallback param passed below; Live Departures' own single-field
+// wireStationSearch call above omits it and is unaffected) when free text
+// matches no known station. Calls /api/resolve-address — a pure Vercel
+// proxy (same "no logic, no reshaping" shape as /api/journey-search) to
+// srhq-journey-search's /resolve-address endpoint, which geocodes via
+// Mapbox and resolves to the nearest usable NR station server-side —
+// naptan_stations is only reachable from that service, never from this
+// page directly. Mapbox itself is never touched from the browser: no
+// token here, no Mapbox-branded UI, per CLAUDE.md's stack rules and the
+// feature's own confirmed backend-only decision — only the resolved
+// station + last-mile numbers come back.
+function resolveAddress(query, dropdownEl) {
+  dropdownEl.classList.add('open');
+  dropdownEl.innerHTML = '<div class="dep-ac-group-label">Searching…</div>';
+  return fetch('/api/resolve-address', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query: query })
+  }).then(function (r) { return r.json(); })
+    .then(function (data) {
+      dropdownEl.classList.remove('open');
+      dropdownEl.innerHTML = '';
+      return (data && data.found) ? data : null;
+    })
+    .catch(function () {
+      dropdownEl.classList.remove('open');
+      dropdownEl.innerHTML = '';
+      return null;
+    });
 }
 
 wireStationSearch(
   document.getElementById('plan-origin-input'),
   document.getElementById('plan-origin-ac-list'),
   document.getElementById('plan-origin-clear-btn'),
-  function (picked) { planOrigin = picked ? { crs: picked.crs, name: picked.name } : null; updatePlanSearchBtn(); }
+  function (picked) {
+    planOrigin = picked ? { crs: picked.crs, name: picked.name } : null;
+    planOriginLastMile = null; // picking a real station clears any earlier address-resolved last-mile info
+    updatePlanSearchBtn();
+    renderPlanLastMile();
+  },
+  function (query, dropdownEl, inputEl) {
+    resolveAddress(query, dropdownEl).then(function (data) {
+      if (!data) return; // no match — leave the field exactly as the user typed it, nothing else to do
+      inputEl.value = data.station.name;
+      planOrigin = { crs: data.station.crs, name: data.station.name };
+      planOriginLastMile = data;
+      updatePlanSearchBtn();
+      renderPlanLastMile();
+    });
+  }
 );
 wireStationSearch(
   document.getElementById('plan-dest-input'),
   document.getElementById('plan-dest-ac-list'),
   document.getElementById('plan-dest-clear-btn'),
-  function (picked) { planDest = picked ? { crs: picked.crs, name: picked.name } : null; updatePlanSearchBtn(); }
+  function (picked) {
+    planDest = picked ? { crs: picked.crs, name: picked.name } : null;
+    planDestLastMile = null;
+    updatePlanSearchBtn();
+    renderPlanLastMile();
+  },
+  function (query, dropdownEl, inputEl) {
+    resolveAddress(query, dropdownEl).then(function (data) {
+      if (!data) return;
+      inputEl.value = data.station.name;
+      planDest = { crs: data.station.crs, name: data.station.name };
+      planDestLastMile = data;
+      updatePlanSearchBtn();
+      renderPlanLastMile();
+    });
+  }
 );
 
 // Local (not UTC) "YYYY-MM-DDTHH:MM" — what <input type="datetime-local">
@@ -1843,10 +1993,16 @@ document.getElementById('plan-depart-now-btn').addEventListener('click', functio
 function selectPlanRoute(origin, dest) {
   planOrigin = origin;
   planDest = dest;
+  // Saved routes are always real station pairs (routeSaveId() requires
+  // origin.crs/destination.crs) — never created via the address fallback —
+  // so any earlier address-resolved last-mile info is stale here.
+  planOriginLastMile = null;
+  planDestLastMile = null;
   document.getElementById('plan-origin-input').value = origin.name || origin.crs;
   document.getElementById('plan-dest-input').value = dest.name || dest.crs;
   document.getElementById('plan-depart-input').value = nowForDatetimeLocal();
   updatePlanSearchBtn();
+  renderPlanLastMile();
   performPlanSearch();
 }
 
@@ -1914,6 +2070,61 @@ function planWalkLegHtml(leg) {
     '<span class="plan-leg-walk-label">' + escHtml(minsLabel) + '</span>' +
     '<span class="plan-leg-walk-route">' + escHtml(titleCaseStationName(leg.origin_name || leg.origin_tiploc)) + ' → ' + escHtml(titleCaseStationName(leg.destination_name || leg.destination_tiploc)) + '</span>' +
   '</div>';
+}
+
+// Point-to-point last-mile — renders how an address/postcode field
+// resolved (planOriginLastMile/planDestLastMile, set by the
+// addressFallback callbacks above). Same icon/label/route visual language
+// as planWalkLegHtml() above (its own .plan-last-mile-* classes, not
+// .plan-leg-walk directly — see that CSS block's own comment for why),
+// since Step 5 asked to match the existing pattern rather than invent one.
+// `info` is the raw /api/resolve-address response — walk/cycle_estimate/
+// banner read straight off it, no reshaping.
+function planLastMileCardHtml(label, info) {
+  var walkMins = Math.round((info.walk.duration_seconds || 0) / 60);
+  var cycleMins = Math.round((info.cycle_estimate.duration_seconds || 0) / 60);
+  var walkLabel = walkMins <= 0 ? '<1 min walk' : walkMins + ' min walk';
+  var cycleLabel = cycleMins <= 0 ? '<1 min by bike' : '~' + cycleMins + ' min by bike (estimated)';
+  var html = '<div class="plan-last-mile-card">' +
+    '<div class="plan-last-mile-row">' +
+      '<i class="ti ti-walk plan-last-mile-icon" aria-hidden="true"></i>' +
+      '<span class="plan-last-mile-label">' + escHtml(label) + ':</span>' +
+      '<span class="plan-last-mile-route">' + escHtml(walkLabel) + ' to ' + escHtml(titleCaseStationName(info.station.name)) + ' · ' + escHtml(cycleLabel) + '</span>' +
+    '</div>' +
+  '</div>';
+  if (info.banner && info.banner.show) html += planAffiliateBannerHtml();
+  return html;
+}
+
+// Placeholder URL only — no real Trainline affiliate/tracking link exists
+// anywhere in this codebase yet (checked: CLAUDE.md lists Trainline/
+// Railcard affiliates as the Trip Planner monetisation channel, but no
+// partner ID or tracking URL is wired up on any page, this one included).
+// Trainline itself has no dedicated UK coach-search URL to link to
+// directly either (checked) — coach options surface inside its own
+// journey search, not a separate page — so this links to its plain public
+// homepage for now. Swap in the real affiliate link (and add
+// rel="sponsored" alongside noopener/noreferrer once it genuinely is one)
+// the moment Aaron has it; flagged in the build report, not invented.
+var TRAINLINE_BUS_COACH_URL = 'https://www.thetrainline.com/';
+function planAffiliateBannerHtml() {
+  return '<div class="plan-affiliate-banner">' +
+    '<span>The nearest station is a fair distance away — coach or bus might get you closer.</span>' +
+    '<a href="' + escHtml(TRAINLINE_BUS_COACH_URL) + '" target="_blank" rel="noopener noreferrer">Search coach/bus options</a>' +
+  '</div>';
+}
+
+// Renders whichever of origin/destination resolved via the address
+// fallback (neither, either, or both) above the search results — cleared
+// whenever that field's own state is cleared or a real station is picked
+// instead (see the onPick/addressFallback callbacks and selectPlanRoute()
+// above, the only places these two vars are ever set).
+function renderPlanLastMile() {
+  var el = document.getElementById('plan-last-mile');
+  var html = '';
+  if (planOriginLastMile) html += planLastMileCardHtml('From your address', planOriginLastMile);
+  if (planDestLastMile) html += planLastMileCardHtml('To your address', planDestLastMile);
+  el.innerHTML = html;
 }
 
 function planLegHtml(leg) {
