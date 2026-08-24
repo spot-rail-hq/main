@@ -4,6 +4,16 @@ Follows `scratchpad/point-to-point-last-mile-investigation.md`. Not
 committed or pushed — everything below is uncommitted working-tree state
 for Aaron to review via GitHub Desktop, per the ask.
 
+**Continuation session addendum (same day)**: this session was explicitly
+authorized and scoped to access the VPS directly, superseding the prior
+session's correct caution. Steps 1/2/3/6 were merged into the REAL live
+`service.py` (not the stale reference copy below — see "Continuation:
+merged into the real live service.py" section near the end of this report
+for exactly what changed, how the auth gap was closed, and what was
+verified live). `scratchpad/journey-search-service.py` has also now been
+resynced to match the real deployed file byte-for-byte, closing the
+staleness gap flagged in the original build below.
+
 ```
  M departures.html                                    (216 insertions, 5 deletions)
 ?? api/resolve-address.mjs                             (new)
@@ -226,9 +236,182 @@ working upstream to proxy to until the VPS side is merged and deployed.
 No commit, no push (per the ask — Aaron reviews via GitHub Desktop). No
 CLAUDE.md updates (not asked for this pass, though this feature is dense
 enough that it'll probably want a section eventually, matching how
-thoroughly Darwin/walking-transfers are documented there). No live
-verification of any Mapbox/Postgres call. `service.py`'s real current auth
-mechanism for `/journey-search` — needed to wire `/resolve-address`
-correctly — was not identified, since I don't have the real file; flagged
-as the one integration step that needs a human with access to the current
-code.
+thoroughly Darwin/walking-transfers are documented there).
+
+---
+
+## Continuation: merged into the real live service.py
+
+This session was explicitly scoped and authorized to access the VPS
+directly — a materially different situation from the prior session, whose
+caution (SSH blocked by this environment's own auto-mode classifier) was
+correct given it lacked that scoping.
+
+### Step 1 — Real file, real merge
+
+Read `/app/service.py` directly out of the running container
+(`o11gss4q6h2h0w83sxm3aj5g-172640539731`, Coolify-managed, resourceName
+`srhq-journey-searchmain-...`, project `srhq-infra`) via `docker exec ...
+cat` — **58,215 bytes / 1,317 lines**, vs. the stale local reference
+copy's 13,888 bytes. Confirms the staleness flagged in the original build
+report exactly: the real file already had multi-itinerary ranking
+(`run_csa`/`run_csa_fewest_changes`, two full passes), general same-stop
+tie detection (`_consider_arrival`, `TieCircuitBreaker`), the live Darwin
+overlay (`get_live_status`, `_darwin_event_lookup`), connection-risk
+scoring (`classify_connection_risk`, `compute_change_risks`), and footpath
+relaxation (`load_footpaths`, `_relax_footpaths*`) — none of which exist
+in the local copy that predates all of it.
+
+The merge instructions in
+`scratchpad/point-to-point-last-mile-service-additions.py` applied
+cleanly with no adaptation needed — the new functions are genuinely
+self-contained (no dependency on anything in the real file beyond
+`get_conn()`, which already existed and is unchanged) and were inserted
+as a new section directly before `class Handler`. **One thing did diverge
+from the merge instructions, flagged rather than silently resolved**: the
+instructions guessed the real do_POST body based on the stale copy's
+shape; the actual current do_POST already had the auth block built in
+(see Step 2), so the merge slotted the new `/resolve-address` branch in
+*after* the shared auth check rather than needing to add auth logic of
+its own — simpler than the instructions anticipated, not harder.
+
+Full diff shape: +7 imports/constants (`urllib.error/parse/request`,
+`MAPBOX_TOKEN`, `MAX_WALKABLE_METERS`, `MAX_CYCLABLE_METERS`,
+`CYCLING_SPEED_MULTIPLIER`, `NEAREST_STATION_AMBIGUITY_RATIO`,
+`MAPBOX_GEOCODING_URL`/`MAPBOX_DIRECTIONS_URL`), +9 new functions
+(`mapbox_token`, `geocode_address`, `mapbox_walking_route`,
+`nearest_station_candidates`, `resolve_nearest_station`,
+`estimate_cycle_seconds`, `banner_flag`, `record_usage`,
+`handle_resolve_address`), and `do_POST` restructured to route
+`/resolve-address` alongside `/journey-search` through the identical auth
+gate. **Zero lines of existing logic (`search`, `run_csa`,
+`run_csa_fewest_changes`, `load_footpaths`, `classify_connection_risk`,
+etc.) were touched.** File grew 1,317 → 1,635 lines.
+
+Deployed carefully, not blindly: backed up the live file inside the
+container first (`/app/service.py.bak-pre-lastmile`, byte-identical to
+the pre-merge original, still there now for instant rollback), syntax-
+checked the merged file both locally and **inside the container's own
+Python 3.12 runtime** before restarting anything.
+
+### Step 2 — Auth: found and matched, not invented
+
+The real file already has the shared-secret gate the prior session
+couldn't see: `INTERNAL_KEY = os.environ.get("INTERNAL_KEY")` (module
+constant), checked in `do_POST` via `hmac.compare_digest(supplied,
+INTERNAL_KEY)` against the `X-Internal-Key` header, fail-closed (503
+`auth_not_configured` if the env var itself is unset, before any body is
+even read). This is the exact same shared-secret VALUE
+`JOURNEY_SEARCH_KEY` already holds on the Vercel side — just a
+differently-named env var per deployment target, exactly as flagged in
+the investigation (`api/resolve-address.mjs`, written last session, sends
+`X-Internal-Key` from `JOURNEY_SEARCH_KEY` and needed zero changes here).
+
+`do_POST` was restructured so `/journey-search` and `/resolve-address`
+share one `if self.path not in (...)` allowlist and one auth block —
+**not** a second parallel check. Verified directly against the live
+service (real requests, see Step 4): wrong key → 401 on the new route,
+missing/malformed body → 400, unknown path → 404 with empty body,
+identical in shape to how `/journey-search` has always behaved.
+
+### Step 3 — Affiliate link placeholder location
+
+`departures.html:2109` — `var TRAINLINE_BUS_COACH_URL =
+'https://www.thetrainline.com/';`, referenced at `departures.html:2113`
+inside `planAffiliateBannerHtml()`. The surrounding comment (lines
+2102-2108) explains why it's a plain placeholder rather than a real
+tracking link. No code change needed — swap the URL string once a real
+affiliate link exists.
+
+### Step 4 — Verified against live
+
+**Confirmed: the merge changed nothing about existing behavior.** Re-ran
+the exact Solihull→Manchester query from the original footpath-relaxation
+verification, before and after the restart:
+
+```
+Before merge: found=True, 1 itinerary, criteria=[fastest, fewest_changes],
+              4 legs, total=2:18:00, perf.total_seconds=7.61 (cold)
+After merge:  found=True, 1 itinerary, criteria=[fastest, fewest_changes],
+              4 legs, total=2:18:00, perf.total_seconds=4.79 (warm cache)
+```
+
+Same route, same total time, same criteria — and leg-by-leg, still
+exactly train→walk→train→train (Solihull→Moor St→New St→Wolverhampton→
+Piccadilly), `live_status` populated per train leg and correctly `None`
+on the walk leg, `connection_risk` correctly `"n/a"` on the walk-adjacent
+change and `"unknown"` (not a false "fine") on the two train↔train
+changes for a search this far out. Multi-itinerary ranking, tie
+detection, live overlay, footpath legs, and connection-risk scoring are
+all confirmed untouched and working, not just assumed.
+
+(One transient `FileNotFoundError` appeared in the container's startup
+logs immediately after restart, inside `load_or_build_date`'s
+`os.replace()` — in code this merge never touched, and it self-resolved;
+the very next request succeeded cleanly with both dates served from
+memory. Reads as a restart-timing race on the shared-PID temp-file name
+`load_or_build_date` already uses, not a regression — flagging rather
+than hiding it, but it predates and is unrelated to this change.)
+
+**New `/resolve-address` route — full behavior matrix, all against the
+live service**:
+
+| Test | Result |
+|---|---|
+| Valid auth + real query, `MAPBOX_TOKEN` not configured | `503 {"error": "MAPBOX_TOKEN not set"}` |
+| Wrong `X-Internal-Key` | `401 {"error": "unauthorized"}` |
+| Malformed body (missing `query`) | `400 {"error": "bad request: 'query'"}` |
+| Unknown path | `404`, empty body (unchanged pre-existing behavior) |
+
+**The Mapbox-dependent happy path could not be exercised live —
+`MAPBOX_TOKEN` is not configured on the VPS** (confirmed by listing env
+var *names* only inside the container — no value ever printed). This
+isn't a gap I could close without a real credential, and I'm not
+fabricating one. What I *could* verify, and did: the PostGIS query and
+the ambiguity-ratio decision logic, run for real against live
+`naptan_stations` data with only the Mapbox network call mocked out
+(everything else — the DB round trip, the ratio math, the duration-wins
+comparison, the `api_usage` write — genuinely executed):
+
+- `nearest_station_candidates()` against a point near Birmingham New
+  Street returned New Street (102m), Moor Street (446m), Snow Hill
+  (619m) — real, sane straight-line results, confirms the `mode='rail'`
+  + `tiplocs` join SQL is correct against the live schema.
+- At a point where Moor St/New St are genuinely close (159m vs. 422m,
+  ratio 2.65 — **above** 1.5×): `correction_applied: False`, exactly 1
+  Mapbox call made. Ratio logic correctly skips the 2nd candidate.
+- At a point where the ratio is 1.09 (well within 1.5×), with the
+  straight-line-nearest candidate mocked to have the *slower* real route
+  (500s) and the 2nd candidate faster (320s): **the 2nd candidate won**,
+  `correction_applied: True`, exactly 2 Mapbox calls made — confirms the
+  actual point of the middle path (real duration beats straight-line
+  distance) works, not just the call-count gating around it.
+- `record_usage()` genuinely wrote to a real `api_usage` table (auto-
+  created via `CREATE TABLE IF NOT EXISTS`, confirmed via `SELECT`), then
+  those test-only rows were deleted afterward so they don't pollute real
+  accounting once traffic starts.
+- `banner_flag(1500)` → `{"show": False}`, `banner_flag(9000)` →
+  `{"show": True, "reason": "beyond_cyclable_distance"}`,
+  `estimate_cycle_seconds(1050)` → `300.0` (= 1050/3.5) — all exactly as
+  designed, run live rather than just re-asserted from the offline test.
+
+**What remains genuinely unverified**: the real Mapbox Geocoding and
+Directions HTTP calls themselves (network shape, response parsing,
+timeout behavior) — needs `MAPBOX_TOKEN` added to this Coolify
+application's environment before that's possible. That's the one
+concrete next step before this feature can serve real traffic; everything
+else in the request path (auth, routing, DB, decision logic, usage
+counting, and confirmed non-interference with the existing search) is now
+verified against the live system, not just asserted.
+
+### Housekeeping
+
+`scratchpad/journey-search-service.py` — the repo's local reference
+copy — has been **resynced to the real deployed file** (pulled fresh from
+the container after the restart, confirmed byte-identical to what was
+merged). This directly closes the staleness gap this whole continuation
+was triggered by; future sessions reading that file will see the real
+current state, not the 20-Aug snapshot. The container's own backup
+(`/app/service.py.bak-pre-lastmile`) and this session's local temp copies
+were left/cleaned up appropriately — nothing extraneous left on the VPS
+beyond the one intentional backup file.
