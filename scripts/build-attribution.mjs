@@ -80,7 +80,7 @@ const STATIC_SOURCES = [
     id: 'wikipedia',
     source: 'Wikipedia (English)',
     applies_to: [
-      'scripts/output/historical-stations.geojson (station opening/closing years)',
+      'data/historical-stations.geojson (station opening/closing years)',
       'data/big4-constituents.json (Railways Act 1921 constituent lists)',
       'stations-content.json / operators-content.json / routes-content.json (narrative fields)',
     ],
@@ -100,7 +100,7 @@ const STATIC_SOURCES = [
   {
     id: 'wikidata',
     source: 'Wikidata',
-    applies_to: ['scripts/output/historical-stations.geojson (P625 coordinates)'],
+    applies_to: ['data/historical-stations.geojson (P625 coordinates)'],
     layer_scope: 'historical',
     licence_code: 'CC0-1.0',
     licence_label: 'CC0 1.0 Universal (public domain dedication)',

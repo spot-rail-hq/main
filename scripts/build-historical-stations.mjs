@@ -2,7 +2,7 @@
 /**
  * scripts/build-historical-stations.mjs
  * ─────────────────────────────────────────────────────────────────────────
- * Builds scripts/output/historical-stations.geojson — every GB railway
+ * Builds data/historical-stations.geojson — every GB railway
  * station that has ever existed, with the year(s) it was open, for the
  * historical map slider. Deterministic, no AI.
  *
@@ -54,12 +54,16 @@
  * enforcing filter.
  *
  * ─── FIELD OWNERSHIP ──────────────────────────────────────────────────────
- * Sole writer of scripts/output/historical-stations.geojson,
+ * Sole writer of data/historical-stations.geojson,
  * scripts/output/historical-stations-report.json and
  * scripts/output/historical-stations-review.json. Reads station-list.json
  * (authoritative for "open now"), scripts/output/historical-lines.geojson
  * (for line-inherited opening years) and scripts/output/ohm-gb-boundary.json.
- * Never writes to data/ or to any *-content.json.
+ * Writes data/historical-stations.geojson only (moved out of scripts/output/
+ * 2026-09-08 because it's a genuine runtime dependency of database.html, not
+ * a build intermediate — see CLAUDE.md's read-merge-preserve/generator
+ * notes). The report and review list stay under scripts/output/ since
+ * those are genuinely build-only. Never writes to any *-content.json.
  */
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
@@ -75,7 +79,7 @@ const BOUNDARY_PATH = path.join(OUTPUT_DIR, 'ohm-gb-boundary.json');
 const LINES_PATH = path.join(OUTPUT_DIR, 'historical-lines.geojson');
 const STATION_LIST_PATH = path.join(ROOT, 'station-list.json');
 const STATIONS_CONTENT_PATH = path.join(ROOT, 'stations-content.json');
-const OUT_GEOJSON = path.join(OUTPUT_DIR, 'historical-stations.geojson');
+const OUT_GEOJSON = path.join(ROOT, 'data', 'historical-stations.geojson');
 const OUT_REPORT = path.join(OUTPUT_DIR, 'historical-stations-report.json');
 const OUT_REVIEW = path.join(OUTPUT_DIR, 'historical-stations-review.json');
 const OUT_HIDDEN = path.join(ROOT, 'data', 'history-hidden-stations.json');

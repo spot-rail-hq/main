@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * scripts/build-historical-search-index.mjs — flat search index for History
- * mode's Station tab, built from scripts/output/historical-stations.geojson.
+ * mode's Station tab, built from data/historical-stations.geojson.
  *
  * WHY A SEPARATE ARTIFACT, NOT DERIVED AT RUNTIME. History mode never fetches
  * the raw geojson in the browser — only historical.pmtiles, a spatially-tiled
@@ -51,7 +51,7 @@ import { gzipSync } from 'node:zlib';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
-const SRC_PATH = path.join(ROOT, 'scripts', 'output', 'historical-stations.geojson');
+const SRC_PATH = path.join(ROOT, 'data', 'historical-stations.geojson');
 const OUT_PATH = path.join(ROOT, 'data', 'historical-station-search-index.json');
 const MAX_PERIODS = 5; // matches selectHistoricalStation()'s own p1..p5 loop bound in map.html
 

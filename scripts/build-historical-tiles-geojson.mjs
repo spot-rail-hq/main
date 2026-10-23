@@ -10,7 +10,7 @@
  *   node scripts/build-historical-tiles-geojson.mjs
  *
  * Reads   scripts/output/historical-lines.geojson
- *         scripts/output/historical-stations.geojson
+ *         data/historical-stations.geojson
  * Writes  tile-generation/historical-lines.geojson
  *         tile-generation/historical-stations.geojson
  *
@@ -60,7 +60,7 @@ import path from 'node:path';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 const IN_LINES = path.join(ROOT, 'scripts', 'output', 'historical-lines.geojson');
-const IN_STATIONS = path.join(ROOT, 'scripts', 'output', 'historical-stations.geojson');
+const IN_STATIONS = path.join(ROOT, 'data', 'historical-stations.geojson');
 const TILE_DIR = path.join(ROOT, 'tile-generation');
 const OUT_LINES = path.join(TILE_DIR, 'historical-lines.geojson');
 const OUT_STATIONS = path.join(TILE_DIR, 'historical-stations.geojson');

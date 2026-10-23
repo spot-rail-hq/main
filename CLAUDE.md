@@ -832,7 +832,10 @@ than discarding it); `build-heritage-client-data.mjs` →
 itself generator-owned, but once a human sets it `true` the whole
 placement is frozen at the confirmed values, since flipping that field is
 the file's own documented hand-edit path); `build-historical-stations.mjs`
-→ `scripts/output/historical-stations.geojson` (keyed by `wikidata_qid` —
+→ `data/historical-stations.geojson` (moved out of `scripts/output/`
+2026-09-08 — it's a genuine `database.html` runtime dependency, not a build
+intermediate, so it needed to survive `scripts/output/` being gitignored;
+keyed by `wikidata_qid` —
 NOT `crs`, which is exactly the fragile, orphan-prone signal that caused
 the AGR/Angel Road bug below; a Wikidata QID is a real, permanent external
 identifier, same stability class as a hand-given slug — confirmed 100%

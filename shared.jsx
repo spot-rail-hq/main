@@ -103,7 +103,7 @@ function regionKeyFor(station) {
 //
 // The one thing that DOES differ is the shape of the input: map.html reads
 // flattened scalars straight off a tile feature's properties (tiles have no
-// nested structures). scripts/output/historical-stations.geojson — the
+// nested structures). data/historical-stations.geojson — the
 // source these two functions never had a reason to read directly before —
 // stores the same data as a NESTED `periods: [{start_year, end_year}]`
 // array instead. periodsToFlatProps() below is the shape adapter: given a

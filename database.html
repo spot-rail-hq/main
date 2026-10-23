@@ -689,7 +689,7 @@ const STATION_CONFIG = {
     { key: 'content', candidates: ['stations-content.json', '../stations-content.json', '/stations-content.json'] },
     { key: 'operators', candidates: ['operators-content.json', '../operators-content.json', '/operators-content.json'], optional: true },
   ],
-  // scripts/output/historical-stations.geojson (8,884 entries, ~3.8MB) —
+  // data/historical-stations.geojson (8,884 entries, ~3.8MB) —
   // tracked in git (map.html already fetches it client-side for History
   // mode) — LAZY, not eager: only fetched once the Closed status filter is
   // actually switched on (`trigger`), so a user who never opens Closed
@@ -700,7 +700,7 @@ const STATION_CONFIG = {
   lazyDataSources: [
     {
       key: 'historical',
-      candidates: ['scripts/output/historical-stations.geojson', '../scripts/output/historical-stations.geojson', '/scripts/output/historical-stations.geojson'],
+      candidates: ['data/historical-stations.geojson', '../data/historical-stations.geojson', '/data/historical-stations.geojson'],
       optional: true,
       trigger: (statusValue) => statusValue.has('Closed'),
     },

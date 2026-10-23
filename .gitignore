@@ -6,3 +6,8 @@
 # OS/editor noise
 .DS_Store
 .vercel
+
+# Generated build artifacts — not deployment inputs, kept on disk/R2 only
+*.pmtiles
+scripts/output/
+tile-generation/
